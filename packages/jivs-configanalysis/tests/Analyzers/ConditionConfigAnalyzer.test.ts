@@ -1,7 +1,7 @@
 import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import { EqualToValueCondition, EqualToValueConditionConfig } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { AlwaysMatchesCondition } from '@plblum/jivs-engine/build/Support/conditionsForTesting';
@@ -165,8 +165,8 @@ describe('ConditionConfigAnalyzer', () => {
         // In both cases, there may be non-error entries in results.properties.
 
         test('using real property Analyzers and ConditionConfig with no issues, should call all property analyzers and not report any errors', () => {
-            const testConfig = <EqualToConditionConfig>{
-                conditionType: ConditionType.EqualTo, // ConditionCategoryPropertyAnalyzer
+            const testConfig = <EqualToValueConditionConfig>{
+                conditionType: ConditionType.EqualToValue, // ConditionCategoryPropertyAnalyzer
                 valueHostName: 'TestValueHost',     // ConditionWithValueHostNamePropertyAnalyzer
                 secondValueHostName: 'TestValueHost2',  // ConditionWithSecondValueHostNamePropertyAnalyzer
 //                category: ConditionCategory.Comparison, // ConditionCategoryPropertyAnalyzer
@@ -178,7 +178,7 @@ describe('ConditionConfigAnalyzer', () => {
             };
             let services = createServicesForTheseTests();
 
-            services.conditionFactory.register<EqualToConditionConfig>(ConditionType.EqualTo,(config)=> new EqualToCondition(config));
+            services.conditionFactory.register<EqualToValueConditionConfig>(ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
             let helper = setupHelperForTheseTests(services);
             helper.registerLookupKeyAnalyzer(ServiceName.converter,
                 new MockAnalyzer(ServiceName.converter, {
@@ -197,7 +197,7 @@ describe('ConditionConfigAnalyzer', () => {
             expect(results.properties).toHaveLength(0);
         });
         test('using real property Analyzers and ConditionConfig with issues for each property Analyzer, should call all property analyzers and report errors', () => {
-            const testConfig = <EqualToConditionConfig>{
+            const testConfig = <EqualToValueConditionConfig>{
                 conditionType: 'testcondition', // ConditionTypeConfigPropertyAnalyzer. It must be viable, but not an exact match is an error
                 valueHostName: 'TestValueHost',     // ConditionWithValueHostNamePropertyAnalyzer - unknown value host
                 secondValueHostName: 'TestValueHost2',  // ConditionWithSecondValueHostNamePropertyAnalyzer - unknown value host
@@ -210,7 +210,7 @@ describe('ConditionConfigAnalyzer', () => {
             };
             let services = createServicesForTheseTests();
 
-            services.conditionFactory.register<EqualToConditionConfig>(ConditionType.EqualTo,(config)=> new EqualToCondition(config));
+            services.conditionFactory.register<EqualToValueConditionConfig>(ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
             let helper = setupHelperForTheseTests(services);
             helper.registerLookupKeyAnalyzer(ServiceName.converter,
                 new MockAnalyzer(ServiceName.converter, {
@@ -262,8 +262,8 @@ describe('ConditionConfigAnalyzer', () => {
                 expect(results.severity).toBeUndefined();
             });
             test('with ConditionConfig.conditionType=EqualTo, DataType=Number, comparer resolved, should not report an error', () => {
-                const testConfig = <EqualToConditionConfig>{
-                    conditionType: ConditionType.EqualTo,
+                const testConfig = <EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
                     conversionLookupKey: LookupKey.Number,
                 };
                 const testValueHostConfig = <ValueHostConfig>{
@@ -271,7 +271,7 @@ describe('ConditionConfigAnalyzer', () => {
                 };                
                 let services = createServicesForTheseTests();
 
-                services.conditionFactory.register<EqualToConditionConfig>(ConditionType.EqualTo,(config)=> new EqualToCondition(config));
+                services.conditionFactory.register<EqualToValueConditionConfig>(ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
                 let helper = setupHelperForTheseTests(services);
                 helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);
                 let propertyAnalyzers: Array<IConditionConfigPropertyAnalyzer> = [];
@@ -281,8 +281,8 @@ describe('ConditionConfigAnalyzer', () => {
                 expect(results.severity).toBeUndefined();
             });
             test('with ConditionConfig.conditionType=EqualTo, DataType=Custom, comparer not resolved, should report an error', () => {
-                const testConfig = <EqualToConditionConfig>{
-                    conditionType: ConditionType.EqualTo,
+                const testConfig = <EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
                     conversionLookupKey: 'Custom',
                 };
                 const testValueHostConfig = <ValueHostConfig>{
@@ -290,7 +290,7 @@ describe('ConditionConfigAnalyzer', () => {
                 };                
                 let services = createServicesForTheseTests();
 
-                services.conditionFactory.register<EqualToConditionConfig>(ConditionType.EqualTo,(config)=> new EqualToCondition(config));
+                services.conditionFactory.register<EqualToValueConditionConfig>(ConditionType.EqualToValue,(config)=> new EqualToValueCondition(config));
                 let helper = setupHelperForTheseTests(services);
                 helper.analysisArgs.comparerAnalyzer = new DataTypeComparerAnalyzer(helper);                
                 helper.analysisArgs.sampleValues.registerSampleValue('Custom', new Date());

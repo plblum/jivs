@@ -1,15 +1,19 @@
-import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from '../../src/Conditions/CompareToSecondValueHostConditionBase';
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from '../../src/Conditions/CompareToValueConditionBase';
-import { EqualToCondition, EqualToConditionConfig, NotEqualToCondition, NotEqualToConditionConfig, GreaterThanCondition, GreaterThanConditionConfig, GreaterThanOrEqualCondition, GreaterThanOrEqualConditionConfig, LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition, LessThanOrEqualConditionConfig, EqualToValueCondition, EqualToValueConditionConfig, NotEqualToValueCondition, NotEqualToValueConditionConfig, GreaterThanValueCondition, GreaterThanValueConditionConfig, GreaterThanOrEqualValueCondition, GreaterThanOrEqualValueConditionConfig, LessThanValueCondition, LessThanValueConditionConfig, LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
+import
+    {
+        EqualToValueCondition, EqualToValueConditionConfig, GreaterThanOrEqualValueCondition,
+        GreaterThanOrEqualValueConditionConfig, GreaterThanValueCondition, GreaterThanValueConditionConfig,
+        LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig, LessThanValueCondition,
+        LessThanValueConditionConfig, NotEqualToValueCondition, NotEqualToValueConditionConfig
+    } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
-import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { NumericStringToNumberConverter, IntegerConverter } from '../../src/DataTypes/DataTypeConverters';
+import { IntegerConverter, NumericStringToNumberConverter } from '../../src/DataTypes/DataTypeConverters';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { ConditionEvaluateResult, ConditionCategory } from '../../src/Interfaces/Conditions';
+import { ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
-import { LoggingLevel, LoggingCategory } from '../../src/Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
 import { DataTypeConverterService } from '../../src/Services/DataTypeConverterService';
 import { CapturingLogger } from '../../src/Support/CapturingLogger';
@@ -82,13 +86,13 @@ describe('CompareToValueConditionBase class additional cases', () =>
         });
     
 
-        test('Config.secondValueH with null logs and returns Undetermined', () =>
+        test('Config.secondValuewith null logs and returns Undetermined', () =>
         {
             let setup = setupWithValueHost();
             let logger = setup.services.loggerService as CapturingLogger;
             setup.vh.setValue('');
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualToValue,
                 valueHostName: null,
                 secondValue: null
             };
@@ -293,7 +297,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let vh2 = setup.vhm.addMockFieldValueHost('Property2', LookupKey.Number, 'Second label');
 
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualToValue,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
@@ -319,7 +323,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let setup = setupWithValueHost();
             setup.vh.setValue('');
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualTo,
+                conditionType: ConditionType.EqualToValue,
                 secondValueHostName: 'PropertyNotRegistered',
                 valueHostName: null
             };

@@ -1,56 +1,69 @@
 
-import { IDataTypeIdentifier } from './../../src/Interfaces/DataTypeIdentifier';
+import
+    {
+        AllMatchCondition,
+        AllMatchConditionConfig,
+        AnyMatchCondition,
+        AnyMatchConditionConfig,
+        CountMatchesCondition,
+        CountMatchesConditionConfig,
+        DataTypeCheckCondition,
+        DataTypeCheckConditionConfig,
+        IntegerCondition,
+        IntegerConditionConfig,
+        MaxDecimalsCondition,
+        MaxDecimalsConditionConfig,
+        NotNullCondition, NotNullConditionConfig,
+        PositiveCondition,
+        PositiveConditionConfig,
+        RangeCondition,
+        type RangeConditionConfig,
+        RegExpCondition,
+        RegExpConditionConfig,
+        RequireTextCondition,
+        type RequireTextConditionConfig,
+        StringLengthCondition,
+        StringLengthConditionConfig
+    } from "../../src/Conditions/ConcreteConditions";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
-import {
-    type RequireTextConditionConfig, type RangeConditionConfig,
-    RequireTextCondition,
-    RangeCondition, StringLengthConditionConfig, StringLengthCondition,
-    RegExpConditionConfig, RegExpCondition,
-    AllMatchCondition, DataTypeCheckConditionConfig, DataTypeCheckCondition,
-    AnyMatchCondition, CountMatchesCondition,
-    CountMatchesConditionConfig, AllMatchConditionConfig, AnyMatchConditionConfig,
-    NotNullCondition, NotNullConditionConfig,
-    PositiveCondition,
-    PositiveConditionConfig,
-    IntegerCondition,
-    IntegerConditionConfig,
-    MaxDecimalsCondition,
-    MaxDecimalsConditionConfig
-} from "../../src/Conditions/ConcreteConditions";
-import {
-    LogDetails, LoggingCategory, LoggingLevel,
-    logGatheringErrorHandler, logGatheringHandler
-} from "../../src/Interfaces/LoggerService";
+import
+    {
+        LogDetails, LoggingCategory, LoggingLevel,
+        logGatheringErrorHandler, logGatheringHandler
+    } from "../../src/Interfaces/LoggerService";
+import { IDataTypeIdentifier } from './../../src/Interfaces/DataTypeIdentifier';
 
-import {
-    MockJivsServices, MockValueHostsManager,
-} from "../TestSupport/mocks";
-import { ConditionEvaluateResult, ConditionCategory, ConditionConfig, ICondition } from "../../src/Interfaces/Conditions";
+import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
-import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
-import {
-    AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType,
-    EvaluatesAsPromiseConditionType, makeDisposable,
-    DisposableConditionType
-} from "../../src/Support/conditionsForTesting";
-import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from "../../src/Conditions/CompareToSecondValueHostConditionBase";
-import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from "../../src/Conditions/CompareToValueConditionBase";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { NumberConditionBase, NumberConditionBaseConfig } from "../../src/Conditions/NumberConditionBase";
+import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
 import { RegExpConditionBase, RegExpConditionBaseConfig } from "../../src/Conditions/RegExpConditionBase";
+import { IntegerConverter, NumericStringToNumberConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
+import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { NumberConditionBaseConfig, NumberConditionBase } from "../../src/Conditions/NumberConditionBase";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
-import { IDataTypeConverter } from '../../src/Interfaces/DataTypeConverters';
 import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
-import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
-import { CodingError, InvalidTypeError } from '../../src/Utilities/ErrorHandling';
-import { OneValueConditionBase, OneValueConditionBaseConfig } from '../../src/Conditions/OneValueConditionBase';
-import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
-import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
+import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
+import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import
+    {
+        AlwaysMatchesConditionType,
+        DisposableConditionType,
+        EvaluatesAsPromiseConditionType,
+        IsUndeterminedConditionType,
+        NeverMatchesConditionType,
+        makeDisposable
+    } from "../../src/Support/conditionsForTesting";
+import { CodingError } from '../../src/Utilities/ErrorHandling';
+import
+    {
+        MockJivsServices, MockValueHostsManager,
+    } from "../TestSupport/mocks";
 
 function setupServicesAndVM(): {
     services: IJivsServices,

@@ -1,4 +1,5 @@
 import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder";
+import { valueHost } from "@plblum/jivs-builder/build/Builder/ValidatorBuilder";
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
@@ -769,7 +770,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         let builder = new ValueHostsManagerConfigBuilder(services);
         builder.field('testValueHost1', LookupKey.String, {
             parserLookupKey: LookupKey.Number,
-        }).requireText().lessThan('testValueHost2', {
+        }).requireText().lessThanValue(valueHost('testValueHost2'), {
             secondConversionLookupKey: LookupKey.Number,
         });
         builder.field('testValueHost2', LookupKey.String).regExp(/^\d+$/);
@@ -811,11 +812,11 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         expect(validatorConfigResults1).toBeDefined();
         expect(validatorConfigResults2).toBeDefined();
         expect(validatorConfigResults1.errorCode).toBe(ConditionType.RequireText);
-        expect(validatorConfigResults2.errorCode).toBe(ConditionType.LessThan);
+        expect(validatorConfigResults2.errorCode).toBe(ConditionType.LessThanValue);
         expect(validatorConfigResults1.conditionResult).toBeDefined();
         expect(validatorConfigResults2.conditionResult).toBeDefined();
         expect(validatorConfigResults1.conditionResult!.conditionType).toEqual(ConditionType.RequireText);
-        expect(validatorConfigResults2.conditionResult!.conditionType).toEqual(ConditionType.LessThan);
+        expect(validatorConfigResults2.conditionResult!.conditionType).toEqual(ConditionType.LessThanValue);
 
         expect(validatorConfigResults1.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode
         expect(validatorConfigResults2.properties).toHaveLength(1); // info message about using ConditionType for ErrorCode

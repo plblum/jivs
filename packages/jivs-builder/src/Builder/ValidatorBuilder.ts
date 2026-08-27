@@ -17,56 +17,56 @@
  * @module jivs-builder/Builders/ConcreteClasses
  */
 
-import {
-    AllMatchConditionConfig, AnyMatchConditionConfig,
-    CountMatchesConditionConfig, DataTypeCheckConditionConfig,
-    IntegerConditionConfig,
-     MaxDecimalsConditionConfig,
-    NotNullConditionConfig, PositiveConditionConfig,
-    RangeConditionConfig, RegExpConditionConfig,
-    RequireTextConditionConfig, StringLengthConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import {
-    EqualToConditionConfig, EqualToValueConditionConfig,
-    GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig,
-    GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
-    LessThanConditionConfig,
-    LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig,
-    LessThanValueConditionConfig, 
-    NotEqualToConditionConfig, NotEqualToValueConditionConfig,
-
-} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        EqualToValueConditionConfig,
+        GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
+        LessThanOrEqualValueConditionConfig,
+        LessThanValueConditionConfig,
+        NotEqualToValueConditionConfig,
+    } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        AllMatchConditionConfig, AnyMatchConditionConfig,
+        CountMatchesConditionConfig, DataTypeCheckConditionConfig,
+        IntegerConditionConfig,
+        MaxDecimalsConditionConfig,
+        NotNullConditionConfig, PositiveConditionConfig,
+        RangeConditionConfig, RegExpConditionConfig,
+        RequireTextConditionConfig, StringLengthConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
-import {
-    CompleteConfigBuilderHandler,
-    ConditionBuilderHandler,
-    ConditionWithChildrenBuilderHandler,
-    FluentAllMatchValidatorConfig,
-    FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
-    FluentDataTypeCheckValidatorConfig, FluentEqualToValidatorConfig,
-    FluentEqualToValueValidatorConfig, FluentGreaterThanOrEqualValidatorConfig,
-    FluentGreaterThanOrEqualValueValidatorConfig, FluentGreaterThanValidatorConfig,
-    FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig,
-    FluentLessThanOrEqualValidatorConfig, FluentLessThanOrEqualValueValidatorConfig,
-    FluentLessThanValidatorConfig, FluentLessThanValueValidatorConfig,
-    FluentMaxDecimalsValidatorConfig, FluentNotEqualToValidatorConfig,
-    FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig,
-    FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
-    FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig,
-    FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
-    IConditionBuilder,
-    IValidatorBuilder
-} from '../Interfaces/ChildBuilders';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
+import
+    {
+        CompleteConfigBuilderHandler,
+        ConditionBuilderHandler,
+        ConditionWithChildrenBuilderHandler,
+        FluentAllMatchValidatorConfig,
+        FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
+        FluentDataTypeCheckValidatorConfig, 
+        FluentEqualToValueValidatorConfig, 
+        FluentGreaterThanOrEqualValueValidatorConfig, 
+        FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig,
+        FluentLessThanOrEqualValueValidatorConfig,
+        FluentLessThanValueValidatorConfig,
+        FluentMaxDecimalsValidatorConfig, 
+        FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig,
+        FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
+        FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig,
+        FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
+        IConditionBuilder,
+        IValidatorBuilder
+    } from '../Interfaces/ChildBuilders';
+import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 
 
@@ -704,6 +704,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * equalToValue(42);
+     * equalToValue(valueHost('field2'));
      * equalToValue(42, "Value must be {value}.");
      * equalToValue(42, "Value must be 42.", "Summary message");
      * equalToValue(42, {
@@ -768,107 +769,108 @@ export class ValidatorBuilder
         return this.equalToValue_common(secondValue, arg2, arg3);
     }
 
-    /**
-     * Adds a validator that ensures the value is equal to the second value host.
-     * @example
-     * ```ts
-     * equalTo('fieldname2');
-     * equalTo('fieldname2', "Value must be {value}.");
-     * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
-     * equalTo('fieldname2', {
-     *      errorMessage: "Value must be same as {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */    
-    public equalTo(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is equal to the second value host.
-     * @example
-     * ```ts
-     * equalTo('fieldname2');
-     * equalTo('fieldname2', "Value must be {value}.");
-     * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
-     * equalTo('fieldname2', {
-     *      errorMessage: "Value must be same as {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public equalTo(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
-    public equalTo(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.equalTo_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows several aliases setup equalTo
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected equalTo_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
+    // /**
+    //  * Adds a validator that ensures the value is equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * equalTo('fieldname2');
+    //  * equalTo('fieldname2', "Value must be {value}.");
+    //  * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
+    //  * equalTo('fieldname2', {
+    //  *      errorMessage: "Value must be same as {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+    //  * It can use tokens, which are resolved with current data at the time of validation.
+    //  * If null, it will expect to be setup by one of several other sources including
+    //  * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+    //  * @param summaryMessage - optional summary message.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */    
+    // public equalTo(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Adds a validator that ensures the value is equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * equalTo('fieldname2');
+    //  * equalTo('fieldname2', "Value must be {value}.");
+    //  * equalTo('fieldname2', "Value must be same as {SecondLabel}.", "Summary message");
+    //  * equalTo('fieldname2', {
+    //  *      errorMessage: "Value must be same as {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public equalTo(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
+    // public equalTo(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentEqualToValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.equalTo_common(secondValueHostName, args2, args3);
+    // }
+    // /**
+    //  * Allows several aliases setup equalTo
+    //  * @param secondValueHostName 
+    //  * @param args2 
+    //  * @param args3 
+    //  * @returns 
+    //  */
+    // protected equalTo_common(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentEqualToValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
         
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
+    //     const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+    //         this.resolveOverloadArgs<EqualToConditionConfig>(args2, args3);
         
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.equalTo(secondValueHostName, conditionConfig as EqualToConditionConfig);
+    //     const conditionBuilder = this.createConditionBuilder();
+    //     conditionBuilder.equalTo(secondValueHostName, conditionConfig as EqualToConditionConfig);
         
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-    /**
-     * Alias for equalTo
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public eq(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Alias for equalTo
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     */
-    public eq(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
-    public eq(
-        secondValueHostName: ValueHostName,
-        args2?: FluentEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.equalTo_common(secondValueHostName, args2, args3);
-    }
+    //     return this.finish(conditionBuilder,
+    //         errorMessage, summaryMessage, validatorParameters);
+    // }
+    // /**
+    //  * Alias for equalTo
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage 
+    //  * @param summaryMessage 
+    //  */
+    // public eq(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Alias for equalTo
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  */
+    // public eq(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
+    // public eq(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentEqualToValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.equalTo_common(secondValueHostName, args2, args3);
+    // }
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
      * @example
      * ```ts
      * notEqualToValue(42);
+     * notEqualToValue(valueHost('field2'));
      * notEqualToValue(42, "Value must not be {Value}.");
      * notEqualToValue(42, "Value must not be 42.", "Summary message");
      * notEqualToValue(42, {
@@ -892,6 +894,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * notEqualToValue(42);
+     * notEqualToValue(valueHost('field2'));
      * notEqualToValue(42, "Value must not be {Value}.");
      * notEqualToValue(42, "Value must not be 42.", "Summary message");
      * notEqualToValue(42, {
@@ -960,103 +963,104 @@ export class ValidatorBuilder
         return this.notEqualToValue_common(secondValue, args2, args3);
     }
 
-    /**
-     * Adds a validator that ensures the value is not equal to the second value host.
-     * @example
-     * ```ts
-     * notEqualTo('fieldname2');
-     * notEqualTo('fieldname2', "Value must not be equal to {value}.");
-     * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
-     * notEqualTo('fieldname2', {
-     *      errorMessage: "Value must not be same as {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public notEqualTo(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is not equal to the second value host.
-     * @example
-     * ```ts
-     * notEqualTo('fieldname2');
-     * notEqualTo('fieldname2', "Value must not be equal to {value}.");
-     * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
-     * notEqualTo('fieldname2', {
-     *      errorMessage: "Value must not be same as {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */    
-    public notEqualTo(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
-    public notEqualTo(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.notEqualTo_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows aliases to setup notEqualTo
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected notEqualTo_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.notEqualTo(secondValueHostName, conditionConfig as NotEqualToConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-    /**
-     * Alias for notEqualTo
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public neq(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-/**
- * Alias for notEqualTo
- * @param secondValueHostName - The valueHostName containing the value for the right operand.
- * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
- * Includes several validation parameters not available in the other overload, including severity and the errorCode.
- */    
-    public neq(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
-    public neq(
-        secondValueHostName: ValueHostName,
-        args2?: FluentNotEqualToValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.notEqualTo_common(secondValueHostName, args2, args3);
-    }
+//     /**
+//      * Adds a validator that ensures the value is not equal to the second value host.
+//      * @example
+//      * ```ts
+//      * notEqualTo('fieldname2');
+//      * notEqualTo('fieldname2', "Value must not be equal to {value}.");
+//      * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
+//      * notEqualTo('fieldname2', {
+//      *      errorMessage: "Value must not be same as {SecondLabel}.", 
+//      *      summaryMessage: "Summary message" });
+//      * ```
+//      *
+//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
+//      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+//      * It can use tokens, which are resolved with current data at the time of validation.
+//      * If null, it will expect to be setup by one of several other sources including
+//      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+//      * @param summaryMessage - optional summary message.
+//      * @returns The current instance of ValidatorBuilder for method chaining.
+//      */
+//     public notEqualTo(
+//         secondValueHostName: ValueHostName,
+//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+//     /**
+//      * Adds a validator that ensures the value is not equal to the second value host.
+//      * @example
+//      * ```ts
+//      * notEqualTo('fieldname2');
+//      * notEqualTo('fieldname2', "Value must not be equal to {value}.");
+//      * notEqualTo('fieldname2', "Value must not be same as {SecondLabel}.", "Summary message");
+//      * notEqualTo('fieldname2', {
+//      *      errorMessage: "Value must not be same as {SecondLabel}.", 
+//      *      summaryMessage: "Summary message" });
+//      * ```
+//      *
+//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
+//      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+//      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+//      * @returns The current instance of ValidatorBuilder for method chaining.
+//      */    
+//     public notEqualTo(
+//         secondValueHostName: ValueHostName,
+//         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
+//     public notEqualTo(
+//         secondValueHostName: ValueHostName,
+//         args2?: FluentNotEqualToValidatorConfig | string | null,
+//         args3?: string | null): IValidatorBuilder {
+//         return this.notEqualTo_common(secondValueHostName, args2, args3);
+//     }
+//     /**
+//      * Allows aliases to setup notEqualTo
+//      * @param secondValueHostName 
+//      * @param args2 
+//      * @param args3 
+//      * @returns 
+//      */
+//     protected notEqualTo_common(
+//         secondValueHostName: ValueHostName,
+//         args2?: FluentNotEqualToValidatorConfig | string | null,
+//         args3?: string | null): IValidatorBuilder {
+//         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+//             this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
+//         const conditionBuilder = this.createConditionBuilder();
+//         conditionBuilder.notEqualTo(secondValueHostName, conditionConfig as NotEqualToConditionConfig);
+//         return this.finish(conditionBuilder,
+//             errorMessage, summaryMessage, validatorParameters);
+//     }
+//     /**
+//      * Alias for notEqualTo
+//      * @param secondValueHostName - The valueHostName containing the value for the right operand.
+//      * @param errorMessage 
+//      * @param summaryMessage 
+//      */
+//     public neq(
+//         secondValueHostName: ValueHostName,
+//         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
+// /**
+//  * Alias for notEqualTo
+//  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+//  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+//  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+//  */    
+//     public neq(
+//         secondValueHostName: ValueHostName,
+//         validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
+//     public neq(
+//         secondValueHostName: ValueHostName,
+//         args2?: FluentNotEqualToValidatorConfig | string | null,
+//         args3?: string | null): IValidatorBuilder {
+//         return this.notEqualTo_common(secondValueHostName, args2, args3);
+//     }
 
     /**
      * Adds a validator that ensures the value is less than the specified second value.
      * @example
      * ```ts
      * lessThanValue(42);
+     * lessThanValue(valueHost('field2'));
      * lessThanValue(42, "Value must be less than {value}.");
      * lessThanValue(42, "Value must be less than 42.", "Summary message");
      * lessThanValue(42, {
@@ -1080,6 +1084,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * lessThanValue(42);
+     * lessThanValue(valueHost('field2'));
      * lessThanValue(42, "Value must be less than {value}.");
      * lessThanValue(42, "Value must be less than 42.", "Summary message");
      * lessThanValue(42, {
@@ -1146,107 +1151,108 @@ export class ValidatorBuilder
         return this.lessThanValue_common(secondValue, args2, args3);
     }
 
-    /**
-     * Adds a validator that ensures the value is less than the second value host.
-     * @example
-     * ```ts
-     * lessThan('fieldname2');
-     * lessThan('fieldname2', "Value must be less than {value}.");
-     * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
-     * lessThan('fieldname2', {
-     *      errorMessage: "Value must be less than {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */        
-    public lessThan(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is less than the second value host.
-     * @example
-     * ```ts
-     * lessThan('fieldname2');
-     * lessThan('fieldname2', "Value must be less than {value}.");
-     * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
-     * lessThan('fieldname2', {
-     *      errorMessage: "Value must be less than {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public lessThan(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
-    public lessThan(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.lessThan_common(secondValueHostName, args2, args3);
-    }
+    // /**
+    //  * Adds a validator that ensures the value is less than the second value host.
+    //  * @example
+    //  * ```ts
+    //  * lessThan('fieldname2');
+    //  * lessThan('fieldname2', "Value must be less than {value}.");
+    //  * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
+    //  * lessThan('fieldname2', {
+    //  *      errorMessage: "Value must be less than {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+    //  * It can use tokens, which are resolved with current data at the time of validation.
+    //  * If null, it will expect to be setup by one of several other sources including
+    //  * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+    //  * @param summaryMessage - optional summary message.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */        
+    // public lessThan(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Adds a validator that ensures the value is less than the second value host.
+    //  * @example
+    //  * ```ts
+    //  * lessThan('fieldname2');
+    //  * lessThan('fieldname2', "Value must be less than {value}.");
+    //  * lessThan('fieldname2', "Value must be less than {SecondLabel}.", "Summary message");
+    //  * lessThan('fieldname2', {
+    //  *      errorMessage: "Value must be less than {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public lessThan(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
+    // public lessThan(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentLessThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.lessThan_common(secondValueHostName, args2, args3);
+    // }
 
-    /**
-     * Allows aliases to setup lessThan
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected lessThan_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThan(secondValueHostName, conditionConfig as LessThanConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+    // /**
+    //  * Allows aliases to setup lessThan
+    //  * @param secondValueHostName 
+    //  * @param args2 
+    //  * @param args3 
+    //  * @returns 
+    //  */
+    // protected lessThan_common(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentLessThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+    //         this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
+    //     const conditionBuilder = this.createConditionBuilder();
+    //     conditionBuilder.lessThan(secondValueHostName, conditionConfig as LessThanConditionConfig);
+    //     return this.finish(conditionBuilder,
+    //         errorMessage, summaryMessage, validatorParameters);
+    // }
 
-    /**
-     * Alias for lessThan
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public lt(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Alias for lessThan
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     */
-    public lt(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
-    public lt(
-        secondValueHostName: ValueHostName,
-        args2?: FluentLessThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.lessThan_common(secondValueHostName, args2, args3);
-    }
+    // /**
+    //  * Alias for lessThan
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage 
+    //  * @param summaryMessage 
+    //  */
+    // public lt(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Alias for lessThan
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  */
+    // public lt(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
+    // public lt(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentLessThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.lessThan_common(secondValueHostName, args2, args3);
+    // }
 
     /**
      * Adds a validator that ensures the value is less than or equal to the specified second value.
      * @example
      * ```ts
      * lessThanOrEqualValue(42);
+     * lessThanOrEqualValue(valueHost('field2'));
      * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
      * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
      * lessThanOrEqualValue(42, {
@@ -1270,6 +1276,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * lessThanOrEqualValue(42);
+     * lessThanOrEqualValue(valueHost('field2'));
      * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
      * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
      * lessThanOrEqualValue(42, {
@@ -1334,107 +1341,108 @@ export class ValidatorBuilder
         return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
-    /**
-     * Adds a validator that ensures the value is less than or equal to the second value host.
-     * @example
-     * ```ts
-     * lessThanOrEqual('fieldname2');
-     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
-     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
-     * lessThanOrEqual('fieldname2', {
-     *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */    
-    public lessThanOrEqual(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is less than or equal to the second value host.
-     * @example
-     * ```ts
-     * lessThanOrEqual('fieldname2');
-     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
-     * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
-     * lessThanOrEqual('fieldname2', {
-     *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public lessThanOrEqual(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
-    public lessThanOrEqual(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
+    // /**
+    //  * Adds a validator that ensures the value is less than or equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * lessThanOrEqual('fieldname2');
+    //  * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
+    //  * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
+    //  * lessThanOrEqual('fieldname2', {
+    //  *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+    //  * It can use tokens, which are resolved with current data at the time of validation.
+    //  * If null, it will expect to be setup by one of several other sources including
+    //  * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+    //  * @param summaryMessage - optional summary message.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */    
+    // public lessThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Adds a validator that ensures the value is less than or equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * lessThanOrEqual('fieldname2');
+    //  * lessThanOrEqual('fieldname2', "Value must be less than or equal to {value}.");
+    //  * lessThanOrEqual('fieldname2', "Value must be less than or equal to {SecondLabel}.", "Summary message");
+    //  * lessThanOrEqual('fieldname2', {
+    //  *      errorMessage: "Value must be less than or equal to {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public lessThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
+    // public lessThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
+    // }
 
-    /**
-     * Allows aliases to setup lessThanOrEqual
-     * @param secondValueHostName 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected lessThanOrEqual_common(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanOrEqual(secondValueHostName, conditionConfig as LessThanOrEqualConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+    // /**
+    //  * Allows aliases to setup lessThanOrEqual
+    //  * @param secondValueHostName 
+    //  * @param arg2 
+    //  * @param arg3 
+    //  * @returns 
+    //  */
+    // protected lessThanOrEqual_common(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+    //         this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
+    //     const conditionBuilder = this.createConditionBuilder();
+    //     conditionBuilder.lessThanOrEqual(secondValueHostName, conditionConfig as LessThanOrEqualConditionConfig);
+    //     return this.finish(conditionBuilder,
+    //         errorMessage, summaryMessage, validatorParameters);
+    // }
 
-    /**
-     * Alias for lessThanOrEqual
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public lte(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Alias for lessThanOrEqual
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     */
-    public lte(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
-    public lte(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
+    // /**
+    //  * Alias for lessThanOrEqual
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage 
+    //  * @param summaryMessage 
+    //  */
+    // public lte(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Alias for lessThanOrEqual
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  */
+    // public lte(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
+    // public lte(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     return this.lessThanOrEqual_common(secondValueHostName, arg2, arg3);
+    // }
 
     /**
      * Adds a validator that ensures the value is greater than the specified second value.
      * @example
      * ```ts
      * greaterThanValue(42);
+     * greaterThanValue(valueHost('field2'));
      * greaterThanValue(42, "Value must be greater than {value}.");
      * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
      * greaterThanValue(42, {
@@ -1458,6 +1466,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * greaterThanValue(42);
+     * greaterThanValue(valueHost('field2'));
      * greaterThanValue(42, "Value must be greater than {value}.");
      * greaterThanValue(42, "Value must be greater than 42.", "Summary message");
      * greaterThanValue(42, {
@@ -1523,104 +1532,105 @@ export class ValidatorBuilder
         return this.greaterThanValue_common(secondValue, args2, args3);
     }
 
-    /**
-     * Adds a validator that ensures the value is greater than the second value host.
-     * @example
-     * ```ts
-     * greaterThan('fieldname2');
-     * greaterThan('fieldname2', "Value must be greater than {value}.");
-     * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
-     * greaterThan('fieldname2', {
-     *      errorMessage: "Value must be greater than {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */        
-    public greaterThan(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is greater than the second value host.
-     * @example
-     * ```ts
-     * greaterThan('fieldname2');
-     * greaterThan('fieldname2', "Value must be greater than {value}.");
-     * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
-     * greaterThan('fieldname2', {
-     *      errorMessage: "Value must be greater than {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public greaterThan(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
-    public greaterThan(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.greaterThan_common(secondValueHostName, args2, args3);
-    }
-    /**
-     * Allows aliases to setup greaterThan
-     * @param secondValueHostName 
-     * @param args2 
-     * @param args3 
-     * @returns 
-     */
-    protected greaterThan_common(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThan(secondValueHostName, conditionConfig as GreaterThanConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
-    /**
-     * Alias for greaterThan
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public gt(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Alias for greaterThan
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public gt(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
-    public gt(
-        secondValueHostName: ValueHostName,
-        args2?: FluentGreaterThanValidatorConfig | string | null,
-        args3?: string | null): IValidatorBuilder {
-        return this.greaterThan_common(secondValueHostName, args2, args3);
-    }
+    // /**
+    //  * Adds a validator that ensures the value is greater than the second value host.
+    //  * @example
+    //  * ```ts
+    //  * greaterThan('fieldname2');
+    //  * greaterThan('fieldname2', "Value must be greater than {value}.");
+    //  * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
+    //  * greaterThan('fieldname2', {
+    //  *      errorMessage: "Value must be greater than {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+    //  * It can use tokens, which are resolved with current data at the time of validation.
+    //  * If null, it will expect to be setup by one of several other sources including
+    //  * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+    //  * @param summaryMessage - optional summary message.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */        
+    // public greaterThan(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Adds a validator that ensures the value is greater than the second value host.
+    //  * @example
+    //  * ```ts
+    //  * greaterThan('fieldname2');
+    //  * greaterThan('fieldname2', "Value must be greater than {value}.");
+    //  * greaterThan('fieldname2', "Value must be greater than {SecondLabel}.", "Summary message");
+    //  * greaterThan('fieldname2', {
+    //  *      errorMessage: "Value must be greater than {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public greaterThan(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
+    // public greaterThan(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentGreaterThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.greaterThan_common(secondValueHostName, args2, args3);
+    // }
+    // /**
+    //  * Allows aliases to setup greaterThan
+    //  * @param secondValueHostName 
+    //  * @param args2 
+    //  * @param args3 
+    //  * @returns 
+    //  */
+    // protected greaterThan_common(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentGreaterThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+    //         this.resolveOverloadArgs<GreaterThanConditionConfig>(args2, args3);
+    //     const conditionBuilder = this.createConditionBuilder();
+    //     conditionBuilder.greaterThan(secondValueHostName, conditionConfig as GreaterThanConditionConfig);
+    //     return this.finish(conditionBuilder,
+    //         errorMessage, summaryMessage, validatorParameters);
+    // }
+    // /**
+    //  * Alias for greaterThan
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage 
+    //  * @param summaryMessage 
+    //  */
+    // public gt(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Alias for greaterThan
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public gt(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
+    // public gt(
+    //     secondValueHostName: ValueHostName,
+    //     args2?: FluentGreaterThanValidatorConfig | string | null,
+    //     args3?: string | null): IValidatorBuilder {
+    //     return this.greaterThan_common(secondValueHostName, args2, args3);
+    // }
 
     /**
      * Adds a validator that ensures the value is greater than or equal to the specified second value.
      * @example
      * ```ts
      * greaterThanOrEqualValue(42);
+     * greaterThanOrEqualValue(valueHost('field2'));
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
      * greaterThanOrEqualValue(42, {
@@ -1644,6 +1654,7 @@ export class ValidatorBuilder
      * @example
      * ```ts
      * greaterThanOrEqualValue(42);
+     * greaterThanOrEqualValue(valueHost('field2'));
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to {value}.");
      * greaterThanOrEqualValue(42, "Value must be greater than or equal to 42.", "Summary message");
      * greaterThanOrEqualValue(42, {
@@ -1709,101 +1720,101 @@ export class ValidatorBuilder
         return this.greaterThanOrEqualValue_common(secondValue, arg2, arg3);
     }
 
-    /**
-     * Adds a validator that ensures the value is greater than or equal to the second value host.
-     * @example
-     * ```ts
-     * greaterThanOrEqual('fieldname2');
-     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
-     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
-     * greaterThanOrEqual('fieldname2', {
-     *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
-     * It can use tokens, which are resolved with current data at the time of validation.
-     * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
-     * @param summaryMessage - optional summary message.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */    
-    public greaterThanOrEqual(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Adds a validator that ensures the value is greater than or equal to the second value host.
-     * @example
-     * ```ts
-     * greaterThanOrEqual('fieldname2');
-     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
-     * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
-     * greaterThanOrEqual('fieldname2', {
-     *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
-     *      summaryMessage: "Summary message" });
-     * ```
-     *
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     * @returns The current instance of ValidatorBuilder for method chaining.
-     */
-    public greaterThanOrEqual(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
-    public greaterThanOrEqual(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
+    // /**
+    //  * Adds a validator that ensures the value is greater than or equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * greaterThanOrEqual('fieldname2');
+    //  * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
+    //  * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
+    //  * greaterThanOrEqual('fieldname2', {
+    //  *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
+    //  * It can use tokens, which are resolved with current data at the time of validation.
+    //  * If null, it will expect to be setup by one of several other sources including
+    //  * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+    //  * @param summaryMessage - optional summary message.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */    
+    // public greaterThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Adds a validator that ensures the value is greater than or equal to the second value host.
+    //  * @example
+    //  * ```ts
+    //  * greaterThanOrEqual('fieldname2');
+    //  * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {value}.");
+    //  * greaterThanOrEqual('fieldname2', "Value must be greater than or equal to {SecondLabel}.", "Summary message");
+    //  * greaterThanOrEqual('fieldname2', {
+    //  *      errorMessage: "Value must be greater than or equal to {SecondLabel}.", 
+    //  *      summaryMessage: "Summary message" });
+    //  * ```
+    //  *
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  * @returns The current instance of ValidatorBuilder for method chaining.
+    //  */
+    // public greaterThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
+    // public greaterThanOrEqual(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
+    // }
 
-    /**
-     * Allows aliases to setup greaterThanOrEqual
-     * @param secondValueHostName 
-     * @param arg2 
-     * @param arg3 
-     * @returns 
-     */
-    protected greaterThanOrEqual_common(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
-        const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.greaterThanOrEqual(secondValueHostName, conditionConfig as GreaterThanOrEqualConditionConfig);
-        return this.finish(conditionBuilder,
-            errorMessage, summaryMessage, validatorParameters);
-    }
+    // /**
+    //  * Allows aliases to setup greaterThanOrEqual
+    //  * @param secondValueHostName 
+    //  * @param arg2 
+    //  * @param arg3 
+    //  * @returns 
+    //  */
+    // protected greaterThanOrEqual_common(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
+    //         this.resolveOverloadArgs<GreaterThanOrEqualConditionConfig>(arg2, arg3);
+    //     const conditionBuilder = this.createConditionBuilder();
+    //     conditionBuilder.greaterThanOrEqual(secondValueHostName, conditionConfig as GreaterThanOrEqualConditionConfig);
+    //     return this.finish(conditionBuilder,
+    //         errorMessage, summaryMessage, validatorParameters);
+    // }
 
-    /**
-     * Alias for greaterThanOrEqual
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param errorMessage 
-     * @param summaryMessage 
-     */
-    public gte(
-        secondValueHostName: ValueHostName,
-        errorMessage?: string | null,
-        summaryMessage?: string | null): IValidatorBuilder;
-    /**
-     * Alias for greaterThanOrEqual
-     * @param secondValueHostName - The valueHostName containing the value for the right operand.
-     * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
-     * Includes several validation parameters not available in the other overload, including severity and the errorCode.
-     */
-    public gte(
-        secondValueHostName: ValueHostName,
-        validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
-    public gte(
-        secondValueHostName: ValueHostName,
-        arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
-        arg3?: string | null): IValidatorBuilder {
-        return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
-    }
+    // /**
+    //  * Alias for greaterThanOrEqual
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param errorMessage 
+    //  * @param summaryMessage 
+    //  */
+    // public gte(
+    //     secondValueHostName: ValueHostName,
+    //     errorMessage?: string | null,
+    //     summaryMessage?: string | null): IValidatorBuilder;
+    // /**
+    //  * Alias for greaterThanOrEqual
+    //  * @param secondValueHostName - The valueHostName containing the value for the right operand.
+    //  * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
+    //  * Includes several validation parameters not available in the other overload, including severity and the errorCode.
+    //  */
+    // public gte(
+    //     secondValueHostName: ValueHostName,
+    //     validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
+    // public gte(
+    //     secondValueHostName: ValueHostName,
+    //     arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
+    //     arg3?: string | null): IValidatorBuilder {
+    //     return this.greaterThanOrEqual_common(secondValueHostName, arg2, arg3);
+    // }
 
     /**
      * Adds a validator that ensures the text length is within limits.

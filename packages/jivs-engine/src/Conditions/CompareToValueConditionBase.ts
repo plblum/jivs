@@ -16,6 +16,7 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 
 /**
  * ConditionConfig for CompareToValueConditionBase.
@@ -110,7 +111,12 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     }
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
-
+    
+    public override gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
+        super.gatherValueHostNames(collection, valueHostsManager);
+        if (this.config.secondValueHostName)
+            collection.add(this.config.secondValueHostName);
+    }
     /**
      * Supports:
      * {CompareTo} - value retrieved

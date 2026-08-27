@@ -23,10 +23,10 @@ import {
     RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import {
-    LessThanCondition,
-    LessThanConditionConfig,
-    LessThanOrEqualCondition,
-    LessThanOrEqualConditionConfig,
+    LessThanValueCondition,
+    LessThanValueConditionConfig,
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig,
 
 } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
@@ -103,12 +103,12 @@ export function createJivsServices(cultureID: string): JivsServices {
     services.conditionFactory.register<DataTypeCheckConditionConfig>(
         ConditionType.DataTypeCheck,
         (config) => new DataTypeCheckCondition(config));
-    services.conditionFactory.register<LessThanConditionConfig>(
-        ConditionType.LessThan,
-        (config) => new LessThanCondition(config));
-    services.conditionFactory.register<LessThanOrEqualConditionConfig>(
-        ConditionType.LessThanOrEqual,
-        (config) => new LessThanOrEqualCondition(config));
+    services.conditionFactory.register<LessThanValueConditionConfig>(
+        ConditionType.LessThanValue,
+        (config) => new LessThanValueCondition(config));
+    services.conditionFactory.register<LessThanOrEqualValueConditionConfig>(
+        ConditionType.LessThanOrEqualValue,
+        (config) => new LessThanOrEqualValueCondition(config));
     services.conditionFactory.register<NotNullConditionConfig>(
         ConditionType.NotNull,
         (config) => new NotNullCondition(config));
@@ -126,11 +126,11 @@ export function createJivsServices(cultureID: string): JivsServices {
     // come from business logic, not the UI layer.
     // In this case, our error message for LessThan will be a custom one, so we will set it later.
     let textLocalizationService = services.textLocalizerService as TextLocalizerService;
-    textLocalizationService.registerErrorMessage(ConditionType.LessThan, null, {
+    textLocalizationService.registerErrorMessage(ConditionType.LessThanValue, null, {
         '*': '{Label} must be less than to {SecondLabel}.'
     });
 
-    textLocalizationService.registerErrorMessage(ConditionType.LessThanOrEqual, null, {
+    textLocalizationService.registerErrorMessage(ConditionType.LessThanOrEqualValue, null, {
         '*': '{Label} must be less than or equal to {SecondLabel}.'
     });
 

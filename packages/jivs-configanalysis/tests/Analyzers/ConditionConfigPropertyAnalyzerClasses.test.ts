@@ -1,5 +1,4 @@
 import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToValueConditionBase';
-import { CompareToSecondValueHostConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToSecondValueHostConditionBase';
 import { ConditionCategory, SupportsDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
@@ -113,7 +112,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondConversionLookupKey: LookupKey.Number,
             secondValueHostName: 'testValueHost2',
@@ -133,7 +132,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             conversionLookupKey: LookupKey.Number,
             secondConversionLookupKey: LookupKey.Integer,
@@ -171,7 +170,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondConversionLookupKey: LookupKey.Number,
             secondValueHostName: 'testValueHost2',
@@ -283,7 +282,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondConversionLookupKey: 'number',
             secondValueHostName: 'testValueHost2',
@@ -305,7 +304,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondConversionLookupKey: null,
             secondValueHostName: 'testValueHost2',
@@ -323,7 +322,7 @@ describe('ConversionLookupKeyAnalyzer class', () => {
         let testItem = new ConditionWithConversionLookupKeyPropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
         valueHostConfig.dataType = LookupKey.String;
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondConversionLookupKey: '',
             secondValueHostName: 'testValueHost2',
@@ -898,7 +897,7 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
 
         let testItem = new ConditionWithSecondValueHostNamePropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondValueHostName: 'testValueHost2',
             valueHostName: null
@@ -917,7 +916,7 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
 
         let testItem = new ConditionWithSecondValueHostNamePropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: 'testCondition',
             secondValueHostName: 'testValueHost2',
             valueHostName: null
@@ -939,7 +938,7 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
 
         let testItem = new ConditionWithSecondValueHostNamePropertyAnalyzer();
         let valueHostConfig = createValueHostConfig();
-        let config: CompareToSecondValueHostConditionBaseConfig = {
+        let config: CompareToValueConditionBaseConfig = {
             conditionType: conditionType,
             secondValueHostName: undefined!,
             valueHostName: null
@@ -959,14 +958,12 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
     // These conditiontypes will have an error: EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo
     // These will not have an error: EqualToValue, NotEqualToValue, Range, NotNull
     test('secondValueHostName is undefined, reports "Value must be defined" error for EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo', () => {
-        testSecondValueHostNameUndefined(ConditionType.EqualTo, true);
-        testSecondValueHostNameUndefined(ConditionType.NotEqualTo, true);
-        testSecondValueHostNameUndefined(ConditionType.GreaterThan, true);
-        testSecondValueHostNameUndefined(ConditionType.GreaterThanOrEqual, true);
-        testSecondValueHostNameUndefined(ConditionType.LessThan, true);
-        testSecondValueHostNameUndefined(ConditionType.LessThanOrEqual, true);
-        testSecondValueHostNameUndefined(ConditionType.EqualToValue, false);
-        testSecondValueHostNameUndefined(ConditionType.NotEqualToValue, false);
+        testSecondValueHostNameUndefined(ConditionType.GreaterThanValue, true);
+        testSecondValueHostNameUndefined(ConditionType.GreaterThanOrEqualValue, true);
+        testSecondValueHostNameUndefined(ConditionType.LessThanValue, true);
+        testSecondValueHostNameUndefined(ConditionType.LessThanOrEqualValue, true);
+        testSecondValueHostNameUndefined(ConditionType.EqualToValue, true);
+        testSecondValueHostNameUndefined(ConditionType.NotEqualToValue, true);
         testSecondValueHostNameUndefined(ConditionType.Range, false);
         testSecondValueHostNameUndefined(ConditionType.NotNull, false);
     });
@@ -1096,8 +1093,6 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
         testSecondValueUndefined(ConditionType.LessThanOrEqualValue, true);
         testSecondValueUndefined(ConditionType.Range, false);
         testSecondValueUndefined(ConditionType.NotNull, false);
-        testSecondValueUndefined(ConditionType.EqualTo, false);
-        testSecondValueUndefined(ConditionType.NotEqualTo, false);
 
     });
 

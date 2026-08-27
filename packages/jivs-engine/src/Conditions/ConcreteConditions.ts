@@ -11,14 +11,15 @@
 
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 
-import {
-    type ICondition,
-    ConditionCategory, ConditionEvaluateResult,
-    IEvaluateConditionDuringEdits,
-    SupportsDataTypeConverter
-} from '../Interfaces/Conditions';
-import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import
+    {
+        type ICondition,
+        ConditionCategory, ConditionEvaluateResult,
+        IEvaluateConditionDuringEdits,
+        SupportsDataTypeConverter
+    } from '../Interfaces/Conditions';
 import type { IValueHost } from '../Interfaces/ValueHost';
+import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { EvaluateChildConditionResultsBase, EvaluateChildConditionResultsBaseConfig } from './EvaluateChildConditionResultsBase';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from './OneValueConditionBase';
 import { RegExpConditionBase, RegExpConditionBaseConfig } from './RegExpConditionBase';
@@ -27,12 +28,9 @@ import { TextValueConditionBase, TextValueConditionBaseConfig } from './TextValu
 
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
-import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IJivsServices } from '../Interfaces/JivsServices';
+import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
-import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
-import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
 import { ConditionType } from './ConditionTypes';
 import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
 

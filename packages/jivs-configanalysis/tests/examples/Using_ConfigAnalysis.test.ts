@@ -5,8 +5,7 @@ import {
   RequireTextCondition, RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import {
-  LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition,
-  LessThanOrEqualConditionConfig, LessThanOrEqualValueCondition,
+  LessThanOrEqualValueCondition,
   LessThanOrEqualValueConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
@@ -23,6 +22,7 @@ import { createMinimalJivsServices } from '../../examples/support';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
+import { LessThanValueConditionConfig, LessThanValueCondition } from '@plblum/jivs-engine/src/Conditions/ComparisonCondition_classes';
 
 
 /**
@@ -39,12 +39,12 @@ describe('Demonstrate the results from various use cases', () => {
         test('Report with all valueHostConfig results', () => {
             let services = createBasicServices();    // start with no populated services.
             // Our prepareBuilder function expects these service configurations to be registered:
-            services.conditionFactory.register<LessThanOrEqualConditionConfig>(
-                ConditionType.LessThanOrEqual,
-                (config) => new LessThanOrEqualCondition(config));
-            services.conditionFactory.register<LessThanConditionConfig>(
-                ConditionType.LessThan,
-                (config) => new LessThanCondition(config));
+            services.conditionFactory.register<LessThanOrEqualValueConditionConfig>(
+                ConditionType.LessThanOrEqualValue,
+                (config) => new LessThanOrEqualValueCondition(config));
+            services.conditionFactory.register<LessThanValueConditionConfig>(
+                ConditionType.LessThanValue,
+                (config) => new LessThanValueCondition(config));
             
             let rules = new DateRangeFormRules(services);
             let config = rules.configure();
@@ -696,12 +696,12 @@ describe('Demonstrate the results from various use cases', () => {
         let services = createBasicServices();    // start with no populated services. That should create errors
 
         // we need these conditions
-        services.conditionFactory.register<LessThanOrEqualConditionConfig>(
-            ConditionType.LessThanOrEqual,
-            (config) => new LessThanOrEqualCondition(config));
-        services.conditionFactory.register<LessThanConditionConfig>(
-            ConditionType.LessThan,
-            (config) => new LessThanCondition(config));
+        services.conditionFactory.register<LessThanOrEqualValueConditionConfig>(
+            ConditionType.LessThanOrEqualValue,
+            (config) => new LessThanOrEqualValueCondition(config));
+        services.conditionFactory.register<LessThanValueConditionConfig>(
+            ConditionType.LessThanValue,
+            (config) => new LessThanValueCondition(config));
         
         // LackParserValueHostRules expects a parser for the ShortDatePatternParser, which is not registered.
         // This is what it might look like:

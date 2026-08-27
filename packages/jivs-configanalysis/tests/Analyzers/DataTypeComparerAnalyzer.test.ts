@@ -149,7 +149,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
 
                 function executeTest(dataType: any, conversionLookupKey: any, secondConversionLookupKey: any): void {
                     let conditionConfig: CompareToValueConditionBaseConfig = {
-                        conditionType: ConditionType.EqualTo,
+                        conditionType: ConditionType.EqualToValue,
                         conversionLookupKey: conversionLookupKey,
                         secondConversionLookupKey: secondConversionLookupKey,
                         valueHostName: 'TestValueHost'
@@ -237,13 +237,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 expect(lkService.dataExamples).toBeDefined();
             }
             test('All ConditionType cases, all using dataType=Number which results in defaultComparer', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.EqualToValue, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.Range, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.GreaterThan, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThan, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.GreaterThanOrEqual, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanOrEqual, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanValue, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.LessThanValue, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanOrEqualValue, LookupKey.Number, 'dataType', 'defaultComparer');
@@ -251,13 +246,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             });
             // same with LookupKey.String
             test('All ConditionType cases, all using dataType=String which results in defaultComparer', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.EqualToValue, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.Range, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.GreaterThan, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThan, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.GreaterThanOrEqual, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanOrEqual, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanValue, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.LessThanValue, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanOrEqualValue, LookupKey.String, 'dataType', 'defaultComparer');
@@ -265,13 +255,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             });
             // same with LookupKey.Boolean, but this uses BooleanDataTypeComparer
             test('All ConditionType cases, all using dataType=Boolean which results in BooleanDataTypeComparer', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.EqualToValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.Range, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.GreaterThan, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.LessThan, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.GreaterThanOrEqual, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.LessThanOrEqual, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.GreaterThanValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.LessThanValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.GreaterThanOrEqualValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
@@ -279,25 +264,25 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             });
             // using only EqualTo, we'll try with conversionLookupKey=Number
             test('ConditionType.EqualTo, using conversionLookupKey=Number', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.Number, 'conversionLookupKey', 'defaultComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.Number, 'conversionLookupKey', 'defaultComparer');
             });
             // same with secondConversionLookupKey=Number
             test('ConditionType.EqualTo, using secondConversionLookupKey=Number', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.Number, 'secondConversionLookupKey', 'defaultComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.Number, 'secondConversionLookupKey', 'defaultComparer');
             });
             // same with both and DataType is Boolean and String in separate tests
             test('ConditionType.EqualTo, using conversionLookupKey and secondConversionLookupKey using Boolean and String', () => {
-                executeTest(ConditionType.EqualTo, LookupKey.String, 'conversionLookupKey', 'defaultComparer');
-                executeTest(ConditionType.EqualTo, LookupKey.String, 'secondConversionLookupKey', 'defaultComparer');
-                executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'conversionLookupKey', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'secondConversionLookupKey', 'BooleanDataTypeComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.String, 'conversionLookupKey', 'defaultComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.String, 'secondConversionLookupKey', 'defaultComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.Boolean, 'conversionLookupKey', 'BooleanDataTypeComparer');
+                executeTest(ConditionType.EqualToValue, LookupKey.Boolean, 'secondConversionLookupKey', 'BooleanDataTypeComparer');
             });
             describe('Multiple calls for the same LookupKey only updates LookupKeyCAResult on the first call. Second call always returns true with no further changes', () => {
 
                 test('A prior call for LookupKey + comparer is setup and has classFound="evidence". This call should make no further changes and return true', () => {
                     const expectedLookupKey = LookupKey.Number;
                     let conditionConfig: CompareToValueConditionBaseConfig = {
-                        conditionType: ConditionType.EqualTo,
+                        conditionType: ConditionType.EqualToValue,
                         valueHostName: 'TestValueHost'
                     };
                     let valueHostConfig: ValueHostConfig = {
@@ -318,7 +303,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 test('A prior call for LookupKey + comparer is setup and has an error. This call should make no further changes and return true', () => {
                     const expectedLookupKey = LookupKey.Number;
                     let conditionConfig: CompareToValueConditionBaseConfig = {
-                        conditionType: ConditionType.EqualTo,
+                        conditionType: ConditionType.EqualToValue,
                         valueHostName: 'TestValueHost'
                     };
                     let valueHostConfig: ValueHostConfig = {
@@ -396,7 +381,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Number and sampleValue=1000, expect defaultComparer', () => {
                 const expectedLookupKey = LookupKey.Number;
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -416,7 +401,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Number and sampleValue=new Date(), no comparer is found. Expect warning', () => {
                 const expectedLookupKey = LookupKey.Number;
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -438,7 +423,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Custom and sampleValue=1000, expect defaultComparer', () => {
                 const expectedLookupKey = 'Custom';
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -458,7 +443,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Custom and its fallback as Boolean and sampleValue=true, expect BooleanDataTypeComparer', () => {
                 const expectedLookupKey = 'Custom';
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -479,7 +464,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Custom and sampleValue=new Date(), no comparer is found. Expect warning', () => {
                 const expectedLookupKey = 'Custom';
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -500,7 +485,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Custom and no sampleValue, expect warning', () => {
                 const expectedLookupKey = 'Custom';
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -520,7 +505,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             test('With LookupKey.Number and sampleValue="abc", expect defaultComparer', () => {
                 const expectedLookupKey = LookupKey.Number;
                 let conditionConfig: CompareToValueConditionBaseConfig = {
-                    conditionType: ConditionType.EqualTo,
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: 'TestValueHost'
                 };
                 let valueHostConfig: ValueHostConfig = {
@@ -582,7 +567,7 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
             }
             test('ConditionType cases', () => {
                 // all conditionTypes will return true because the category is Comparison
-                executeTest(ConditionType.EqualTo); // normally has Comparison
+                executeTest(ConditionType.EqualToValue); // normally has Comparison
                 executeTest(ConditionType.RegExp);  // normally does not have Comparison
             });
         });
@@ -595,13 +580,8 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 expect(result).toBe(true);
             }
             test('ConditionType cases', () => {
-                executeTest(ConditionType.EqualTo);
                 executeTest(ConditionType.EqualToValue);
                 executeTest(ConditionType.Range);
-                executeTest(ConditionType.GreaterThan);
-                executeTest(ConditionType.LessThan);
-                executeTest(ConditionType.GreaterThanOrEqual);
-                executeTest(ConditionType.LessThanOrEqual);
                 executeTest(ConditionType.GreaterThanValue);
                 executeTest(ConditionType.LessThanValue);
                 executeTest(ConditionType.GreaterThanOrEqualValue);

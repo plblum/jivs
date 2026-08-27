@@ -75,7 +75,7 @@ describe('Difference between dates is less than 10', () => {
             issuesFound:  [{
                 errorMessage: '***ERROR MESSAGE MISSING***',
                 summaryMessage: '***ERROR MESSAGE MISSING***',
-                errorCode: ConditionType.LessThanOrEqual,
+                errorCode: ConditionType.LessThanOrEqualValue,
                 severity: ValidationSeverity.Error,
                 valueHostName: 'StartDate',
                 doNotSave: true

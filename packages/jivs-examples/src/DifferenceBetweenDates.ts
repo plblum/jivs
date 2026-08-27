@@ -7,10 +7,11 @@ import {
     DataTypeCheckCondition, DataTypeCheckConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import {
-    LessThanOrEqualCondition,
-    LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig,
-    LessThanCondition, LessThanConditionConfig
+    LessThanOrEqualValueCondition,
+    LessThanOrEqualValueConditionConfig, LessThanValueCondition, LessThanValueConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import { valueHost } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
+
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
@@ -36,8 +37,8 @@ export class DateRangeFormRules extends ValueHostRulesBase {
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: ValueHostRulesOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
-            .lessThanOrEqual('EndDate')
-            .lessThan('NumOfDays',   // right operand of the comparison
+            .lessThanOrEqualValue(valueHost('EndDate'))
+            .lessThanValue(valueHost('NumOfDays'),   // right operand of the comparison
                 {
                     valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,
@@ -88,10 +89,10 @@ function createJivsServicesForThisExample(): IJivsServices {
         (config) => new DataTypeCheckCondition(config));
     conditionFactory.register<LessThanValueConditionConfig>(ConditionType.LessThanValue,
         (config) => new LessThanValueCondition(config));
-    conditionFactory.register<LessThanOrEqualConditionConfig>(ConditionType.LessThanOrEqual,
-        (config) => new LessThanOrEqualCondition(config));
-    conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,
-        (config) => new LessThanCondition(config));
+    conditionFactory.register<LessThanOrEqualValueConditionConfig>(ConditionType.LessThanOrEqualValue,
+        (config) => new LessThanOrEqualValueCondition(config));
+    conditionFactory.register<LessThanValueConditionConfig>(ConditionType.LessThanValue,
+        (config) => new LessThanValueCondition(config));
 
     // This might be the only line you'd customize in your version of createJivsServices()
     // as it relates to this example.

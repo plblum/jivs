@@ -1,35 +1,35 @@
-import {
-    type RangeConditionConfig,
-    RequireTextCondition,
-    type RequireTextConditionConfig,
-    RangeCondition
+import
+    {
+        type RangeConditionConfig,
+        type RequireTextConditionConfig,
+        RangeCondition,
+        RequireTextCondition
+    } from "../../src/Conditions/ConcreteConditions";
 
-} from "../../src/Conditions/ConcreteConditions";
-
-import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { MockValueHostsManager, MockJivsServices, MockFieldValueHost } from "../TestSupport/mocks";
-import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
-import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
-import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
-import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
-import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
-import { IValueHost } from '../../src/Interfaces/ValueHost';
-import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
+import { EqualToValueCondition, EqualToValueConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { EqualToCondition, EqualToConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
+import { ValueHostName } from '../../src/DataTypes/BasicTypes';
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { type ICondition, ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import type { IJivsServices } from "../../src/Interfaces/JivsServices";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { type TokenLabelAndValue, IMessageTokenSource, toIMessageTokenSource } from "../../src/Interfaces/MessageTokenSource";
+import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { IValidator, ValidatorConfig, ValidatorValidateResult } from '../../src/Interfaces/Validator';
+import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValueHost } from '../../src/Interfaces/ValueHost';
+import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
+import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
+import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
+import { MockFieldValueHost, MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 
 // subclass of Validator to expose many of its protected members so they
@@ -284,12 +284,12 @@ describe('Validator.enabler', () => {
         expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
-    test('Successful creation of EqualToCondition', () => {
+    test('Successful creation of EqualToValueCondition', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                whenToEnableConfig: <EqualToConditionConfig>{
-                    conditionType: ConditionType.EqualTo,
+                whenToEnableConfig: <EqualToValueConditionConfig>{
+                    conditionType: ConditionType.EqualToValue,
                     valueHostName: null
                 },
                 thenConfig: {
@@ -303,7 +303,7 @@ describe('Validator.enabler', () => {
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
-        expect(enabler).toBeInstanceOf(EqualToCondition);
+        expect(enabler).toBeInstanceOf(EqualToValueCondition);
     });
     test('Attempt to create Enabler with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
         let setup = setupWithField1AndField2({
@@ -454,12 +454,12 @@ describe('Validator.severity', () => {
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
-        checkDefaultSeverity(ConditionType.EqualTo);
-        checkDefaultSeverity(ConditionType.NotEqualTo);
-        checkDefaultSeverity(ConditionType.GreaterThan);
-        checkDefaultSeverity(ConditionType.GreaterThanOrEqual);
-        checkDefaultSeverity(ConditionType.LessThan);
-        checkDefaultSeverity(ConditionType.LessThanOrEqual);
+        checkDefaultSeverity(ConditionType.EqualToValue);
+        checkDefaultSeverity(ConditionType.NotEqualToValue);
+        checkDefaultSeverity(ConditionType.GreaterThanValue);
+        checkDefaultSeverity(ConditionType.GreaterThanOrEqualValue);
+        checkDefaultSeverity(ConditionType.LessThanValue);
+        checkDefaultSeverity(ConditionType.LessThanOrEqualValue);
         checkDefaultSeverity(ConditionType.All);
         checkDefaultSeverity(ConditionType.Any);
         checkDefaultSeverity(ConditionType.CountMatches);

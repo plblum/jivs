@@ -27,151 +27,149 @@
 
 import { ConditionEvaluateResult } from '../Interfaces/Conditions';
 import { ComparersResult } from '../Interfaces/DataTypeComparerService';
-import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
-import { CompareToSecondValueHostConditionBase, CompareToSecondValueHostConditionBaseConfig } from './CompareToSecondValueHostConditionBase';
-import { CompareToValueConditionBaseConfig, CompareToValueConditionBase } from './CompareToValueConditionBase';
+import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from './CompareToValueConditionBase';
 import { ConditionType } from './ConditionTypes';
 
-//#region CompareToSecondValueHost conditions
+// //#region CompareToSecondValueHost conditions
 
-/**
- * ConditionConfig for {@link EqualToCondition}
- */
-export interface EqualToConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * ConditionConfig for {@link EqualToCondition}
+//  */
+// export interface EqualToConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
 
-/**
- * Two values must be equal. Both values are retrieved from ValueHosts.
- */
-export class EqualToCondition extends CompareToSecondValueHostConditionBase<EqualToConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
+// /**
+//  * Two values must be equal. Both values are retrieved from ValueHosts.
+//  */
+// export class EqualToCondition extends CompareToSecondValueHostConditionBase<EqualToConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        return comparison === ComparersResult.Equal ?
-            ConditionEvaluateResult.Match :
-            ConditionEvaluateResult.NoMatch;
-    }
-}
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//         return comparison === ComparersResult.Equal ?
+//             ConditionEvaluateResult.Match :
+//             ConditionEvaluateResult.NoMatch;
+//     }
+// }
 
-/**
- * ConditionConfig for {@link NotEqualToCondition}
- */
-export interface NotEqualToConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * ConditionConfig for {@link NotEqualToCondition}
+//  */
+// export interface NotEqualToConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
 
-/**
- * Two values must not be equal. Both values are retrieved from ValueHosts.
- */
-export class NotEqualToCondition extends CompareToSecondValueHostConditionBase<NotEqualToConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
+// /**
+//  * Two values must not be equal. Both values are retrieved from ValueHosts.
+//  */
+// export class NotEqualToCondition extends CompareToSecondValueHostConditionBase<NotEqualToConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
     
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 
-        return comparison !== ComparersResult.Equal ?
-            ConditionEvaluateResult.Match :
-            ConditionEvaluateResult.NoMatch;
-    }
-}
+//         return comparison !== ComparersResult.Equal ?
+//             ConditionEvaluateResult.Match :
+//             ConditionEvaluateResult.NoMatch;
+//     }
+// }
 
-/**
- * ConditionConfig for {@link GreaterThanCondition}
- */
-export interface GreaterThanConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
-/**
- * Value 1 must be greater than Value 2. Both values are retrieved from ValueHosts.
- * 
- * Evaluates data types that do not support GreaterThan/LessThan as Undetermined.
- */
-export class GreaterThanCondition extends CompareToSecondValueHostConditionBase<GreaterThanConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
+// /**
+//  * ConditionConfig for {@link GreaterThanCondition}
+//  */
+// export interface GreaterThanConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * Value 1 must be greater than Value 2. Both values are retrieved from ValueHosts.
+//  * 
+//  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined.
+//  */
+// export class GreaterThanCondition extends CompareToSecondValueHostConditionBase<GreaterThanConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThan; }
     
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        switch (comparison) {
-            case ComparersResult.GreaterThan:
-                return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEqual:
-                return ConditionEvaluateResult.Undetermined;
-            default:
-                return ConditionEvaluateResult.NoMatch;
-        }
-    }
-}
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//         switch (comparison) {
+//             case ComparersResult.GreaterThan:
+//                 return ConditionEvaluateResult.Match;
+//             case ComparersResult.NotEqual:
+//                 return ConditionEvaluateResult.Undetermined;
+//             default:
+//                 return ConditionEvaluateResult.NoMatch;
+//         }
+//     }
+// }
 
-/**
- * ConditionConfig for {@link LessThanCondition}
- */
-export interface LessThanConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * ConditionConfig for {@link LessThanCondition}
+//  */
+// export interface LessThanConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
 
-/**
- * Value 1 must be less than Value 2. Both values are retrieved from ValueHosts.
- * 
- * Evaluates data types that do not support GreaterThan/LessThan as Undetermined.
- */
-export class LessThanCondition extends CompareToSecondValueHostConditionBase<LessThanConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
+// /**
+//  * Value 1 must be less than Value 2. Both values are retrieved from ValueHosts.
+//  * 
+//  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined.
+//  */
+// export class LessThanCondition extends CompareToSecondValueHostConditionBase<LessThanConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
     
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        switch (comparison) {
-            case ComparersResult.LessThan:
-                return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEqual:
-                return ConditionEvaluateResult.Undetermined;
-            default:
-                return ConditionEvaluateResult.NoMatch;
-        }
-    }
-}
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//         switch (comparison) {
+//             case ComparersResult.LessThan:
+//                 return ConditionEvaluateResult.Match;
+//             case ComparersResult.NotEqual:
+//                 return ConditionEvaluateResult.Undetermined;
+//             default:
+//                 return ConditionEvaluateResult.NoMatch;
+//         }
+//     }
+// }
 
-/**
- * ConditionConfig for {@link GreaterThanOrEqualCondition}
- */
-export interface GreaterThanOrEqualConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * ConditionConfig for {@link GreaterThanOrEqualCondition}
+//  */
+// export interface GreaterThanOrEqualConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
 
-/**
- * Value 1 must be greater than or equal Value 2. Both values are retrieved from ValueHosts.
- * 
- * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
- */
-export class GreaterThanOrEqualCondition extends CompareToSecondValueHostConditionBase<GreaterThanOrEqualConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqual; }
+// /**
+//  * Value 1 must be greater than or equal Value 2. Both values are retrieved from ValueHosts.
+//  * 
+//  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+//  */
+// export class GreaterThanOrEqualCondition extends CompareToSecondValueHostConditionBase<GreaterThanOrEqualConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.GreaterThanOrEqual; }
     
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        switch (comparison) {
-            case ComparersResult.GreaterThan:
-            case ComparersResult.Equal:
-                return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEqual:
-                return ConditionEvaluateResult.Undetermined;
-            default:
-                return ConditionEvaluateResult.NoMatch;
-        }
-    }
-}
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//         switch (comparison) {
+//             case ComparersResult.GreaterThan:
+//             case ComparersResult.Equal:
+//                 return ConditionEvaluateResult.Match;
+//             case ComparersResult.NotEqual:
+//                 return ConditionEvaluateResult.Undetermined;
+//             default:
+//                 return ConditionEvaluateResult.NoMatch;
+//         }
+//     }
+// }
 
-/**
- * ConditionConfig for {@link LessThanOrEqualCondition}
- */
-export interface LessThanOrEqualConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
+// /**
+//  * ConditionConfig for {@link LessThanOrEqualCondition}
+//  */
+// export interface LessThanOrEqualConditionConfig extends CompareToSecondValueHostConditionBaseConfig { }
 
-/**
- * Value 1 must be less than or equal Value 2. Both values are retrieved from ValueHosts.
- * 
- * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
- */
-export class LessThanOrEqualCondition extends CompareToSecondValueHostConditionBase<LessThanOrEqualConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqual; }    
+// /**
+//  * Value 1 must be less than or equal Value 2. Both values are retrieved from ValueHosts.
+//  * 
+//  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+//  */
+// export class LessThanOrEqualCondition extends CompareToSecondValueHostConditionBase<LessThanOrEqualConditionConfig> {
+//     public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqual; }    
 
-    protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
-        switch (comparison) {
-            case ComparersResult.LessThan:
-            case ComparersResult.Equal:
-                return ConditionEvaluateResult.Match;
-            case ComparersResult.NotEqual:
-                return ConditionEvaluateResult.Undetermined;
-            default:
-                return ConditionEvaluateResult.NoMatch;
-        }
-    }
-}
-//#endregion CompareToSecondValueHost
+//     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
+//         switch (comparison) {
+//             case ComparersResult.LessThan:
+//             case ComparersResult.Equal:
+//                 return ConditionEvaluateResult.Match;
+//             case ComparersResult.NotEqual:
+//                 return ConditionEvaluateResult.Undetermined;
+//             default:
+//                 return ConditionEvaluateResult.NoMatch;
+//         }
+//     }
+// }
+// //#endregion CompareToSecondValueHost
 
 //#region CompareToSecondValue condition
 /**

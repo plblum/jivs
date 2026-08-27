@@ -29,7 +29,7 @@ import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHo
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-
+import { valueHost } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
 import { createJivsServices, TimeZoneRegex } from './Config_example_common_code';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
@@ -49,12 +49,12 @@ export class DateRangeFormRules extends ValueHostRulesBase
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: ValueHostRulesOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
-            .lessThan('endDate')
-            .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+            .lessThanValue(valueHost('endDate'))
+            .lessThanOrEqualValue(valueHost('numOfDays'),   // right operand of the comparison
                 {
-                    valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
+                    valueHostName: 'diffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,
-                    errorCode: 'NumOfDays' // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
+                    errorCode: 'numOfDays' // ensures a unique error code, not usually needed because the condition supplies a default of 'LessThanOrEqual'
                 }); 
         builder.field('endDate', LookupKey.Date, { label: 'End date' });
         builder.field('timeZone', LookupKey.String).regExp(TimeZoneRegex, { errorCode: 'TimeZone'});    

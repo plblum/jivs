@@ -1,10 +1,10 @@
 import
     {
-        EqualToConditionConfig, EqualToValueConditionConfig,
-        GreaterThanConditionConfig, GreaterThanOrEqualConditionConfig, GreaterThanOrEqualValueConditionConfig,
-        GreaterThanValueConditionConfig, LessThanConditionConfig,
-        LessThanOrEqualConditionConfig, LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-        NotEqualToConditionConfig, NotEqualToValueConditionConfig,
+        EqualToValueConditionConfig,
+        GreaterThanOrEqualValueConditionConfig,
+        GreaterThanValueConditionConfig,
+        LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+        NotEqualToValueConditionConfig
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
     {
