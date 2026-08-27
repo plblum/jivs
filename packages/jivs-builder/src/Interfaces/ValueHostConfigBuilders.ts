@@ -104,7 +104,7 @@
  *   The ultimate result is the syntax reading left to right.
  *     ```ts
  *     builder.fieldValue('Field1').requireText()
- *     builder.parentValue().lessThanValue(100)
+ *     builder.parentValue().lessThan(100)
  *     ```
  * #Extending the Fluent System to support your conditions
  * 1. Subclass ConditionBuilder and add your condition functions.

@@ -12,10 +12,10 @@ import
         GreaterThanOrEqualConditionConfig,
         GreaterThanCondition,
         GreaterThanConditionConfig,
-        LessThanOrEqualValueCondition,
-        LessThanOrEqualValueConditionConfig,
-        LessThanValueCondition,
-        LessThanValueConditionConfig,
+        LessThanOrEqualCondition,
+        LessThanOrEqualConditionConfig,
+        LessThanCondition,
+        LessThanConditionConfig,
         NotEqualToCondition,
         NotEqualToConditionConfig,
     } from '../Conditions/ComparisonCondition_classes';
@@ -219,12 +219,12 @@ export function registerAllConditions(cf: IConditionFactory): void
         (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
     cf.register<GreaterThanConditionConfig>
         (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
-    cf.register<LessThanValueConditionConfig>
-        (ConditionType.LessThanValue, (config) => new LessThanValueCondition(config));
+    cf.register<LessThanConditionConfig>
+        (ConditionType.LessThan, (config) => new LessThanCondition(config));
     cf.register<GreaterThanOrEqualConditionConfig>
         (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
-    cf.register<LessThanOrEqualValueConditionConfig>
-        (ConditionType.LessThanOrEqualValue, (config) => new LessThanOrEqualValueCondition(config));    
+    cf.register<LessThanOrEqualConditionConfig>
+        (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));    
     
     cf.register<StringLengthConditionConfig>
         (ConditionType.StringLength, (config) => new StringLengthCondition(config));

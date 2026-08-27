@@ -61,7 +61,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
  *   adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
  *      adapter.field('birthDate', null, { label: 'Birth date' })
- *        .lessThan('today');
+ *        .lessThan(valueHost('today'));
  *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });
  *   }
  * }
@@ -75,7 +75,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
- *        .lessThan('today');
+ *        .lessThan(valueHost('today'));
  * builder.static('today', LookupKey.Date, { initialValue: new Date() });
  * let vhm = new ValueHostsManager(builder); // consider builder disposed at this point
  * ```

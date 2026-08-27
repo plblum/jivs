@@ -50,8 +50,8 @@ import
     EqualToCondition, EqualToConditionConfig,
     GreaterThanOrEqualCondition, GreaterThanOrEqualConditionConfig,
     GreaterThanCondition, GreaterThanConditionConfig,
-    LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig,
-    LessThanValueCondition, LessThanValueConditionConfig,
+    LessThanOrEqualCondition, LessThanOrEqualConditionConfig,
+    LessThanCondition, LessThanConditionConfig,
     NotEqualToCondition, NotEqualToConditionConfig,
 
 } from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";    
@@ -435,12 +435,12 @@ export function registerConditions(cf: ConditionFactory): void
         (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
     cf.register<GreaterThanConditionConfig>
         (ConditionType.GreaterThan, (config) => new GreaterThanCondition(config));
-    cf.register<LessThanValueConditionConfig>
-        (ConditionType.LessThanValue, (config) => new LessThanValueCondition(config));
+    cf.register<LessThanConditionConfig>
+        (ConditionType.LessThan, (config) => new LessThanCondition(config));
     cf.register<GreaterThanOrEqualConditionConfig>
         (ConditionType.GreaterThanOrEqual, (config) => new GreaterThanOrEqualCondition(config));
-    cf.register<LessThanOrEqualValueConditionConfig>
-        (ConditionType.LessThanOrEqualValue, (config) => new LessThanOrEqualValueCondition(config));    
+    cf.register<LessThanOrEqualConditionConfig>
+        (ConditionType.LessThanOrEqual, (config) => new LessThanOrEqualCondition(config));    
     cf.register<StringLengthConditionConfig>
         (ConditionType.StringLength, (config) => new StringLengthCondition(config));
     

@@ -49,8 +49,8 @@ export class DateRangeFormRules extends ValueHostRulesBase
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: ValueHostRulesOptions): void {
         builder.field('startDate', LookupKey.Date, { label: 'Start date' })
-            .lessThanValue(valueHost('endDate'))
-            .lessThanOrEqualValue(valueHost('numOfDays'),   // right operand of the comparison
+            .lessThan(valueHost('endDate'))
+            .lessThanOrEqual(valueHost('numOfDays'),   // right operand of the comparison
                 {
                     valueHostName: 'diffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,

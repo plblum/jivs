@@ -2,10 +2,27 @@
  * Base for Conditions that compare the ValueHost's against a second value, supplied in 
  * CompareToValueConditionBaseConfig.secondValue.
  * 
+ * It is used by these concrete conditions:
+ * - equalTo
+ * - notEqualTo
+ * - greaterThan
+ * - lessThan
+ * - greaterThanOrEqual
+ * - lessThanOrEqual
+ * 
  * There are two sources for the value within CompareToValueConditionConfig:
  * - secondValue: The actual value to compare against.
  * - secondValueHostName: The name of the ValueHost that provides the second value.
  * At least one must not be undefined.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).equalTo(10);
+ * builder.field('field1', LookupKey.String).equalTo(valueHost('field2'))
+ * ```
+ * 
  * @module jivs-engine/Conditions/AbstractClasses/CompareToValueConditionBase
  */
 

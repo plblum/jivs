@@ -240,27 +240,27 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 executeTest(ConditionType.EqualTo, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.Range, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThan, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanValue, LookupKey.Number, 'dataType', 'defaultComparer');
+                executeTest(ConditionType.LessThan, LookupKey.Number, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanOrEqual, LookupKey.Number, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanOrEqualValue, LookupKey.Number, 'dataType', 'defaultComparer');
+                executeTest(ConditionType.LessThanOrEqual, LookupKey.Number, 'dataType', 'defaultComparer');
             });
             // same with LookupKey.String
             test('All ConditionType cases, all using dataType=String which results in defaultComparer', () => {
                 executeTest(ConditionType.EqualTo, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.Range, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThan, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanValue, LookupKey.String, 'dataType', 'defaultComparer');
+                executeTest(ConditionType.LessThan, LookupKey.String, 'dataType', 'defaultComparer');
                 executeTest(ConditionType.GreaterThanOrEqual, LookupKey.String, 'dataType', 'defaultComparer');
-                executeTest(ConditionType.LessThanOrEqualValue, LookupKey.String, 'dataType', 'defaultComparer');
+                executeTest(ConditionType.LessThanOrEqual, LookupKey.String, 'dataType', 'defaultComparer');
             });
             // same with LookupKey.Boolean, but this uses BooleanDataTypeComparer
             test('All ConditionType cases, all using dataType=Boolean which results in BooleanDataTypeComparer', () => {
                 executeTest(ConditionType.EqualTo, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.Range, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.GreaterThan, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.LessThanValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
+                executeTest(ConditionType.LessThan, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
                 executeTest(ConditionType.GreaterThanOrEqual, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
-                executeTest(ConditionType.LessThanOrEqualValue, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
+                executeTest(ConditionType.LessThanOrEqual, LookupKey.Boolean, 'dataType', 'BooleanDataTypeComparer');
             });
             // using only EqualTo, we'll try with conversionLookupKey=Number
             test('ConditionType.EqualTo, using conversionLookupKey=Number', () => {
@@ -583,9 +583,9 @@ describe('DataTypeComparerLookupKeyAnalyzer', () => {
                 executeTest(ConditionType.EqualTo);
                 executeTest(ConditionType.Range);
                 executeTest(ConditionType.GreaterThan);
-                executeTest(ConditionType.LessThanValue);
+                executeTest(ConditionType.LessThan);
                 executeTest(ConditionType.GreaterThanOrEqual);
-                executeTest(ConditionType.LessThanOrEqualValue);
+                executeTest(ConditionType.LessThanOrEqual);
             });
         });
         describe('Successful factory lookup and Condition.category is not Comparison', () => {

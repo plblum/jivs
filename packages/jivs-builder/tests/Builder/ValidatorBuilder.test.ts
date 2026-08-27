@@ -3,7 +3,7 @@ import
         EqualToConditionConfig,
         GreaterThanOrEqualConditionConfig,
         GreaterThanConditionConfig,
-        LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+        LessThanOrEqualConditionConfig, LessThanConditionConfig,
         NotEqualToConditionConfig
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
@@ -1636,169 +1636,169 @@ describe('notEqualTo as a validator of a field()', () =>
     });    
 });
 
-describe('lessThanValue as a validator of a field()', () => {
+describe('lessThan as a validator of a field()', () => {
     describe('secondValue', () =>
     {
 
-        test('lessThanValue(1), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+        test('lessThan(1), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 }
             });
         });
-        // lessThanValue(1, null)
-        test('lessThanValue(1, null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+        // lessThan(1, null)
+        test('lessThan(1, null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 }
             });
         });
-        // lessThanValue(1, null, null)
-        test('lessThanValue(1, null, null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+        // lessThan(1, null, null)
+        test('lessThan(1, null, null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 }
             });
         });
-        // lessThanValue(1, 'Error')
-        test('lessThanValue(1, "Error"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and errorMessage assigned', () =>
+        // lessThan(1, 'Error')
+        test('lessThan(1, "Error"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // lessThanValue(1, 'Error', 'Summary')
-        test('lessThanValue(1, "Error", "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThan(1, 'Error', 'Summary')
+        test('lessThan(1, "Error", "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue(1, null, 'Summary')
-        test('lessThanValue(1, null, "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and summaryMessage assigned', () =>
+        // lessThan(1, null, 'Summary')
+        test('lessThan(1, null, "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('lessThanValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThan(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('lessThan(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue(1, { secondConversionLookupKey: 'key' })
-        test('lessThanValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // lessThan(1, { secondConversionLookupKey: 'key' })
+        test('lessThan(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1,
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // lessThanValue(1, {})
-        test('lessThanValue(1, {}), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+        // lessThan(1, {})
+        test('lessThan(1, {}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: 1
                 }
             });
         });
-        // lessThanValue("")
-        test('lessThanValue(""), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+        // lessThan("")
+        test('lessThan(""), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanValue('');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValue: ''
                 }
             });
         });
-        describe('ltValue alias of lessThanValue  Confirm overloaded interfaces', () =>
+        describe('lt alias of lessThan  Confirm overloaded interfaces', () =>
         {
-            test('ltValue(1), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+            test('lt(1), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).ltValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lt(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValue: 1
                     }
                 });
             });
-            test('ltValue(1, errormessage, summarymessage), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+            test('lt(1, errormessage, summarymessage), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .ltValue(1, 'Error', 'Summary');
+                    .lt(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('ltValue(1, { errormessage, summarymessage}), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValue assigned', () =>
+            test('lt(1, { errormessage, summarymessage}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .ltValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .lt(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -1809,163 +1809,163 @@ describe('lessThanValue as a validator of a field()', () => {
     });
     describe('secondValueHostName', () =>
     {
-        test('lessThanValue("Field2"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+        test('lessThan("Field2"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanValue("Field2", null)
-        test('lessThanValue("Field2", null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+        // lessThan("Field2", null)
+        test('lessThan("Field2", null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanValue("Field2", null, null)
-        test('lessThanValue("Field2", null, null), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+        // lessThan("Field2", null, null)
+        test('lessThan("Field2", null, null), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanValue("Field2", "Error")
-        test('lessThanValue("Field2", "Error"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // lessThan("Field2", "Error")
+        test('lessThan("Field2", "Error"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // lessThanValue("Field2", "Error", "Summary")
-        test('lessThanValue("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThan("Field2", "Error", "Summary")
+        test('lessThan("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue("Field2", null, "Summary")
-        test('lessThanValue("Field2", null, "Summary"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // lessThan("Field2", null, "Summary")
+        test('lessThan("Field2", null, "Summary"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('lessThanValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThan("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('lessThan("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'),
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanValue("Field2", { secondConversionLookupKey: 'key' })
-        test('lessThanValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // lessThan("Field2", { secondConversionLookupKey: 'key' })
+        test('lessThan("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'),
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // lessThanValue("Field2", {})
-        test('lessThanValue("Field2", {}), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+        // lessThan("Field2", {})
+        test('lessThan("Field2", {}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanValue("")
-        test('lessThanValue(""), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+        // lessThan("")
+        test('lessThan(""), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').lessThan(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanValueConditionConfig> {
-                    conditionType: ConditionType.LessThanValue,
+                conditionConfig: <LessThanConditionConfig> {
+                    conditionType: ConditionType.LessThan,
                     secondValueHostName: ''
                 }
             });
         });
-        describe('ltValue alias of lessThanValue. Confirm overloaded interfaces', () =>
+        describe('lt alias of lessThan. Confirm overloaded interfaces', () =>
         {
-            test('ltValue("Field2"), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+            test('lt("Field2"), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1').ltValue(valueHost('Field2'));
+                let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
                     }
                 });
             });
-            test('ltValue("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+            test('lt("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1').ltValue(valueHost('Field2'), 'Error', 'Summary');
+                let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('ltValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanValueCondition with type=LessThanValue and secondValueHostName assigned', () =>
+            test('lt("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanCondition with type=LessThan and secondValueHostName assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1').ltValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
+                let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanValueConditionConfig> {
-                        conditionType: ConditionType.LessThanValue,
+                    conditionConfig: <LessThanConditionConfig> {
+                        conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
@@ -1977,167 +1977,167 @@ describe('lessThanValue as a validator of a field()', () => {
     });    
 });
 
-describe('lessThanOrEqualValue as a validator of a field()', () =>
+describe('lessThanOrEqual as a validator of a field()', () =>
 {
     describe('secondValue', () =>
     {
 
-        test('lessThanOrEqualValue(1), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+        test('lessThanOrEqual(1), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // lessThanOrEqualValue(1, null)
-        test('lessThanOrEqualValue(1, null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+        // lessThanOrEqual(1, null)
+        test('lessThanOrEqual(1, null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // lessThanOrEqualValue(1, null, null)
-        test('lessThanOrEqualValue(1, null, null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+        // lessThanOrEqual(1, null, null)
+        test('lessThanOrEqual(1, null, null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // lessThanOrEqualValue(1, 'Error')
-        test('lessThanOrEqualValue(1, "Error"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and errorMessage assigned', () =>
+        // lessThanOrEqual(1, 'Error')
+        test('lessThanOrEqual(1, "Error"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // lessThanOrEqualValue(1, 'Error', 'Summary')
-        test('lessThanOrEqualValue(1, "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThanOrEqual(1, 'Error', 'Summary')
+        test('lessThanOrEqual(1, "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue(1, null, 'Summary')
-        test('lessThanOrEqualValue(1, null, "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and summaryMessage assigned', () =>
+        // lessThanOrEqual(1, null, 'Summary')
+        test('lessThanOrEqual(1, null, "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('lessThanOrEqualValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThanOrEqual(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('lessThanOrEqual(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue(1, { secondConversionLookupKey: 'key' })
-        test('lessThanOrEqualValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // lessThanOrEqual(1, { secondConversionLookupKey: 'key' })
+        test('lessThanOrEqual(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1,
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // lessThanOrEqualValue(1, {})
-        test('lessThanOrEqualValue(1, {}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+        // lessThanOrEqual(1, {})
+        test('lessThanOrEqual(1, {}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
                 }
             });
         });
-        // lessThanOrEqualValue("")
-        test('lessThanOrEqualValue(""), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+        // lessThanOrEqual("")
+        test('lessThanOrEqual(""), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqualValue('');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValue: ''
                 }
             });
         });
-        describe('lteValue alias of lessThanOrEqualValue. Confirm overloaded interfaces', () =>
+        describe('lte alias of lessThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('lteValue(1), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+            test('lte(1), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lteValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lte(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
                     }
                 });
             });
-            test('lteValue(1, errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+            test('lte(1, errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .lteValue(1, 'Error', 'Summary');
+                    .lte(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('lteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValue assigned', () =>
+            test('lte(1, { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .lteValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .lte(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -2149,158 +2149,158 @@ describe('lessThanOrEqualValue as a validator of a field()', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('lessThanOrEqualValue("Field2"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        test('lessThanOrEqual("Field2"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanOrEqualValue("Field2", null)
-        test('lessThanOrEqualValue("Field2", null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        // lessThanOrEqual("Field2", null)
+        test('lessThanOrEqual("Field2", null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanOrEqualValue("Field2", null, null)
-        test('lessThanOrEqualValue("Field2", null, null), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        // lessThanOrEqual("Field2", null, null)
+        test('lessThanOrEqual("Field2", null, null), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanOrEqualValue("Field2", "Error")
-        test('lessThanOrEqualValue("Field2", "Error"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // lessThanOrEqual("Field2", "Error")
+        test('lessThanOrEqual("Field2", "Error"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // lessThanOrEqualValue("Field2", "Error", "Summary")
-        test('lessThanOrEqualValue("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThanOrEqual("Field2", "Error", "Summary")
+        test('lessThanOrEqual("Field2", "Error", "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue("Field2", null, "Summary")
-        test('lessThanOrEqualValue("Field2", null, "Summary"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // lessThanOrEqual("Field2", null, "Summary")
+        test('lessThanOrEqual("Field2", null, "Summary"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('lessThanOrEqualValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // lessThanOrEqual("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('lessThanOrEqual("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), {
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // lessThanOrEqualValue("Field2", { secondConversionLookupKey: 'key' })
-        test('lessThanOrEqualValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // lessThanOrEqual("Field2", { secondConversionLookupKey: 'key' })
+        test('lessThanOrEqual("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), {
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), {
                 secondConversionLookupKey: LookupKey.Integer
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // lessThanOrEqualValue("Field2", {})
-        test('lessThanOrEqualValue("Field2", {}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        // lessThanOrEqual("Field2", {})
+        test('lessThanOrEqual("Field2", {}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // lessThanOrEqualValue("")
-        test('lessThanOrEqualValue(""), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        // lessThanOrEqual("")
+        test('lessThanOrEqual(""), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').lessThanOrEqualValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                    conditionType: ConditionType.LessThanOrEqualValue,
+                conditionConfig: <LessThanOrEqualConditionConfig> {
+                    conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: ''
                 }
             });
         });
-        describe('lteValue alias of lessThanOrEqualValue. Confirm overloaded interfaces', () =>
+        describe('lte alias of lessThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('lteValue("Field2"), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+            test('lte("Field2"), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').lteValue(valueHost('Field2'));
+                let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
                     }
                 });
             });
-            test('lteValue("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+            test('lte("Field2", errormessage, summarymessage), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').lteValue(valueHost('Field2'), 'Error', 'Summary');
+                let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('lteValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualValueCondition with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+            test('lte("Field2", { errormessage, summarymessage}), creates ValidatorConfig with LessThanOrEqualCondition with type=LessThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').lteValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
+                let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <LessThanOrEqualValueConditionConfig> {
-                        conditionType: ConditionType.LessThanOrEqualValue,
+                    conditionConfig: <LessThanOrEqualConditionConfig> {
+                        conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
@@ -2441,11 +2441,11 @@ describe('greaterThan as a validator of a field()', () =>
                 }
             });
         });
-        describe('gtValue alias of greaterThan. Confirm overloaded interfaces', () =>
+        describe('gt alias of greaterThan. Confirm overloaded interfaces', () =>
         {
-            test('gtValue(1), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
+            test('gt(1), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gtValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gt(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2453,10 +2453,10 @@ describe('greaterThan as a validator of a field()', () =>
                     }
                 });
             });
-            test('gtValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
+            test('gt(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .gtValue(1, 'Error', 'Summary');
+                    .gt(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2466,10 +2466,10 @@ describe('greaterThan as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             });
-            test('gtValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
+            test('gt(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .gtValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .gt(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2608,9 +2608,9 @@ describe('greaterThan as a validator of a field()', () =>
         });
         describe('gt alias of greaterThan. Confirm overloaded interfaces', () =>
         {
-            test('gtValue("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
+            test('gt("Field2"), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'));
+                let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2618,9 +2618,9 @@ describe('greaterThan as a validator of a field()', () =>
                     }
                 });
             });
-            test('gtValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
+            test('gt("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'), 'Error', 'Summary');
+                let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2630,9 +2630,9 @@ describe('greaterThan as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             });
-            test('gtValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
+            test('gt("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanCondition with type=GreaterThan and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gtValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
+                let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
@@ -2776,11 +2776,11 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 }
             });
         });
-        describe('gteValue alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
+        describe('gte alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('gteValue(1), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
+            test('gte(1), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gteValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gte(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
@@ -2788,10 +2788,10 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     }
                 });
             });
-            test('gteValue(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
+            test('gte(1, errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .gteValue(1, 'Error', 'Summary');
+                    .gte(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
@@ -2801,10 +2801,10 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             });
-            test('gteValue(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
+            test('gte(1, { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValue assigned', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .gteValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .gte(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
@@ -2941,11 +2941,11 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 }
             });
         });
-        describe('gteValue alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
+        describe('gte alias of greaterThanOrEqual. Confirm overloaded interfaces', () =>
         {
-            test('gteValue("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
+            test('gte("Field2"), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'));
+                let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
@@ -2953,9 +2953,9 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     }
                 });
             });
-            test('gteValue("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
+            test('gte("Field2", errormessage, summarymessage), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'), 'Error', 'Summary');
+                let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
@@ -2965,9 +2965,9 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             });
-            test('gteValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
+            test('gte("Field2", { errormessage, summarymessage}), creates ValidatorConfig with GreaterThanOrEqualCondition with type=GreaterThanOrEqual and secondValueHostName assigned', () =>
             {
-                let testItem = createVMBuilder().field('Field1').gteValue(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
+                let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,

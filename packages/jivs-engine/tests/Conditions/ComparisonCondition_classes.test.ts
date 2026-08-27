@@ -3,8 +3,8 @@ import
     {
         EqualToCondition, EqualToConditionConfig, GreaterThanOrEqualCondition,
         GreaterThanOrEqualConditionConfig, GreaterThanCondition, GreaterThanConditionConfig,
-        LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig, LessThanValueCondition,
-        LessThanValueConditionConfig, NotEqualToCondition, NotEqualToConditionConfig
+        LessThanOrEqualCondition, LessThanOrEqualConditionConfig, LessThanCondition,
+        LessThanConditionConfig, NotEqualToCondition, NotEqualToConditionConfig
     } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { IntegerConverter, NumericStringToNumberConverter } from '../../src/DataTypes/DataTypeConverters';
@@ -1683,30 +1683,30 @@ describe('class GreaterThanOrEqualCondition', () => {
     });
 });
 
-describe('class LessThanValueCondition', () => {
+describe('class LessThanCondition', () => {
     test('DefaultConditionType', () => {
-        expect(LessThanValueCondition.DefaultConditionType).toBe(ConditionType.LessThanValue);
+        expect(LessThanCondition.DefaultConditionType).toBe(ConditionType.LessThan);
     });
     test('category is Comparison', () =>
     {
-        let config: LessThanOrEqualValueConditionConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
+        let config: LessThanOrEqualConditionConfig = {
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10
         };
-        let testItem = new LessThanOrEqualValueCondition(config);
+        let testItem = new LessThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
 
     test('category is overridden', () =>
     {
-        let config: LessThanValueConditionConfig = {
-            conditionType: ConditionType.LessThanValue,
+        let config: LessThanConditionConfig = {
+            conditionType: ConditionType.LessThan,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new LessThanValueCondition(config);
+        let testItem = new LessThanCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });    
     describe('sourceValue', () =>
@@ -1717,12 +1717,12 @@ describe('class LessThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -1738,12 +1738,12 @@ describe('class LessThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValue: false
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1756,12 +1756,12 @@ describe('class LessThanValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1788,12 +1788,12 @@ describe('class LessThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh2.setValue(100);
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -1804,7 +1804,7 @@ describe('class LessThanValueCondition', () => {
         });
         test('evaluate using boolean results in Undetermined because no support for LT operator', () =>
         {
-            // boolean chosen because Comparers don't support GreaterThan/LessThanValue
+            // boolean chosen because Comparers don't support GreaterThan/LessThan
             let services = new MockJivsServices(false, true);
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
@@ -1812,12 +1812,12 @@ describe('class LessThanValueCondition', () => {
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
 
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh.setValue(true);
             vh2.setValue(false);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1837,12 +1837,12 @@ describe('class LessThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -1863,12 +1863,12 @@ describe('class LessThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh2.setValue(100);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1894,12 +1894,12 @@ describe('class LessThanValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanValueConditionConfig = {
-                conditionType: ConditionType.LessThanValue,
+            let config: LessThanConditionConfig = {
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanValueCondition(config);
+            let testItem = new LessThanCondition(config);
             vh2.setValue(100);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
@@ -1919,29 +1919,29 @@ describe('class LessThanValueCondition', () => {
     });    
 
 });
-describe('class LessThanOrEqualValueCondition', () => {
+describe('class LessThanOrEqualCondition', () => {
     test('DefaultConditionType', () => {
-        expect(LessThanOrEqualValueCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqualValue);
+        expect(LessThanOrEqualCondition.DefaultConditionType).toBe(ConditionType.LessThanOrEqual);
     });
     test('category is Comparison', () =>
     {
-        let config: LessThanOrEqualValueConditionConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
+        let config: LessThanOrEqualConditionConfig = {
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10
         };
-        let testItem = new LessThanOrEqualValueCondition(config);
+        let testItem = new LessThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () =>
     {
-        let config: LessThanOrEqualValueConditionConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
+        let config: LessThanOrEqualConditionConfig = {
+            conditionType: ConditionType.LessThanOrEqual,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new LessThanOrEqualValueCondition(config);
+        let testItem = new LessThanOrEqualCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });    
     describe('secondValue', () =>
@@ -1952,12 +1952,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -1973,12 +1973,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: false
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1991,12 +1991,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -2010,12 +2010,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setValue(false);
             expect(() => testItem.evaluate(vh, vhm)).toThrow(InvalidTypeError);
         });
@@ -2025,12 +2025,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -2052,12 +2052,12 @@ describe('class LessThanOrEqualValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValue: null
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -2086,12 +2086,12 @@ describe('class LessThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Boolean, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             vh2.setValue(false);
@@ -2111,12 +2111,12 @@ describe('class LessThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -2137,12 +2137,12 @@ describe('class LessThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: ''
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh2.setValue(100);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -2172,12 +2172,12 @@ describe('class LessThanOrEqualValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: LessThanOrEqualValueConditionConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+            let config: LessThanOrEqualConditionConfig = {
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new LessThanOrEqualValueCondition(config);
+            let testItem = new LessThanOrEqualCondition(config);
             vh2.setValue(100);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();

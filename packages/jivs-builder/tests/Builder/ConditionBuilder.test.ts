@@ -815,18 +815,18 @@ describe('notEqualTo on conditions', () => {
 
 });
 
-describe('lessThanValue on conditions', () =>
+describe('lessThan on conditions', () =>
 {
     describe('secondValue', () =>
     {
     
-        test('With secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () =>
+        test('With secondValue assigned, creates LessThanConditionConfig with type=LessThan and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().lessThanValue(1);
+            starterBuilder.parentValue().lessThan(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -835,14 +835,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With valueHostName and secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName and secondValue assigned', () =>
+        test('With valueHostName and secondValue assigned, creates LessThanConditionConfig with type=LessThan, valueHostName and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lessThanValue(1);
+            starterBuilder.fieldValue('Field1').lessThan(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Field1',
                 secondValue: 1
             };
@@ -851,14 +851,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "ltValue" With secondValue, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () =>
+        test('Shorthand version "lt" With secondValue, creates LessThanConditionConfig with type=LessThan and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().ltValue(1);
+            starterBuilder.parentValue().lt(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -867,17 +867,17 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValue and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValue and secondConversionLookupKey assigned, creates LessThanConditionConfig with type=LessThan, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanValue(1, {
+            starterBuilder.parentValue().lessThan(1, {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -892,7 +892,7 @@ describe('lessThanValue on conditions', () =>
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
                 (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
-                (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
+                (thenBuilder) => thenBuilder.parentValue().lessThan('A')
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -908,7 +908,7 @@ describe('lessThanValue on conditions', () =>
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.LessThanValue,
+                                conditionType: ConditionType.LessThan,
                                 secondValue: 'A'
                             }
                         }
@@ -920,14 +920,14 @@ describe('lessThanValue on conditions', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('With secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanValue(valueHost('Field2'));
+            starterBuilder.parentValue().lessThan(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -935,14 +935,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValueHostName assigned and condDesc={}, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned and condDesc={}, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().lessThan(valueHost('Field2'), {});
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -950,14 +950,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With valueHostName and secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName, and secondValueHostName assigned', () =>
+        test('With valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lessThanValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').lessThan(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -967,14 +967,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "ltValue" with secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        test('Shorthand version "lt" with secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().ltValue(valueHost('Field2'));
+            starterBuilder.parentValue().lt(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -982,14 +982,14 @@ describe('lessThanValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "ltValue" with valueHostName and secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "lt" with valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').ltValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').lt(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -1000,17 +1000,17 @@ describe('lessThanValue on conditions', () =>
         });
 
 
-        test('With secondValueHostName and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates LessThanConditionConfig with type=LessThan, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanValue(valueHost('Field2'), {
+            starterBuilder.parentValue().lessThan(valueHost('Field2'), {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanValue,
+                conditionType: ConditionType.LessThan,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1025,7 +1025,7 @@ describe('lessThanValue on conditions', () =>
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
                 (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
-                (thenBuilder) => thenBuilder.parentValue().lessThanValue(valueHost('F3'))
+                (thenBuilder) => thenBuilder.parentValue().lessThan(valueHost('F3'))
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -1041,7 +1041,7 @@ describe('lessThanValue on conditions', () =>
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.LessThanValue,
+                                conditionType: ConditionType.LessThan,
                                 secondValueHostName: 'F3'
                             }
                         }
@@ -1053,18 +1053,18 @@ describe('lessThanValue on conditions', () =>
     });    
 });
 
-describe('lessThanOrEqualValue on conditions', () =>
+describe('lessThanOrEqual on conditions', () =>
 {
     describe('secondValue', () =>
     {
 
-        test('With secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        test('With secondValue assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().lessThanOrEqualValue(1);
+            starterBuilder.parentValue().lessThanOrEqual(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1072,14 +1072,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        test('With secondValue assigned and condDesc={}, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanOrEqualValue(1, {});
+            starterBuilder.parentValue().lessThanOrEqual(1, {});
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1088,14 +1088,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        test('With valueHostName and secondValue assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lessThanOrEqualValue(1);
+            starterBuilder.fieldValue('Field1').lessThanOrEqual(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Field1',
                 secondValue: 1
             };
@@ -1105,14 +1105,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "lteValue" with secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        test('Shorthand version "lte" with secondValue assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lteValue(1);
+            starterBuilder.parentValue().lte(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1121,14 +1121,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        test('Shorthand version "lte" with secondValue assigned and condDesc={}, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lteValue(1, {});
+            starterBuilder.parentValue().lte(1, {});
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1136,14 +1136,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        test('Shorthand version "lte" with valueHostName and secondValue assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lteValue(1);
+            starterBuilder.fieldValue('Field1').lte(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Field1',
                 secondValue: 1
             };
@@ -1153,17 +1153,17 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValue and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValue and secondConversionLookupKey assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanOrEqualValue(1, {
+            starterBuilder.parentValue().lessThanOrEqual(1, {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1178,7 +1178,7 @@ describe('lessThanOrEqualValue on conditions', () =>
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
                 (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
-                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
+                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual('B')
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -1194,7 +1194,7 @@ describe('lessThanOrEqualValue on conditions', () =>
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.LessThanOrEqualValue,
+                                conditionType: ConditionType.LessThanOrEqual,
                                 secondValue: 'B'
                             }
                         }
@@ -1206,14 +1206,14 @@ describe('lessThanOrEqualValue on conditions', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('With secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'));
+            starterBuilder.parentValue().lessThanOrEqual(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1221,14 +1221,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValueHostName assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned and condDesc={}, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().lessThanOrEqual(valueHost('Field2'), {});
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1236,14 +1236,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With valueHostName and secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        test('With valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lessThanOrEqualValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').lessThanOrEqual(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -1253,14 +1253,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "lteValue" with secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        test('Shorthand version "lte" with secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lteValue(valueHost('Field2'));
+            starterBuilder.parentValue().lte(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -1268,14 +1268,14 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "lteValue" with valueHostName and secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "lte" with valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').lteValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').lte(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -1285,18 +1285,18 @@ describe('lessThanOrEqualValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValueHostName, and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValueHostName, and secondConversionLookupKey assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'),
+            starterBuilder.parentValue().lessThanOrEqual(valueHost('Field2'),
                 {
                     conversionLookupKey: LookupKey.Integer,
                     secondConversionLookupKey: LookupKey.Integer
                 });
             let expectedCondConfig = {
-                conditionType: ConditionType.LessThanOrEqualValue,
+                conditionType: ConditionType.LessThanOrEqual,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -1311,7 +1311,7 @@ describe('lessThanOrEqualValue on conditions', () =>
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
                 (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
-                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue(valueHost('F3'))
+                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual(valueHost('F3'))
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -1327,7 +1327,7 @@ describe('lessThanOrEqualValue on conditions', () =>
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.LessThanOrEqualValue,
+                                conditionType: ConditionType.LessThanOrEqual,
                                 secondValueHostName: 'F3'
                             }
                         }
@@ -1391,12 +1391,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "gtValue" with secondValue assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValue assigned', () =>
+        test('Shorthand version "gt" with secondValue assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gtValue(1);
+            starterBuilder.parentValue().gt(1);
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 secondValue: 1
@@ -1406,12 +1406,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValue assigned', () =>
+        test('Shorthand version "gt" with secondValue assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gtValue(1, {});
+            starterBuilder.parentValue().gt(1, {});
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 secondValue: 1
@@ -1421,12 +1421,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValue assigned', () =>
+        test('Shorthand version "gt" with valueHostName and secondValue assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').gtValue(1);
+            starterBuilder.fieldValue('Field1').gt(1);
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Field1',
@@ -1538,12 +1538,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gtValue" with secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () =>
+        test('Shorthand version "gt" with secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gtValue(valueHost('Field2'));
+            starterBuilder.parentValue().gt(valueHost('Field2'));
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -1553,12 +1553,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gtValue" with secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () =>
+        test('Shorthand version "gt" with secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gtValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().gt(valueHost('Field2'), {});
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 secondValueHostName: 'Field2'
@@ -1568,12 +1568,12 @@ describe('greaterThan on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gtValue" with valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "gt" with valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').gtValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').gt(valueHost('Field2'));
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThan,
                 valueHostName: 'Field1',
@@ -1688,12 +1688,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gteValue" with secondValue assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValue assigned', () =>
+        test('Shorthand version "gte" with secondValue assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gteValue(1);
+            starterBuilder.parentValue().gte(1);
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValue: 1
@@ -1703,12 +1703,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValue assigned', () =>
+        test('Shorthand version "gte" with secondValue assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gteValue(1, {});
+            starterBuilder.parentValue().gte(1, {});
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValue: 1
@@ -1718,12 +1718,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () =>
+        test('Shorthand version "gte" with valueHostName and secondValue assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').gteValue(1);
+            starterBuilder.fieldValue('Field1').gte(1);
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Field1',
@@ -1835,12 +1835,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('Shorthand version "gteValue" with secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "gte" with secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gteValue(valueHost('Field2'));
+            starterBuilder.parentValue().gte(valueHost('Field2'));
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -1850,12 +1850,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gteValue" with secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "gte" with secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().gteValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().gte(valueHost('Field2'), {});
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 secondValueHostName: 'Field2'
@@ -1865,12 +1865,12 @@ describe('greaterThanOrEqual on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('Shorthand version "gteValue" with valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
+        test('Shorthand version "gte" with valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').gteValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').gte(valueHost('Field2'));
             let expectedCondConfig = {
                 conditionType: ConditionType.GreaterThanOrEqual,
                 valueHostName: 'Field1',

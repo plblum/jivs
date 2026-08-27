@@ -252,9 +252,9 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
         ConditionType.EqualTo,
         ConditionType.NotEqualTo,
         ConditionType.GreaterThan,
-        ConditionType.LessThanValue,
+        ConditionType.LessThan,
         ConditionType.GreaterThanOrEqual,
-        ConditionType.LessThanOrEqualValue
+        ConditionType.LessThanOrEqual
     ]);
     
 }
@@ -301,9 +301,9 @@ export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPro
         ConditionType.EqualTo,
         ConditionType.NotEqualTo,
         ConditionType.GreaterThan,
-        ConditionType.LessThanValue,
+        ConditionType.LessThan,
         ConditionType.GreaterThanOrEqual,
-        ConditionType.LessThanOrEqualValue
+        ConditionType.LessThanOrEqual
     ]);
     
 }

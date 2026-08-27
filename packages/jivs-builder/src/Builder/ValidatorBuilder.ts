@@ -21,8 +21,8 @@ import
     {
         EqualToConditionConfig,
         GreaterThanOrEqualConditionConfig, GreaterThanConditionConfig,
-        LessThanOrEqualValueConditionConfig,
-        LessThanValueConditionConfig,
+        LessThanOrEqualConditionConfig,
+        LessThanConditionConfig,
         NotEqualToConditionConfig,
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
@@ -56,8 +56,8 @@ import
         FluentEqualToValidatorConfig, 
         FluentGreaterThanOrEqualValidatorConfig, 
         FluentGreaterThanValidatorConfig, FluentIntegerValidatorConfig,
-        FluentLessThanOrEqualValueValidatorConfig,
-        FluentLessThanValueValidatorConfig,
+        FluentLessThanOrEqualValidatorConfig,
+        FluentLessThanValidatorConfig,
         FluentMaxDecimalsValidatorConfig, 
         FluentNotEqualToValidatorConfig, FluentNotNullValidatorConfig,
         FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
@@ -878,11 +878,11 @@ export class ValidatorBuilder
      * Adds a validator that ensures the value is less than the specified second value.
      * @example
      * ```ts
-     * lessThanValue(42);
-     * lessThanValue(valueHost('field2'));
-     * lessThanValue(42, "Value must be less than {value}.");
-     * lessThanValue(42, "Value must be less than 42.", "Summary message");
-     * lessThanValue(42, {
+     * lessThan(42);
+     * lessThan(valueHost('field2'));
+     * lessThan(42, "Value must be less than {value}.");
+     * lessThan(42, "Value must be less than 42.", "Summary message");
+     * lessThan(42, {
      *      errorMessage: "Value must be less than 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -896,18 +896,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public lessThanValue(
+    public lessThan(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is less than the specified second value.
      * @example
      * ```ts
-     * lessThanValue(42);
-     * lessThanValue(valueHost('field2'));
-     * lessThanValue(42, "Value must be less than {value}.");
-     * lessThanValue(42, "Value must be less than 42.", "Summary message");
-     * lessThanValue(42, {
+     * lessThan(42);
+     * lessThan(valueHost('field2'));
+     * lessThan(42, "Value must be less than {value}.");
+     * lessThan(42, "Value must be less than 42.", "Summary message");
+     * lessThan(42, {
      *      errorMessage: "Value must be less than 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -918,18 +918,18 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public lessThanValue(
+    public lessThan(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
-    public lessThanValue(
+        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
+    public lessThan(
         secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
+        args2?: FluentLessThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
         return this.lessThanValue_common(secondValue, args2, args3);
     }
 
     /**
-     * Allows aliases to setup lessThanValue
+     * Allows aliases to setup lessThan
      * @param secondValue 
      * @param args2 
      * @param args3 
@@ -937,38 +937,38 @@ export class ValidatorBuilder
      */
     protected lessThanValue_common(
         secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
+        args2?: FluentLessThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanValueConditionConfig>(args2, args3);
+            this.resolveOverloadArgs<LessThanConditionConfig>(args2, args3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanValue(secondValue, conditionConfig as LessThanValueConditionConfig);
+        conditionBuilder.lessThan(secondValue, conditionConfig as LessThanConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
 
     /**
-     * Alias for lessThanValue
+     * Alias for lessThan
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public ltValue(
+    public lt(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for lessThanValue
+     * Alias for lessThan
      * @param secondValue - The value to compare against the current value.
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public ltValue(
+    public lt(
         secondValue: any,
-        validatorParameters: FluentLessThanValueValidatorConfig): IValidatorBuilder;
-    public ltValue(
+        validatorParameters: FluentLessThanValidatorConfig): IValidatorBuilder;
+    public lt(
         secondValue: any,
-        args2?: FluentLessThanValueValidatorConfig | string | null,
+        args2?: FluentLessThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
         return this.lessThanValue_common(secondValue, args2, args3);
     }
@@ -977,11 +977,11 @@ export class ValidatorBuilder
      * Adds a validator that ensures the value is less than or equal to the specified second value.
      * @example
      * ```ts
-     * lessThanOrEqualValue(42);
-     * lessThanOrEqualValue(valueHost('field2'));
-     * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
-     * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
-     * lessThanOrEqualValue(42, {
+     * lessThanOrEqual(42);
+     * lessThanOrEqual(valueHost('field2'));
+     * lessThanOrEqual(42, "Value must be less than or equal to {value}.");
+     * lessThanOrEqual(42, "Value must be less than or equal to 42.", "Summary message");
+     * lessThanOrEqual(42, {
      *      errorMessage: "Value must be less than or equal to 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -995,18 +995,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public lessThanOrEqualValue(
+    public lessThanOrEqual(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is less than or equal to the specified second value.
      * @example
      * ```ts
-     * lessThanOrEqualValue(42);
-     * lessThanOrEqualValue(valueHost('field2'));
-     * lessThanOrEqualValue(42, "Value must be less than or equal to {value}.");
-     * lessThanOrEqualValue(42, "Value must be less than or equal to 42.", "Summary message");
-     * lessThanOrEqualValue(42, {
+     * lessThanOrEqual(42);
+     * lessThanOrEqual(valueHost('field2'));
+     * lessThanOrEqual(42, "Value must be less than or equal to {value}.");
+     * lessThanOrEqual(42, "Value must be less than or equal to 42.", "Summary message");
+     * lessThanOrEqual(42, {
      *      errorMessage: "Value must be less than or equal to 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -1017,58 +1017,58 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public lessThanOrEqualValue(
+    public lessThanOrEqual(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
-    public lessThanOrEqualValue(
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
+    public lessThanOrEqual(
         secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
+        return this.lessThanOrEqual_common(secondValue, arg2, arg3);
     }
     /**
-     * Allows aliases to setup lessThanOrEqualValue
+     * Allows aliases to setup lessThanOrEqual
      * @param secondValue 
      * @param arg2 
      * @param arg3 
      * @returns 
      */
-    protected lessThanOrEqualValue_common(
+    protected lessThanOrEqual_common(
         secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<LessThanOrEqualValueConditionConfig>(arg2, arg3);
+            this.resolveOverloadArgs<LessThanOrEqualConditionConfig>(arg2, arg3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.lessThanOrEqualValue(secondValue, conditionConfig as LessThanOrEqualValueConditionConfig);
+        conditionBuilder.lessThanOrEqual(secondValue, conditionConfig as LessThanOrEqualConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
     /**
-     * Alias for lessThanOrEqualValue
+     * Alias for lessThanOrEqual
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public lteValue(
+    public lte(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for lessThanOrEqualValue
+     * Alias for lessThanOrEqual
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public lteValue(
+    public lte(
         secondValue: any,
-        validatorParameters: FluentLessThanOrEqualValueValidatorConfig): IValidatorBuilder;
-    public lteValue(
+        validatorParameters: FluentLessThanOrEqualValidatorConfig): IValidatorBuilder;
+    public lte(
         secondValue: any,
-        arg2?: FluentLessThanOrEqualValueValidatorConfig | string | null,
+        arg2?: FluentLessThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.lessThanOrEqualValue_common(secondValue, arg2, arg3);
+        return this.lessThanOrEqual_common(secondValue, arg2, arg3);
     }
 
     /**
@@ -1153,7 +1153,7 @@ export class ValidatorBuilder
      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
      * @param summaryMessage - optional summary message.
      */
-    public gtValue(
+    public gt(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
@@ -1163,10 +1163,10 @@ export class ValidatorBuilder
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public gtValue(
+    public gt(
         secondValue: any,
         validatorParameters: FluentGreaterThanValidatorConfig): IValidatorBuilder;
-    public gtValue(
+    public gt(
         secondValue: any,
         args2?: FluentGreaterThanValidatorConfig | string | null,
         args3?: string | null): IValidatorBuilder {
@@ -1252,7 +1252,7 @@ export class ValidatorBuilder
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public gteValue(
+    public gte(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
@@ -1261,10 +1261,10 @@ export class ValidatorBuilder
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public gteValue(
+    public gte(
         secondValue: any,
         validatorParameters: FluentGreaterThanOrEqualValidatorConfig): IValidatorBuilder;
-    public gteValue(
+    public gte(
         secondValue: any,
         arg2?: FluentGreaterThanOrEqualValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {

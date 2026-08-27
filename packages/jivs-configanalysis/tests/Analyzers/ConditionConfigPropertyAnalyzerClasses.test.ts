@@ -960,8 +960,8 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
     test('secondValueHostName is undefined, reports "Value must be defined" error for EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo', () => {
         testSecondValueHostNameUndefined(ConditionType.GreaterThan, true);
         testSecondValueHostNameUndefined(ConditionType.GreaterThanOrEqual, true);
-        testSecondValueHostNameUndefined(ConditionType.LessThanValue, true);
-        testSecondValueHostNameUndefined(ConditionType.LessThanOrEqualValue, true);
+        testSecondValueHostNameUndefined(ConditionType.LessThan, true);
+        testSecondValueHostNameUndefined(ConditionType.LessThanOrEqual, true);
         testSecondValueHostNameUndefined(ConditionType.EqualTo, true);
         testSecondValueHostNameUndefined(ConditionType.NotEqualTo, true);
         testSecondValueHostNameUndefined(ConditionType.Range, false);
@@ -1089,8 +1089,8 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
         testSecondValueUndefined(ConditionType.NotEqualTo, true);
         testSecondValueUndefined(ConditionType.GreaterThan, true);
         testSecondValueUndefined(ConditionType.GreaterThanOrEqual, true);
-        testSecondValueUndefined(ConditionType.LessThanValue, true);
-        testSecondValueUndefined(ConditionType.LessThanOrEqualValue, true);
+        testSecondValueUndefined(ConditionType.LessThan, true);
+        testSecondValueUndefined(ConditionType.LessThanOrEqual, true);
         testSecondValueUndefined(ConditionType.Range, false);
         testSecondValueUndefined(ConditionType.NotNull, false);
 

@@ -1,27 +1,4 @@
 /**
- * Group of conditions that compare the ValueHost against another value,
- * either against another ValueHost or against a fixed value.
- * 
- * - equalTo
- * - notEqualTo
- * - greaterThan
- * - lessThan
- * - greaterThanOrEqual
- * - lessThanOrEqual
- * 
- * The second value can come from a ValueHost by supplying
- * the ResolveValueHost class to specify the second ValueHost.
- * All other values are treated as the actual value.
- * 
- * ResolveValueHost has a supporting function, valueHost(valueHostName),
- * that creates it so that its easy to write this syntax in the builder:
- * ```ts
- * builder.field('field1', LookupKey.String).equalTo(valueHost('myValueHostName'))
- * instead of
- * builder.field('field1', LookupKey.String).equalTo(new ResolveValueHost('myValueHostName'))
- * ```
- * This makes the builder syntax cleaner and easier to read.
- * 
  * @module jivs-engine/Conditions/ConcreteConditions
  */
 
@@ -35,7 +12,23 @@ import { ConditionType } from './ConditionTypes';
  */
 export interface EqualToConditionConfig extends CompareToValueConditionBaseConfig { }
 /**
- * Value from ValueHost must be equal to a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must be equal to a second value, assigned in its EqualToConditionConfig.secondValue
+ * or EqualToConditionConfig.secondValueHostName.
+ * 
+ * There are two sources for the value within EqualToConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).equalTo(10);
+ * builder.field('field1', LookupKey.String).equalTo(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).eq(10);
+ * builder.field('field1', LookupKey.String).eq(valueHost('field2'))
+ * ```
  */
 export class EqualToCondition extends CompareToValueConditionBase<EqualToConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
@@ -53,7 +46,23 @@ export class EqualToCondition extends CompareToValueConditionBase<EqualToConditi
 export interface NotEqualToConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
- * Value from ValueHost must not be equal to a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must not be equal to a second value, assigned in its NotEqualToConditionConfig.secondValue.
+ * or NotEqualToConditionConfig.secondValueHostName.
+ * 
+ * There are two sources for the value within NotEqualToConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).notEqualTo(10);
+ * builder.field('field1', LookupKey.String).notEqualTo(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).neq(10);
+ * builder.field('field1', LookupKey.String).neq(valueHost('field2'))
+ * ```
  */
 export class NotEqualToCondition extends CompareToValueConditionBase<NotEqualToConditionConfig> {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
@@ -73,7 +82,23 @@ export class NotEqualToCondition extends CompareToValueConditionBase<NotEqualToC
 export interface GreaterThanConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
- * Value from ValueHost must be greater than a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must be greater than a second value, assigned in its GreaterThanConditionConfig.secondValue
+ * or GreaterThanConditionConfig.secondValueHostName.
+ * 
+ * There are two sources for the value within GreaterThanConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).greaterThan(10);
+ * builder.field('field1', LookupKey.String).greaterThan(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).gt(10);
+ * builder.field('field1', LookupKey.String).gt(valueHost('field2'))
+ * ```
  * 
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
@@ -93,17 +118,32 @@ export class GreaterThanCondition extends CompareToValueConditionBase<GreaterTha
 }
 
 /**
- * ConditionConfig for {@link LessThanValueCondition}
+ * ConditionConfig for {@link LessThanCondition}
  */
-export interface LessThanValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface LessThanConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
- * Value from ValueHost must be less than a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must be less than a second value, assigned in its LessThanConditionConfig.secondValue
+ * or LessThanConditionConfig.secondValueHostName.
  * 
+ * There are two sources for the value within LessThanConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).lessThan(10);
+ * builder.field('field1', LookupKey.String).lessThan(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).lt(10);
+ * builder.field('field1', LookupKey.String).lt(valueHost('field2'))
+ * ```
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
-export class LessThanValueCondition extends CompareToValueConditionBase<LessThanValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanValue; }
+export class LessThanCondition extends CompareToValueConditionBase<LessThanConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThan; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {
@@ -123,8 +163,23 @@ export class LessThanValueCondition extends CompareToValueConditionBase<LessThan
 export interface GreaterThanOrEqualConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
- * Value from ValueHost must be greater than or equal to a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must be greater than or equal to a second value, assigned in its GreaterThanOrEqualConditionConfig.secondValue
+ * or GreaterThanOrEqualConditionConfig.secondValueHostName.
  * 
+ * There are two sources for the value within GreaterThanOrEqualConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).greaterThanOrEqual(10);
+ * builder.field('field1', LookupKey.String).greaterThanOrEqual(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).gte(10);
+ * builder.field('field1', LookupKey.String).gte(valueHost('field2'))
+ * ```
  * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
  */
 export class GreaterThanOrEqualCondition extends CompareToValueConditionBase<GreaterThanOrEqualConditionConfig> {
@@ -145,17 +200,33 @@ export class GreaterThanOrEqualCondition extends CompareToValueConditionBase<Gre
 
 
 /**
- * ConditionConfig for {@link LessThanOrEqualValueCondition}
+ * ConditionConfig for {@link LessThanOrEqualCondition}
  */
-export interface LessThanOrEqualValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface LessThanOrEqualConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
- * Value from ValueHost must be less than or equal to a second value, assigned in its ConditionConfig.secondValue.
+ * Value from ValueHost must be less than or equal to a second value, assigned in its LessThanOrEqualConditionConfig.secondValue
+ * or LessThanOrEqualConditionConfig.secondValueHostName.
  * 
- * Evaluates data types that do not support GreaterThan/LessThan as Undetermined
+ * There are two sources for the value within LessThanOrEqualConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * Assign only one.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).lessThanOrEqual(10);
+ * builder.field('field1', LookupKey.String).lessThanOrEqual(valueHost('field2'))
+ * builder.field('field1', LookupKey.String).lte(10);
+ * builder.field('field1', LookupKey.String).lte(valueHost('field2'))
+ * ```
+ *  
+ * Evaluates data types that do not support GreaterThanOrEqual/LessThanOrEqual as Undetermined
  */
-export class LessThanOrEqualValueCondition extends CompareToValueConditionBase<LessThanOrEqualValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqualValue; }    
+export class LessThanOrEqualCondition extends CompareToValueConditionBase<LessThanOrEqualConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.LessThanOrEqual; }    
 
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         switch (comparison) {

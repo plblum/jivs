@@ -7,7 +7,7 @@ import
         EqualToConditionConfig,
         GreaterThanOrEqualConditionConfig,
         GreaterThanConditionConfig,
-        LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
+        LessThanOrEqualConditionConfig, LessThanConditionConfig,
 
         NotEqualToConditionConfig,
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
@@ -30,8 +30,8 @@ import
         OptionalEqualToConditionParams,
         OptionalGreaterThanOrEqualConditionParams,
         OptionalGreaterThanConditionParams,
-        OptionalLessThanOrEqualValueConditionParams,
-        OptionalLessThanValueConditionParams,
+        OptionalLessThanOrEqualConditionParams,
+        OptionalLessThanConditionParams,
         OptionalNotEqualToConditionParams, OptionalRegExpConditionParams,
         OptionalRequireTextConditionParams, OptionalStringLengthConditionParams,
         SetConfigOptions
@@ -216,17 +216,17 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the LessThanValueCondition.
+     * Creates a configuration for the LessThanCondition.
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
+     * @param conditionConfig - Optional configuration parameters for the LessThan condition.
      */
-    public lessThanValue(
+    public lessThan(
         secondValue: any,
-        conditionConfig?: OptionalLessThanValueConditionParams): void {
-        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanValueConditionConfig;
+        conditionConfig?: OptionalLessThanConditionParams): void {
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanConditionConfig;
         if (!config.conditionType)
-            config.conditionType = ConditionType.LessThanValue;
+            config.conditionType = ConditionType.LessThan;
         if (secondValue != null)
             if (secondValue instanceof ResolveValueHost)
                 config.secondValueHostName = secondValue.valueHostName;
@@ -236,27 +236,27 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the LessThanValueCondition using an alias to lessThanValue()
+     * Creates a configuration for the LessThanCondition using an alias to lessThan()
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
+     * @param conditionConfig - Optional configuration parameters for the LessThan condition.
      */
-    public ltValue(secondValue: any, conditionConfig?: OptionalLessThanValueConditionParams): void {
-        this.lessThanValue(secondValue, conditionConfig);
+    public lt(secondValue: any, conditionConfig?: OptionalLessThanConditionParams): void {
+        this.lessThan(secondValue, conditionConfig);
     }
 
     /**
-     * Creates a configuration for the LessThanOrEqualValueCondition.
+     * Creates a configuration for the LessThanOrEqualCondition.
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
      */
-    public lessThanOrEqualValue(
+    public lessThanOrEqual(
         secondValue: any,
-        conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void {
-        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualValueConditionConfig;
+        conditionConfig?: OptionalLessThanOrEqualConditionParams): void {
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as LessThanOrEqualConditionConfig;
         if (!config.conditionType)
-            config.conditionType = ConditionType.LessThanOrEqualValue;
+            config.conditionType = ConditionType.LessThanOrEqual;
         if (secondValue != null)
             if (secondValue instanceof ResolveValueHost)
                 config.secondValueHostName = secondValue.valueHostName;
@@ -266,13 +266,13 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the LessThanOrEqualValueCondition using an alias to lessThanOrEqualValue()
+     * Creates a configuration for the LessThanOrEqualCondition using an alias to lessThanOrEqual()
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
+     * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
      */
-    public lteValue(secondValue: any, conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void {
-        this.lessThanOrEqualValue(secondValue, conditionConfig);
+    public lte(secondValue: any, conditionConfig?: OptionalLessThanOrEqualConditionParams): void {
+        this.lessThanOrEqual(secondValue, conditionConfig);
     }
 
     /**
@@ -301,7 +301,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
      * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
      */
-    public gtValue(secondValue: any, conditionConfig?: OptionalGreaterThanConditionParams): void {
+    public gt(secondValue: any, conditionConfig?: OptionalGreaterThanConditionParams): void {
         this.greaterThan(secondValue, conditionConfig);
     }
 
@@ -331,7 +331,7 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
      * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
      */
-    public gteValue(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void {
+    public gte(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void {
         this.greaterThanOrEqual(secondValue, conditionConfig);
     }
 

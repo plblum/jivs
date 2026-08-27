@@ -58,9 +58,9 @@ export enum ConditionType
     GreaterThan = 'GreaterThan',
 
     /**
-     * Associated with LessThanValueCondition class.
+     * Associated with LessThanCondition class.
      */
-    LessThanValue = 'LessThanValue',
+    LessThan = 'LessThan',
 
     /**
      * Associated with GreaterThanOrEqualCondition class.
@@ -68,9 +68,9 @@ export enum ConditionType
     GreaterThanOrEqual = 'GreaterThanOrEqual',
 
     /**
-     * Associated with LessThanOrEqualValueCondition class.
+     * Associated with LessThanOrEqualCondition class.
      */
-    LessThanOrEqualValue = 'LessThanOrEqualValue',
+    LessThanOrEqual = 'LessThanOrEqual',
 
     /**
      * Associated with StringLengthCondition class.
