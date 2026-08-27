@@ -38,6 +38,7 @@ import
         SetConfigOptions
     } from '../Interfaces/ChildBuilders';
 import { ConditionBuilderBase } from './ConditionBuilderBase';
+import { ResolveValueHost } from './ValidatorBuilder';
 
 /**
  * This class is intended to be used by all functions that create a condition config object.
@@ -167,7 +168,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.EqualToValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 
@@ -217,7 +221,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.NotEqualToValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 
@@ -267,7 +274,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThanValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 
@@ -317,7 +327,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.LessThanOrEqualValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 
@@ -367,7 +380,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThanValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 
@@ -417,7 +433,10 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
         if (!config.conditionType)
             config.conditionType = ConditionType.GreaterThanOrEqualValue;
         if (secondValue != null)
-            config.secondValue = secondValue;
+            if (secondValue instanceof ResolveValueHost)
+                config.secondValueHostName = secondValue.valueHostName;
+            else
+                config.secondValue = secondValue;
         this.setConfig(config as any);
     }
 

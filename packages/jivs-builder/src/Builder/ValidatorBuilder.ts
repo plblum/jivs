@@ -64,6 +64,7 @@ import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/Field
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
@@ -2691,3 +2692,40 @@ const FluentValidatorConfigPropertyNames: Array<string> = [
     'errorMessagel10n',
     'summaryMessagel10n'    
 ];
+
+
+
+/**
+ * Special value passed into CompareToValueConditionBase subclasses
+ * as the secondValue in the condition configuration.
+ * CompareToValueConditionBase recognizes it as a reference to another ValueHost and retrieves its value accordingly.
+ * 
+ * When working with the Builder, you can use the helper function `valueHost(valueHostName)` to create an instance of ResolveValueHost, making it easier to reference other ValueHosts in the condition configuration.
+ * ```ts
+ * builder.field('field1', LookupKey.String).equalTo(valueHost('myValueHostName'))
+ * // instead of
+ * builder.field('field1', LookupKey.String).equalTo(new ResolveValueHost('myValueHostName'))
+ * ```
+ */
+export class ResolveValueHost
+{
+    constructor(public valueHostName: string) {}
+    public getValue(valueHostsManager: IValueHostsManager): any
+    {
+        let vh = valueHostsManager.getValueHost(this.valueHostName);
+        if (!vh)
+            throw new Error(`ValueHost with name ${ this.valueHostName } not found`);
+        return vh.getValue();
+    }
+}
+/**
+ * Helper function to create an instance of ResolveValueHost for referencing another 
+ * ValueHost in condition configurations.
+ * 
+ * @param valueHostName The name of the ValueHost to reference.
+ * @returns An instance of ResolveValueHost pointing to the specified ValueHost.
+ */
+export function valueHost(valueHostName: string): ResolveValueHost
+{
+    return new ResolveValueHost(valueHostName);
+}

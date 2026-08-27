@@ -12,6 +12,7 @@ import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
 import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
+import { valueHost } from '../../src/Builder/ValidatorBuilder';
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
     constructor() {
@@ -342,1424 +343,1598 @@ describe('range on conditions', () => {
     });
 });
 
-describe('equalToValue on conditions', () => {
-    test('With secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().equalToValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualToValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValue assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+describe('equalToValue on conditions', () =>
+{
+    describe('secondValue', () =>
+    {
+        test('With secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().equalToValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValue assigned, eqValue', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().eqValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
 
-        starterBuilder.parentValue().equalToValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualToValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With ValueHostName and secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue and valueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+        test('With secondValue assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.fieldValue('Field2').equalToValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualToValue,
-            valueHostName: 'Field2',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
+            starterBuilder.parentValue().equalToValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With ValueHostName and secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue and valueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field2').equalToValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                valueHostName: 'Field2',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
 
 
-    test('With secondValue and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+        test('With secondValue and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().equalToValue(1,
-            {
+            starterBuilder.parentValue().equalToValue(1,
+                {
+                    conversionLookupKey: LookupKey.Integer,
+                    secondConversionLookupKey: LookupKey.Integer
+                });
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
-            });
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualToValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
 
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
-        );
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
+            );
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 3
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 3
+                            }
                         }
                     }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().equalToValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned, eqValue', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().eqValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValueHostName assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().equalToValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValueHostName, creates EqualToValueConditionConfig with type=EqualToValue, valueHostName and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').equalToValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().equalToValue(valueHost('Field2'),
+                {
+                    conversionLookupKey: LookupKey.Integer,
+                    secondConversionLookupKey: LookupKey.Integer
                 }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('equalTo on conditions', () => {
-    test('With secondValueHostName assigned, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().equalTo('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualTo,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().equalTo('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualTo,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValueHostName, creates EqualToConditionConfig with type=EqualTo, valueHostName and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').equalTo('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualTo,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValueHostName and secondConversionLookupKey assigned, creates EqualToConditionConfig with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().equalTo('Field2',
-            {
+            );
+            let expectedCondConfig = {
+                conditionType: ConditionType.EqualToValue,
+                secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
-            }
-        );
-        let expectedCondConfig = {
-            conditionType: ConditionType.EqualTo,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().equalTo('F3')
-        );
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().equalToValue(valueHost('F3'))
+            );
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.EqualTo,
-                            secondValueHostName: 'F3'
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValueHostName: 'F3'
+                            }
                         }
                     }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+
 });
 
 describe('notEqualToValue on conditions', () => {
-    test('With secondValue assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().notEqualToValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualToValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValue assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().notEqualToValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualToValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValue assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').notEqualToValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualToValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValue and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().notEqualToValue(1, {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+    describe('secondValue', () =>
+    {
+        test('With secondValue assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().notEqualToValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualToValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
-        );
-
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.NotEqualToValue,
-                            secondValue: 1
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('notEqualTo on conditions', () => {
-    test('With secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().notEqualTo('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualTo,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().notEqualTo('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualTo,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').notEqualTo('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualTo,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValueHostName and secondConversionLookupKey assigned, creates NotEqualToConditionConfig with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().notEqualTo('Field2', {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+        test('With secondValue assigned, neqValue', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().neqValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.NotEqualTo,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().notEqualTo('F3')
-        );
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.NotEqualTo,
-                            secondValueHostName: 'F3'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
+        test('With secondValue assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-describe('lessThanValue on conditions', () => {
-    test('With secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().lessThanValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With valueHostName and secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lessThanValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "ltValue" With secondValue, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().ltValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValue and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThanValue(1, {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+            starterBuilder.parentValue().notEqualToValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
-        );
+        test('With valueHostName and secondValue assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.LessThanValue,
-                            secondValue: 'A'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('lessThan on conditions', () => {
-    test('With secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThan('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThan('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lessThan('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('Shorthand version "lt" with secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lt('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "lt" with valueHostName and secondValueHostName assigned, creates LessThanConditionConfig with type=LessThan, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lt('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-
-    test('With secondValueHostName and secondConversionLookupKey assigned, creates LessThanConditionConfig with type=LessThan, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThan('Field2', {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+            starterBuilder.fieldValue('Field1').notEqualToValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThan,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().lessThan('F3')
-        );
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.LessThan,
-                            secondValueHostName: 'F3'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('lessThanOrEqualValue on conditions', () => {
-    test('With secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().lessThanOrEqualValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+        test('With secondValue and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().lessThanOrEqualValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lessThanOrEqualValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('Shorthand version "lteValue" with secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lteValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lteValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lteValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValue and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThanOrEqualValue(1, {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        });
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqualValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
-        );
-
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.LessThanOrEqualValue,
-                            secondValue: 'B'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('lessThanOrEqual on conditions', () => {
-    test('With secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThanOrEqual('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThanOrEqual('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lessThanOrEqual('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('Shorthand version "lte" with secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lte('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "lte" with valueHostName and secondValueHostName assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').lte('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValueHostName, and secondConversionLookupKey assigned, creates LessThanOrEqualConditionConfig with type=LessThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().lessThanOrEqual('Field2',
-            {
+            starterBuilder.parentValue().notEqualToValue(1, {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
-        let expectedCondConfig = {
-            conditionType: ConditionType.LessThanOrEqual,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().lessThanOrEqual('F3')
-        );
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValue: 1,
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.LessThanOrEqual,
-                            secondValueHostName: 'F3'
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.NotEqualToValue,
+                                secondValue: 1
+                            }
                         }
                     }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned, using neqValue', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().neqValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValueHostName assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').notEqualToValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'), {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.NotEqualToValue,
+                secondValueHostName: 'Field2',
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().notEqualToValue(valueHost('F3'))
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.NotEqualToValue,
+                                secondValueHostName: 'F3'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+
+});
+
+describe('lessThanValue on conditions', () =>
+{
+    describe('secondValue', () =>
+    {
+    
+        test('With secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().lessThanValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With valueHostName and secondValue assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lessThanValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "ltValue" With secondValue, creates LessThanValueConditionConfig with type=LessThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().ltValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValue and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanValue(1, {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValue: 1,
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.LessThanValue,
+                                secondValue: 'A'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned and condDesc={}, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lessThanValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "ltValue" with secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().ltValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "ltValue" with valueHostName and secondValueHostName assigned, creates LessThanValueConditionConfig with type=LessThanValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').ltValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates LessThanValueConditionConfig with type=LessThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanValue(valueHost('Field2'), {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanValue,
+                secondValueHostName: 'Field2',
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().lessThanValue(valueHost('F3'))
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.LessThanValue,
+                                secondValueHostName: 'F3'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
     });    
 });
+
+describe('lessThanOrEqualValue on conditions', () =>
+{
+    describe('secondValue', () =>
+    {
+
+        test('With secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().lessThanOrEqualValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanOrEqualValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lessThanOrEqualValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "lteValue" with secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lteValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "lteValue" with secondValue assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lteValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "lteValue" with valueHostName and secondValue assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lteValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValue and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanOrEqualValue(1, {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValue: 1,
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.LessThanOrEqualValue,
+                                secondValue: 'B'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned and condDesc={}, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lessThanOrEqualValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "lteValue" with secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lteValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "lteValue" with valueHostName and secondValueHostName assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').lteValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValueHostName, and secondConversionLookupKey assigned, creates LessThanOrEqualValueConditionConfig with type=LessThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().lessThanOrEqualValue(valueHost('Field2'),
+                {
+                    conversionLookupKey: LookupKey.Integer,
+                    secondConversionLookupKey: LookupKey.Integer
+                });
+            let expectedCondConfig = {
+                conditionType: ConditionType.LessThanOrEqualValue,
+                secondValueHostName: 'Field2',
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue(valueHost('F3'))
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.LessThanOrEqualValue,
+                                secondValueHostName: 'F3'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });    
+});
+
 
 
 describe('greaterThanValue on conditions', () => {
-    test('With secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+    describe('secondValue', () =>
+    {
+        test('With secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().greaterThanValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
+            starterBuilder.parentValue().greaterThanValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().greaterThanValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').greaterThanValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "gtValue" with secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gtValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gtValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').gtValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().greaterThanValue(1,
+                {
+                    conversionLookupKey: LookupKey.Integer,
+                    secondConversionLookupKey: LookupKey.Integer
+                });
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValue: 1,
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.GreaterThanValue,
+                                secondValue: 'C'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
     });
-    test('With secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().greaterThanValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().greaterThanValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.fieldValue('Field1').greaterThanValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
+            starterBuilder.parentValue().greaterThanValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValueHostName assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-    test('Shorthand version "gtValue" with secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.fieldValue('Field1').greaterThanValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gtValue" with secondValueHostName assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().gtValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gtValue" with secondValue assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().gtValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gtValue" with secondValueHostName assigned and condDesc={}, creates GreaterThanValueConditionConfig with type=GreaterThanValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().gtValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gtValue" with valueHostName and secondValue assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().gtValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gtValue" with valueHostName and secondValueHostName assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.fieldValue('Field1').gtValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
+            starterBuilder.fieldValue('Field1').gtValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
 
-    test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanValueConditionConfig with type=GreaterThanValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().greaterThanValue(1,
-            {
+            starterBuilder.parentValue().greaterThanValue(valueHost('Field2'), {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
-        );
-
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.GreaterThanValue,
-                            secondValue: 'C'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-
-describe('greaterThan on conditions', () => {
-    test('With secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThan('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThan('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').greaterThan('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gt" with secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gt('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gt" with secondValueHostName assigned and condDesc={}, creates GreaterThanConditionConfig with type=GreaterThan and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gt('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gt" with valueHostName and secondValueHostName assigned, creates GreaterThanConditionConfig with type=GreaterThan, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').gt('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanConditionConfig with type=GreaterThan, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThan('Field2', {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanValue,
+                secondValueHostName: 'Field2',
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThan,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().greaterThan('F3')
-        );
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().greaterThanValue(valueHost('F3'))
+            );
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.GreaterThan,
-                            secondValueHostName: 'F3'
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.GreaterThanValue,
+                                secondValueHostName: 'F3'
+                            }
                         }
                     }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
-    });    
-});
-describe('greaterThanOrEqualValue on conditions', () => {
-    test('With secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().greaterThanOrEqualValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThanOrEqualValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').greaterThanOrEqualValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gteValue" with secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gteValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gteValue(1, {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').gteValue(1);
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            valueHostName: 'Field1',
-            secondValue: 1
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThanOrEqualValue(1, {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqualValue,
-            secondValue: 1,
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
-        );
-
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.GreaterThanOrEqualValue,
-                            secondValue: 'D'
-                        }
-                    }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
     });    
 });
-describe('greaterThanOrEqual on conditions', () => {
-    test('With secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-        starterBuilder.parentValue().greaterThanOrEqual('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('With secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        starterBuilder.parentValue().greaterThanOrEqual('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
 
-    test('With valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName,  and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').greaterThanOrEqual('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('Shorthand version "gte" with secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gte('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gte" with secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().gte('Field2', {});
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('Shorthand version "gte" with valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, valueHostName, and secondValueHostName assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.fieldValue('Field1').gte('Field2');
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            valueHostName: 'Field1',
-            secondValueHostName: 'Field2'
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-
-    test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanOrEqualConditionConfig with type=GreaterThanOrEqual, secondValue, and secondConversionLookupKey assigned', () => {
-        let parentBuilder = new TestParentBuilder();
-        let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-
-        starterBuilder.parentValue().greaterThanOrEqual('Field2', {
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
+describe('greaterThanOrEqualValue on conditions', () =>
+{
+    describe('secondValue', () =>
+    {
+        test('With secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().greaterThanOrEqualValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        let expectedCondConfig = {
-            conditionType: ConditionType.GreaterThanOrEqual,
-            secondValueHostName: 'Field2',
-            conversionLookupKey: LookupKey.Integer,
-            secondConversionLookupKey: LookupKey.Integer
-        };
-        let starterConfig = starterBuilder.getConfig();
-        expect(starterConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
-        expect(parentBuilder.getConfig()).toBeUndefined();
-    });
-    test('using when with this condition type in the thenBuilder', () => {
-        let vmBuilder = new ValueHostsManagerConfigBuilder(services);
-        let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-            (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqual('F3')
-        );
+        test('With secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-        let expectedConfig = <FieldValueHostConfig>{
-            valueHostType: ValueHostType.Field,
-            name: 'myField',
-            validatorConfigs: [
-                {
-                    conditionConfig: <WhenConditionConfig>{
-                        conditionType: ConditionType.When,
-                        whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
-                            secondValue: 1,
-                            valueHostName: 'F2'
-                        },
-                        thenConfig: {
-                            conditionType: ConditionType.GreaterThanOrEqual,
-                            secondValueHostName: 'F3'
+            starterBuilder.parentValue().greaterThanOrEqualValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').greaterThanOrEqualValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gteValue" with secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gteValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gteValue" with secondValue assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gteValue(1, {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gteValue" with valueHostName and secondValue assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValue assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').gteValue(1);
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValue: 1
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValue and secondConversionLookupKey assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().greaterThanOrEqualValue(1, {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValue: 1,
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.GreaterThanOrEqualValue,
+                                secondValue: 'D'
+                            }
                         }
                     }
-                }
-            ]
-        };
-        expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
+    });
+    describe('secondValueHostName', () =>
+    {
+        test('With secondValueHostName assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+            starterBuilder.parentValue().greaterThanOrEqualValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('With secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().greaterThanOrEqualValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName,  and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').greaterThanOrEqualValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('Shorthand version "gteValue" with secondValueHostName assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gteValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gteValue" with secondValueHostName assigned and condDesc={}, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().gteValue(valueHost('Field2'), {});
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('Shorthand version "gteValue" with valueHostName and secondValueHostName assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, valueHostName, and secondValueHostName assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.fieldValue('Field1').gteValue(valueHost('Field2'));
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                valueHostName: 'Field1',
+                secondValueHostName: 'Field2'
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates GreaterThanOrEqualValueConditionConfig with type=GreaterThanOrEqualValue, secondValue, and secondConversionLookupKey assigned', () =>
+        {
+            let parentBuilder = new TestParentBuilder();
+            let starterBuilder = new StartConditionBuilder(services, parentBuilder);
+
+            starterBuilder.parentValue().greaterThanOrEqualValue(valueHost('Field2'), {
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            });
+            let expectedCondConfig = {
+                conditionType: ConditionType.GreaterThanOrEqualValue,
+                secondValueHostName: 'Field2',
+                conversionLookupKey: LookupKey.Integer,
+                secondConversionLookupKey: LookupKey.Integer
+            };
+            let starterConfig = starterBuilder.getConfig();
+            expect(starterConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
+            expect(parentBuilder.getConfig()).toBeUndefined();
+        });
+        test('using when with this condition type in the thenBuilder', () =>
+        {
+            let vmBuilder = new ValueHostsManagerConfigBuilder(services);
+            let fieldFluent = vmBuilder.field('myField').when(
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue(valueHost('F3'))
+            );
+
+            let expectedConfig = <FieldValueHostConfig> {
+                valueHostType: ValueHostType.Field,
+                name: 'myField',
+                validatorConfigs: [
+                    {
+                        conditionConfig: <WhenConditionConfig> {
+                            conditionType: ConditionType.When,
+                            whenToEnableConfig: {
+                                conditionType: ConditionType.EqualToValue,
+                                secondValue: 1,
+                                valueHostName: 'F2'
+                            },
+                            thenConfig: {
+                                conditionType: ConditionType.GreaterThanOrEqualValue,
+                                secondValueHostName: 'F3'
+                            }
+                        }
+                    }
+                ]
+            };
+            expect(fieldFluent.parentConfig).toEqual(expectedConfig);
+        });
     });    
 });
+
 
 describe('stringLength on conditions', () => {
     test('With maximum assigned, creates StringLengthConditionConfig with type=StringLength and maximum assigned', () => {
