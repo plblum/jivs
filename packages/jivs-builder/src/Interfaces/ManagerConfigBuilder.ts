@@ -65,7 +65,7 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
      * If called on a ValueHost already with an enabler, it will replace the existing enabler.
      * ```ts
      * builder.whenToEnable('Field1', (childBuilder)=>
-     *  childBuilder.fieldName('Field2').equalToValue('YES'));
+     *  childBuilder.fieldName('Field2').equalTo('YES'));
      * builder.whenToEnable('Field1', (childBuilder)=>
      *  childBuilder.conditionConfig(existingConditionConfig));
      * builder.whenToEnable('Field1', handler).any validator can be chained
@@ -321,7 +321,7 @@ export interface IModifyFieldBuilder extends IBuilderConfigHost<ValueHostConfig>
      * If called on a ValueHost already with an enabler, it will replace the existing enabler.
      * ```ts
      * builder.whenToEnable((childBuilder)=>
-     *  childBuilder.fieldName('Field2').equalToValue('YES'));
+     *  childBuilder.fieldName('Field2').equalTo('YES'));
      * builder.whenToEnable((childBuilder)=>
      *  childBuilder.conditionConfig(existingConditionConfig));
      * builder.whenToEnable(handler).any validator can be chained
@@ -365,7 +365,7 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      * ```ts
      * builder.validator(ConditionType.RequireText).and('customErrorCode', 
      *  (newCondBuilder)=>
-     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     *      newCondBuilder.fieldName('Field2').equalTo('YES'));
      * ```
      * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
@@ -382,7 +382,7 @@ export interface IModifyValidatorBuilder extends IBuilderConfigHost<ValidatorCon
      * ```ts
      * builder.validator(ConditionType.RequireText).or('customErrorCode', 
      *  (newCondBuilder)=>
-     *      newCondBuilder.fieldName('Field2').equalToValue('YES'));
+     *      newCondBuilder.fieldName('Field2').equalTo('YES'));
      * ```
      * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
 

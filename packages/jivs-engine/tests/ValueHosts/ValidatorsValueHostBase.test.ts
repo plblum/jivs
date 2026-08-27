@@ -47,7 +47,7 @@ import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
 import { restoreCapturedState } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
-import { EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ComparisonCondition_classes';
+import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
 
 /**
  * Used to test the abstract class. We won't be testing overridden abstract methods.
@@ -2794,8 +2794,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 name: 'Field1',
                 label: 'Label1',
                 validatorConfigs: [{
-                    conditionConfig: <EqualToValueConditionConfig>{
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig>{
+                        conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2',
                         valueHostName: null
                     },
@@ -2838,8 +2838,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         let services = createJivsServicesForTesting();
         supportTestValueHostInServices(services);
         let cf = services.conditionFactory as ConditionFactory;
-        cf.register<EqualToValueConditionConfig>(
-            ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+        cf.register<EqualToConditionConfig>(
+            ConditionType.EqualTo, (config) => new EqualToCondition(config));
         let vhm = new ValueHostsManager({ services: services, valueHostConfigs: vhConfigs });   // the real thing so we use real ValidatorsValueHostBases
 
 

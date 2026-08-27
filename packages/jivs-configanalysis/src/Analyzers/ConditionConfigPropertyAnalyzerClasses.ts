@@ -249,8 +249,8 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
         return this._ensurePropertyIsDefinedConditionTypes;
     }
     private readonly _ensurePropertyIsDefinedConditionTypes = new Set<string>([
-        ConditionType.EqualToValue,
-        ConditionType.NotEqualToValue,
+        ConditionType.EqualTo,
+        ConditionType.NotEqualTo,
         ConditionType.GreaterThanValue,
         ConditionType.LessThanValue,
         ConditionType.GreaterThanOrEqualValue,
@@ -298,8 +298,8 @@ export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPro
         return this._ensurePropertyIsDefinedConditionTypes;
     }
     private readonly _ensurePropertyIsDefinedConditionTypes = new Set<string>([
-        ConditionType.EqualToValue,
-        ConditionType.NotEqualToValue,
+        ConditionType.EqualTo,
+        ConditionType.NotEqualTo,
         ConditionType.GreaterThanValue,
         ConditionType.LessThanValue,
         ConditionType.GreaterThanOrEqualValue,

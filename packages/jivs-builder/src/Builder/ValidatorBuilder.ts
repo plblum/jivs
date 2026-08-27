@@ -19,11 +19,11 @@
 
 import
     {
-        EqualToValueConditionConfig,
+        EqualToConditionConfig,
         GreaterThanOrEqualValueConditionConfig, GreaterThanValueConditionConfig,
         LessThanOrEqualValueConditionConfig,
         LessThanValueConditionConfig,
-        NotEqualToValueConditionConfig,
+        NotEqualToConditionConfig,
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
     {
@@ -53,13 +53,13 @@ import
         FluentAllMatchValidatorConfig,
         FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
         FluentDataTypeCheckValidatorConfig, 
-        FluentEqualToValueValidatorConfig, 
+        FluentEqualToValidatorConfig, 
         FluentGreaterThanOrEqualValueValidatorConfig, 
         FluentGreaterThanValueValidatorConfig, FluentIntegerValidatorConfig,
         FluentLessThanOrEqualValueValidatorConfig,
         FluentLessThanValueValidatorConfig,
         FluentMaxDecimalsValidatorConfig, 
-        FluentNotEqualToValueValidatorConfig, FluentNotNullValidatorConfig,
+        FluentNotEqualToValidatorConfig, FluentNotNullValidatorConfig,
         FluentNotValidatorConfig, FluentPositiveValidatorConfig, FluentRangeValidatorConfig,
         FluentRegExpValidatorConfig, FluentRequireTextValidatorConfig,
         FluentStringLengthValidatorConfig, FluentWhenValidatorConfig,
@@ -681,11 +681,11 @@ export class ValidatorBuilder
      * Adds a validator that ensures the value is equal to the specified second value.
      * @example
      * ```ts
-     * equalToValue(42);
-     * equalToValue(valueHost('field2'));
-     * equalToValue(42, "Value must be {value}.");
-     * equalToValue(42, "Value must be 42.", "Summary message");
-     * equalToValue(42, {
+     * equalTo(42);
+     * equalTo(valueHost('field2'));
+     * equalTo(42, "Value must be {value}.");
+     * equalTo(42, "Value must be 42.", "Summary message");
+     * equalTo(42, {
      *      errorMessage: "Value must be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -698,18 +698,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public equalToValue(
+    public equalTo(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is equal to the specified second value.
      * @example
      * ```ts
-     * equalToValue(42);
-     * equalToValue(valueHost('field2'));
-     * equalToValue(42, "Value must be {value}.");
-     * equalToValue(42, "Value must be 42.", "Summary message");
-     * equalToValue(42, {
+     * equalTo(42);
+     * equalTo(valueHost('field2'));
+     * equalTo(42, "Value must be {value}.");
+     * equalTo(42, "Value must be 42.", "Summary message");
+     * equalTo(42, {
      *      errorMessage: "Value must be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -719,68 +719,68 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public equalToValue(
+    public equalTo(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
-    public equalToValue(
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
+    public equalTo(
         secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
+        arg2?: FluentEqualToValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.equalToValue_common(secondValue, arg2, arg3);
+        return this.equalTo_common(secondValue, arg2, arg3);
     }
     /**
-     * Allows several aliases to setup equalToValue
+     * Allows several aliases to setup equalTo
      * @param secondValue 
      * @param arg2 
      * @param arg3 
      * @returns 
      */
-    protected equalToValue_common(
+    protected equalTo_common(
         secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
+        arg2?: FluentEqualToValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<EqualToValueConditionConfig>(arg2, arg3);
+            this.resolveOverloadArgs<EqualToConditionConfig>(arg2, arg3);
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.equalToValue(secondValue, conditionConfig as EqualToValueConditionConfig);
+        conditionBuilder.equalTo(secondValue, conditionConfig as EqualToConditionConfig);
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
 
     /**
-     * Alias for equalToValue
+     * Alias for equalTo
      * @param secondValue - The value to compare against the current value.
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public eqValue(
+    public eq(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for equalToValue
+     * Alias for equalTo
      * @param secondValue - The value to compare against the current value.
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public eqValue(
+    public eq(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
-    public eqValue(
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
+    public eq(
         secondValue: any,
-        arg2?: FluentEqualToValueValidatorConfig | string | null,
+        arg2?: FluentEqualToValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder {
-        return this.equalToValue_common(secondValue, arg2, arg3);
+        return this.equalTo_common(secondValue, arg2, arg3);
     }
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
      * @example
      * ```ts
-     * notEqualToValue(42);
-     * notEqualToValue(valueHost('field2'));
-     * notEqualToValue(42, "Value must not be {Value}.");
-     * notEqualToValue(42, "Value must not be 42.", "Summary message");
-     * notEqualToValue(42, {
+     * notEqualTo(42);
+     * notEqualTo(valueHost('field2'));
+     * notEqualTo(42, "Value must not be {Value}.");
+     * notEqualTo(42, "Value must not be 42.", "Summary message");
+     * notEqualTo(42, {
      *      errorMessage: "Value must not be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -794,18 +794,18 @@ export class ValidatorBuilder
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    public notEqualToValue(
+    public notEqualTo(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
      * @example
      * ```ts
-     * notEqualToValue(42);
-     * notEqualToValue(valueHost('field2'));
-     * notEqualToValue(42, "Value must not be {Value}.");
-     * notEqualToValue(42, "Value must not be 42.", "Summary message");
-     * notEqualToValue(42, {
+     * notEqualTo(42);
+     * notEqualTo(valueHost('field2'));
+     * notEqualTo(42, "Value must not be {Value}.");
+     * notEqualTo(42, "Value must not be 42.", "Summary message");
+     * notEqualTo(42, {
      *      errorMessage: "Value must not be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -816,62 +816,62 @@ export class ValidatorBuilder
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
-    public notEqualToValue(
+    public notEqualTo(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
-    public notEqualToValue(
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
+    public notEqualTo(
         secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
+        args2?: FluentNotEqualToValidatorConfig | null | string,
         args3?: string | null): IValidatorBuilder {
-        return this.notEqualToValue_common(secondValue, args2, args3);
+        return this.notEqualTo_common(secondValue, args2, args3);
     }
     /**
-     * Allows aliases to setup notEqualToValue
+     * Allows aliases to setup notEqualTo
      * @param secondValue 
      * @param args2 
      * @param args3 
      * @returns 
      */
-    protected notEqualToValue_common(
+    protected notEqualTo_common(
         secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
+        args2?: FluentNotEqualToValidatorConfig | null | string,
         args3?: string | null): IValidatorBuilder {
         
         const { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<NotEqualToValueConditionConfig>(args2, args3);
+            this.resolveOverloadArgs<NotEqualToConditionConfig>(args2, args3);
         
         const conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.notEqualToValue(secondValue, conditionConfig as NotEqualToValueConditionConfig);
+        conditionBuilder.notEqualTo(secondValue, conditionConfig as NotEqualToConditionConfig);
         
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
 
     /**
-     * Alias for notEqualToValue
+     * Alias for notEqualTo
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param errorMessage 
      * @param summaryMessage 
      */
-    public neqValue(
+    public neq(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
     /**
-     * Alias for notEqualToValue
+     * Alias for notEqualTo
      * @param secondValue - The value to compare against the current value.
      * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param validatorParameters - All validator parameters and any optional conditionConfig parameters.
      * Includes several validation parameters not available in the other overload, including severity and the errorCode.
      */
-    public neqValue(
+    public neq(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
-    public neqValue(
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
+    public neq(
         secondValue: any,
-        args2?: FluentNotEqualToValueValidatorConfig | null | string,
+        args2?: FluentNotEqualToValidatorConfig | null | string,
         args3?: string | null): IValidatorBuilder {
-        return this.notEqualToValue_common(secondValue, args2, args3);
+        return this.notEqualTo_common(secondValue, args2, args3);
     }
 
     /**
@@ -1805,7 +1805,7 @@ export class ValidatorBuilder
      *     childrenBuilder.parentValue().requireText();
      *     childrenBuilder.fieldValue('fieldname2').requireText(parameters);
      *     childrenBuilder.fieldValue('fieldname2').regExp('^[A-D]');
-     *     childrenBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childrenBuilder.fieldValue('fieldname3').equalTo(valueHost('fieldname4'));
      *     childrenBuilder.any((grandchildBuilder)=> {
      *         grandchildBuilder.fieldValue('fieldname10').requireText();
      *         grandchildBuilder.fieldValue('fieldname11').requireText();
@@ -1856,7 +1856,7 @@ export class ValidatorBuilder
      *     childrenBuilder.parentValue().requireText();
      *     childrenBuilder.fieldValue('fieldname2').requireText(parameters);
      *     childrenBuilder.fieldValue('fieldname2').regExp('^[A-D]');
-     *     childrenBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childrenBuilder.fieldValue('fieldname3').equalTo(valueHost('fieldname4'));
      *     childrenBuilder.any((grandchildBuilder)=> {
      *         grandchildBuilder.fieldValue('fieldname10').requireText();
      *         grandchildBuilder.fieldValue('fieldname11').requireText();

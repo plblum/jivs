@@ -462,7 +462,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * If called on a ValueHost already with an enabler, it will replace the existing enabler.
      * ```ts
      * builder.whenToEnable('Field1', (childBuilder)=>
-     *  childBuilder.fieldName('Field2').equalToValue('YES'));
+     *  childBuilder.fieldName('Field2').equalTo('YES'));
      * builder.whenToEnable('Field1', (childBuilder)=>
      *  childBuilder.fieldName('Field2').conditionConfig(existingConditionConfig));
      * builder.whenToEnable('Field1', handler).any validator can be chained

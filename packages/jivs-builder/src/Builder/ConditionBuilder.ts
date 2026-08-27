@@ -4,12 +4,12 @@
 
 import
     {
-        EqualToValueConditionConfig,
+        EqualToConditionConfig,
         GreaterThanOrEqualValueConditionConfig,
         GreaterThanValueConditionConfig,
         LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
 
-        NotEqualToValueConditionConfig,
+        NotEqualToConditionConfig,
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
     {
@@ -27,12 +27,12 @@ import
         CompleteConfigBuilderHandler,
         IBuilderConfigHost,
         IConditionBuilder,
-        OptionalEqualToValueConditionParams,
+        OptionalEqualToConditionParams,
         OptionalGreaterThanOrEqualValueConditionParams,
         OptionalGreaterThanValueConditionParams,
         OptionalLessThanOrEqualValueConditionParams,
         OptionalLessThanValueConditionParams,
-        OptionalNotEqualToValueConditionParams, OptionalRegExpConditionParams,
+        OptionalNotEqualToConditionParams, OptionalRegExpConditionParams,
         OptionalRequireTextConditionParams, OptionalStringLengthConditionParams,
         SetConfigOptions
     } from '../Interfaces/ChildBuilders';
@@ -156,17 +156,17 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the EqualToValueCondition.
+     * Creates a configuration for the EqualToCondition.
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
      */
-    public equalToValue(
+    public equalTo(
         secondValue: any,
-        conditionConfig?: OptionalEqualToValueConditionParams): void {
-        const config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToValueConditionConfig;
+        conditionConfig?: OptionalEqualToConditionParams): void {
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as EqualToConditionConfig;
         if (!config.conditionType)
-            config.conditionType = ConditionType.EqualToValue;
+            config.conditionType = ConditionType.EqualTo;
         if (secondValue != null)
             if (secondValue instanceof ResolveValueHost)
                 config.secondValueHostName = secondValue.valueHostName;
@@ -176,27 +176,27 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the EqualToValueCondition using an alias to equalToValue()
+     * Creates a configuration for the EqualToCondition using an alias to equalTo()
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
      */
-    public eqValue(secondValue: any, conditionConfig?: OptionalEqualToValueConditionParams): void {
-        this.equalToValue(secondValue, conditionConfig);
+    public eq(secondValue: any, conditionConfig?: OptionalEqualToConditionParams): void {
+        this.equalTo(secondValue, conditionConfig);
     }
 
     /**
-     * Creates a configuration for the NotEqualToValueCondition.
+     * Creates a configuration for the NotEqualToCondition.
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
      */
-    public notEqualToValue(
+    public notEqualTo(
         secondValue: any,
-        conditionConfig?: OptionalNotEqualToValueConditionParams): void {
-        const config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToValueConditionConfig;
+        conditionConfig?: OptionalNotEqualToConditionParams): void {
+        const config = (conditionConfig ? { ...conditionConfig } : {}) as NotEqualToConditionConfig;
         if (!config.conditionType)
-            config.conditionType = ConditionType.NotEqualToValue;
+            config.conditionType = ConditionType.NotEqualTo;
         if (secondValue != null)
             if (secondValue instanceof ResolveValueHost)
                 config.secondValueHostName = secondValue.valueHostName;
@@ -206,13 +206,13 @@ export class ConditionBuilder<TConfig extends ConditionConfig = ConditionConfig,
     }
 
     /**
-     * Creates a configuration for the NotEqualToValueCondition using an alias to notEqualToValue()
+     * Creates a configuration for the NotEqualToCondition using an alias to notEqualTo()
      * @param secondValue - The value to compare against.
      * Pass ResolveValueHost with a valuehostname to compare against another field's value.
-     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
      */
-    public neqValue(secondValue: any, conditionConfig?: OptionalNotEqualToValueConditionParams): void {
-        this.notEqualToValue(secondValue, conditionConfig);
+    public neq(secondValue: any, conditionConfig?: OptionalNotEqualToConditionParams): void {
+        this.notEqualTo(secondValue, conditionConfig);
     }
 
     /**

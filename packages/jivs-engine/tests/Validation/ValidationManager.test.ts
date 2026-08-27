@@ -53,7 +53,7 @@ import { IDisposable } from '../../src/Interfaces/General_Purpose';
 import { createStateContainer, createCapturedStateAsString } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
-import { EqualToValueConditionConfig, EqualToValueCondition } from '../../src/Conditions/ComparisonCondition_classes';
+import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
 
 
 class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_ValueHostsManager {
@@ -334,7 +334,7 @@ describe('constructor and initial property values', () => {
     test('Configure with an actual Date object to ensure that object is still present when needed', () => {
         let services = createJivsServicesForTesting();
         let cf = services.conditionFactory as ConditionFactory;
-        cf.register<EqualToValueConditionConfig>(ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+        cf.register<EqualToConditionConfig>(ConditionType.EqualTo, (config) => new EqualToCondition(config));
         let savedState = createCapturedStateAsString([
             {
                 name: 'Property1',
@@ -349,8 +349,8 @@ describe('constructor and initial property values', () => {
                 dataType: LookupKey.Date,
                 validatorConfigs: [
                     {
-                        conditionConfig: <EqualToValueConditionConfig>{
-                            conditionType: ConditionType.EqualToValue,
+                        conditionConfig: <EqualToConditionConfig>{
+                            conditionType: ConditionType.EqualTo,
                             valueHostName: 'Property1',
                             secondValue: new Date(2000, 0, 1)
                         }

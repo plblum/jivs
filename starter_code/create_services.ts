@@ -47,12 +47,12 @@ import
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
 import
 {
-    EqualToValueCondition, EqualToValueConditionConfig,
+    EqualToCondition, EqualToConditionConfig,
     GreaterThanOrEqualValueCondition, GreaterThanOrEqualValueConditionConfig,
     GreaterThanValueCondition, GreaterThanValueConditionConfig,
     LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig,
     LessThanValueCondition, LessThanValueConditionConfig,
-    NotEqualToValueCondition, NotEqualToValueConditionConfig,
+    NotEqualToCondition, NotEqualToConditionConfig,
 
 } from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";    
 import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
@@ -429,10 +429,10 @@ export function registerConditions(cf: ConditionFactory): void
         ConditionType.Range, (config) => new RangeCondition(config));
     cf.register<WhenConditionConfig>(
         ConditionType.When, (config) => new WhenCondition(config));
-    cf.register<EqualToValueConditionConfig>(
-        ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
-    cf.register<NotEqualToValueConditionConfig>
-        (ConditionType.NotEqualToValue, (config) => new NotEqualToValueCondition(config));
+    cf.register<EqualToConditionConfig>(
+        ConditionType.EqualTo, (config) => new EqualToCondition(config));
+    cf.register<NotEqualToConditionConfig>
+        (ConditionType.NotEqualTo, (config) => new NotEqualToCondition(config));
     cf.register<GreaterThanValueConditionConfig>
         (ConditionType.GreaterThanValue, (config) => new GreaterThanValueCondition(config));
     cf.register<LessThanValueConditionConfig>

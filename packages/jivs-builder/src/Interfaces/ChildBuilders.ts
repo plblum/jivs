@@ -18,12 +18,12 @@ import {
     StringLengthConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import {
-    EqualToValueConditionConfig,
+    EqualToConditionConfig,
     GreaterThanOrEqualValueConditionConfig,
     GreaterThanValueConditionConfig,
     LessThanValueConditionConfig,
     LessThanOrEqualValueConditionConfig,
-    NotEqualToValueConditionConfig
+    NotEqualToConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
@@ -353,11 +353,11 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * 
      * @example
      * ```ts
-     * equalToValue(42);
-     * equalToValue(valueHost('field2'));
-     * equalToValue(42, "Value must be {value}.");
-     * equalToValue(42, "Value must be 42.", "Summary message");
-     * equalToValue(42, {
+     * equalTo(42);
+     * equalTo(valueHost('field2'));
+     * equalTo(42, "Value must be {value}.");
+     * equalTo(42, "Value must be 42.", "Summary message");
+     * equalTo(42, {
      *      errorMessage: "Value must be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -372,36 +372,36 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    equalToValue(
+    equalTo(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    equalToValue(
+    equalTo(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
 
     /**
-     * Alias for equalToValue
+     * Alias for equalTo
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    eqValue(
+    eq(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    eqValue(
+    eq(
         secondValue: any,
-        validatorParameters: FluentEqualToValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is not equal to the specified second value.
      * 
      * @example
      * ```ts
-     * notEqualToValue(42);
-     * notEqualToValue(valueHost('field2'));
-     * notEqualToValue(42, "Value must not be {Value}.");
-     * notEqualToValue(42, "Value must not be 42.", "Summary message");
-     * notEqualToValue(42, {
+     * notEqualTo(42);
+     * notEqualTo(valueHost('field2'));
+     * notEqualTo(42, "Value must not be {Value}.");
+     * notEqualTo(42, "Value must not be 42.", "Summary message");
+     * notEqualTo(42, {
      *      errorMessage: "Value must not be 42.", 
      *      summaryMessage: "Summary message" });
      * ```
@@ -416,25 +416,25 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */
-    notEqualToValue(
+    notEqualTo(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    notEqualToValue(
+    notEqualTo(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
 
     /**
-     * Alias for notEqualToValue
+     * Alias for notEqualTo
      * @param secondValue 
      * @param errorMessage 
      * @param summaryMessage 
      */
-    neqValue(
+    neq(
         secondValue: any,
         errorMessage?: string | null, summaryMessage?: string | null): IValidatorBuilder;
-    neqValue(
+    neq(
         secondValue: any,
-        validatorParameters: FluentNotEqualToValueValidatorConfig): IValidatorBuilder;
+        validatorParameters: FluentNotEqualToValidatorConfig): IValidatorBuilder;
 
     /**
      * Adds a validator that ensures the value is less than the specified second value.
@@ -874,7 +874,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      *     childBuilder.parentValue().requireText();
      *     childBuilder.fieldValue('fieldname2').requireText(parameters);
      *     childBuilder.fieldValue('fieldname2').regExp('^[A-D]');
-     *     childBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+     *     childBuilder.fieldValue('fieldname3').equalTo(valueHost('fieldname4'));
      *     childBuilder.any((grandchildBuilder)=> {
      *         grandchildBuilder.fieldValue('fieldname10').requireText();
      *         grandchildBuilder.fieldValue('fieldname11').requireText();
@@ -1062,10 +1062,10 @@ export type OptionalRegExpConditionParams = Partial<Omit<RegExpConditionConfig,
 //      builder.calc('DiffDays', LookupKey.Integer, this.differenceBetweenDates);
 //  }
 // ```
-export type OptionalEqualToValueConditionParams = Partial<Omit<EqualToValueConditionConfig,
+export type OptionalEqualToConditionParams = Partial<Omit<EqualToConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
 
-export type OptionalNotEqualToValueConditionParams = Partial<Omit<NotEqualToValueConditionConfig,
+export type OptionalNotEqualToConditionParams = Partial<Omit<NotEqualToConditionConfig,
     'conditionType' | /*'valueHostName' |*/ 'category' | 'secondValue' | 'secondValueHostName'>>;
 
 export type OptionalLessThanValueConditionParams = Partial<Omit<LessThanValueConditionConfig,
@@ -1088,8 +1088,8 @@ export type FluentRequireTextValidatorConfig = FluentValidatorConfig & OptionalR
 export type FluentNotNullValidatorConfig = FluentValidatorConfig;
 export type FluentRegExpValidatorConfig = FluentValidatorConfig & OptionalRegExpConditionParams;
 export type FluentRangeValidatorConfig = FluentValidatorConfig;
-export type FluentEqualToValueValidatorConfig = OptionalEqualToValueConditionParams & FluentValidatorConfig;
-export type FluentNotEqualToValueValidatorConfig = OptionalNotEqualToValueConditionParams & FluentValidatorConfig;
+export type FluentEqualToValidatorConfig = OptionalEqualToConditionParams & FluentValidatorConfig;
+export type FluentNotEqualToValidatorConfig = OptionalNotEqualToConditionParams & FluentValidatorConfig;
 export type FluentLessThanValueValidatorConfig = OptionalLessThanValueConditionParams & FluentValidatorConfig;
 export type FluentLessThanOrEqualValueValidatorConfig = OptionalLessThanOrEqualValueConditionParams & FluentValidatorConfig;
 export type FluentGreaterThanValueValidatorConfig = OptionalGreaterThanValueConditionParams & FluentValidatorConfig;
@@ -1214,69 +1214,45 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     range(minimum: any, maximum: any): void;
 
     /**
-     * Creates a configuration for the EqualToValueCondition.
+     * Creates a configuration for the EqualToCondition.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param secondValue - The value to compare against.
-     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
      */
-    equalToValue(
+    equalTo(
         secondValue: any,
-        conditionConfig?: OptionalEqualToValueConditionParams): void;
+        conditionConfig?: OptionalEqualToConditionParams): void;
 
     /**
-     * Creates a configuration for the EqualToValueCondition using an alias to equalToValue()
+     * Creates a configuration for the EqualToCondition using an alias to equalTo()
      * @param secondValue - The value to compare against.
-     * @param conditionConfig - Optional configuration parameters for the EqualToValue condition.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
+     * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
      */
-    eqValue(secondValue: any, conditionConfig?: OptionalEqualToValueConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the EqualToCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
-    //  */
-    // equalTo(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalEqualToConditionParams): void;
-    // /**
-    //  * Creates a configuration for the EqualToCondition using an alias to equalTo()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the EqualTo condition.
-    //  */
-    // eq(secondValueHostName: ValueHostName, conditionConfig?: OptionalEqualToConditionParams): void;
+    eq(secondValue: any, conditionConfig?: OptionalEqualToConditionParams): void;
 
     /**
-     * Creates a configuration for the NotEqualToValueCondition.
+     * Creates a configuration for the NotEqualToCondition.
      * @param secondValue - The value to compare against.
-     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
      */
-    notEqualToValue(
+    notEqualTo(
         secondValue: any,
-        conditionConfig?: OptionalNotEqualToValueConditionParams): void;
+        conditionConfig?: OptionalNotEqualToConditionParams): void;
 
     /**
-     * Creates a configuration for the NotEqualToValueCondition using an alias to notEqualToValue()
+     * Creates a configuration for the NotEqualToCondition using an alias to notEqualTo()
      * @param secondValue - The value to compare against.
-     * @param conditionConfig - Optional configuration parameters for the NotEqualToValue condition.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
+     * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
      */
-    neqValue(secondValue: any, conditionConfig?: OptionalNotEqualToValueConditionParams): void;
-    // /**
-    //  * Creates a configuration for the NotEqualToCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
-    //  */
-    // notEqualTo(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalNotEqualToConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the NotEqualToCondition using an alias to notEqualTo()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the NotEqualTo condition.
-    //  */
-    // neq(secondValueHostName: ValueHostName, conditionConfig?: OptionalNotEqualToConditionParams): void;
+    neq(secondValue: any, conditionConfig?: OptionalNotEqualToConditionParams): void;
+ 
     /**
      * Creates a configuration for the LessThanValueCondition.
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
      */
     lessThanValue(
@@ -1286,29 +1262,15 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     /**
      * Creates a configuration for the LessThanValueCondition using an alias to lessThanValue()
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the LessThanValue condition.
      */
     ltValue(secondValue: any, conditionConfig?: OptionalLessThanValueConditionParams): void;
 
-    // /**
-    //  * Creates a configuration for the LessThanCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the LessThan condition.
-    //  */
-    // lessThan(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalLessThanConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the LessThanCondition using an alias to lessThan()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the LessThan condition.
-    //  */
-    // lt(secondValueHostName: ValueHostName, conditionConfig?: OptionalLessThanConditionParams): void;
-
     /**
      * Creates a configuration for the LessThanOrEqualValueCondition.
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
      */
     lessThanOrEqualValue(
@@ -1318,28 +1280,15 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     /**
      * Creates a configuration for the LessThanOrEqualValueCondition using an alias to lessThanOrEqualValue()
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the LessThanOrEqualValue condition.
      */
     lteValue(secondValue: any, conditionConfig?: OptionalLessThanOrEqualValueConditionParams): void;
-    // /**
-    //  * Creates a configuration for the LessThanOrEqualCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
-    //  */
-    // lessThanOrEqual(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalLessThanOrEqualConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the LessThanOrEqualCondition using an alias to lessThanOrEqual()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the LessThanOrEqual condition.
-    //  */
-    // lte(secondValueHostName: ValueHostName, conditionConfig?: OptionalLessThanOrEqualConditionParams): void;
 
     /**
      * Creates a configuration for the GreaterThanValueCondition.
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
      */
     greaterThanValue(
@@ -1349,28 +1298,15 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     /**
      * Creates a configuration for the GreaterThanValueCondition using an alias to greaterThanValue()
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the GreaterThanValue condition.
      */
     gtValue(secondValue: any, conditionConfig?: OptionalGreaterThanValueConditionParams): void;
 
-    // /**
-    //  * Creates a configuration for the GreaterThanCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
-    //  */
-    // greaterThan(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalGreaterThanConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the GreaterThanCondition using an alias to greaterThan()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the GreaterThan condition.
-    //  */
-    // gt(secondValueHostName: ValueHostName, conditionConfig?: OptionalGreaterThanConditionParams): void;
     /**
      * Creates a configuration for the GreaterThanOrEqualValueCondition.
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
      */
     greaterThanOrEqualValue(
@@ -1380,25 +1316,11 @@ export interface IConditionBuilder<TConfig extends ConditionConfig = ConditionCo
     /**
      * Creates a configuration for the GreaterThanOrEqualValueCondition using an alias to greaterThanOrEqualValue()
      * @param secondValue - The value to compare against.
+     * To get a valueHosts value, pass in valueHost('valuehostname').
      * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqualValue condition.
      */
     gteValue(secondValue: any, conditionConfig?: OptionalGreaterThanOrEqualValueConditionParams): void;
     
-    // /**
-    //  * Creates configuration for the GreaterThanOrEqualCondition.
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
-    //  */
-    // greaterThanOrEqual(
-    //     secondValueHostName: ValueHostName,
-    //     conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
-
-    // /**
-    //  * Creates a configuration for the GreaterThanOrEqualCondition using an alias to greaterThanOrEqual()
-    //  * @param secondValueHostName - The host name of the second value to compare against.
-    //  * @param conditionConfig - Optional configuration parameters for the GreaterThanOrEqual condition.
-    //  */
-    // gte(secondValueHostName: ValueHostName, conditionConfig?: OptionalGreaterThanOrEqualConditionParams): void;
 
     /**
      * Creates a configuration for the StringLengthCondition.

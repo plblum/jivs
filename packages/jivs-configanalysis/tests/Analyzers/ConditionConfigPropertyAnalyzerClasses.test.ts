@@ -956,14 +956,14 @@ describe('ConditionWithSecondValueHostNamePropertyAnalyzer class', () => {
     }
     // tests cases all in one function.
     // These conditiontypes will have an error: EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo
-    // These will not have an error: EqualToValue, NotEqualToValue, Range, NotNull
+    // These will not have an error: EqualTo, NotEqualTo, Range, NotNull
     test('secondValueHostName is undefined, reports "Value must be defined" error for EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo', () => {
         testSecondValueHostNameUndefined(ConditionType.GreaterThanValue, true);
         testSecondValueHostNameUndefined(ConditionType.GreaterThanOrEqualValue, true);
         testSecondValueHostNameUndefined(ConditionType.LessThanValue, true);
         testSecondValueHostNameUndefined(ConditionType.LessThanOrEqualValue, true);
-        testSecondValueHostNameUndefined(ConditionType.EqualToValue, true);
-        testSecondValueHostNameUndefined(ConditionType.NotEqualToValue, true);
+        testSecondValueHostNameUndefined(ConditionType.EqualTo, true);
+        testSecondValueHostNameUndefined(ConditionType.NotEqualTo, true);
         testSecondValueHostNameUndefined(ConditionType.Range, false);
         testSecondValueHostNameUndefined(ConditionType.NotNull, false);
     });
@@ -1080,13 +1080,13 @@ describe('ConditionWithSecondValuePropertyAnalyzer class', () => {
         }
     }
     // test against that function for these conditionTypes:
-    // These expect an error: EqualToValue, NotEqualToValue...
+    // These expect an error: EqualTo, NotEqualTo...
     // These do not expect an error: Range, NotNull, EqualTo, NotEqualTo
     // All tests can be in one test function.
     // Use ConditionType.EqualTo, etc. to get the conditionType string
     test('secondValue = undefined, reports "Value must be defined" error for EqualTo, NotEqualTo, GreaterThan, GreaterThanOrEqualTo, LessThan, LessThanOrEqualTo', () => {
-        testSecondValueUndefined(ConditionType.EqualToValue, true);
-        testSecondValueUndefined(ConditionType.NotEqualToValue, true);
+        testSecondValueUndefined(ConditionType.EqualTo, true);
+        testSecondValueUndefined(ConditionType.NotEqualTo, true);
         testSecondValueUndefined(ConditionType.GreaterThanValue, true);
         testSecondValueUndefined(ConditionType.GreaterThanOrEqualValue, true);
         testSecondValueUndefined(ConditionType.LessThanValue, true);

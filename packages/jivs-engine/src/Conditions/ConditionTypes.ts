@@ -43,14 +43,14 @@ export enum ConditionType
     When = 'When',
 
     /**
-     * Associated with EqualToValueCondition class.
+     * Associated with EqualToCondition class.
      */
-    EqualToValue = 'EqualToValue',
+    EqualTo = 'EqualTo',
 
     /**
-     * Associated with NotEqualToValueCondition class.
+     * Associated with NotEqualToCondition class.
      */
-    NotEqualToValue = 'NotEqualToValue',
+    NotEqualTo = 'NotEqualTo',
 
     /**
      * Associated with GreaterThanValueCondition class.

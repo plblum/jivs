@@ -6,7 +6,7 @@ import
         RequireTextCondition
     } from "../../src/Conditions/ConcreteConditions";
 
-import { EqualToValueCondition, EqualToValueConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
+import { EqualToCondition, EqualToConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
@@ -284,12 +284,12 @@ describe('Validator.enabler', () => {
         expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull();
     });
-    test('Successful creation of EqualToValueCondition', () => {
+    test('Successful creation of EqualToCondition', () => {
         let setup = setupWithField1AndField2({
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
-                whenToEnableConfig: <EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                whenToEnableConfig: <EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     valueHostName: null
                 },
                 thenConfig: {
@@ -303,7 +303,7 @@ describe('Validator.enabler', () => {
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).not.toBeNull();
-        expect(enabler).toBeInstanceOf(EqualToValueCondition);
+        expect(enabler).toBeInstanceOf(EqualToCondition);
     });
     test('Attempt to create Enabler with invalid type logs and replaces the condition with ErrorResponseCondition', () => {
         let setup = setupWithField1AndField2({
@@ -454,8 +454,8 @@ describe('Validator.severity', () => {
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
-        checkDefaultSeverity(ConditionType.EqualToValue);
-        checkDefaultSeverity(ConditionType.NotEqualToValue);
+        checkDefaultSeverity(ConditionType.EqualTo);
+        checkDefaultSeverity(ConditionType.NotEqualTo);
         checkDefaultSeverity(ConditionType.GreaterThanValue);
         checkDefaultSeverity(ConditionType.GreaterThanOrEqualValue);
         checkDefaultSeverity(ConditionType.LessThanValue);

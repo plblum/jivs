@@ -100,7 +100,7 @@ describe('dataTypeCheck on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().dataTypeCheck()
         );
 
@@ -112,7 +112,7 @@ describe('dataTypeCheck on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -221,7 +221,7 @@ describe('regExp on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().regExp('\\d', true)
         );
 
@@ -233,7 +233,7 @@ describe('regExp on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -314,7 +314,7 @@ describe('range on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().range(1, 4)
         );
 
@@ -326,7 +326,7 @@ describe('range on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -343,17 +343,17 @@ describe('range on conditions', () => {
     });
 });
 
-describe('equalToValue on conditions', () =>
+describe('equalTo on conditions', () =>
 {
     describe('secondValue', () =>
     {
-        test('With secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () =>
+        test('With secondValue assigned, creates EqualToConditionConfig with type=EqualTo and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().equalToValue(1);
+            starterBuilder.parentValue().equalTo(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -361,13 +361,13 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValue assigned, eqValue', () =>
+        test('With secondValue assigned, eq', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().eqValue(1);
+            starterBuilder.parentValue().eq(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -376,14 +376,14 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValue assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValue assigned', () =>
+        test('With secondValue assigned and condDesc={}, creates EqualToConditionConfig with type=EqualTo and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().equalToValue(1, {});
+            starterBuilder.parentValue().equalTo(1, {});
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -391,14 +391,14 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With ValueHostName and secondValue assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue and valueHostName assigned', () =>
+        test('With ValueHostName and secondValue assigned, creates EqualToConditionConfig with type=EqualTo, secondValue and valueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field2').equalToValue(1);
+            starterBuilder.fieldValue('Field2').equalTo(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Field2',
                 secondValue: 1
             };
@@ -409,18 +409,18 @@ describe('equalToValue on conditions', () =>
         });
 
 
-        test('With secondValue and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValue and secondConversionLookupKey assigned, creates EqualToConditionConfig with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().equalToValue(1,
+            starterBuilder.parentValue().equalTo(1,
                 {
                     conversionLookupKey: LookupKey.Integer,
                     secondConversionLookupKey: LookupKey.Integer
                 });
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -435,8 +435,8 @@ describe('equalToValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-                (thenBuilder) => thenBuilder.parentValue().equalToValue(3)
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
+                (thenBuilder) => thenBuilder.parentValue().equalTo(3)
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -447,12 +447,12 @@ describe('equalToValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 3
                             }
                         }
@@ -464,13 +464,13 @@ describe('equalToValue on conditions', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('With secondValueHostName assigned, creates EqualToValueConditionConfig with type=EqualToValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().equalToValue(valueHost('Field2'));
+            starterBuilder.parentValue().equalTo(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -478,13 +478,13 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValueHostName assigned, eqValue', () =>
+        test('With secondValueHostName assigned, eq', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().eqValue(valueHost('Field2'));
+            starterBuilder.parentValue().eq(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -493,14 +493,14 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValueHostName assigned and condDesc={}, creates EqualToValueConditionConfig with type=EqualToValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned and condDesc={}, creates EqualToConditionConfig with type=EqualTo and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().equalToValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().equalTo(valueHost('Field2'), {});
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -508,14 +508,14 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With valueHostName and secondValueHostName, creates EqualToValueConditionConfig with type=EqualToValue, valueHostName and secondValueHostName assigned', () =>
+        test('With valueHostName and secondValueHostName, creates EqualToConditionConfig with type=EqualTo, valueHostName and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').equalToValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').equalTo(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -527,19 +527,19 @@ describe('equalToValue on conditions', () =>
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValueHostName and secondConversionLookupKey assigned, creates EqualToValueConditionConfig with type=EqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates EqualToConditionConfig with type=EqualTo, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().equalToValue(valueHost('Field2'),
+            starterBuilder.parentValue().equalTo(valueHost('Field2'),
                 {
                     conversionLookupKey: LookupKey.Integer,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             );
             let expectedCondConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -553,8 +553,8 @@ describe('equalToValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-                (thenBuilder) => thenBuilder.parentValue().equalToValue(valueHost('F3'))
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
+                (thenBuilder) => thenBuilder.parentValue().equalTo(valueHost('F3'))
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -565,12 +565,12 @@ describe('equalToValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValueHostName: 'F3'
                             }
                         }
@@ -583,16 +583,16 @@ describe('equalToValue on conditions', () =>
 
 });
 
-describe('notEqualToValue on conditions', () => {
+describe('notEqualTo on conditions', () => {
     describe('secondValue', () =>
     {
-        test('With secondValue assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () =>
+        test('With secondValue assigned, creates NotEqualToConditionConfig with type=NotEqualTo and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().notEqualToValue(1);
+            starterBuilder.parentValue().notEqualTo(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -600,13 +600,13 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValue assigned, neqValue', () =>
+        test('With secondValue assigned, neq', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().neqValue(1);
+            starterBuilder.parentValue().neq(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -615,14 +615,14 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValue assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValue assigned', () =>
+        test('With secondValue assigned and condDesc={}, creates NotEqualToConditionConfig with type=NotEqualTo and secondValue assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().notEqualToValue(1, {});
+            starterBuilder.parentValue().notEqualTo(1, {});
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValue: 1
             };
             let starterConfig = starterBuilder.getConfig();
@@ -635,9 +635,9 @@ describe('notEqualToValue on conditions', () => {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').notEqualToValue(1);
+            starterBuilder.fieldValue('Field1').notEqualTo(1);
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Field1',
                 secondValue: 1
             };
@@ -647,17 +647,17 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValue and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValue and secondConversionLookupKey assigned, creates NotEqualToConditionConfig with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().notEqualToValue(1, {
+            starterBuilder.parentValue().notEqualTo(1, {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValue: 1,
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -672,8 +672,8 @@ describe('notEqualToValue on conditions', () => {
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-                (thenBuilder) => thenBuilder.parentValue().notEqualToValue(1)
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
+                (thenBuilder) => thenBuilder.parentValue().notEqualTo(1)
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -684,12 +684,12 @@ describe('notEqualToValue on conditions', () => {
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.NotEqualToValue,
+                                conditionType: ConditionType.NotEqualTo,
                                 secondValue: 1
                             }
                         }
@@ -701,13 +701,13 @@ describe('notEqualToValue on conditions', () => {
     });
     describe('secondValueHostName', () =>
     {
-        test('With secondValueHostName assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'));
+            starterBuilder.parentValue().notEqualTo(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -715,13 +715,13 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValueHostName assigned, using neqValue', () =>
+        test('With secondValueHostName assigned, using neq', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
-            starterBuilder.parentValue().neqValue(valueHost('Field2'));
+            starterBuilder.parentValue().neq(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -729,14 +729,14 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With secondValueHostName assigned and condDesc={}, creates NotEqualToValueConditionConfig with type=NotEqualToValue and secondValueHostName assigned', () =>
+        test('With secondValueHostName assigned and condDesc={}, creates NotEqualToConditionConfig with type=NotEqualTo and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'), {});
+            starterBuilder.parentValue().notEqualTo(valueHost('Field2'), {});
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2'
             };
             let starterConfig = starterBuilder.getConfig();
@@ -744,14 +744,14 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.completedConfig).toEqual(expectedCondConfig);
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
-        test('With valueHostName and secondValueHostName assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, valueHostName, and secondValueHostName assigned', () =>
+        test('With valueHostName and secondValueHostName assigned, creates NotEqualToConditionConfig with type=NotEqualTo, valueHostName, and secondValueHostName assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.fieldValue('Field1').notEqualToValue(valueHost('Field2'));
+            starterBuilder.fieldValue('Field1').notEqualTo(valueHost('Field2'));
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Field1',
                 secondValueHostName: 'Field2'
             };
@@ -761,17 +761,17 @@ describe('notEqualToValue on conditions', () => {
             expect(parentBuilder.getConfig()).toBeUndefined();
         });
 
-        test('With secondValueHostName and secondConversionLookupKey assigned, creates NotEqualToValueConditionConfig with type=NotEqualToValue, secondValue, and secondConversionLookupKey assigned', () =>
+        test('With secondValueHostName and secondConversionLookupKey assigned, creates NotEqualToConditionConfig with type=NotEqualTo, secondValue, and secondConversionLookupKey assigned', () =>
         {
             let parentBuilder = new TestParentBuilder();
             let starterBuilder = new StartConditionBuilder(services, parentBuilder);
 
-            starterBuilder.parentValue().notEqualToValue(valueHost('Field2'), {
+            starterBuilder.parentValue().notEqualTo(valueHost('Field2'), {
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
             });
             let expectedCondConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+                conditionType: ConditionType.NotEqualTo,
                 secondValueHostName: 'Field2',
                 conversionLookupKey: LookupKey.Integer,
                 secondConversionLookupKey: LookupKey.Integer
@@ -785,8 +785,8 @@ describe('notEqualToValue on conditions', () => {
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
-                (thenBuilder) => thenBuilder.parentValue().notEqualToValue(valueHost('F3'))
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
+                (thenBuilder) => thenBuilder.parentValue().notEqualTo(valueHost('F3'))
             );
 
             let expectedConfig = <FieldValueHostConfig> {
@@ -797,12 +797,12 @@ describe('notEqualToValue on conditions', () => {
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
                             thenConfig: {
-                                conditionType: ConditionType.NotEqualToValue,
+                                conditionType: ConditionType.NotEqualTo,
                                 secondValueHostName: 'F3'
                             }
                         }
@@ -891,7 +891,7 @@ describe('lessThanValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().lessThanValue('A')
             );
 
@@ -903,7 +903,7 @@ describe('lessThanValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1024,7 +1024,7 @@ describe('lessThanValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().lessThanValue(valueHost('F3'))
             );
 
@@ -1036,7 +1036,7 @@ describe('lessThanValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1177,7 +1177,7 @@ describe('lessThanOrEqualValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue('B')
             );
 
@@ -1189,7 +1189,7 @@ describe('lessThanOrEqualValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1310,7 +1310,7 @@ describe('lessThanOrEqualValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().lessThanOrEqualValue(valueHost('F3'))
             );
 
@@ -1322,7 +1322,7 @@ describe('lessThanOrEqualValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1463,7 +1463,7 @@ describe('greaterThanValue on conditions', () => {
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().greaterThanValue('C')
             );
 
@@ -1475,7 +1475,7 @@ describe('greaterThanValue on conditions', () => {
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1609,7 +1609,7 @@ describe('greaterThanValue on conditions', () => {
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().greaterThanValue(valueHost('F3'))
             );
 
@@ -1621,7 +1621,7 @@ describe('greaterThanValue on conditions', () => {
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1759,7 +1759,7 @@ describe('greaterThanOrEqualValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue('D')
             );
 
@@ -1771,7 +1771,7 @@ describe('greaterThanOrEqualValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -1906,7 +1906,7 @@ describe('greaterThanOrEqualValue on conditions', () =>
         {
             let vmBuilder = new ValueHostsManagerConfigBuilder(services);
             let fieldFluent = vmBuilder.field('myField').when(
-                (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+                (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
                 (thenBuilder) => thenBuilder.parentValue().greaterThanOrEqualValue(valueHost('F3'))
             );
 
@@ -1918,7 +1918,7 @@ describe('greaterThanOrEqualValue on conditions', () =>
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
-                                conditionType: ConditionType.EqualToValue,
+                                conditionType: ConditionType.EqualTo,
                                 secondValue: 1,
                                 valueHostName: 'F2'
                             },
@@ -2000,7 +2000,7 @@ describe('stringLength on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().stringLength(4)
         );
 
@@ -2012,7 +2012,7 @@ describe('stringLength on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -2090,7 +2090,7 @@ describe('requireText on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().requireText()
         );
 
@@ -2102,7 +2102,7 @@ describe('requireText on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -2147,7 +2147,7 @@ describe('notNull on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().notNull()
         );
 
@@ -2159,7 +2159,7 @@ describe('notNull on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -2204,7 +2204,7 @@ describe('positive on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().positive()
         );
 
@@ -2216,7 +2216,7 @@ describe('positive on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -2261,7 +2261,7 @@ describe('integer on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().integer()
         );
 
@@ -2273,7 +2273,7 @@ describe('integer on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },
@@ -2320,7 +2320,7 @@ describe('maxDecimals on conditions', () => {
     test('using when with this condition type in the thenBuilder', () => {
         let vmBuilder = new ValueHostsManagerConfigBuilder(services);
         let fieldFluent =  vmBuilder.field('myField').when(
-            (whenBuilder) => whenBuilder.fieldValue('F2').equalToValue(1),
+            (whenBuilder) => whenBuilder.fieldValue('F2').equalTo(1),
             (thenBuilder) => thenBuilder.parentValue().maxDecimals(2)
         );
 
@@ -2332,7 +2332,7 @@ describe('maxDecimals on conditions', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 1,
                             valueHostName: 'F2'
                         },

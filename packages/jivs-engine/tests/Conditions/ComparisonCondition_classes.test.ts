@@ -1,10 +1,10 @@
 import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from '../../src/Conditions/CompareToValueConditionBase';
 import
     {
-        EqualToValueCondition, EqualToValueConditionConfig, GreaterThanOrEqualValueCondition,
+        EqualToCondition, EqualToConditionConfig, GreaterThanOrEqualValueCondition,
         GreaterThanOrEqualValueConditionConfig, GreaterThanValueCondition, GreaterThanValueConditionConfig,
         LessThanOrEqualValueCondition, LessThanOrEqualValueConditionConfig, LessThanValueCondition,
-        LessThanValueConditionConfig, NotEqualToValueCondition, NotEqualToValueConditionConfig
+        LessThanValueConditionConfig, NotEqualToCondition, NotEqualToConditionConfig
     } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { IntegerConverter, NumericStringToNumberConverter } from '../../src/DataTypes/DataTypeConverters';
@@ -92,7 +92,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let logger = setup.services.loggerService as CapturingLogger;
             setup.vh.setValue('');
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 valueHostName: null,
                 secondValue: null
             };
@@ -297,7 +297,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let vh2 = setup.vhm.addMockFieldValueHost('Property2', LookupKey.Number, 'Second label');
 
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
@@ -323,7 +323,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let setup = setupWithValueHost();
             setup.vh.setValue('');
             let config: CompareToValueConditionBaseConfig = {
-                conditionType: ConditionType.EqualToValue,
+                conditionType: ConditionType.EqualTo,
                 secondValueHostName: 'PropertyNotRegistered',
                 valueHostName: null
             };
@@ -529,29 +529,29 @@ describe('CompareToValueConditionBase class additional cases', () =>
 
 });
 
-describe('class EqualToValueCondition', () => {
+describe('class EqualToCondition', () => {
     test('DefaultConditionType', () => {
-        expect(EqualToValueCondition.DefaultConditionType).toBe(ConditionType.EqualToValue);
+        expect(EqualToCondition.DefaultConditionType).toBe(ConditionType.EqualTo);
     });
     test('category is Comparison', () =>
     {
-        let config: EqualToValueConditionConfig = {
-            conditionType: ConditionType.EqualToValue,
+        let config: EqualToConditionConfig = {
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValue: 10,
         };
-        let testItem = new EqualToValueCondition(config);
+        let testItem = new EqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () =>
     {
-        let config: EqualToValueConditionConfig = {
-            conditionType: ConditionType.EqualToValue,
+        let config: EqualToConditionConfig = {
+            conditionType: ConditionType.EqualTo,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new EqualToValueCondition(config);
+        let testItem = new EqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });    
     describe('secondValue', () =>
@@ -562,12 +562,12 @@ describe('class EqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -583,12 +583,12 @@ describe('class EqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValue: false,
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -602,12 +602,12 @@ describe('class EqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100,
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -624,13 +624,13 @@ describe('class EqualToValueCondition', () => {
             dsc.register(new IntegerConverter());
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 conversionLookupKey: LookupKey.Integer, //uses Math.trunc
                 secondValue: 100,
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(99.1);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
@@ -652,14 +652,14 @@ describe('class EqualToValueCondition', () => {
             let vh1 = setup.vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
 
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 conversionLookupKey: null,
                 secondValue: 100.2,
                 secondConversionLookupKey: LookupKey.Integer
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh1.setTextValue('---- does not matter ----');
             vh1.setValue(100);
             expect(testItem.evaluate(vh1, setup.vhm)).toBe(ConditionEvaluateResult.Match);
@@ -673,12 +673,12 @@ describe('class EqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100,
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -700,12 +700,12 @@ describe('class EqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValue: undefined,
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -733,12 +733,12 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Boolean, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh1.setTextValue('---- does not matter ----');
             vh1.setValue(false);
             vh2.setValue(false);
@@ -758,12 +758,12 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -784,12 +784,12 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh.setValue(null);
             vh2.setValue(100);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -819,13 +819,13 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 conversionLookupKey: LookupKey.Integer, // uses Math.trunc
                 secondValueHostName: 'Property2'
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh2.setValue(100);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(99.1);
@@ -850,14 +850,14 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 conversionLookupKey: null,
                 secondValueHostName: 'Property2',
                 secondConversionLookupKey: LookupKey.Integer        // converts with Math.trunc
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh1.setTextValue('---- does not matter ----');
             vh1.setValue(100);
 
@@ -881,12 +881,12 @@ describe('class EqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: EqualToValueConditionConfig = {
-                conditionType: ConditionType.EqualToValue,
+            let config: EqualToConditionConfig = {
+                conditionType: ConditionType.EqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new EqualToValueCondition(config);
+            let testItem = new EqualToCondition(config);
             vh2.setValue(100);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
@@ -906,30 +906,30 @@ describe('class EqualToValueCondition', () => {
     });
 
 });
-describe('class NotEqualToValueCondition', () => {
+describe('class NotEqualToCondition', () => {
     test('DefaultConditionType', () => {
-        expect(NotEqualToValueCondition.DefaultConditionType).toBe(ConditionType.NotEqualToValue);
+        expect(NotEqualToCondition.DefaultConditionType).toBe(ConditionType.NotEqualTo);
     });
 
     test('category is Comparison', () =>
     {
-        let config: NotEqualToValueConditionConfig = {
-            conditionType: ConditionType.NotEqualToValue,
+        let config: NotEqualToConditionConfig = {
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValue: 10
         };
-        let testItem = new NotEqualToValueCondition(config);
+        let testItem = new NotEqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Comparison);
     });
     test('category is overridden', () =>
     {
-        let config: NotEqualToValueConditionConfig = {
-            conditionType: ConditionType.NotEqualToValue,
+        let config: NotEqualToConditionConfig = {
+            conditionType: ConditionType.NotEqualTo,
             valueHostName: 'Property1',
             secondValue: 10,
             category: ConditionCategory.Contents
         };
-        let testItem = new NotEqualToValueCondition(config);
+        let testItem = new NotEqualToCondition(config);
         expect(testItem.category).toBe(ConditionCategory.Contents);
     });
 
@@ -941,12 +941,12 @@ describe('class NotEqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(101);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);
@@ -962,12 +962,12 @@ describe('class NotEqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Boolean, 'Label');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValue: false
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Match);
@@ -981,12 +981,12 @@ describe('class NotEqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
             vh.setValue(undefined);
@@ -1000,12 +1000,12 @@ describe('class NotEqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValue: 100
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1028,12 +1028,12 @@ describe('class NotEqualToValueCondition', () => {
             let vhm = new MockValueHostsManager(services);
             let vh = vhm.addMockFieldValueHost(
                 'Property1', LookupKey.Number, 'Label');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValue: null
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([
@@ -1062,12 +1062,12 @@ describe('class NotEqualToValueCondition', () => {
                 'Property1', LookupKey.Boolean, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Boolean, 'Label2');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh.setValue(true);
             vh2.setValue(false);
@@ -1087,12 +1087,12 @@ describe('class NotEqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh.setTextValue('---- does not matter ----');
             vh2.setTextValue('---- Second does not matter ---');
             vh2.setValue(100);  // property value to match to the rest
@@ -1114,12 +1114,12 @@ describe('class NotEqualToValueCondition', () => {
                 'Property1', LookupKey.Number, 'Label');
             let vh2 = vhm.addMockFieldValueHost(
                 'Property2', LookupKey.Number, 'Label2');
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             vh2.setValue(100);
             vh.setValue(null);
             expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1148,12 +1148,12 @@ describe('class NotEqualToValueCondition', () => {
             let vh2 = vhm.addMockValueHost(
                 'Property2', LookupKey.Number, 'Label2');
             vh2.setValue(100);
-            let config: NotEqualToValueConditionConfig = {
-                conditionType: ConditionType.NotEqualToValue,
+            let config: NotEqualToConditionConfig = {
+                conditionType: ConditionType.NotEqualTo,
                 valueHostName: 'Property1',
                 secondValueHostName: 'Property2'
             };
-            let testItem = new NotEqualToValueCondition(config);
+            let testItem = new NotEqualToCondition(config);
             let list = testItem.getValuesForTokens(vh, vhm);
             expect(list).not.toBeNull();
             expect(list).toEqual([

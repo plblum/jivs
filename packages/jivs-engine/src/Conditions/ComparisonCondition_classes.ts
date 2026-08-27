@@ -31,14 +31,14 @@ import { CompareToValueConditionBase, CompareToValueConditionBaseConfig } from '
 import { ConditionType } from './ConditionTypes';
 
 /**
- * ConditionConfig for {@link EqualToValueCondition}
+ * ConditionConfig for {@link EqualToCondition}
  */
-export interface EqualToValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface EqualToConditionConfig extends CompareToValueConditionBaseConfig { }
 /**
  * Value from ValueHost must be equal to a second value, assigned in its ConditionConfig.secondValue.
  */
-export class EqualToValueCondition extends CompareToValueConditionBase<EqualToValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.EqualToValue; }
+export class EqualToCondition extends CompareToValueConditionBase<EqualToConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.EqualTo; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
         return comparison === ComparersResult.Equal ?
@@ -48,15 +48,15 @@ export class EqualToValueCondition extends CompareToValueConditionBase<EqualToVa
 }
 
 /**
- * ConditionConfig for {@link NotEqualToValueCondition}
+ * ConditionConfig for {@link NotEqualToCondition}
  */
-export interface NotEqualToValueConditionConfig extends CompareToValueConditionBaseConfig { }
+export interface NotEqualToConditionConfig extends CompareToValueConditionBaseConfig { }
 
 /**
  * Value from ValueHost must not be equal to a second value, assigned in its ConditionConfig.secondValue.
  */
-export class NotEqualToValueCondition extends CompareToValueConditionBase<NotEqualToValueConditionConfig> {
-    public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualToValue; }
+export class NotEqualToCondition extends CompareToValueConditionBase<NotEqualToConditionConfig> {
+    public static get DefaultConditionType(): ConditionType { return ConditionType.NotEqualTo; }
     
     protected compareTwoValues(comparison: ComparersResult): ConditionEvaluateResult {
 

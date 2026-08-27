@@ -1,10 +1,10 @@
 import
     {
-        EqualToValueConditionConfig,
+        EqualToConditionConfig,
         GreaterThanOrEqualValueConditionConfig,
         GreaterThanValueConditionConfig,
         LessThanOrEqualValueConditionConfig, LessThanValueConditionConfig,
-        NotEqualToValueConditionConfig
+        NotEqualToConditionConfig
     } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import
     {
@@ -940,113 +940,113 @@ describe('range as a validator of a field()', () => {
 
 });
 
-describe('equalToValue as a validator of a field()', () =>
+describe('equalTo as a validator of a field()', () =>
 {
     describe('secondValue', () =>
     {
     
-        test('equalToValue(1), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+        test('equalTo(1), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 }
             });
         });
-        // equalToValue(1, null)
-        test('equalToValue(1, null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+        // equalTo(1, null)
+        test('equalTo(1, null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 }
             });
         });
-        // equalToValue(1, null, null)
-        test('equalToValue(1, null, null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+        // equalTo(1, null, null)
+        test('equalTo(1, null, null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 }
             });
         });
-        // equalToValue(null)
-        test('equalToValue(null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue unassigned', () =>
+        // equalTo(null)
+        test('equalTo(null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue unassigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo
                 }
             });
         });
-        // equalToValue(undefined)
-        test('equalToValue(undefined), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+        // equalTo(undefined)
+        test('equalTo(undefined), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(undefined);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(undefined);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo
                 }
             });
         });
-        // equalToValue(1, 'Error')
-        test('equalToValue(1, "Error"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage assigned', () =>
+        // equalTo(1, 'Error')
+        test('equalTo(1, "Error"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and errorMessage assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // equalToValue(1, 'Error', 'Summary')
-        test('equalToValue(1, "Error", "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // equalTo(1, 'Error', 'Summary')
+        test('equalTo(1, "Error", "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue(1, null, 'Summary')
-        test('equalToValue(1, null, "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and summaryMessage assigned', () =>
+        // equalTo(1, null, 'Summary')
+        test('equalTo(1, null, "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('equalToValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // equalTo(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('equalTo(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
@@ -1054,18 +1054,18 @@ describe('equalToValue as a validator of a field()', () =>
             });
         });
 
-        // equalToValue(1, { errorMessage: 'Error', summaryMessage: 'Summary', secondConversionLookupKey: 'key' })
-        test('equalToValue(1, { errorMessage: "Error", summaryMessage: "Summary", secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and errorMessage + summaryMessage + secondConversionLookupKey assigned', () =>
+        // equalTo(1, { errorMessage: 'Error', summaryMessage: 'Summary', secondConversionLookupKey: 'key' })
+        test('equalTo(1, { errorMessage: "Error", summaryMessage: "Summary", secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and errorMessage + summaryMessage + secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary',
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 },
@@ -1073,68 +1073,68 @@ describe('equalToValue as a validator of a field()', () =>
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue(1, { secondConversionLookupKey: 'key' })
-        test('equalToValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // equalTo(1, { secondConversionLookupKey: 'key' })
+        test('equalTo(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1,
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // equalToValue(1, {})
-        test('equalToValue(1, {}), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+        // equalTo(1, {})
+        test('equalTo(1, {}), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalToValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 1
                 }
             });
         });
 
-        describe('eqValue alias of equalToValue  Confirm overloaded interfaces', () =>
+        describe('eq alias of equalTo  Confirm overloaded interfaces', () =>
         {
-            test('eqValue(1), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq(1), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eqValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eq(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValue: 1
                     }
                 });
             });
-            test('eqValue(1, errormessage, summarymessage), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq(1, errormessage, summarymessage), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .eqValue(1, 'Error', 'Summary');
+                    .eq(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('eqValue(1, { errormessage, summarymessage}), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq(1, { errormessage, summarymessage}), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .eqValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .eq(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -1145,164 +1145,164 @@ describe('equalToValue as a validator of a field()', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('equalToValue("Field2"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned', () =>
+        test('equalTo("Field2"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // equalToValue("Field2", null)
-        test('equalToValue("Field2", null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned', () =>
+        // equalTo("Field2", null)
+        test('equalTo("Field2", null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // equalToValue("Field2", null, null)
-        test('equalToValue("Field2", null, null), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned', () =>
+        // equalTo("Field2", null, null)
+        test('equalTo("Field2", null, null), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // equalToValue("Field2", "Error")
-        test('equalToValue("Field2", "Error"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // equalTo("Field2", "Error")
+        test('equalTo("Field2", "Error"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // equalToValue("Field2", "Error", "Summary")
-        test('equalToValue("Field2", "Error", "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // equalTo("Field2", "Error", "Summary")
+        test('equalTo("Field2", "Error", "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue("Field2", null, "Summary")
-        test('equalToValue("Field2", null, "Summary"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // equalTo("Field2", null, "Summary")
+        test('equalTo("Field2", null, "Summary"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('equalToValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // equalTo("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('equalTo("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'),
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // equalToValue("Field2", { secondConversionLookupKey: 'key' })  
-        test('equalToValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // equalTo("Field2", { secondConversionLookupKey: 'key' })  
+        test('equalTo("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'),
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // equalToValue("Field2", {})
-        test('equalToValue("Field2", {}), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned', () =>
+        // equalTo("Field2", {})
+        test('equalTo("Field2", {}), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // equalToValue("")
-        test('equalToValue(""), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValueHostName assigned', () =>
+        // equalTo("")
+        test('equalTo(""), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').equalToValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').equalTo(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <EqualToValueConditionConfig> {
-                    conditionType: ConditionType.EqualToValue,
+                conditionConfig: <EqualToConditionConfig> {
+                    conditionType: ConditionType.EqualTo,
                     secondValueHostName: ''
                 }
             });
         });
-        describe('eq() alias of equalToValue  Confirm overloaded interfaces', () =>
+        describe('eq() alias of equalTo  Confirm overloaded interfaces', () =>
         {
-            test('eqValue("Field2"), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq("Field2"), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eqValue(valueHost('Field2'));
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eq(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
                     }
                 });
             });
-            test('eqValue("Field2", errormessage, summarymessage), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq("Field2", errormessage, summarymessage), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .eqValue(valueHost("Field2"), 'Error', 'Summary');
+                    .eq(valueHost("Field2"), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('eqValue("Field2", { errormessage, summarymessage}), creates ValidatorConfig with EqualToValueCondition with type=EqualToValue and secondValue assigned', () =>
+            test('eq("Field2", { errormessage, summarymessage}), creates ValidatorConfig with EqualToCondition with type=EqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .eqValue(valueHost("Field2"), { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .eq(valueHost("Field2"), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <EqualToValueConditionConfig> {
-                        conditionType: ConditionType.EqualToValue,
+                    conditionConfig: <EqualToConditionConfig> {
+                        conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
                     },
                     errorMessage: 'Error',
@@ -1314,180 +1314,180 @@ describe('equalToValue as a validator of a field()', () =>
 
 });
 
-describe('notEqualToValue as a validator of a field()', () =>
+describe('notEqualTo as a validator of a field()', () =>
 {
     describe('secondValue', () =>
     {
 
-        test('notEqualToValue(1), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+        test('notEqualTo(1), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 }
             });
         });
-        // notEqualToValue(1, null)
-        test('notEqualToValue(1, null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+        // notEqualTo(1, null)
+        test('notEqualTo(1, null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 }
             });
         });
-        // notEqualToValue(1, null, null)
-        test('notEqualToValue(1, null, null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+        // notEqualTo(1, null, null)
+        test('notEqualTo(1, null, null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, null, null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 }
             });
         });
-        // notEqualToValue(1, 'Error')
-        test('notEqualToValue(1, "Error"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and errorMessage assigned', () =>
+        // notEqualTo(1, 'Error')
+        test('notEqualTo(1, "Error"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, 'Error');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error'
             });
         });
-        // notEqualToValue(1, 'Error', 'Summary')
-        test('notEqualToValue(1, "Error", "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // notEqualTo(1, 'Error', 'Summary')
+        test('notEqualTo(1, "Error", "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue(1, null, 'Summary')
-        test('notEqualToValue(1, null, "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and summaryMessage assigned', () =>
+        // notEqualTo(1, null, 'Summary')
+        test('notEqualTo(1, null, "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, null, 'Summary');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('notEqualToValue(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and errorMessage + summaryMessage assigned', () =>
+        // notEqualTo(1, { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('notEqualTo(1, { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1,
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue(1, { secondConversionLookupKey: 'key' })
-        test('notEqualToValue(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned and secondConversionLookupKey assigned', () =>
+        // notEqualTo(1, { secondConversionLookupKey: 'key' })
+        test('notEqualTo(1, { secondConversionLookupKey: "key" }), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1,
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1,
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1,
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // notEqualToValue(1, {})
-        test('notEqualToValue(1, {}), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+        // notEqualTo(1, {})
+        test('notEqualTo(1, {}), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(1, {});
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
                 }
             });
         });
-        // notEqualToValue("")
-        test('notEqualToValue(""), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+        // notEqualTo("")
+        test('notEqualTo(""), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue('');
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValue: ''
                 }
             });
         });
-        // notEqualToValue(null)
-        test('notEqualToValue(null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue unassigned', () =>
+        // notEqualTo(null)
+        test('notEqualTo(null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue unassigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualToValue(null);
+            let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo
                 }
             });
         });
-        describe('neqValue alias of notEqualToValue  Confirm overloaded interfaces', () =>
+        describe('neq alias of notEqualTo  Confirm overloaded interfaces', () =>
         {
-            test('neqValue(1), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+            test('neq(1), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
             {
 
-                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).neqValue(1);
+                let testItem = createVMBuilder().field('Field1', LookupKey.Integer).neq(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <NotEqualToValueConditionConfig> {
-                        conditionType: ConditionType.NotEqualToValue,
+                    conditionConfig: <NotEqualToConditionConfig> {
+                        conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
                     }
                 });
             });
-            test('neqValue(1, errormessage, summarymessage), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+            test('neq(1, errormessage, summarymessage), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .neqValue(1, 'Error', 'Summary');
+                    .neq(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <NotEqualToValueConditionConfig> {
-                        conditionType: ConditionType.NotEqualToValue,
+                    conditionConfig: <NotEqualToConditionConfig> {
+                        conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             });
-            test('neqValue(1, { errormessage, summarymessage}), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValue assigned', () =>
+            test('neq(1, { errormessage, summarymessage}), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValue assigned', () =>
             {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
-                    .neqValue(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
+                    .neq(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
-                    conditionConfig: <NotEqualToValueConditionConfig> {
-                        conditionType: ConditionType.NotEqualToValue,
+                    conditionConfig: <NotEqualToConditionConfig> {
+                        conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
                     },
                     errorMessage: 'Error',
@@ -1498,137 +1498,137 @@ describe('notEqualToValue as a validator of a field()', () =>
     });
     describe('secondValueHostName', () =>
     {
-        test('notEqualToValue("Field2"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        test('notEqualTo("Field2"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // notEqualToValue("Field2", null)
-        test('notEqualToValue("Field2", null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        // notEqualTo("Field2", null)
+        test('notEqualTo("Field2", null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), null);
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // notEqualToValue("Field2", null, null)
-        test('notEqualToValue("Field2", null, null), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        // notEqualTo("Field2", null, null)
+        test('notEqualTo("Field2", null, null), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), null, null);
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // notEqualToValue("Field2", "Error")
-        test('notEqualToValue("Field2", "Error"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned and errorMessage assigned', () =>
+        // notEqualTo("Field2", "Error")
+        test('notEqualTo("Field2", "Error"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and errorMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), 'Error');
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error'
             });
         });
-        // notEqualToValue("Field2", "Error", "Summary")
-        test('notEqualToValue("Field2", "Error", "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // notEqualTo("Field2", "Error", "Summary")
+        test('notEqualTo("Field2", "Error", "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), 'Error', 'Summary');
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue("Field2", null, "Summary")
-        test('notEqualToValue("Field2", null, "Summary"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned and summaryMessage assigned', () =>
+        // notEqualTo("Field2", null, "Summary")
+        test('notEqualTo("Field2", null, "Summary"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), null, 'Summary');
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 },
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
-        test('notEqualToValue("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
+        // notEqualTo("Field2", { errorMessage: 'Error', summaryMessage: 'Summary' })
+        test('notEqualTo("Field2", { errorMessage: "Error", summaryMessage: "Summary" }), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and errorMessage + summaryMessage assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'),
                 {
                     errorMessage: 'Error',
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 },
                 errorMessage: 'Error',
                 summaryMessage: 'Summary'
             });
         });
-        // notEqualToValue("Field2", { secondConversionLookupKey: 'key' })
-        test('notEqualToValue("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
+        // notEqualTo("Field2", { secondConversionLookupKey: 'key' })
+        test('notEqualTo("Field2", { secondConversionLookupKey: "key" }), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned and secondConversionLookupKey assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'),
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'),
                 {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2',
                     secondConversionLookupKey: LookupKey.Integer
                 }
             });
         });
-        // notEqualToValue("Field2", {})
-        test('notEqualToValue("Field2", {}), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        // notEqualTo("Field2", {})
+        test('notEqualTo("Field2", {}), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost('Field2'), {});
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
         });
-        // notEqualToValue("")
-        test('notEqualToValue(""), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        // notEqualTo("")
+        test('notEqualTo(""), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
-            let testItem = createVMBuilder().field('Field1').notEqualToValue(valueHost(''));
+            let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: ''
                 }
             });
         });
-        test('neqValue("Field2"), creates ValidatorConfig with NotEqualToValueCondition with type=NotEqualToValue and secondValueHostName assigned', () =>
+        test('neq("Field2"), creates ValidatorConfig with NotEqualToCondition with type=NotEqualTo and secondValueHostName assigned', () =>
         {
 
-            let testItem = createVMBuilder().field('Field1').neqValue(valueHost('Field2'));
+            let testItem = createVMBuilder().field('Field1').neq(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
-                conditionConfig: <NotEqualToValueConditionConfig> {
-                    conditionType: ConditionType.NotEqualToValue,
+                conditionConfig: <NotEqualToConditionConfig> {
+                    conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
                 }
             });
