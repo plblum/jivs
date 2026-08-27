@@ -279,16 +279,17 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         const msg = 'lacks value to evaluate';
         this.logInvalidPropertyData(propertyName, msg, services);
     }
-    protected logUnknownValueHost(services: IJivsServices, valueHostName: ValueHostName): void
+    protected logUnknownValueHost(services: IJivsServices, propertyName: string, valueHostName: ValueHostName): void
     {
         this.logger(services).log(LoggingLevel.Error, (options?: LogOptions) =>
         {
             const details: LogDetails = {
                 message: `ValueHost not found: ${ valueHostName }`,
-                category: LoggingCategory.Exception
+                category: LoggingCategory.Configuration
             };
             if (options?.includeData)
                 details.data = {
+                    propertyName: propertyName,
                     valueHostName: valueHostName
                 };
             return details;

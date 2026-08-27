@@ -590,6 +590,7 @@ export class MockJivsServices implements IJivsServices
     public set valueAdapterService(service: IValueAdapterService)
     {
         this._valueAdapterService = service;
+        this._valueAdapterService.services = this;
     }
     private _valueAdapterService!: IValueAdapterService;
 
