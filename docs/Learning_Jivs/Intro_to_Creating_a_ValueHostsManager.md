@@ -41,12 +41,12 @@ There will often be application-specific work between `configure()` and creating
 
 ## Defining ValueHosts with a Rules Class
 
-The configuration starts with a **rules class**. A rules class describes the `ValueHosts` that will be created and the validation rules that apply to them.
+The configuration starts with a **ValueHost Rules class**. ValueHost Rules describe the `ValueHosts` that will be created and the validation rules that apply to them.
 
 * **Separation of concerns.** Validation rules are defined outside the UI that consumes them. For model-driven forms, that lets the rules live with the business logic and be reused by the client. For form-only scenarios, the rules can still remain separate from the form code itself.
 * **Testability.** Because the rules class has no dependency on the UI, it can be tested independently.
 
-Rules classes derive from `ValueHostRulesBase`. Jivs supplies a Builder object to the class so it can define each `ValueHost` and its configuration.
+ValueHost Rules classes derive from `ValueHostRulesBase`. Jivs supplies a Builder object to the class so it can define each `ValueHost` and its configuration.
 
 For example:
 

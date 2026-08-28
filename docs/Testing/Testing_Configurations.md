@@ -1,6 +1,8 @@
-# Testing your configurations
+# Testing Your Configurations
 Use the `Jivs-ConfigAnalysis` module to ensure that your configuration is as expected,
 even before you create a `ValueHostsManager` object from it.
+
+`Jivs-ConfigAnalysis` is a separate library, available within npm. Go to [Jivs-ConfigAnalysis npm page](https://www.npmjs.com/package/@plblum/jivs-configanalysis).
 
 ## Problem it solves
 When you code with services and dependency injection, the code becomes very disconnected.
@@ -41,6 +43,8 @@ through a report.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
 ## Adding to app
+> `Jivs-ConfigAnalysis` is a separate library, available within npm. Go to [Jivs-ConfigAnalysis npm page](https://www.npmjs.com/package/@plblum/jivs-configanalysis).
+
 Consider adding it directly into your normal execution process, although doing so has the following considerations:
 - Run it only when not in production. The same below includes a isAppRunningInDeveloper(), which is up to you to create.
 - It means that deployment will include the jivs-configanalysis package. If you limit working with it to unit tests, then you can omit jivs-configanalysis within the main codebase.

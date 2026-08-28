@@ -9,7 +9,7 @@ This guide expects values to pass between the server and client through normal H
 Keeping these parts synchronized requires some shared preparation:
 
 * the generated HTML must provide elements that client code can locate and connect
-* the Rules must configure every field that may appear
+* the ValueHost Rules must configure every field that may appear
 * Jivs state must be preserved when the page reconstructs the `ValueHostsManager`
 * the `ValueHostsManager` must be reconciled with the editors currently present in the HTML
 
@@ -65,9 +65,9 @@ Custom attributes allow client code to find elements by purpose instead of depen
 
 See [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) for detailed guidance.
 
-## Build the Configuration Rules
+## Build the ValueHost Rules
 
-Create a Rules class derived from `ValueHostRulesBase` to configure a `ValueHostsManager`. See [Defining ValueHosts with a Rules Class](../Intro_to_Creating_a_ValueHostsManager.md#defining-valuehosts-with-a-rules-class).
+Create a ValueHost Rules class derived from `ValueHostRulesBase` to configure a `ValueHostsManager`. See [Defining ValueHosts with a Rules Class](../Intro_to_Creating_a_ValueHostsManager.md#defining-valuehosts-with-a-rules-class).
 
 Two details are especially important for server-generated pages:
 
@@ -135,11 +135,11 @@ export class PersonFormRules extends ValueHostRulesBase {
 }
 ```
 
-The server might show or hide the Birth Date editor based on the current page state. `BirthDate` remains in the Rules either way.
+The server might show or hide the Birth Date editor based on the current page state. `BirthDate` remains in the ValueHost Rules either way.
 
 When its editor is present, client code enables the `BirthDate` `FieldValueHost`. When the editor is absent, client code disables it so its validator does not participate.
 
-This lets one configuration support alternate layouts, conditional sections, and AJAX updates without rebuilding the Rules for each variation.
+This lets one configuration support alternate layouts, conditional sections, and AJAX updates without rebuilding the ValueHost Rules for each variation.
 
 ## Add Hidden Inputs to Deliver Jivs Data
 
@@ -154,7 +154,7 @@ Add two hidden inputs to the server-generated form:
 
 ## Add the Editor Reconciliation Helpers
 
-Server-generated pages need a consistent way to align the `FieldValueHosts` with available editors. The Rules configure every possible `FieldValueHost`, but only those with editors on the page should be enabled and supplied with values. The `reconcileValueHostsWithEditors()` function supports that.
+Server-generated pages need a consistent way to align the `FieldValueHosts` with available editors. The ValueHost Rules configure every possible `FieldValueHost`, but only those with editors on the page should be enabled and supplied with values. The `reconcileValueHostsWithEditors()` function supports that.
 
 Add the following helpers to the application's DOM integration code. They are also provided in `jivs-dom-helpers.ts`.
 
@@ -267,7 +267,7 @@ attachPresentationHandlers(vhm);
 // A Page Save return calls handleServerIssues() here
 ```
 
-`PersonFormRules` represents the application’s Rules implementation described in [Build the Configuration Rules](#build-the-configuration-rules).
+`PersonFormRules` represents the application’s ValueHost Rules implementation described in [Build the ValueHost Rules](#build-the-valuehost-rules).
 
 A restoring workflow assigns the transported saved state to `config.capturedState` before creating the `ValueHostsManager`. A new Page Load omits this assignment.
 

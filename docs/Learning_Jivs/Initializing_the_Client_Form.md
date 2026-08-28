@@ -12,7 +12,7 @@ Three common initialization flows are shown below. None is more correct than the
 - **Getting values already embedded in HTML.** Read the Text Values placed into controls by the server and supply them to Jivs through `setTextValue()`.
 - **Getting values from existing application initialization code.** Extend code that already distributes initial values so it supplies the same values to Jivs.
 
-The examples assume that the application has configured its Rules. Each approach begins by creating the `ValueHostsManager` with the familiar pattern:
+The examples assume that the application has configured its ValueHost Rules. Each approach begins by creating the `ValueHostsManager` with the familiar pattern:
 
 ```ts
 const services = createJivsServices('en-US');

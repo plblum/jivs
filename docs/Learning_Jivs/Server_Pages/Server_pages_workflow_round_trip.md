@@ -54,7 +54,7 @@ The server handles the requested operation using the submitted form data.
 
 It may regenerate the same editors unchanged, or it may change the form. For example, selecting an account type might cause the server to add business-specific editors, remove personal-account editors, or revise a value that no longer applies.
 
-> Configure the `ValueHostsManager` through Rules with every field that may appear. During reconciliation, a `FieldValueHost` is enabled when its editor appears in the regenerated page and disabled when its editor is absent.
+> Configure the `ValueHostsManager` through ValueHost Rules with every field that may appear. During reconciliation, a `FieldValueHost` is enabled when its editor appears in the regenerated page and disabled when its editor is absent.
 
 When generating the returned page, the server:
 

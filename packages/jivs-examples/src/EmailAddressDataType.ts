@@ -70,7 +70,8 @@ export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerat
     public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
         let config: EmailAddressConditionConfig = {
             conditionType: EmailAddressConditionType,
-            valueHostName: valueHost.getName()
+            valueHostName: valueHost.getName(),
+            category: ConditionCategory.DataTypeCheck
         };
         return [
             new EmailAddressCondition(config)   // or use the conditionFactory, so long as your condition is registered
@@ -79,9 +80,9 @@ export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerat
 }
 
 
-//#region fluent syntax
+//#region Builder syntax
 
-// Fluent: Subclass ConditionBuilder and add your condition functions.
+// Builder: Subclass ConditionBuilder and add your condition functions.
 export class EmailAddressConditionBuilder
     extends ConditionBuilder<ConditionConfig>
 {
@@ -95,7 +96,7 @@ export class EmailAddressConditionBuilder
     }
 }
 
-// Fluent: Subclass ValidatorBuilder and add your validator functions. This requires 2 overloads.
+// Builder: Subclass ValidatorBuilder and add your validator functions. This requires 2 overloads.
 
 export class EmailAddressValidatorBuilder
     extends ValidatorBuilder
@@ -136,7 +137,7 @@ declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
         emailAddress(): void;
     }
 }
-//#endregion fluent syntax
+//#endregion Builder syntax
 
 // Register after you have JivsServices instance. Setup only on the JivsServices
 export function registerEmailAddress(services: IJivsServices): void

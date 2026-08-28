@@ -2,7 +2,7 @@
 
 An AJAX operation can return HTML that adds, removes, or revises elements without reloading the page. The returned HTML may change a small part of the form or replace the complete form.
 
-Configure the `ValueHostsManager` through Rules with *every field* that may appear. As part of this workflow, application code enables or disables each relevant `FieldValueHost` based on whether its editor is present in the resulting HTML.
+Configure the `ValueHostsManager` through ValueHost Rules with *every field* that may appear. As part of this workflow, application code enables or disables each relevant `FieldValueHost` based on whether its editor is present in the resulting HTML.
 
 The existing `ValueHostsManager` remains active throughout this process. After applying the returned HTML, reconcile that manager with the editors now present in the page.
 

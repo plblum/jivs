@@ -13,7 +13,7 @@ The server places initial Text Values directly into the generated `input`, `sele
 
 ## Put the Page Load Setup Together
 
-[The Creation Pattern](../Intro_to_Creating_a_ValueHostsManager.md#the-creation-pattern) explains how to create `JivsServices`, configure the Rules, and create the `ValueHostsManager`. [The Interactive Connection](../Using_the_ValueHostsManager_within_the_Client.md#the-interactive-connection) explains the two-way connection between Jivs and the page’s editors.
+[The Creation Pattern](../Intro_to_Creating_a_ValueHostsManager.md#the-creation-pattern) explains how to create `JivsServices`, configure the ValueHost Rules, and create the `ValueHostsManager`. [The Interactive Connection](../Using_the_ValueHostsManager_within_the_Client.md#the-interactive-connection) explains the two-way connection between Jivs and the page’s editors.
 
 The following code brings those responsibilities together. It assumes that the generated HTML is available before the code runs.
 
@@ -33,7 +33,7 @@ attachEditorEventHandlers(vhm);
 attachPresentationHandlers(vhm);
 ```
 
-`PersonFormRules` represents the application’s Rules implementation. Every form needs an application-owned Rules class to configure its `ValueHostsManager`. See [Build the Configuration Rules](Home.md#build-the-configuration-rules).
+`PersonFormRules` represents the application’s ValueHost Rules implementation. Every form needs an application-owned ValueHost Rules class to configure its `ValueHostsManager`. See [Build the ValueHost Rules](Home.md#build-the-valuehost-rules).
 
 `reconcileValueHostsWithEditors()` is supplied in `jivs-dom-helpers.ts` and documented in [Add the Editor Reconciliation Helpers](Home.md#add-the-editor-reconciliation-helpers). It transfers the Text Values from the form’s editors to their associated `FieldValueHost` instances.
 

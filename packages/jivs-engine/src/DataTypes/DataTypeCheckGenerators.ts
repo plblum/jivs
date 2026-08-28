@@ -2,7 +2,7 @@
  * {@inheritDoc jivs-engine/DataTypes/Types/IDataTypeCheckGenerator!IDataTypeCheckGenerator:interface }
  * @module jivs-engine/DataTypes/ConcreteClasses/DataTypeCheckGenerators
  */
-import { IConditionFactory, ICondition } from '../Interfaces/Conditions';
+import { IConditionFactory, ICondition, ConditionCategory } from '../Interfaces/Conditions';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IDataTypeCheckGenerator } from '../Interfaces/DataTypeCheckGenerator';
 import { LookupKey } from './LookupKeys';
@@ -28,11 +28,13 @@ export class IntegerDataTypeCheckGenerator implements IDataTypeCheckGenerator
         const conditions: Array<ICondition> = [];
         conditions.push(conditionfactory.create(({
             conditionType: ConditionType.DataTypeCheck,
-            valueHostName: valueHost.getName()
+            valueHostName: valueHost.getName(),
+            category: ConditionCategory.DataTypeCheck
         } as DataTypeCheckConditionConfig)));
         conditions.push(conditionfactory.create(({
             conditionType: ConditionType.Integer,
-            valueHostName: valueHost.getName()
+            valueHostName: valueHost.getName(),
+            category: ConditionCategory.DataTypeCheck
         } as DataTypeCheckConditionConfig)));        
         return conditions;
     }
