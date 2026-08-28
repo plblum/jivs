@@ -110,7 +110,7 @@ The constructor restores the state available for the configured ValueHosts. This
 
 ### Reconcile the Regenerated Editors
 
-After restoring the saved state, use the helper described in [Add the Editor Reconciliation Helpers](Using_Jivs_with_Server_Generated_Pages.md#add-the-editor-reconciliation-helpers):
+After restoring the saved state, use the helper described in [Add the Editor Reconciliation Helpers](Home.md#add-the-editor-reconciliation-helpers):
 
 ```ts
 reconcileValueHostsWithEditors(vhm, {
@@ -149,4 +149,4 @@ The user can now continue editing the regenerated form with the retained Jivs st
 
 For partial-page replacement without a complete page reload, continue to [Server Pages Workflow: Elements Changed](Server_pages_workflow_elements_changed.md).
 
-Return to [Learning Jivs](../Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Home.md).

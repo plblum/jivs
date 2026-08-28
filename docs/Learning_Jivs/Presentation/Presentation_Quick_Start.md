@@ -178,4 +178,4 @@ The default field and form presentations are now connected to Jivs.
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Jivs Presentation Prerequisites](Jivs_Presentation_Prerequisites.md).
 
-Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Home.md).

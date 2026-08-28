@@ -61,7 +61,7 @@ The existing `ValueHostsManager` instance must remain available.
 
 ## Reconcile the Current Editors
 
-After applying the HTML, use the `reconcileValueHostsWithEditors()` helper described in [Add the Editor Reconciliation Helpers](Using_Jivs_with_Server_Generated_Pages.md#add-the-editor-reconciliation-helpers). Its options depend on the use case:
+After applying the HTML, use the `reconcileValueHostsWithEditors()` helper described in [Add the Editor Reconciliation Helpers](Home.md#add-the-editor-reconciliation-helpers). Its options depend on the use case:
 
 - When the entire group should be treated as new values, use `skipIfUnchanged: false`. This is often appropriate for a refresh or revert operation.
 
@@ -111,6 +111,6 @@ The attachment helpers should be idempotent. Existing elements retain their hand
 
 ---
 
-Return to [Using Jivs with Server-Generated Pages](Using_Jivs_with_server_generated_pages.md).
+Return to [Using Jivs with Server-Generated Pages](Home.md).
 
-Return to [Learning Jivs](../Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Home.md).

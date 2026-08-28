@@ -33,7 +33,7 @@
  * 
  * For Jivs SimpleDom extensions, see jivs-simpleDom.ts. It provides tools for presentation
  * of validation issues in the DOM. It is described in the learning guide 
- * [Jivs Presentation Learning Guide](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md)
+ * [Jivs Presentation Learning Guide](docs/Learning_Jivs/Home.md)
  ------------------------------------------------------------------------------------------ */
 import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { type IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';

@@ -149,4 +149,4 @@ Applying the errors last allows the validation callbacks to update the restored 
 
 For a server-generated page that preserves Jivs state without attempting a save, continue to [Server Pages Workflow: Round Trip](Server_pages_workflow_round_trip.md).
 
-Return to [Learning Jivs](../Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Home.md).

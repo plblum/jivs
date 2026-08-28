@@ -251,7 +251,7 @@ For more, see [JivsServices](#jivsservices).
 # Digging in
 Please use these documents:
 
-- [Learning Jivs](./docs/Learning_Jivs/Learning_Jivs_Home.md)
+- [Learning Jivs](./docs/Learning_Jivs/Home.md)
 - [Terminology](./docs/Terminology.md)
 - [Configuring the ValueHosts](./docs/ValueHostsManager_Configuration_Guide.md)
 - [The API](./docs/Jivs_API.md)

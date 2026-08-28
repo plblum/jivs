@@ -390,4 +390,4 @@ Call it again after replacing field HTML generated from a template. Toggling the
 
 Continue to the next section of the Jivs Presentation Learning Guide: [Field Presentation: Field Error Displays](Field_Presentation_Field_Error_Displays.md).
 
-Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Home.md).

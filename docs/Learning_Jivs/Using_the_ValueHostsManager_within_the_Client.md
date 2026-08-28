@@ -263,4 +263,4 @@ The UI framework remains outside that process. Whether the application uses nati
 
 Next, we'll look at [the form initialization process](Initializing_the_Client_Form.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

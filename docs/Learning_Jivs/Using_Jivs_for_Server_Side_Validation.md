@@ -463,4 +463,4 @@ The complete client submission flow is covered in [Submitting the Client Form](S
 
 For servers using another validation system, continue with [Integrating Non-Jivs Server Validation](Integrating_Non_Jivs_Server_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

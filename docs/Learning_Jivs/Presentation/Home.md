@@ -83,4 +83,4 @@ To get the big picture or dive right in, continue to [Presentation Quick Start](
 
 To begin the detailed guide, continue to [Jivs Presentation Prerequisites](Jivs_Presentation_Prerequisites.md).
 
-Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Home.md).

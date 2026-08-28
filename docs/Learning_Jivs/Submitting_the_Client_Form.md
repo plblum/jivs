@@ -375,8 +375,8 @@ Returning `true` means validation issues were found and handled, so submission p
 The server does not need to understand Jivs. The client-side adapter translates the server's validation contract into the `IssueFound` information Jivs needs.
 
 ---
-Next, we'll look at [Client Presentation of Jivs Validation](./Presentation/Client_Presentation_of_Jivs_Validation.md)
+Next, we'll look at [Client Presentation of Jivs Validation](./Presentation/Home.md)
 
 Or start on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

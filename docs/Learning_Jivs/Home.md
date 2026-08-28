@@ -44,7 +44,7 @@ Client presentation appears at the end because it builds on the validation state
 
    Follow the complete submission process: validate with Jivs, build the Model, perform additional business validation, send the request, and integrate server validation results.
 
-7. [Client Presentation of Jivs Validation](./Presentation/Client_Presentation_of_Jivs_Validation.md)
+7. [Client Presentation of Jivs Validation](./Presentation/Home.md)
 
     Build the client validation presentation, including Field Error Displays, Required Indicators, validation styling, Validation Summaries, and Submit / Save Controls. This guide introduces Jivs SimpleDom as a complete working approach while preserving Jivs' independence from the UI.
 
@@ -64,7 +64,7 @@ Client presentation appears at the end because it builds on the validation state
 
 ### Special configurations
 
-11. [Using Jivs with server generated pages](./Server_Pages/Using_Jivs_with_server_generated_pages.md)
+11. [Using Jivs with server generated pages](./Server_Pages/Home.md)
 
     Use server generated pages together with Jivs. Includes guidelines, code snippets, and workflows.
 

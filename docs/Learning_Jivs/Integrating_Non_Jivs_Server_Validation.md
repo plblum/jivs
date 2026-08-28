@@ -132,4 +132,4 @@ The complete mapping and integration code is covered in [When the Server Uses An
 
 For the common server-side architecture behind both server approaches, return to [Understanding Server-Side Validation](Understanding_Server_Side_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

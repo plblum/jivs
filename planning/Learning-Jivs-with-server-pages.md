@@ -52,7 +52,7 @@ Provide only enough Jivs SimpleDom orientation to make later examples understand
 Point readers to:
 
 * `Using_the_ValueHostsManager_within_the_Client.md`;
-* `Client_Presentation_of_Jivs_Validation.md`;
+* `Home.md`;
 * `Presentation_Quick_Start.md`;
 * `The_Jivs_SimpleDom_Approach.md`.
 
@@ -334,14 +334,14 @@ Link readers to:
 * `Initializing_the_Client_Form.md`;
 * `Submitting_the_Client_Form.md`;
 * `Integrating_Non_Jivs_Server_Validation.md`;
-* `Client_Presentation_of_Jivs_Validation.md`;
+* `Home.md`;
 * `Presentation_Quick_Start.md`;
 * `The_Jivs_SimpleDom_Approach.md`.
 
 --- 
 Here is the proposed division. The key structural choice is that **Page Load becomes the baseline workflow**. The other workflow documents explain what changes from that baseline.
 
-## `Using_Jivs_with_Server_Generated_Pages.md`
+## `Home.md`
 
 Displayed title: **Using Jivs with Server-Generated Pages**
 
@@ -513,7 +513,7 @@ Contents:
 
 Each workflow document should end with:
 
-* a link back to `Using_Jivs_with_Server_Generated_Pages.md`;
+* a link back to `Home.md`;
 * links to directly relevant existing Learning documents;
 * a next-workflow link only when it is a natural continuation.
 

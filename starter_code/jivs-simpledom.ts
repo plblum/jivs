@@ -2,7 +2,7 @@
  * Starter implementation for the Jivs SimpleDom validation UI.
  *
  * This file accompanies:
- * docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md
+ * docs/Learning_Jivs/Home.md
  *
  * Keep this implementation synchronized with the code examples in that guide.
  * Documentation paths in this file are relative to the repository root.
@@ -21,7 +21,7 @@ import { MessageTokenResolverService } from '@plblum/jivs-engine/build/Services/
 /**
  * Encodes text for safe insertion into generated HTML.
  *
- * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#protect-error-messages-from-xss)
+ * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
  */
 export function encodeHtml(
     value: string
@@ -44,7 +44,7 @@ export function encodeHtml(
 /**
  * Encodes message-token replacements and preserves their token metadata.
  *
- * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#protect-error-messages-from-xss)
+ * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
  */
 export class HtmlMessageTokenResolverService
     extends MessageTokenResolverService
@@ -53,7 +53,7 @@ export class HtmlMessageTokenResolverService
     /**
      * Finalizes one message-token replacement as safe HTML.
      *
-     * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#protect-error-messages-from-xss)
+     * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
      */
     protected override finalizeReplacement(
         replacement: string,
@@ -79,7 +79,7 @@ export class HtmlMessageTokenResolverService
 /**
  * Maps Jivs severity values to the names exposed through `data-severity`.
  *
- * @see [Generate Error Message HTML](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#generate-error-message-html)
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
  */
 export const severityNames: Array<string | null> = [
     'warning',
@@ -90,7 +90,7 @@ export const severityNames: Array<string | null> = [
 /**
  * Generates HTML for one or more validation issues.
  *
- * @see [Generate Error Message HTML](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#generate-error-message-html)
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
  */
 export function buildErrorMessagesHtml(
     issues: IssueFound[],
@@ -128,7 +128,7 @@ export function buildErrorMessagesHtml(
 /**
  * Generates the HTML element for one validation issue.
  *
- * @see [Generate Error Message HTML](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#generate-error-message-html)
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
  */
 export function buildErrorMessageHtml(
     tagName: 'span' | 'li',
@@ -177,7 +177,7 @@ export function buildErrorMessageHtml(
 /**
  * Generates plain text for validation consumers that cannot use HTML.
  *
- * @see [Generate Error Message Text](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#generate-error-message-text)
+ * @see [Generate Error Message Text](docs/Learning_Jivs/Home.md#generate-error-message-text)
  */
 export function buildErrorMessagesText(
     issues: IssueFound[]
@@ -195,7 +195,7 @@ export function buildErrorMessagesText(
 /**
  * Converts one prepared HTML Error Message to plain text.
  *
- * @see [Generate Error Message Text](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#generate-error-message-text)
+ * @see [Generate Error Message Text](docs/Learning_Jivs/Home.md#generate-error-message-text)
  */
 export function errorMessageToText(
     errorMessage: string
@@ -213,7 +213,7 @@ export function errorMessageToText(
 /**
  * Defines the callback signature for dispatching field validation state.
  *
- * @see [The Field Dispatcher Function](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function)
+ * @see [The Field Dispatcher Function](docs/Learning_Jivs/Home.md#the-field-dispatcher-function)
  */
 export type FieldDispatcher = (
     valueHost: IFieldValueHost,
@@ -223,7 +223,7 @@ export type FieldDispatcher = (
 /**
  * Dispatches a field's validation state to its attached UI consumers.
  *
- * @see [The Field Dispatcher Function](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function)
+ * @see [The Field Dispatcher Function](docs/Learning_Jivs/Home.md#the-field-dispatcher-function)
  */
 export function fieldValidated(
     valueHost: IFieldValueHost,
@@ -252,7 +252,7 @@ export function fieldValidated(
 /**
  * Defines the common signature used by Field Presentation Functions.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export type FieldPresentationHandler = (
     element: HTMLElement,
@@ -263,7 +263,7 @@ export type FieldPresentationHandler = (
 /**
  * Extends a field validation consumer with its Presentation Function callback.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export interface IFieldValidationConsumerElement extends HTMLElement
 {
@@ -275,7 +275,7 @@ export interface IFieldValidationConsumerElement extends HTMLElement
 /**
  * Resolves a Field Presentation Function from its declared name.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export function getFieldPresentationFunction(
     presentationName: string
@@ -305,7 +305,7 @@ export function getFieldPresentationFunction(
 /**
  * Attaches one named Field Presentation Function to an element.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export function attachFieldPresentation(
     element: IFieldValidationConsumerElement,
@@ -334,7 +334,7 @@ export function attachFieldPresentation(
 /**
  * Reads and attaches the Field Presentation Function declared by an element.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export function attachFieldPresentationFromAttribute(
     element: IFieldValidationConsumerElement
@@ -356,7 +356,7 @@ export function attachFieldPresentationFromAttribute(
 /**
  * Attaches the declared Field Presentation Functions to matching elements.
  *
- * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-field-presentation-functions)
+ * @see [Initialize Field Presentation Functions](docs/Learning_Jivs/Home.md#initialize-field-presentation-functions)
  */
 export function attachFieldPresentations(
     selector =
@@ -379,7 +379,7 @@ export function attachFieldPresentations(
 /**
  * Exposes invalid field state through the editor's `invalid` class.
  *
- * @see [Presentation for an Editor](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#presentation-for-an-editor)
+ * @see [Presentation for an Editor](docs/Learning_Jivs/Home.md#presentation-for-an-editor)
  */
 export function editorValidationChanged(
     element: HTMLElement,
@@ -396,7 +396,7 @@ export function editorValidationChanged(
 /**
  * Exposes invalid field state through the label's `invalid` class.
  *
- * @see [Presentation for a Label](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#presentation-for-a-label)
+ * @see [Presentation for a Label](docs/Learning_Jivs/Home.md#presentation-for-a-label)
  */
 export function labelValidationChanged(
     element: HTMLElement,
@@ -413,7 +413,7 @@ export function labelValidationChanged(
 /**
  * Presents a field's issues as inline Error Message HTML.
  *
- * @see [Inline Error Display](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#inline-error-display)
+ * @see [Inline Error Display](docs/Learning_Jivs/Home.md#inline-error-display)
  */
 export function inlineErrorDisplayChanged(
     element: HTMLElement,
@@ -438,7 +438,7 @@ export function inlineErrorDisplayChanged(
 /**
  * Shows an error icon and supplies its native tooltip text while issues exist.
  *
- * @see [Error Icon with a Native Tooltip](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#error-icon-with-a-native-tooltip)
+ * @see [Error Icon with a Native Tooltip](docs/Learning_Jivs/Home.md#error-icon-with-a-native-tooltip)
  */
 export function errorIconChanged(
     element: HTMLElement,
@@ -470,7 +470,7 @@ export function errorIconChanged(
 /**
  * Supplies native tooltip text to the container surrounding an editor.
  *
- * @see [Put the Editor's Errors in a Native Tooltip](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#put-the-editors-errors-in-a-native-tooltip)
+ * @see [Put the Editor's Errors in a Native Tooltip](docs/Learning_Jivs/Home.md#put-the-editors-errors-in-a-native-tooltip)
  */
 export function editorTooltipChanged(
     element: HTMLElement,
@@ -494,7 +494,7 @@ export function editorTooltipChanged(
 /**
  * Initializes Required Indicator visibility from each `FieldValueHost.required` value.
  *
- * @see [Initialize Required Indicators](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-required-indicators)
+ * @see [Initialize Required Indicators](docs/Learning_Jivs/Home.md#initialize-required-indicators)
  */
 export function initializeRequiredIndicators(
     valueHostsManager: IValueHostsManager
@@ -533,7 +533,7 @@ export function initializeRequiredIndicators(
 /**
  * Defines the callback signature for dispatching form validation state.
  *
- * @see [The Form Dispatcher Function](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function)
+ * @see [The Form Dispatcher Function](docs/Learning_Jivs/Home.md#the-form-dispatcher-function)
  */
 export type FormDispatcher = (
     valueHostsManager: IValueHostsManager,
@@ -543,7 +543,7 @@ export type FormDispatcher = (
 /**
  * Dispatches form validation state to its attached UI consumers.
  *
- * @see [The Form Dispatcher Function](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function)
+ * @see [The Form Dispatcher Function](docs/Learning_Jivs/Home.md#the-form-dispatcher-function)
  */
 export function formValidated(
     vhm: IValueHostsManager,
@@ -569,7 +569,7 @@ export function formValidated(
 /**
  * Defines the common signature used by Form Presentation Functions.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export type FormPresentationHandler = (
     element: HTMLElement,
@@ -580,7 +580,7 @@ export type FormPresentationHandler = (
 /**
  * Extends a form validation consumer with its Presentation Function callback.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export interface IFormValidationConsumerElement extends HTMLElement
 {
@@ -592,7 +592,7 @@ export interface IFormValidationConsumerElement extends HTMLElement
 /**
  * Resolves a Form Presentation Function from its declared name.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export function getFormPresentationFunction(
     presentationName: string
@@ -613,7 +613,7 @@ export function getFormPresentationFunction(
 /**
  * Attaches one named Form Presentation Function to an element.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export function attachFormPresentation(
     element: IFormValidationConsumerElement,
@@ -642,7 +642,7 @@ export function attachFormPresentation(
 /**
  * Reads and attaches the Form Presentation Function declared by an element.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export function attachFormPresentationFromAttribute(
     element: IFormValidationConsumerElement
@@ -664,7 +664,7 @@ export function attachFormPresentationFromAttribute(
 /**
  * Attaches the declared Form Presentation Functions to matching elements.
  *
- * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#initialize-form-presentation-functions)
+ * @see [Initialize Form Presentation Functions](docs/Learning_Jivs/Home.md#initialize-form-presentation-functions)
  */
 export function attachFormPresentations(
     selector =
@@ -688,7 +688,7 @@ export function attachFormPresentations(
 /**
  * Presents issues from the complete `ValueHostsManager` in a Validation Summary.
  *
- * @see [Presentation for a Validation Summary](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#presentation-for-a-validation-summary)
+ * @see [Presentation for a Validation Summary](docs/Learning_Jivs/Home.md#presentation-for-a-validation-summary)
  */
 export function validationSummaryChanged(
     element: HTMLElement,
@@ -716,7 +716,7 @@ export function validationSummaryChanged(
 /**
  * Enables or disables a Submit / Save Control from `ValidationState.doNotSave`.
  *
- * @see [Presentation for a Submit / Save Control](docs/Learning_Jivs/Client_Presentation_of_Jivs_Validation.md#presentation-for-a-submit-save-control)
+ * @see [Presentation for a Submit / Save Control](docs/Learning_Jivs/Home.md#presentation-for-a-submit-save-control)
  */
 export function submitValidationChanged(
     element: HTMLElement,

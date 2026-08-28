@@ -362,4 +362,4 @@ attachFormPresentations();
 
 Continue to the next section of the Jivs Presentation Learning Guide: [From Jivs Validation State to Client Presentation](From_Jivs_Validation_State_to_Client_Presentation.md).
 
-Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Home.md).

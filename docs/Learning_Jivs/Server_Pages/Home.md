@@ -309,4 +309,4 @@ Every server-generated form requires the Page Load and Page Save workflows. The 
 
 ---
 
-Return to [Learning Jivs](../Learning_Jivs_Home.md).
+Return to [Learning Jivs](../Home.md).

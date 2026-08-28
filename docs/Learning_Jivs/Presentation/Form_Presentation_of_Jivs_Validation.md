@@ -305,4 +305,4 @@ Continue with [Accessible Client Validation UI](Accessible_Client_Validation_UI.
 
 Or start on the server with [how Jivs participates in validation on the server](../Understanding_Server_Side_Validation.md).
 
-Return to [Learning Jivs TOC](../Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](../Home.md).
