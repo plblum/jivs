@@ -22,7 +22,7 @@ export interface ICultureService extends IService {
    * If the culture already exists, it is replaced.
    * @param culture 
    */
-  register(culture: CultureIdFallback): void;
+  register(culture: CultureIdWithFallback): void;
 
   /**
    * Check for the presence of a Culture.
@@ -35,10 +35,10 @@ export interface ICultureService extends IService {
   getClosestCultureId(cultureId: string): string | null;
 
   /**
-   * Returns the CultureIdFallback that matches its cultureId to the value passed in.
+   * Returns the CultureIdWithFallback that matches its cultureId to the value passed in.
    * @param cultureId 
    */
-  find(cultureId: string): CultureIdFallback | null;
+  find(cultureId: string): CultureIdWithFallback | null;
 
   /**
    * Returns the list of all the culture IDs that have been registered.
@@ -59,7 +59,7 @@ export interface ICultureService extends IService {
  * Used by {@link jivs-engine/Services/ConcreteClasses/CultureService!CultureService | CultureService}. 
  * Pass an array of these into the CultureService constructor.
  */
-export interface CultureIdFallback {
+export interface CultureIdWithFallback {
   /**
    * The ISO culture name pattern in use:
    * languagecode

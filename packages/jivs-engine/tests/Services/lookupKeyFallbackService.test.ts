@@ -1,5 +1,5 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { CultureIdFallback } from "../../src/Interfaces/CultureService";
+import { CultureIdWithFallback } from "../../src/Interfaces/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
 

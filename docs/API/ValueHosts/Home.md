@@ -228,7 +228,7 @@ Here are the arguments, parameters, and config members for all ValueHost functio
 - `parserLookupKey` – When you have [configured parsing](#datatypeparsers) for `FieldValueHosts`, this overrides the default parser. Specify a lookupKey to match one that you have registered with the `DataTypeParserService`.
 - `formatterLookupKey` – When calling `setValue()`, it takes a native value. By assigning this, it also formats it into the text value. Specify a lookupKey to match one that you have registered with the `DataTypeFormatterService`.
 It has no impact on `setValues()` or `setTextValue()`.
-- `reformatTextValue` - When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
+- `reformatTextValue` - When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' → '01/02/2025'. It requires the ValueHost to be setup for both parsing and formatter, including the right `DataTypeParsers` and `DataTypeFormatters` in their respective services. The feature requires opting in, either by setting this to true or using `builder.behaviors.reformatTextValue = true`.
 - `propertyName` – The actual property name on the model. If its the same as `ValueHostConfig.name`, this can be undefined. Helps mapping between model and valuehost, especially when using the [ModelReader and ModelWriter](#modelreader-and-modelwriter). `ModelReader` and `ModelWriter` permit dot notation to locate a property of a child, such as "Address.Street1".
 - `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](#modelreader-and-modelwriter).
 - `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](#modelreader-and-modelwriter).
@@ -541,7 +541,7 @@ See ["Getting a ValueHost"](#getting-a-valuehost) for using `getFieldValueHost()
 
 ## Injecting errors on demand
 When you handle parsing outside of Jivs, your parser may report an error. You need to supply the original
-text and that error message to Jivs. Upon receipt of an error like this, Jivs knows to add it to that ValueHost's list of validation errors.
+text and that error message to Jivs. Upon receipt of an error like this, Jivs knows to create a validator for it.
 
 The `FieldValueHost` functions `setValue()`, `setValues()`, `setTextValue()`, and `setValueToUndefined()` can take in your error message like this:
 
@@ -560,68 +560,7 @@ Its state remains until the next call to `setValue()` and its peers, `clearValid
 vhm.getFieldValueHost('field1').clearInjectedError();
 ```
 
-The `InjectedError` object is designed to support localization:
-```ts
-interface InjectedError
-{
-    errorMessage: string;   // the only value that is required
-    errorMessagel10n?: string;  // a localization key
-    summaryMessage?: string;  
-    summaryMessagel10n?: string;
-    errorCode?: string;     // helps setup discrete localized error messages by using different error codes
-}    
-```
-## Example
-```ts
-let firstNameFld = document.getElementById('FirstName');
-firstNameFld.attachEventListener('onchange', (evt)=> {
-    let textValue = evt.target.value;
-    let [nativeValue, parserError] = YourConvertToNativeCode(textValue);  
-    let injectedError: InjectedError | undefined = undefined;
-    if (parserError)
-    {
-        injectedError = { 
-            errorMessage : parserError,
-            errorCode: 'MyParserErrorCode'  // see below
-        };
-        nativeValue = undefined;    // indicates native value is not available
-    }
-    vhm.vh.field('FirstName').setValues(nativeValue, textValue, { 
-        injectedError: injectedError
-    });
-});	
-```
-## Localizing your injected error
-Setup all localization in the `createJivsService()` function, with code associated
-with `TextLocalizerService`. See [Localization](#localization) for more.
-
-Like with validator error messages, any value you directly supply can be overridden by 
-the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,
-it will internally get setup with the correct l10n key to match `TextLocalizerService.registerErrorMessage()`.
-Same for `injectedError.summaryMessagel10n`. Simply by using `registerErrorMessage()`
-and `registerSummaryMessage()`, your original text is overridden.
-
-Here is an example to setup the messages when you don't supply the error code.
-```ts
-import { InjectedErrorValidatorErrorCode } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
-let tls = vhm.services.textLocalizerService;    
-tls.registerErrorMessage(InjectedErrorValidatorErrorCode, null, {
-        '*': 'Invalid input' 
-    });
-tls.registerSummaryMessage(InjectedErrorValidatorErrorCode, null, {
-    '*': '{Label} has this invalid input.'
-});    
-```
-Now using your own supplied errorcode (InjectedError.errorCode = 'MyParserErrorCode'):
-```ts
-let tls = vhm.services.textLocalizerService;    
-tls.registerErrorMessage('MyParserErrorCode', null, {
-        '*': 'Invalid input' 
-    });
-tls.registerSummaryMessage('MyParserErrorCode', null, {
-    '*': '{Label} has this invalid input.'
-});    
-```
+See [Injecting errors on demand](../Validators/Injecting_errors_on_demand.md) for more.
 
 ## Using CalcValueHost
 The CalcValueHost takes a function used to calculate its value. The function has this format.

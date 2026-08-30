@@ -223,7 +223,7 @@ export function validationSummaryChanged(
 
     element.innerHTML =
         issues?.length
-            ? buildErrorMessagesHtml(
+            ? buildErrorMessagesHtml( // in jivs-DOM_helpers.ts
                 issues,
                 true
             )
@@ -231,7 +231,8 @@ export function validationSummaryChanged(
 }
 ```
 
-You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
+You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts) and 
+[jivs-DOM_helpers.ts](../../../starter_code/jivs-DOM_helpers.ts)
 
 Passing `true` to `buildErrorMessagesHtml()` selects each issue's `summaryMessage`. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 

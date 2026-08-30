@@ -37,11 +37,11 @@ When the native type is a string, the input value may need to be changed if it's
 
 A phone number often has culture specific formatting, but in the end, you intend to store it in a fixed format, such as +\[country code] \[all digits of the phone number without formatting]. Use a Parser to deliver this, only reporting an error when the input is severely inappropriate.
 
-"(800)204-9000" -> "+1 8002049000"
+"(800)204-9000" → "+1 8002049000"
 
-"+44 7911 123456" -> "+44 7911123456"
+"+44 7911 123456" → "+44 7911123456"
 
-"ABC" -> error message
+"ABC" → error message
 
 The `CleanUpStringParser` has numerous configuration options that together may deliver the desired format. 
 

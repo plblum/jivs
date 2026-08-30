@@ -66,7 +66,7 @@ import
 import { CleanUpStringParser, CurrencyParser, NumberParser } from '../DataTypes/DataTypeParsers';
 import { LookupKey } from '../DataTypes/LookupKeys';
 import { IConditionFactory } from '../Interfaces/Conditions';
-import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
+import { CultureIdWithFallback, ICultureService } from '../Interfaces/CultureService';
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -176,7 +176,7 @@ export function createJivsServicesForTesting(options?: CvstOptions): IJivsServic
  */
 export interface CvstOptions {
     defaultCultureId?: string;   // defaults to en
-    cultures?: Array<CultureIdFallback>;     // defaults en, en-US, es, es-MX, fr with some fallbacks
+    cultures?: Array<CultureIdWithFallback>;     // defaults en, en-US, es, es-MX, fr with some fallbacks
     logger?: 'console' | 'capturing';    // defaults to console. When capturing, it also logs to console.
     loggerLevel?: LoggingLevel; // defaults to Error
     registerConditions?: 'minimal' | 'all' | 'none'; // defaults to minimal which gives only RequireText and DataTypeCheck. When all, all built-in are supplied
@@ -255,7 +255,7 @@ export function registerAllConditions(cf: IConditionFactory): void
  */
 export function registerCultures(cs: ICultureService): void
 {
-    const cultures: Array<CultureIdFallback> = [
+    const cultures: Array<CultureIdWithFallback> = [
             {
                 cultureId: 'en',
                 fallbackCultureId: null    // when this is the default culture,

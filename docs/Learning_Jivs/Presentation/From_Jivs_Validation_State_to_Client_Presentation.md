@@ -159,7 +159,7 @@ The [Protect Error Messages from XSS](Jivs_Presentation_Prerequisites.md#protect
 
 By default, the generator uses `IssueFound.errorMessage`, making it suitable for Field Error Displays. Pass `true` for `useSummaryMessage` to use `summaryMessage` for a Validation Summary. When `summaryMessage` is not supplied, the generator falls back to `errorMessage`.
 
-The following functions are also available in the companion [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts) file:
+The following functions are also available in the companion [`jivs-DOM_helpers.ts`](../../../starter_code/jivs-DOM_helpers.ts) file:
 
 ```ts
 export const severityNames: Array<string | null> = [

@@ -1,28 +1,30 @@
 # Conditions supplied with Jivs
 See [Jivs API](./Jivs_API.md/#Conditions) for an overview.
 
+Each Condition is found as a validator name on the Builder. Code shown here is based on the Builder API.
+
 _Index_
-- [RequireText](#requiretext)
-- [NotNull](#notnull)
-- [RegExp](#regexp)
-- [Range](#range)
-- [EqualTo](#comparing-two-values)
-- [NotEqualTo](#comparing-two-values)
-- [LessThan](#comparing-two-values)
-- [LessThanOrEqualTo](#comparing-two-values)
-- [GreaterThan](#comparing-two-values)
-- [GreaterThanOrEqualTo](#comparing-two-values)
-- [StringLength](#stringlength)
-- [DataTypeCheck](#datatypecheck)
-- [Positive](#positive)
-- [Integer](#integer)
-- [MaxDecimals](#maxdecimals)
-- [Combining conditions](#combining-conditions-with-all-any-and-countmatches)
-    + [All](#all-any-and-countmatches-conditions)
-    + [Any](#all-any-and-countmatches-conditions)
-    + [CountMatches](#all-any-and-countmatches-conditions)
-- [When](#when--using-one-condition-to-enable-another)
-- [Not](#not--negate-the-result)
+- [RequireTextCondition](#requiretext)
+- [NotNullCondition](#notnull)
+- [RegExpCondition](#regexp)
+- [RangeCondition](#range)
+- [EqualToCondition](#comparing-two-values)
+- [NotEqualToCondition](#comparing-two-values)
+- [LessThanCondition](#comparing-two-values)
+- [LessThanOrEqualToCondition](#comparing-two-values)
+- [GreaterThanCondition](#comparing-two-values)
+- [GreaterThanOrEqualToCondition](#comparing-two-values)
+- [StringLengthCondition](#stringlength)
+- [DataTypeCheckCondition](#datatypecheck)
+- [PositiveCondition](#positive)
+- [IntegerCondition](#integer)
+- [MaxDecimalsCondition](#maxdecimals)
+- [Combining conditionsCondition](#combining-conditions-with-all-any-and-countmatches)
+    + [AllMatchCondition](#all-any-and-countmatches-conditions)
+    + [AnyMatchCondition](#all-any-and-countmatches-conditions)
+    + [CountMatchesCondition](#all-any-and-countmatches-conditions)
+- [WhenCondition](#when--using-one-condition-to-enable-another)
+- [NotCondition](#not--negate-the-result)
 
 ## RequireText
 Use when the value is a string. Reports an error when the string is empty or null.
@@ -567,7 +569,7 @@ builder.field('fieldname').all((childBuilder)=>{
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
 - `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
 - `when()` employs the `WhenCondition` to selectively enable a single child condition.
-- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 
 ### All, Any, and CountMatches Conditions
 ```ts
@@ -625,7 +627,7 @@ interface EvaluateChildConditionResultsBaseConfig = {
 }
 ```
 ## When: Using one condition to enable another
-When you have a condition that shouldn't be evaluated until another condition is met, use the WhenCondition. Think of this as "when"->"then" logic.
+When you have a condition that shouldn't be evaluated until another condition is met, use the WhenCondition. Think of this as "when"→"then" logic.
 
 Suppose that you have a textbox and a nearby checkbox that is used to enable/disable the textbox. Since a disabled textbox should not be validated, we use the When condition.
 ```ts
@@ -641,7 +643,7 @@ builder.field('fieldname').when(
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
 - `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
 - `when()` employs the `WhenCondition` to selectively enable a single child condition.
-- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 ```ts
 when(whenToEnableBuilderHandler, thenBuilderHandler);
 when(whenToEnableBuilderHandler, thenBuilderHandler,
@@ -726,7 +728,7 @@ builder.field('fieldname').not(
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
 - `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
 - `not()` employs the `NotCondition` to selectively enable a single child condition.
-- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match->NoMatch or NoMatch->Match.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 ```ts
 not(childBuilderHandler);
 not(childBuilderHandler,

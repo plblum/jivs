@@ -1,17 +1,31 @@
 # ModelReader and ModelWriter
-You usually start and end with your own model object. 
+`ModelReader` and `ModelWriter` classes transfer data between an external source and `ValueHostsManager`.
+That external source is often your own model object. However, you may have a dictionary or string values from an HTTP Form that are the source. They use `DictionaryReader` and `FormReader` respectively.
 
-At the start, its values are copied to the `ValueHosts`, ready for change and validation. 
+When initializing the ValueHostsManager, source values are copied to the `ValueHosts`, ready for change and validation. 
 ```
-model property → ValueHost
+source → ValueHost
 ```
+This is the role of `ModelReader`, `DictionaryReader`, and `FormReader`.
 
-At the end - after validation approves, its values are copied to the model's properties.
+When you want to retrieve that data, `ValueHosts` have them already in their native form. You have the option to copy its values to the model's properties.
 ```
 ValueHost → model property
 ```
+This is the role of `ModelWriter`.
 
-Your initial reaction is that using `FieldValueHost.setValue()` and `FieldValueHost.getValue()` will get the job done. However, there is more to it.
+## The work is slightly more complex than it seems
+You don't have to use our Readers or Writers. Instead of `ModelReader`, you can do this:
+```ts
+vhm.vh.field('fieldname').setValue(external value);
+vhm.vh.field('fieldname').setTextValue(string from an HTTP form); // parser will convert it to its native value
+```
+Instead of `ModelWriter`, you can retrieve the values from outside of `ValueHostsManager`, or use:
+```ts
+let value = vhm.vh.field('fieldname').getValue();
+```
+_However_, there are cases where you need to adapt the value to work with Jivs. Suppose your model property for 'birthdate' supports null for unknown value. Jivs uses undefined for unknown value. We need to take an additional step here. Same with getting the value (undefined must be null in the destination).
+
 ```
 model property → adapt the value to any requirements of the ValueHost → ValueHost.setValue
     optionally format into text and assign it to the input field too
@@ -19,12 +33,12 @@ model property → adapt the value to any requirements of the ValueHost → Valu
 ```
 ValueHost.getValue → adapt the value to any requirements of the model property → model property
 ```
+`ModelReader` and `ModelWriter` let you configure these adaptation rules on each `ValueHost's` configuration. This allows business rules to be well defined and nobody can code up data transfer errors.
 
-Jivs provides another approach: using the `ModelReader` to copy from model to `ValueHosts` and the `ModelWriter` to copy from the `ValueHosts` to the model. This approach allows business rules to be defined for each field so that nobody can code up transfer errors.
-
+## Basic setup
 The actual transfer process is pretty simple, but requires configuration described below.
 ```ts
-let vhm = new ValueHostsManager(builder.complete());
+let vhm = new ValueHostsManager(config);
 let model = getMyModel(); // your code
 let reader = new ModelReader(vhm, model, {});   // various options available in third parameter
 reader.readFromModel();  // data is now in the ValueHosts
@@ -34,18 +48,19 @@ reader.readFromModel();  // data is now in the ValueHosts
 let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
 let writer = new ModelWriter(vhm, model);
 writer.writeToModel(); // your model is updated
+saveMyModel(model); // your code
 ```
 
 If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [ValueHost Formatting](#decisions-around-jivs-built-in-formatting).
 ```ts
-builder.onTextValueChanged = myFunctionToUpdateInputs;
-let vhm = new ValueHostsManager(builder.complete());
+config.onTextValueChanged = myFunctionToUpdateInputs;
+let vhm = new ValueHostsManager(config);
 ```
 
-## Available operations on ModelReader
-- `readFromModel()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the rule indicates.
+## Available operations on ModelReader, DictionaryReader, and FormReader
+- `readFromModel()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
 - `readFromProperty(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
-  and applying its rules before setting it in the `ValueHost`. Will skip when the rule indicates.
+  and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the `ValueHost`. Will skip when the rule indicates.
 - `readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
@@ -54,31 +69,29 @@ let vhm = new ValueHostsManager(builder.complete());
     writer.writeToProperty('property2', vhm.getFieldValueHost('field2'));
     ```
 ## Available operations on ModelWriter
-- `writeToModel()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the rule indicates.
+- `writeToModel()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
 - `writeToProperty(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
-  and applying its rules before setting it in the model. Will skip when the rule indicates.
+  and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the model. Will skip when the rule indicates.
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
     writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
     writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
     ```
-## Other Readers: FormReader and DictionaryReader
-- `FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each FieldValueHost.setTextValue, instead of setValue. It uses a parser to convert the text value into the native value.
-    ```ts
-    const express = require("express");
-    const app = express();
-    app.use(express.urlencoded({ extended: true }));
-    app.post("/submit", (req, res) => {
-        const formData = req.body;
-        const formReader = new FormReader(valueHostsManager, formData, {});
-        formReader.readFromModel();
-    });
-    ```
-- `DictionaryReader` is a variation of `ModelReader` that expects its data to be a dictionary of native values. Its conceptually the same as an object supplying a model.
-    ```ts
-    let reader = new DictionaryReader(vhm, dictionaryData, options);
-    ```
+## Getting the form data into FormReader
+`FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each `FieldValueHost.setTextValue()`, instead of `setValue`. It uses a parser to convert the text value into the native value.
+
+This shows how to use the express module in node.js to retrieve the posted form values:
+```ts
+const express = require("express");
+const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.post("/submit", (req, res) => {
+    const formData = req.body;
+    const formReader = new FormReader(valueHostsManager, formData, {});
+    formReader.readFromModel();
+});
+```
 
 ## Reader constructor options
 ```ts
@@ -93,14 +106,14 @@ The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object t
     - `FieldValueHostConfig.formatterLookupKey = null`
 - `skipValueChangedCallback` - Use when you have setup `ValueHostsManager.onValueChanged` or `onTextValueChanged` callbacks to avoid them from being called. Set to true when you have them setup and expect them to be called while the user is editing the form, but not while initializing its values.
 - `alignEnabled` - When true, it updates the enabled setting on each `ValueHost`, allowing them to be determined by whether the source (model, form, dictionary) had a matching property. So long as the `ValueHost` cannot find a source, it is disabled. Otherwise, it is enabled.
-- reformatTextValue - (Only on `FormReader`) When true, allow the text value to be reformatted before assigning it to the `FieldValueHost's` text value or calling `onTextValueChanged`. Reformatting requires that both parser and formatter are setup. Even if enabled, individual `FieldValueHostConfig.reformatTextValue` can block this when false.
+- `reformatTextValue` - (Only on `FormReader`) When true, allow the text value to be reformatted before assigning it to the `FieldValueHost's` text value or calling `onTextValueChanged`. Reformatting requires that both parser and formatter are setup. Even if enabled, individual `FieldValueHostConfig.reformatTextValue` can block this when false.
 
 ## Configuring the ValueHosts
 There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
 1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.
 2. Values may be represented differently and require adjustment. They need a "value adapter". For example, your model has a numeric property, 'Count', that stores -1 to indicate the field is actually not in use. In that case, we want to setup the `ValueHost` with a value of `undefined` (use `FieldValueHost.setValueToUndefined()`.) 
 
-## Handling a different property name
+### Handling a different property name
 When configuring the `FieldValueHost`, you can supply the name of the property explicitly like this:
 ```ts
 builder.field('Field1', LookupKey.Number, { 
@@ -127,8 +140,8 @@ builder.field('Field1', LookupKey.Number, {
 ```
 > When using the `ModelWriter`, you are expected to pass in a model with child objects already created. Otherwise, `ModelWriter` will not transfer the value. 
 
-## Value Adapter rules
-We are moving data between two different systems, your model and Jivs ValueHost. We can insert a **Value Adapter** into this process to catch values that cannot be transferred
+### Value Adapter rules
+We are moving data between two different systems, your model and the `ValueHost`. We can insert a **Value Adapter** into this process to catch values that cannot be transferred
 without some adjustment, or may need to be skipped. The `ValueAdapterService` handles this.
 
 Frequently the value representing "unassigned" differs. Jivs uses the JavaScript value `undefined` to mean unassigned. You might use undefined, null, 0, etc. This is a typical case for adapting values.

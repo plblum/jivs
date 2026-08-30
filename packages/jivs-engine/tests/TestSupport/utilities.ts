@@ -1,4 +1,4 @@
-import { CultureIdFallback, ICultureService } from "../../src/Interfaces/CultureService";
+import { CultureIdWithFallback, ICultureService } from "../../src/Interfaces/CultureService";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { ValueHostInstanceState } from '../../src/Interfaces/ValueHost';
 import { IValueHostsManager, StateContainer } from '../../src/Interfaces/ValueHostsManager';
@@ -8,7 +8,7 @@ import { registerDataTypeFormatters } from "../../src/Support/createJivsServices
 
 
 export function populateServicesWithManyCultures(services: IJivsServices, registerFormatters: boolean = false): void {
-    registerCultureIdFallbacksForEn(services.cultureService);
+    registerCultureIdWithFallbacksForEn(services.cultureService);
 
     let dtis = new DataTypeIdentifierService();
     services.dataTypeIdentifierService = dtis;
@@ -24,43 +24,43 @@ export function populateServicesWithManyCultures(services: IJivsServices, regist
 }
 
 
-export function registerCultureIdFallbacksForEn(service: ICultureService): void {
-    service.register(<CultureIdFallback>{
+export function registerCultureIdWithFallbacksForEn(service: ICultureService): void {
+    service.register(<CultureIdWithFallback>{
         cultureId: 'en',
         fallbackCultureId: null
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'fr',
         fallbackCultureId: 'en'
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'fr-FR',
         fallbackCultureId: 'fr'
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'en-US',
         fallbackCultureId: 'en'
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'en-GB',
         fallbackCultureId: 'en-US'
     });
 
 }
-export function registerCultureIdFallbacksForFR(service: ICultureService): void {
-    service.register(<CultureIdFallback>{
+export function registerCultureIdWithFallbacksForFR(service: ICultureService): void {
+    service.register(<CultureIdWithFallback>{
         cultureId: 'fr',
         fallbackCultureId: null
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'en',
         fallbackCultureId: 'fr'
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'fr-FR',
         fallbackCultureId: 'fr'
     });
-    service.register(<CultureIdFallback>{
+    service.register(<CultureIdWithFallback>{
         cultureId: 'en-US',
         fallbackCultureId: 'en'
     });

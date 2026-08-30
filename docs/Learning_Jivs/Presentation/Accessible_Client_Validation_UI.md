@@ -149,7 +149,7 @@ element.classList.toggle(
 
 element.innerHTML =
     issues?.length
-        ? buildErrorMessagesHtml(issues)
+        ? buildErrorMessagesHtml(issues) // in jivs-DOM_helpers.ts
         : '';
 ```
 

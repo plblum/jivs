@@ -4,7 +4,7 @@
  */
 
 
-import { CultureIdFallback, ICultureService } from '../Interfaces/CultureService';
+import { CultureIdWithFallback, ICultureService } from '../Interfaces/CultureService';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ServiceBase } from './ServiceBase';
 
@@ -48,7 +48,7 @@ export class CultureService extends ServiceBase implements ICultureService {
      * If the culture already exists, it is replaced.
      * @param culture 
      */
-    public register(culture: CultureIdFallback): void
+    public register(culture: CultureIdWithFallback): void
     {
         assertNotNull(culture, 'culture');
         if (this._activeCultureId === null)
@@ -60,10 +60,10 @@ export class CultureService extends ServiceBase implements ICultureService {
             this.cultureIdFallback[index] = culture;
     }
 
-    protected get cultureIdFallback(): Array<CultureIdFallback> {
+    protected get cultureIdFallback(): Array<CultureIdWithFallback> {
         return this._cultureConfig;
     }
-    private _cultureConfig: Array<CultureIdFallback>;
+    private _cultureConfig: Array<CultureIdWithFallback>;
 
     /**
      * Utility to check for the presence of a Culture.
@@ -74,13 +74,13 @@ export class CultureService extends ServiceBase implements ICultureService {
      * got the language. If no match, returns null.
      */
     public getClosestCultureId(cultureId: string): string | null {
-        const cc = this.getClosestCultureIdFallback(cultureId);
+        const cc = this.getClosestCultureIdWithFallback(cultureId);
         if (cc)
             return cc.cultureId;
         return null;
     }
 
-    protected getClosestCultureIdFallback(cultureId: string): CultureIdFallback | null {
+    protected getClosestCultureIdWithFallback(cultureId: string): CultureIdWithFallback | null {
         let cc = this.find(cultureId);
         if (!cc) {
             const lang = cultureLanguageCode(cultureId);
@@ -92,10 +92,10 @@ export class CultureService extends ServiceBase implements ICultureService {
     }
 
     /**
-     * Returns the CultureIdFallback that matches its cultureId to the value passed in.
+     * Returns the CultureIdWithFallback that matches its cultureId to the value passed in.
      * @param cultureId 
      */    
-    public find(cultureId: string): CultureIdFallback | null {
+    public find(cultureId: string): CultureIdWithFallback | null {
         let result = this.cultureIdFallback.find((cc) => cc.cultureId === cultureId) ?? null;
         if (!result && this._activeCultureId === cultureId)
             result = { cultureId: this._activeCultureId };

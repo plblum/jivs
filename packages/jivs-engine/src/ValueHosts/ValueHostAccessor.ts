@@ -19,6 +19,7 @@ import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfa
 /**
  * Used by ValueHostResolver's vhm property to make it easier for the user
  * to get strongly typed ValueHosts, compared to ValueHostResolver.getValueHost().
+ * Its syntax resembles that of Builder classes.
  * 
  * It simplies this syntax, shown for getting a value from a FieldValueHost:
  * ```ts

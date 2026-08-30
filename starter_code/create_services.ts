@@ -96,7 +96,7 @@ import
         NumberParser, Percentage100Parser, PercentageParser, ShortDatePatternParser
     } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { CultureIdFallback, ICultureService } from "@plblum/jivs-engine/build/Interfaces/CultureService";
+import { CultureIdWithFallback, ICultureService } from "@plblum/jivs-engine/build/Interfaces/CultureService";
 import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
 import { ILookupKeyFallbackService } from "@plblum/jivs-engine/build/Interfaces/LookupKeyFallbackService";
 import { ITextLocalizerService } from "@plblum/jivs-engine/build/Interfaces/TextLocalizerService";
@@ -222,11 +222,11 @@ export function createJivsServices(defaultCultureId: string,
 
 /**
  * Cultures that you want to localize. 
- * -> Create an array of CultureIdFallback objects in configureCultures()
+ * -> Create an array of CultureIdWithFallback objects in configureCultures()
  */
 export function registerCultures(cs: ICultureService): void
 {
-   let cultures: Array<CultureIdFallback> = [
+   let cultures: Array<CultureIdWithFallback> = [
         //!!! This is sample data. Please rework as you need it.
             {
                 cultureId: 'en',

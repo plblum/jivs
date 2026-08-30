@@ -39,6 +39,8 @@ import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
 import { type IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { type IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ModelWriter } from '@plblum/jivs-engine/build/ModelReaderWriter/ModelWriter_classes';
+import { type TokenLabelAndValue } from '@plblum/jivs-engine/build/Interfaces/MessageTokenSource';
+import { MessageTokenResolverService } from '@plblum/jivs-engine/build/Services/MessageTokenResolverService';
 
 /**
  * Retrieves the HTML element associated with the given FieldValueHost and optional pattern.
@@ -238,6 +240,203 @@ export function jivsAttachedToEvents(
     return false;
 }
 //#endregion
+//#region handling error messages
+/**
+ * Encodes text for safe insertion into generated HTML.
+ *
+ * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
+ */
+export function encodeHtml(
+    value: string
+): string
+{
+    const entities: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    };
+
+    return value.replace(
+        /[&<>"']/g,
+        character => entities[character]
+    );
+}
+
+/**
+ * Encodes message-token replacements and preserves their token metadata.
+ *
+ * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
+ */
+export class HtmlMessageTokenResolverService
+    extends MessageTokenResolverService
+{
+
+    /**
+     * Finalizes one message-token replacement as safe HTML.
+     *
+     * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
+     */
+    protected override finalizeReplacement(
+        replacement: string,
+        tav: TokenLabelAndValue
+    ): string
+    {
+        const encodedValue =
+            encodeHtml(replacement);
+
+        const purposeClass =
+            tav.purpose
+                ? ` ${ tav.purpose }`
+                : '';
+
+        return (
+            `<span class="token${ purposeClass }">` +
+            encodedValue +
+            '</span>'
+        );
+    }
+}
+
+/**
+ * Maps Jivs severity values to the names exposed through `data-severity`.
+ *
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
+ */
+export const severityNames: Array<string | null> = [
+    'warning',
+    null,
+    'severe'
+];
+
+/**
+ * Generates HTML for one or more validation issues.
+ *
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
+ */
+export function buildErrorMessagesHtml(
+    issues: IssueFound[],
+    useSummaryMessage = false
+): string
+{
+    if (issues.length === 0)
+    {
+        return '';
+    }
+
+    if (issues.length === 1)
+    {
+        return buildErrorMessageHtml(
+            'span',
+            issues[0],
+            useSummaryMessage
+        );
+    }
+
+    const items =
+        issues
+            .map(issue =>
+                buildErrorMessageHtml(
+                    'li',
+                    issue,
+                    useSummaryMessage
+                )
+            )
+            .join('');
+
+    return `<ul>${ items }</ul>`;
+}
+
+/**
+ * Generates the HTML element for one validation issue.
+ *
+ * @see [Generate Error Message HTML](docs/Learning_Jivs/Home.md#generate-error-message-html)
+ */
+export function buildErrorMessageHtml(
+    tagName: 'span' | 'li',
+    issue: IssueFound,
+    useSummaryMessage: boolean
+): string
+{
+    const attributes: string[] = [];
+
+    if (issue.errorCode)
+    {
+        attributes.push(
+            `data-error-code="${ encodeHtml(issue.errorCode) }"`
+        );
+    }
+
+    const severity =
+        issue.severity === undefined
+            ? null
+            : severityNames[issue.severity];
+
+    if (severity)
+    {
+        attributes.push(
+            `data-severity="${ severity }"`
+        );
+    }
+
+    const attributeText =
+        attributes.length
+            ? ` ${ attributes.join(' ') }`
+            : '';
+
+    const message =
+        useSummaryMessage
+            ? issue.summaryMessage ?? issue.errorMessage
+            : issue.errorMessage;
+
+    return (
+        `<${ tagName }${ attributeText }>` +
+        message +
+        `</${ tagName }>`
+    );
+}
+
+/**
+ * Generates plain text for validation consumers that cannot use HTML.
+ *
+ * @see [Generate Error Message Text](docs/Learning_Jivs/Home.md#generate-error-message-text)
+ */
+export function buildErrorMessagesText(
+    issues: IssueFound[]
+): string
+{
+    return issues
+        .map(issue =>
+            errorMessageToText(
+                issue.errorMessage
+            )
+        )
+        .join(' • ');
+}
+
+/**
+ * Converts one prepared HTML Error Message to plain text.
+ *
+ * @see [Generate Error Message Text](docs/Learning_Jivs/Home.md#generate-error-message-text)
+ */
+export function errorMessageToText(
+    errorMessage: string
+): string
+{
+    const container =
+        document.createElement('div');
+
+    container.innerHTML =
+        errorMessage;
+
+    return container.textContent ?? '';
+}
+
+//#endregion
+
+
+
 /**
  * Callback function for ValueHostsManager.onTextValueChanged to 
  * update the text value of the associated HTML form control element.

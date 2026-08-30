@@ -14,7 +14,7 @@ formatting will happen. If you don't want this behavior, you have to turn it off
 For more, see [Decisions around Jivs Built-in formatting](../ValueHosts/Home.md#decisions-around-jivs-built-in-formatting).
 
 ## Reformat the text passed
-When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' -> '01/02/2025'. Ensure you use the option reformatTextValue.
+When calling `setTextValue()`, the original text value can be reformatted, such as '1/2/2025' → '01/02/2025'. Ensure you use the option reformatTextValue.
 ```ts
 vhm.vh.field('field1').setTextValue('1.00', { reformatTextValue: true });
 ```

@@ -10,6 +10,15 @@ import { IStaticValueHost } from './StaticValueHost';
 import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
 import { IValueHost } from './ValueHost';
 
+/**
+ * Provides a wrapper around ValueHostsManager to access ValueHosts like you do with Builders.
+ * The ValueHostsManager offers it through its vh parameter:
+ * ```ts
+ * vhm.vh.field('someFieldName'); // Example of accessing a FieldValueHost through the ValueHostAccessor
+ * vhm.vh.static('someStaticName'); // Example of accessing a StaticValueHost through the ValueHostAccessor
+ * vhm.vh.calc('someCalcName'); // Example of accessing a CalcValueHost through the ValueHostAccessor
+ * ```
+ */
 export interface IValueHostAccessor extends IDisposable
 {
     /**

@@ -59,7 +59,7 @@ export function inlineErrorDisplayChanged(
 
     element.innerHTML =
         issues?.length
-            ? buildErrorMessagesHtml(issues)
+            ? buildErrorMessagesHtml(issues) // in jivs-DOM_helpers.ts
             : '';
 }
 ```
@@ -216,7 +216,7 @@ export function popupErrorDisplayChanged(
 
     showErrorPopup(
         element,
-        buildErrorMessagesHtml(issues)
+        buildErrorMessagesHtml(issues) // in jivs-DOM_helpers.ts
     );
 }
 ```
