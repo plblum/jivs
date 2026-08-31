@@ -11,7 +11,7 @@ import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interf
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
@@ -131,7 +131,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         return [];
     }
 

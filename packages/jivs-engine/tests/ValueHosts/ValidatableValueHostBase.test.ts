@@ -1,10 +1,10 @@
 import { IssueFound, ValidationStatus } from './../../src/Interfaces/Validation';
-import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostBaseCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
-import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { IValidatableValueHostCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
+import { toIValidatableValueHost } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
-import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValidatableValueHostBaseConfig, IValidatableValueHost } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
@@ -1872,7 +1872,7 @@ describe('otherValueHostChangedNotification', () => {
         expect(setup.valueHost.exposed_issuesFound).not.toBeNull();
     });
 });
-describe('toIValidatableValueHostBase', () => {
+describe('toIValidatableValueHost', () => {
     test('Real instance match', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vhm, {
@@ -1883,10 +1883,10 @@ describe('toIValidatableValueHostBase', () => {
             value: null,
             status: ValidationStatus.Undetermined
         });
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Compatible object match', () => {
-        let testItem: IValidatableValueHostBase = {
+        let testItem: IValidatableValueHost = {
             valueHostsManager: {} as IValueHostsManager,
             dispose(): void { },
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
@@ -1975,7 +1975,7 @@ describe('toIValidatableValueHostBase', () => {
                 throw new Error("Method not implemented.");
             }            
         }
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Wrong instance class returns null', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
@@ -1985,12 +1985,12 @@ describe('toIValidatableValueHostBase', () => {
             name: 'Field1',
             value: null,
         });
-        expect(toIValidatableValueHostBase(new Date())).toBeNull();
-        expect(toIValidatableValueHostBase(vh)).toBeNull();
+        expect(toIValidatableValueHost(new Date())).toBeNull();
+        expect(toIValidatableValueHost(vh)).toBeNull();
     });
     test('Wrong plain old object returns null', () => {
-        expect(toIValidatableValueHostBase({})).toBeNull();
-        expect(toIValidatableValueHostBase({ getName: null })).toBeNull();
+        expect(toIValidatableValueHost({})).toBeNull();
+        expect(toIValidatableValueHost({ getName: null })).toBeNull();
     });
 });
 describe('currentValidationState', () => {
@@ -2172,7 +2172,7 @@ describe('groupCheck tests', () => {
         expect(setup.valueHost.groupCheck({ group: 'Group2' })).toBe(false);
     });
 });
-describe('toIValidatableValueHostBase function', () => {
+describe('toIValidatableValueHost function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vhm, {
@@ -2185,9 +2185,9 @@ describe('toIValidatableValueHostBase function', () => {
                 issuesFound: null,
                 status: ValidationStatus.NotAttempted,
             });
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
-    class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
+    class TestIValidatableValueHostImplementation implements IValidatableValueHost {
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;  
         dispose(): void {}
         groupCheck(options?: ValidateOptions | undefined): boolean {
@@ -2297,48 +2297,48 @@ describe('toIValidatableValueHostBase function', () => {
         }        
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIValidatableValueHostBaseImplementation();
+        let testItem = new TestIValidatableValueHostImplementation();
 
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIValidatableValueHostBase(testItem)).toBeNull();
+        expect(toIValidatableValueHost(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIValidatableValueHostBase(null)).toBeNull();
+        expect(toIValidatableValueHost(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIValidatableValueHostBase(100)).toBeNull();
+        expect(toIValidatableValueHost(100)).toBeNull();
     });
 });
 
-describe('toIValidatableValueHostBaseCallbacks function', () => {
+describe('toIValidatableValueHostCallbacks function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let testItem = new MockValueHostsManager(new MockJivsServices(false, false));
 
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostCallbacks(testItem)).toBe(testItem);
     });
-    class TestIValidatableValueHostBaseCallbacksImplementation implements IValidatableValueHostBaseCallbacks {
+    class TestIValidatableValueHostCallbacksImplementation implements IValidatableValueHostCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
-        onTextValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onTextValueChanged(vh: IValidatableValueHost, old: any) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHost, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIValidatableValueHostBaseCallbacksImplementation();
+        let testItem = new TestIValidatableValueHostCallbacksImplementation();
 
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIValidatableValueHostBaseCallbacks(null)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIValidatableValueHostBaseCallbacks(100)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(100)).toBeNull();
     });
 });
 

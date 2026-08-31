@@ -29,7 +29,7 @@ Also avoid depending on native validation attributes such as `required` to defin
 
 Error messages contain tokens, some of which can echo back user input. For example, "You entered {value}." Because these token values may originate from untrusted user input, they must be HTML-encoded before being inserted into the final message to prevent XSS.
 
-The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts) file. You can use it from that file instead of copying it from this section.
+The default `MessageTokenResolverService` does not encode replacement values. The implementation below is available in the companion [`jivs-dom_helpers.ts`](../../../starter_code/jivs-dom_helpers.ts) file. You can use it from that file instead of copying it from this section.
 
 ```ts
 export function encodeHtml(

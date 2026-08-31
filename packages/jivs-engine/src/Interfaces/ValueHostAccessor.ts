@@ -7,7 +7,7 @@ import { ICalcValueHost } from './CalcValueHost';
 import { IDisposable } from './General_Purpose';
 import { IFieldValueHost } from './FieldValueHost';
 import { IStaticValueHost } from './StaticValueHost';
-import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValidatorsValueHost } from './ValidatorsValueHostBase';
 import { IValueHost } from './ValueHost';
 
 /**
@@ -53,17 +53,17 @@ export interface IValueHostAccessor extends IDisposable
     // So why would the user consider this one?
     // /**
     //  * Returns the associated Validatable ValueHost or throws an error when
-    //  * the valueHostName is unknown or does not implement IValidatableValueHostBase.
+    //  * the valueHostName is unknown or does not implement IValidatableValueHost.
     //  * At this level, there is no support for Validator classes. Only the basic framework of validation
     //  * like validate(), isValid, and doNotSave.
     //  * @param valueHostName 
     //  */
-    // validatable(valueHostName: ValueHostName): IValidatableValueHostBase;    
+    // validatable(valueHostName: ValueHostName): IValidatableValueHost;    
     /**
      * Returns the associated Validatable ValueHost that supports validators or throws an error when
-     * the valueHostName is unknown or does not implement IValidatorsValueHostBase.
+     * the valueHostName is unknown or does not implement IValidatorsValueHost.
      * Includes FieldValueHost and PropertyValueHost.
      * @param valueHostName 
      */
-    validators(valueHostName: ValueHostName): IValidatorsValueHostBase;
+    validators(valueHostName: ValueHostName): IValidatorsValueHost;
 }

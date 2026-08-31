@@ -58,7 +58,7 @@ import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { populateServicesWithManyCultures } from "./utilities";
 
-import { InjectedError, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 
 import { ICachingService } from "../../src/Interfaces/CachingService";
 import { IValidatorConfigMergeService, IValueHostConfigMergeService } from "../../src/Interfaces/ConfigMergeService";
@@ -627,7 +627,7 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
         return super.services as IJivsServices;
     }
 
-    public override getValidatorsValueHost(valueHostName: string): IValidatorsValueHostBase | null {
+    public override getValidatorsValueHost(valueHostName: string): IValidatorsValueHost | null {
         let vh = this.getValueHost(valueHostName);
         if (vh instanceof ValidatorsValueHostBase)
             return vh;

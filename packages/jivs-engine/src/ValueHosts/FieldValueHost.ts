@@ -17,7 +17,7 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { ensureError } from '../Utilities/ErrorHandling';
@@ -643,7 +643,7 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
     if (source instanceof FieldValueHost)
         return source as IFieldValueHost;
 
-    if (toIValidatorsValueHostBase(source) &&
+    if (toIValidatorsValueHost(source) &&
         hasIFieldValueHostSpecificMembers(source)) {
         return source as IFieldValueHost;
     }
@@ -654,7 +654,7 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
  * @param source 
  * @returns 
  */
-export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
+export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHost): boolean
 {
     const test = source as IFieldValueHost;
     return (test.getTextValue !== undefined &&

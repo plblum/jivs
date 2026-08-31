@@ -11,9 +11,9 @@ import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggerService';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
-import type { IValidatableValueHostBase, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
+import type { IValidatableValueHost, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type IssueFound, type ValidateOptions, ValidationState } from '../Interfaces/Validation';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
 import
@@ -541,7 +541,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
     }
 
-    protected * validatableValueHost(): Generator<IValidatableValueHostBase> {
+    protected * validatableValueHost(): Generator<IValidatableValueHost> {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const [name, vh] of this.valueHosts) {
             if (vh instanceof ValidatableValueHostBase)
@@ -596,8 +596,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
      * Returns the instance or null if not found or found a different type of value host.
      */
-    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null {
-        return toIValidatorsValueHostBase(this.getValueHost(valueHostName));
+    public getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHost | null {
+        return toIValidatorsValueHost(this.getValueHost(valueHostName));
     }
     /**
      * Retrieves the FieldValueHost of the identified by valueHostName
@@ -918,19 +918,19 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         return list.length ? list : null;
     }
 
-    protected createModelValidatorsValueHost(): IValidatorsValueHostBase {
+    protected createModelValidatorsValueHost(): IValidatorsValueHost {
         // find existing by ModelValidatorsValueHostName
         // If found, return it. If not, create a new one and add it to the ValueHosts.
         // Log when creating
         const vh = this.getValueHost(ModelValidatorsValueHostName);
         if (vh)
-            return vh as IValidatorsValueHostBase;
+            return vh as IValidatorsValueHost;
         this.logger.message(LoggingLevel.Info, () => 'Creating ModelValidatorsValueHost');
         return this.addValueHost({
             valueHostType: ModelValidatorsValueHostType,
             label: '*',
             name: ModelValidatorsValueHostName
-        }, null) as IValidatorsValueHostBase;
+        }, null) as IValidatorsValueHost;
     }
 
     //#region Payload

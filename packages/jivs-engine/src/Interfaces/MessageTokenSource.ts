@@ -2,7 +2,7 @@
  * @module jivs-engine/Validation/Types
  */
 
-import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValidatorsValueHost } from './ValidatorsValueHostBase';
 import { IValueHostResolver } from './ValueHostResolver';
 
 /**
@@ -19,7 +19,7 @@ export interface IMessageTokenSource {
      * The TokenLabel doesn't provide {} because we may support additional
      * attributes within the token, like {Value:AbbrevDateFormat}
      */
-    getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver):
+    getValuesForTokens(valueHost: IValidatorsValueHost, valueHostResolver: IValueHostResolver):
         Array<TokenLabelAndValue>;
 }
 

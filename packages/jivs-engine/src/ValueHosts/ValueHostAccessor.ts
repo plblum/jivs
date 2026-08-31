@@ -13,7 +13,7 @@ import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { toIStaticValueHost } from './StaticValueHost';
 import { toICalcValueHost } from './CalcValueHost';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 
 
 /**
@@ -131,23 +131,23 @@ export class ValueHostAccessor implements IValueHostAccessor
     // So why would the user consider this one?    
     // /**
     //  * Returns the associated Validatable ValueHost or throws an error when
-    //  * the valueHostName is unknown or does not implement IValidatableValueHostBase.
+    //  * the valueHostName is unknown or does not implement IValidatableValueHost.
     //  * At this level, there is no support for Validator classes. Only the basic framework of validation
     //  * like validate(), isValid, and doNotSave.
     //  * @param valueHostName 
     //  */
-    // public validatable(valueHostName: ValueHostName): IValidatableValueHostBase
+    // public validatable(valueHostName: ValueHostName): IValidatableValueHost
     // {
-    //     return this.ensureCorrectValueHost(valueHostName, toIValidatableValueHostBase, 'ValidatableValueHostBase');        
+    //     return this.ensureCorrectValueHost(valueHostName, toIValidatableValueHost, 'ValidatableValueHostBase');        
     // }         
     /**
      * Returns the associated Validatable ValueHost that supports validators or throws an error when
-     * the valueHostName is unknown or does not implement IValidatorsValueHostBase.
+     * the valueHostName is unknown or does not implement IValidatorsValueHost.
      * Includes FieldValueHost and PropertyValueHost.
      * @param valueHostName 
      */
-    public validators(valueHostName: ValueHostName): IValidatorsValueHostBase
+    public validators(valueHostName: ValueHostName): IValidatorsValueHost
     {
-        return this.ensureCorrectValueHost(valueHostName, toIValidatorsValueHostBase, 'ValidatorsValueHostBase');        
+        return this.ensureCorrectValueHost(valueHostName, toIValidatorsValueHost, 'ValidatorsValueHostBase');        
     }
 }

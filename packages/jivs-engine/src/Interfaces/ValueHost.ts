@@ -59,7 +59,7 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
 
     /**
     * Replaces the typed value and optionally validates in subclasses
-    * that implement IValidatableValueHostBase. 
+    * that implement IValidatableValueHost. 
     * Call when the typed value was changed directly by consuming code.
     * @param value - The typed value to store. Use undefined to indicate that the
     * typed value could not be resolved from the text value, such as when parsing fails.

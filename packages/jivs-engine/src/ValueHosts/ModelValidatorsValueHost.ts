@@ -5,7 +5,7 @@
  */
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
+import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHost } from '../Interfaces/ValidatableValueHostBase';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, IssueFound, ValidationSeverity } from '../Interfaces/Validation';
 
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
@@ -97,7 +97,7 @@ export class ModelValidatorsValueHostGenerator extends ValidatableValueHostBaseG
     public canCreate(config: ValidatableValueHostBaseConfig): boolean {
         return config.valueHostType === ModelValidatorsValueHostType;
     }
-    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase {
+    public create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHost {
         return new ModelValidatorsValueHost(valueHostsManager, config, state);
     }
     public cleanupInstanceState(state: ValidatableValueHostBaseInstanceState, config: ValidatableValueHostBaseConfig): void {

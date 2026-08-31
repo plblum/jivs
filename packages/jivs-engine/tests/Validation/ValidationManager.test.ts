@@ -21,13 +21,13 @@ import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
-import { IValidatableValueHostBase, ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHost, ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType, IsUndeterminedConditionType, UserSuppliedResultConditionConfig,
     UserSuppliedResultCondition, UserSuppliedResultConditionType,
     NeverMatchesConditionType2
 } from "../../src/Support/conditionsForTesting";
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHostAccessor } from "../../src/Interfaces/ValueHostAccessor";
 import { CalcValueHostConfig, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { IStaticValueHost, StaticValueHostConfig, StaticValueHostInstanceState } from "../../src/Interfaces/StaticValueHost";
@@ -59,12 +59,12 @@ import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/C
 class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_ValueHostsManager {
     public createModelValidatorsValueHostCallCount = 0;
 
-    protected override createModelValidatorsValueHost(): IValidatorsValueHostBase {
+    protected override createModelValidatorsValueHost(): IValidatorsValueHost {
         this.createModelValidatorsValueHostCallCount++;
 
         let existing = this.getValueHost(ModelValidatorsValueHostName);
         if (existing)
-            return existing as IValidatorsValueHostBase;
+            return existing as IValidatorsValueHost;
 
         return this.addValueHost(
             {
@@ -73,7 +73,7 @@ class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_
                 label: '*'
             },
             null
-        ) as IValidatorsValueHostBase;
+        ) as IValidatorsValueHost;
     }
 }
 
@@ -281,9 +281,9 @@ describe('constructor and initial property values', () => {
             services: new MockJivsServices(false, false),
             valueHostConfigs: [],
             onValidationStateChanged: (valueHostsManager: IValueHostsManager, validationState: ValidationState) => { },
-            onValueHostValidationStateChanged: (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onValueHostValidationStateChanged: (valueHost: IValidatableValueHost, snapshot: ValueHostValidationState) => { },
             onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
-            onTextValueChanged: (valueHost: IValidatableValueHostBase, oldValue: any) => { },
+            onTextValueChanged: (valueHost: IValidatableValueHost, oldValue: any) => { },
             onConfigChanged: (manager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>) => { }
         };
 
@@ -1525,11 +1525,11 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(() => vh2 = testItem.getValueHost('Field2')).not.toThrow();
         expect(vh2).toBeInstanceOf(FieldValueHost);
         expect(vh2!.getName()).toBe('Field2');
-        let vh3: IValidatorsValueHostBase | null = null;
+        let vh3: IValidatorsValueHost | null = null;
         expect(() => vh3 = testItem.getValidatorsValueHost('Field1')).not.toThrow();
         expect(vh3).toBeInstanceOf(ValidatableValueHostBase);
         expect(vh3!.getName()).toBe('Field1');
-        let vh4: IValidatorsValueHostBase | null = null;
+        let vh4: IValidatorsValueHost | null = null;
         expect(() => vh4 = testItem.getValidatorsValueHost('Field2')).not.toThrow();
         expect(vh4).toBeInstanceOf(ValidatableValueHostBase);
         expect(vh4!.getName()).toBe('Field2');
@@ -1573,10 +1573,10 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         expect(() => vh2 = testItem.getValueHost('Field2')).not.toThrow();
         expect(vh2).toBeInstanceOf(CalcValueHost);
         expect(vh2!.getName()).toBe('Field2');
-        let vh3: IValidatorsValueHostBase | null = null;
+        let vh3: IValidatorsValueHost | null = null;
         expect(() => vh3 = testItem.getValidatorsValueHost('Field1')).not.toThrow();
         expect(vh3).toBeNull();
-        let vh4: IValidatorsValueHostBase | null = null;
+        let vh4: IValidatorsValueHost | null = null;
         expect(() => vh4 = testItem.getValidatorsValueHost('Field2')).not.toThrow();
         expect(vh4).toBeNull();
         let vh5: IFieldValueHost | null = null;
@@ -1615,7 +1615,7 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         let vh1: IValueHost | null = null;
         expect(() => vh1 = testItem.getValueHost('Unknown')).not.toThrow();
         expect(vh1).toBeNull();
-        let vh2: IValidatorsValueHostBase | null = null;
+        let vh2: IValidatorsValueHost | null = null;
         expect(() => vh2 = testItem.getValidatorsValueHost('Unknown')).not.toThrow();
         expect(vh1).toBeNull();
         let vh3: IFieldValueHost | null = null;
@@ -2599,7 +2599,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
     test('validate() returns isValid=true and doNotSave=false when a host needs validation but is skipped by a non-matching group', () => {
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValueHostsManager([config]);
-        let vh = setup.valueHostsManager.getValueHost(config.name) as IValidatableValueHostBase;
+        let vh = setup.valueHostsManager.getValueHost(config.name) as IValidatableValueHost;
         vh.setValue('test', { validate: false });    // should set validation status to NeedsValidation
         expect(vh.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
         // validate() returns ValidationState for VM. Do avoid changing vh's state
@@ -2622,9 +2622,9 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let configB = setupFieldValueHostConfig(1, [AlwaysMatchesConditionType]);
         configB.group = 'B';
         let setup = setupValueHostsManager([configA, configB]);
-        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHost;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
-        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHost;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.valueHostsManager.validate({ group: 'B' });
@@ -2646,9 +2646,9 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let configB = setupFieldValueHostConfig(1, [NeverMatchesConditionType2]);
         configB.group = 'B';
         let setup = setupValueHostsManager([configA, configB]);
-        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHost;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
-        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHost;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.valueHostsManager.validate({ group: 'B' });
@@ -2677,9 +2677,9 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         let configB = setupFieldValueHostConfig(1, [NeverMatchesConditionType2]);
         configB.validatorConfigs![0].severity = ValidationSeverity.Warning;
         let setup = setupValueHostsManager([configA, configB]);
-        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHostBase;
+        let vhA = setup.valueHostsManager.getValueHost(configA.name) as IValidatableValueHost;
         vhA.setValue('testA', { validate: false });    // should set validation status to NeedsValidation
-        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHostBase;
+        let vhB = setup.valueHostsManager.getValueHost(configB.name) as IValidatableValueHost;
         vhB.setValue('testB', { validate: false });    // should set validation status to NeedsValidation
 
         let validationState = setup.valueHostsManager.validate();
@@ -2770,7 +2770,7 @@ describe('clearValidation', () => {
             capturedFromOnValidated.push(validationState);
         };
         let capturedFromOnValueHostValidated: Array<ValueHostValidationState> = [];
-        let callbackValueHostValidated = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => {
+        let callbackValueHostValidated = (valueHost: IValidatableValueHost, validationState: ValueHostValidationState) => {
             capturedFromOnValueHostValidated.push(validationState);
             jest.advanceTimersByTime(delayAfterVHCallback); // has the potential to trigger onValidate
         };
@@ -3574,8 +3574,8 @@ describe('toIValueHostsManagerCallbacks function', () => {
     test('Matches interface returns strongly typed object.', () => {
         let testItem: IValueHostsManagerCallbacks = {
             onValueChanged: (vh: IValueHost, old: any) => { },
-            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
-            onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onTextValueChanged: (vh: IValidatableValueHost, old: any) => { },
+            onValueHostValidationStateChanged: (vh: IValidatableValueHost, snapshot: ValueHostValidationState) => { },
             onValidationStateChanged: (vhm, results) => { },
             onConfigChanged: (vhm, config) => { }
         };
@@ -3593,8 +3593,8 @@ describe('toIValueHostsManagerCallbacks function', () => {
             services: new JivsServices(),
             valueHostConfigs: [],
             onValueChanged: (vh: IValueHost, old: any) => { },
-            onTextValueChanged: (vh: IValidatableValueHostBase, old: any) => { },
-            onValueHostValidationStateChanged: (vh: IValidatableValueHostBase, snapshot: ValueHostValidationState) => { },
+            onTextValueChanged: (vh: IValidatableValueHost, old: any) => { },
+            onValueHostValidationStateChanged: (vh: IValidatableValueHost, snapshot: ValueHostValidationState) => { },
             onValidationStateChanged: (vhm, results) => { },
             onConfigChanged: (vhm, config) => { }
         });
@@ -3700,7 +3700,7 @@ describe('toIValueHostsManager function', () => {
                 throw new Error("Function not implemented.");
             },
             vh: {} as unknown as IValueHostAccessor,
-            getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+            getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHost | null
             {
                 throw new Error("Function not implemented.");
             },
@@ -3886,7 +3886,7 @@ describe('toIValueHostsManagerAccessor function', () => {
                 {
                     throw new Error("Function not implemented.");
                 },
-                getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null
+                getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHost | null
                 {
                     throw new Error("Function not implemented.");
                 },

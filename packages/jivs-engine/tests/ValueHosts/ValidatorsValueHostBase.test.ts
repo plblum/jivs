@@ -9,14 +9,14 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
-import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { IValidatableValueHostBase, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHost, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
-import { ValidatorsValueHostBaseConfig, IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { ValidatorsValueHostBaseConfig, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
     ValueHostConfig, ValueHostInstanceState
@@ -83,7 +83,7 @@ class TestValidatorsValueHostGenerator extends ValidatorsValueHostBaseGenerator 
     public canCreate(config: ValueHostConfig): boolean {
         return config.valueHostType === TestValueHostType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHostBase {
+    public create(valueHostsManager : IValueHostsManager, config: ValidatorsValueHostBaseConfig, state: ValidatorsValueHostBaseInstanceState): IValidatorsValueHost {
         return new TestValidatorsValueHost(valueHostsManager, config, state);
     }
     // public cleanupInstanceState(state: ValidatorsValueHostBaseInstanceState, config: ValueHostConfig): void {
@@ -1780,7 +1780,7 @@ describe('corrected property', () => {
 });
 
 class ThrowExceptionValidator extends Validator {
-    constructor(valueHost: IValidatorsValueHostBase, config: ValidatorConfig)
+    constructor(valueHost: IValidatorsValueHost, config: ValidatorConfig)
     {
         super(valueHost as any, config);
     }
@@ -1789,7 +1789,7 @@ class ThrowExceptionValidator extends Validator {
     }
 }
 class TestValidatorFactory implements IValidatorFactory {
-    public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
+    public create(valueHost: IValidatorsValueHost, config: ValidatorConfig): IValidator {
         return new ThrowExceptionValidator(valueHost, config);
     }
     canCreate(config: ValidatorConfig): boolean {
@@ -1903,7 +1903,7 @@ function validateWithAsyncConditions(
     let doneTime = false;
     let handlerCount = 0;
     let onValidateHandler: ValueHostValidationStateChangedHandler =
-        (valueHost: IValidatableValueHostBase, snapshot: ValueHostValidationState) => {
+        (valueHost: IValidatableValueHost, snapshot: ValueHostValidationState) => {
             let vhm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValueHostsManager;
             let evr = expectedValidateResults[handlerCount];
             expect(snapshot.isValid).toBe(evr.status !== ValidationStatus.Invalid);
@@ -2783,9 +2783,9 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
     function setupWithThreeValueHosts(): {
         vhm: IValueHostsManager,
         services: IJivsServices,
-        field1: IValidatorsValueHostBase,
-        field2: IValidatorsValueHostBase,
-        field3: IValidatorsValueHostBase
+        field1: IValidatorsValueHost,
+        field2: IValidatorsValueHost,
+        field3: IValidatorsValueHost
     } {
 
         let vhConfigs: Array<ValidatorsValueHostBaseConfig> = [
@@ -2846,9 +2846,9 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
         return {
             vhm: vhm,
             services: services,
-            field1: vhm.getValueHost('Field1') as IValidatorsValueHostBase,
-            field2: vhm.getValueHost('Field2') as IValidatorsValueHostBase,
-            field3: vhm.getValueHost('Field3') as IValidatorsValueHostBase
+            field1: vhm.getValueHost('Field1') as IValidatorsValueHost,
+            field2: vhm.getValueHost('Field2') as IValidatorsValueHost,
+            field3: vhm.getValueHost('Field3') as IValidatorsValueHost
         };
     }
     test('No field previously validated or changed. Use Notification from field1 to field2 with revalidate = false. ValidationStatus should not change.', () => {
@@ -2962,7 +2962,7 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
 });
 
 
-describe('toIValidatorsValueHostBase function', () => {
+describe('toIValidatorsValueHost function', () => {
     test('Passing actual ValidatorsValueHostBase matches interface returns same object.', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new TestValidatorsValueHost(vhm, {
@@ -2976,9 +2976,9 @@ describe('toIValidatorsValueHostBase function', () => {
                 issuesFound: null,
                 status: ValidationStatus.NotAttempted,
             });
-        expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatorsValueHost(testItem)).toBe(testItem);
     });
-    class TestIValidatorsValueHostBaseImplementation implements IValidatorsValueHostBase {
+    class TestIValidatorsValueHostImplementation implements IValidatorsValueHost {
 
         private issues: IssueFound[] = [];
         private data: Map<string, ValidTypesForInstanceStateStorage> = new Map();
@@ -3106,19 +3106,19 @@ describe('toIValidatorsValueHostBase function', () => {
         }
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIValidatorsValueHostBaseImplementation();
+        let testItem = new TestIValidatorsValueHostImplementation();
 
-        expect(toIValidatorsValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatorsValueHost(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIValidatorsValueHostBase(testItem)).toBeNull();
+        expect(toIValidatorsValueHost(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIValidatorsValueHostBase(null)).toBeNull();
+        expect(toIValidatorsValueHost(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIValidatorsValueHostBase(100)).toBeNull();
+        expect(toIValidatorsValueHost(100)).toBeNull();
     });
 });
 

@@ -29,8 +29,8 @@ import { ValidateOptions, IssueFound, ValidationState } from './Validation';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 
 import {
-    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
-    toIValidatorsValueHostBaseCallbacks
+    IValidatorsValueHost, IValidatorsValueHostCallbacks,
+    toIValidatorsValueHostCallbacks
 } from './ValidatorsValueHostBase';
 import { IJivsServices } from './JivsServices';
 import { IFieldValueHost, IFieldValueHostChangedCallback } from './FieldValueHost';
@@ -120,11 +120,11 @@ export interface IValueHostsManager extends IValueHostResolver {
     enumerateValueHosts(filter ?: (valueHost: IValueHost) => boolean): Generator<IValueHost>;
 
     /**
-     * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
+     * Retrieves the IValidatorsValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
      * Returns the instance or null if not found or found a different type of value host.
      */
-    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null;    
+    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHost | null;    
 
     /**
      * Retrieves the FieldValueHost of the identified by valueHostName
@@ -412,7 +412,7 @@ export type ValueHostsManagerConfigChangedHandler
  */
 export interface IValueHostsManagerCallbacks
     extends IValueHostCallbacks,
-    IValidatorsValueHostBaseCallbacks,
+    IValidatorsValueHostCallbacks,
     IFieldValueHostChangedCallback
 {
 
@@ -574,7 +574,7 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
  */
 export function toIValueHostsManagerCallbacks(source: any): IValueHostsManagerCallbacks | null
 {
-    if (toIValidatorsValueHostBaseCallbacks(source))
+    if (toIValidatorsValueHostCallbacks(source))
     {
         const test = source as IValueHostsManagerCallbacks;     
         if (test.onValidationStateChanged !== undefined &&

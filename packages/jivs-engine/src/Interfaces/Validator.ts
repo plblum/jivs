@@ -6,7 +6,7 @@ import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditio
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
 import { IGatherValueHostNames } from './ValueHost';
 import { IMessageTokenSource } from './MessageTokenSource';
-import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValidatorsValueHost } from './ValidatorsValueHostBase';
 import { IDisposable } from './General_Purpose';
 
 /**
@@ -246,6 +246,6 @@ export interface ValidatorValidateResult {
  * This interface targets unit testing with mocks.
  */
 export interface IValidatorFactory {
-    create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator;
+    create(valueHost: IValidatorsValueHost, config: ValidatorConfig): IValidator;
     canCreate(config: ValidatorConfig): boolean;
 }

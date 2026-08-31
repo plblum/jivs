@@ -30,7 +30,7 @@ import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { ConditionType } from './ConditionTypes';
 import { NumberConditionBase, NumberConditionBaseConfig } from './NumberConditionBase';
 
@@ -315,7 +315,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 
         return ConditionEvaluateResult.NoMatch;
     }
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate
@@ -386,7 +386,7 @@ export class StringLengthCondition extends StringConditionBase<StringLengthCondi
         return ConditionEvaluateResult.Match;
     }
 
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         // same order of precidence as in Evaluate

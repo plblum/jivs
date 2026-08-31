@@ -179,7 +179,7 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
 
     /**
-     * @inheritDoc jivs-engine/ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostBaseCallbacks.onValueHostValidationStateChanged
+     * @inheritDoc jivs-engine/ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostCallbacks.onValueHostValidationStateChanged
      */
     public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
         return this.baseConfig.onValueHostValidationStateChanged ?? null;

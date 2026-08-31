@@ -13,7 +13,7 @@ import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorH
 import
     {
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
-        IValidatorsValueHostBase, ValidatorsValueHostSetValueOptions,
+        IValidatorsValueHost, ValidatorsValueHostSetValueOptions,
         type InjectedError, InjectedErrorValidatorErrorCode
     } from '../Interfaces/ValidatorsValueHostBase';
 import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './ValidatableValueHostBase';
@@ -23,7 +23,7 @@ import { IValueHost } from '../Interfaces/ValueHost';
 import { TextLocalizerService } from '../Services/TextLocalizerService';
 
 /**
- * Standard implementation of IValidatorsValueHostBase. It owns a list of Validators
+ * Standard implementation of IValidatorsValueHost. It owns a list of Validators
  * which support its validate() function.
  * 
 * Each instance depends on a few things, all passed into the constructor:
@@ -40,7 +40,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     TState extends ValidatorsValueHostBaseInstanceState,
     TOptions extends ValidatorsValueHostSetValueOptions = ValidatorsValueHostSetValueOptions>
     extends ValidatableValueHostBase<TConfig, TState, TOptions>
-    implements IValidatorsValueHostBase<TOptions> {
+    implements IValidatorsValueHost<TOptions> {
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         super(valueHostsManager, config, state);
     }

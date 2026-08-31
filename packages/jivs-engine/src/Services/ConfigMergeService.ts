@@ -9,7 +9,7 @@ import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHost
 import { resolveErrorCode } from '../Utilities/Validation';
 import {
     PropertyConflictRule, MergeIdentity, PropertyConfigMergeServiceHandlerResult,
-    IConfigMergeServiceBase, IValueHostConfigMergeService, IValidatorConfigMergeService,
+    IConfigMergeService, IValueHostConfigMergeService, IValidatorConfigMergeService,
     ConditionConflictIdentifierHandler
 } from '../Interfaces/ConfigMergeService';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
@@ -95,7 +95,7 @@ import { LoggingLevel } from '../Interfaces/LoggerService';
  * 
  */
 export abstract class ConfigMergeServiceBase<TConfig> extends ServiceWithAccessorBase
-    implements IConfigMergeServiceBase<TConfig> {
+    implements IConfigMergeService<TConfig> {
 
     public override dispose(): void {
         super.dispose();

@@ -31,7 +31,7 @@ import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 
@@ -142,7 +142,7 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
      * @param valueHostsManager 
      * @returns 
      */
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public override getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
         let secondValue: any = null;

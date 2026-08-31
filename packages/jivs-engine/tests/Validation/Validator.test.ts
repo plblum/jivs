@@ -20,7 +20,7 @@ import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerServic
 import { type TokenLabelAndValue, IMessageTokenSource, toIMessageTokenSource } from "../../src/Interfaces/MessageTokenSource";
 import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { IValidator, ValidatorConfig, ValidatorValidateResult } from '../../src/Interfaces/Validator';
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
@@ -44,7 +44,7 @@ class PublicifiedValidator extends Validator {
     public exposeValueHostsManager(): IValueHostsManager {
         return this.valueHostsManager;
     }
-    public exposeValueHost(): IValidatorsValueHostBase {
+    public exposeValueHost(): IValidatorsValueHost {
         return this.valueHost;
     }
 

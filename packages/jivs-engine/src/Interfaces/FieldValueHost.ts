@@ -2,10 +2,10 @@
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
 import { ValueAdapterRule } from './ValueAdapterService';
-import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
+import { IValidatableValueHost, toIValidatableValueHostCallbacks } from './ValidatableValueHostBase';
 import
     {
-        IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+        IValidatorsValueHost, IValidatorsValueHostCallbacks,
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
         ValidatorsValueHostSetValueOptions
     } from './ValidatorsValueHostBase';
@@ -46,7 +46,7 @@ import
  * ```
 */
 export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
-    extends IValidatorsValueHostBase<TOptions>
+    extends IValidatorsValueHost<TOptions>
 {
 
     /**
@@ -347,7 +347,7 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
  * - null which means we have no value assigned
  * - undefined which means we don't have any previous value available
  */
-export type TextValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue?: string | null) => void;
+export type TextValueChangedHandler = (valueHost: IValidatableValueHost, oldValue?: string | null) => void;
 
 export interface IFieldValueHostChangedCallback
 {
@@ -363,7 +363,7 @@ export interface IFieldValueHostChangedCallback
 /**
  * Provides callback hooks for the consuming system to supply to IFieldValueHosts.
  */
-export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
+export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback, IValidatorsValueHostCallbacks {
 
 }
 
@@ -405,7 +405,7 @@ export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetVal
  */
 export function toIFieldValueHostCallbacks(source: any): IFieldValueHostCallbacks | null
 {
-    if (toIValidatableValueHostBaseCallbacks(source))
+    if (toIValidatableValueHostCallbacks(source))
     {
         const test = source as IFieldValueHostCallbacks;
         if (test.onTextValueChanged !== undefined)

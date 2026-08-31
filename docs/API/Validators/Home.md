@@ -2,16 +2,17 @@
 Validation is really just a process that evaluates some rule and returns a result. If there was an error, the result includes an error message. The `Validator class` handles this work. It defers the "evaluates a rule" part to a [Condition](../Conditions/Home.md). 
 
 There are several aspects to validation:
-- Configuration, which happens when you setup the `ValueHostsManager`. It uses the `ValidatorConfig object`, which contains:
+- [Configuration](./Configuration.md), which happens when you setup the `ValueHostsManager`. It uses the `ValidatorConfig object`, which contains:
     - a `ConditionConfig object` describing the condition to use
-    - two error messages, with one targetting a ValidationSummary. Plus localization properties.
-    - an optional errorCode
+    - [two error messages](./Configuration.md#error-messages), with one targetting a ValidationSummary
+    - an optional [errorCode](./Configuration.md#using-the-errorcode)
     - an optional severity
-- Validation process, which happens when you call the `ValueHostsManager.validate()` function.
-- The results of validation
-    - `ValidationState object` from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
-    - `ValueHostValidationState object` from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
-    - `IssueFound object` describes a single issue (or error if you like) found. Contained within both ValidationState and `ValueHostValidationState`.
+- [Invoking the validation process](./Invoking_Validation.md).
+- [The results of validation](./Receiving_ValidationState_Changes.md)
+    - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
+    - [`ValueHostValidationState object`](./Validation_State.md#valuehostvalidationstate) from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
+    - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both ValidationState and `ValueHostValidationState`.
+- [Injecting errors on demand](./Injecting_errors_on_demand.md), where you receive an error outside of normal scope such as a parser failure.
 
 For example:
 ```ts
@@ -47,7 +48,7 @@ const vhm = new ValueHostsManager(config);
 // user submits the form
 vhm.validate(); // will invoke both callbacks, which is how the UI knows to show Validation State
 
-function fieldValidated(valueHost: IValueHost, validationState: ValueHostValidationState): void
+function fieldValidated(valueHost: IValidatorsValueHost, validationState: ValueHostValidationState): void
 {
     // use valueHost to identify the specific field whose UI needs to change
     // use validationState to know if there were any errors, and to show those errors

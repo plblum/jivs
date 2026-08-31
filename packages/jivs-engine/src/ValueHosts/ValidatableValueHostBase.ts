@@ -8,7 +8,7 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValueHostBase } from './ValueHostBase';
 import type { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValidatableValueHostBase, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValidatableValueHostBaseSetValueOptions, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHost, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValidatableValueHostBaseSetValueOptions, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
 import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerCallbacks } from '../Interfaces/ValueHostsManager';
 import { LoggingLevel } from '../Interfaces/LoggerService';
@@ -23,7 +23,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     TState extends ValidatableValueHostBaseInstanceState,
     TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
     extends ValueHostBase<TConfig, TState, TOptions>
-    implements IValidatableValueHostBase<TOptions> {
+    implements IValidatableValueHost<TOptions> {
 /**
  * @param valueHostsManager - Contains all ValueHosts and supports validation.
  *   It is the owner of all state and provides group validation.
@@ -57,7 +57,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         super.dispose();
         this._associatedValueHostNames = undefined!;
     }
-    //#region IValidatableValueHostBase
+    //#region IValidatableValueHost
     /**
     * Replaces the native value and optionally validates.
     * Call when the native value was changed directly by consuming code.
@@ -201,7 +201,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.clearValidation();
     }
             
-    //#endregion IValidatableValueHostBase
+    //#endregion IValidatableValueHost
 
     //#region validation
 
@@ -700,18 +700,18 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 }
 
 /**
- * Determines if the object implements IValidatableValueHostBase.
+ * Determines if the object implements IValidatableValueHost.
  * @param source 
- * @returns source typecasted to IValidatableValueHostBase if appropriate or null if not.
+ * @returns source typecasted to IValidatableValueHost if appropriate or null if not.
  */
-export function toIValidatableValueHostBase(source: any): IValidatableValueHostBase | null
+export function toIValidatableValueHost(source: any): IValidatableValueHost | null
 {
     if (source instanceof ValidatableValueHostBase)
-        return source as IValidatableValueHostBase;
+        return source as IValidatableValueHost;
     if (source && typeof source === 'object')
     {
-        const test = source as IValidatableValueHostBase;    
-        // some select members of IValidatableValueHostBase
+        const test = source as IValidatableValueHost;    
+        // some select members of IValidatableValueHost
         if (test.validate !== undefined &&
             test.getIssuesFound !== undefined)
             return test;
@@ -722,7 +722,7 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 export abstract class ValidatableValueHostBaseGenerator implements IValueHostGenerator {
     public abstract canCreate(config: ValueHostConfig): boolean;
 
-    public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHostBase;
+    public abstract create(valueHostsManager: IValueHostsManager, config: ValidatableValueHostBaseConfig, state: ValidatableValueHostBaseInstanceState): IValidatableValueHost;
 
     /**
      * Looking for changes to the ValidationConfigs to impact IssuesFound.

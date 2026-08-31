@@ -1,5 +1,12 @@
-# What Invokes Validation
-Both the `ValueHostsManager` and `FieldValueHost` have a `validate()` function, as described in the next two sections.
+# Invoking Validation
+Both the `ValueHostsManager` and `FieldValueHost` have a `validate()` function, as described in the next two sections. Use them to invoke validation.
+
+Typical use cases:
+- Validation upon submit. Use `ValueHostsManager.validate()`
+- Validate a group prior to hiding it in a wizard-like UI. Use `ValueHostsManager.validate({group: name})`
+- Validate as a field's data changes, use `setTextValue(text, { validate: true })` or `validate()`.
+- Validate during editing, running validators like RequireText and StringLength. Use `setTextValue(text, {validate: true, duringEdit: true })` or `validate({ duringEdit: true })`
+
 ## FieldValueHost.validate()
 When a `FieldValueHosts`' value changed, call its `validate()` function or pass the `{ validate: true }` option into the `setTextValue()` function.
 

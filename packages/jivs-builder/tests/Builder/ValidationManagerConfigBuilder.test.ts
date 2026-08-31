@@ -2,7 +2,7 @@ import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryIn
 import { RegExpConditionConfig, RequireTextCondition } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { IValidatableValueHostBase, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHost, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -243,11 +243,11 @@ describe('Callbacks get and set', () => {
         expect(result.onConfigChanged).toBe(replacementHandler);
     });    
     test('onValueHostValidationStateChanged', () => {
-        function handler(valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState): void
+        function handler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
         {
             
         }
-        function replacementHandler(valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState): void
+        function replacementHandler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
         {
             
         }

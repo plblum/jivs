@@ -19,7 +19,7 @@ import
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
-import { IValidatableValueHostBase, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { IValidatableValueHost, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import
     {
         IssueFound,
@@ -2344,8 +2344,8 @@ describe('toIFieldValueHostCallbacks function', () => {
     class TestIFieldValueHostCallbacksImplementation implements IFieldValueHostCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
-        onTextValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onTextValueChanged(vh: IValidatableValueHost, old: any) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHost, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
         let testItem = new TestIFieldValueHostCallbacksImplementation();
