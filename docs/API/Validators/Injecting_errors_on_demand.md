@@ -35,7 +35,7 @@ interface InjectedError
 let firstNameFld = document.getElementById('FirstName');
 firstNameFld.attachEventListener('onchange', (evt)=> {
     let textValue = evt.target.value;
-    let [nativeValue, parserError] = YourConvertToNativeCode(textValue);  
+    let { nativeValue, parserError } = YourConvertToNativeCode(textValue);  
     let injectedError: InjectedError | undefined = undefined;
     if (parserError)
     {
