@@ -12,13 +12,11 @@
  * - Retain InstanceState objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
  *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
  *   through all eligible ValidatorsValueHostBases.
- * - Report a list of Issues Found for an individual UI element.
- * - Report a list of Issues Found for the entire system for a UI 
- *   element often known as "Validation Summary".
+ * - Expose the validation state including a list of issues found
+ * - Provide callbacks to notify the UI to take an action.
  * 
  * @module jivs-engine/ValueHostsManager/Types
  */
@@ -51,9 +49,9 @@ export interface IValueHostsManager extends IValueHostResolver {
      * 
      * Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * - disableFormattingOnValueChange = false, which turns off formatting when setTextValue() is used. Alternative, use 
      * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
-     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * - disableParsingOnValueChange = false, which turns off parsing when setValue() is used. Alternative, use 
      * `setValue(value, { disableParser: true });` to selectively turn off parsing.
      */
     readonly behaviors: Behaviors;
@@ -383,8 +381,8 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
     /**
      * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
-     * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * - disableFormattingOnValueChange = false, which means when a value changes, it is formatted and the formatted value is set.
+     * - disableParsingOnValueChange = false, which means when a text value changes, it is parsed and the parsed value is set.
      * 
      * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
      * It is also available in the ValueHostsManager.behaviors property.
@@ -466,8 +464,8 @@ export const DefaultNotifyValidationStateChangedDelay = 100;
  * They are here to allow the consuming system to change the behavior of ValueHostsManager.
  * The default behaviors are:
  * - activeCultureID = undefined, which means use the default culture from CultureService.defaultCultureId
- * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
- * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
+ * - disableFormattingOnValueChange = false, which means when a value changes, it is formatted and the formatted value is set.
+ * - disableParsingOnValueChange = false, which means when a text value changes, it is parsed and the parsed value is set.
  * 
  * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
  * It is also available in the ValueHostsManager.behaviors property.

@@ -2739,7 +2739,6 @@ export interface IFivaseConfigHost {
  * getConfig() will supply several parts to the ValueHostsManagerConfig:
  * - The ValueHostConfigs array, which is the ValueHost configuration for the form.
  * - The capturedState, which is the state of the ValueHostsManager in the session.
- * - The onInstanceStateChanged and onValueHostInstanceStateChanged callbacks, which are used to save the state.
  *   You can also use these callbacks to handle the state changes in the application, as yours will be called
  *   after this class saves the state.
  */

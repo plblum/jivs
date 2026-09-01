@@ -74,13 +74,11 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
  * - Retain InstanceState objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
  *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
- *   through all eligible FieldValueHosts.
- * - Report a list of Issues Found for an individual UI element.
- * - Report a list of Issues Found for the entire system for a UI 
- *   element often known as "Validation Summary".
+ *   through all eligible ValidatorsValueHostBases.
+ * - Expose the validation state including a list of issues found
+ * - Provide callbacks to notify the UI to take an action.
  * 
  * Notice that this class does not know anything about consuming system.
  * As a result depends on the consuming system to transfer values between
@@ -96,16 +94,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * @example
      * ```ts
      * {
-     *   services: createJivsServices(); <-- see and customize your create_services.ts file
+     *   behaviors: Behaviors;
+     *   services: IJivsServices;
      *   valueHostConfigs: [
      *     // see elsewhere for details on ValueHostConfigs as they are the heavy lifting in this system.
      *     // Just know that you need one object for each value that you want to connect
      *     // to the ValueHostsManager
      *      ],
-     *   state: undefined, // or the state string previously returned with getState
-     *   savedValueHostInstanceStates: null, // or an array of the state objects previously returned with OnValueHostInstanceStateChanged
-     *   onInstanceStateChanged: (valueHostsManager, state)=> { },
-     *   onValueHostInstanceStateChanged: (valueHost, state) => { },
+     *   capturedState?: string,
      *   onValidationStateChanged: (valueHostsManager, validationState)=> { },
      *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
      *   onValueChanged: (valueHost, oldValue) => { },
@@ -219,9 +215,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * 
      * Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * - disableFormattingOnValueChange = false, which turns off formatting when setTextValue() is used. Alternative, use
      * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
-     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * - disableParsingOnValueChange = false, which turns off parsing when setValue() is used. Alternative, use 
      * `setValue(value, { disableParser: true });` to selectively turn off parsing.
      */
     public get behaviors(): Behaviors
