@@ -567,7 +567,7 @@ builder.field('fieldname').all((childBuilder)=>{
 `childBuilder` is a builder designed for children. It has only these functions:
 - `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
-- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
 - `when()` employs the `WhenCondition` to selectively enable a single child condition.
 - `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 
@@ -641,7 +641,7 @@ builder.field('fieldname').when(
 `whenToEnableBuilder` and `thenBuilder` are builders designed to add a single child. They have these functions:
 - `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
-- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
 - `when()` employs the `WhenCondition` to selectively enable a single child condition.
 - `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 ```ts
@@ -726,7 +726,7 @@ builder.field('fieldname').not(
 `childBuilder` is a builder designed to add a single child. It has these functions:
 - `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
 - `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
-- `all()`, `any()`, `countMatches()` - You can nest these same tools as a child and build a tree of logic.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
 - `not()` employs the `NotCondition` to selectively enable a single child condition.
 - `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
 ```ts

@@ -1,18 +1,24 @@
 # Using CalcValueHost
-The `CalcValueHost` takes a function used to calculate its value. The function has this format.
+The `CalcValueHost` if a `ValueHost` that calculates its value. 
+
+You supply it with a function has this format during configuration:
 ```ts
 (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => number | Date | string | null | boolean | undefined
 ```
 Take advantage of the _findValueHosts_ parameter to request values from other ValueHosts: `findValueHosts.getValueHost('name').getValue()`. It also provides access to `JivsServices` on `findValueHosts.services`.
 
-In this example, the function multiplies the value from the `FieldValueHost` 'Count' by 10.
+In this example, the function multiplies the value from the `FieldValueHost` 'Count' by a multiplier setup in a `StaticValueHost`.
 ```ts
 builder.field('Count', LookupKey.Integer);
+builder.static('Multiplier', LookupKey.Number, {
+    initialValue: 10
+});
 builder.calc('TimesTen', LookupKey.Integer, 
    (callingValueHost: ICalcValueHost, findValueHosts: IValueHostsManager) => {
-      let count = findValueHosts.getValueHost('Count') as number;
-      if (!isNaN(count))
-          return count * 10;
+      let count = findValueHosts.getValueHost('Count').getValue() as number;
+      let multiplier = findValueHosts.getValueHost('Multiplier').getValue() as number;
+      if (!isNaN(count) && !isNaN(multiplier))
+          return count * multiplier;
       return undefined;
    });
 ```
