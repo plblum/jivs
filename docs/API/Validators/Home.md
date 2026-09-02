@@ -8,7 +8,7 @@ There are several aspects to validation:
     - an optional [errorCode](./Configuration.md#using-the-errorcode)
     - an optional severity
 - [Invoking the validation process](./Invoking_Validation.md).
-- [The results of validation](./Receiving_ValidationState_Changes.md)
+- [The results of validation](./Handling_ValidationState_Changes.md)
     - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
     - [`ValueHostValidationState object`](./Validation_State.md#valuehostvalidationstate) from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
     - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both ValidationState and `ValueHostValidationState`.

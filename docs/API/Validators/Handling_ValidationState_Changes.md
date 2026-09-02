@@ -1,4 +1,4 @@
-# Receiving ValidationState Changes
+# Handling ValidationState Changes
 Your user interface depends on knowing the state of validation. Has validation reported an error or not? 
 
 As shown in [Validators](./Home.md), you wire up two callbacks on `ValueHostsManager` to send validation state changes along:

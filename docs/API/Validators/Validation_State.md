@@ -1,9 +1,9 @@
 # Validation State and Issues Found
 **Validation State** describes the _results of a validation action_. Use it to know how to adjust your user interface and make decisions like whether the user can submit the page.
 
-Your user interface will receive a `ValidationState object` through its `onValidationStateChanged` callback. You will use its data to determine if there are any validation issues, and to show its issues. Those issues are within `IssueFound objects`. See [Setup onValidationStateChanged](./Receiving_ValidationState_Changes.md#setup-onvalidationstatechanged).
+Your user interface will receive a `ValidationState object` through its `onValidationStateChanged` callback. You will use its data to determine if there are any validation issues, and to show its issues. Those issues are within `IssueFound objects`. See [Setup onValidationStateChanged](./Handling_ValidationState_Changes.md#setup-onvalidationstatechanged).
 
-It will receive a `ValueHostValidationState object` through its `onValueHostValidationStateChanged` callback. Its data is specific to a single `FieldValueHost`, and identifies if there are validation issues. Use those issues, found in `IssueFound objects`, to display error messages. See [Setup onValueHostValidationState](./Receiving_ValidationState_Changes.md#setup-onvaluehostvalidationstatechanged).
+It will receive a `ValueHostValidationState object` through its `onValueHostValidationStateChanged` callback. Its data is specific to a single `FieldValueHost`, and identifies if there are validation issues. Use those issues, found in `IssueFound objects`, to display error messages. See [Setup onValueHostValidationState](./Handling_ValidationState_Changes.md#setup-onvaluehostvalidationstatechanged).
 
 ## ValidationState
 The `ValidationState object` is associated with `ValueHostsManager.validate()`, covering the validation results across the form. You will receive it within the `onValidationStateChanged` callback and as the function result of `validate()`.
