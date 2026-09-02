@@ -1,6 +1,6 @@
 
 /**
- * @inheritDoc jivs-engine/Conditions/ConcreteConditions/NotCondition!NotCondition:class
+ * {@inheritDoc jivs-engine/Conditions/ConcreteConditions/NotCondition!NotCondition:class}
  * @module jivs-engine/Conditions/ConcreteConditions/NotCondition
  */
 

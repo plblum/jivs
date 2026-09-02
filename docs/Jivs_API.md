@@ -1632,7 +1632,7 @@ builder.static('name', 'String');
 ```
 You *must* assign dataType to the name of a data type when the data is not a string, boolean, number or Date, and *should* assign it for those types when you need to be more precise, such as an "EmailAddress" instead of just "String".
 
-We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
+We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
 
 We recommend using the LookupKey enumerated type instead of strings for lookup key parameters.
 ```ts
@@ -1654,7 +1654,7 @@ You can leave the dataType property blank and Jivs will identify its name for yo
 
 Add your own when you have a class representing some data. Check out an actual example here: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts). In this example, we have a new class, RelativeDate. We've created a new Lookup Key name called "RelativeDate" and associated it with a new DataTypeIdentifier.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### DataTypeConverters
 Change the value supplied to Conditions with implementations of `IDataTypeConverter` before comparing the value. The built-in [comparison objects](#datatypecomparers) only work with numbers, strings, and booleans. Everything else either needs conversion to these types or a `IDataTypeComparer` object.
@@ -1724,7 +1724,7 @@ Consider these *Use Cases*:
 - Suppose that you have a class "FullName" with properties of FirstName and LastName. Create a converter to return a string that is both concatenated.
 - Suppose that you have a class "StreetAddress" with properties of Street, City, Region, PostalCode. Create a converter to return just the postal code.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ### DataTypeFormatters
 `DataTypeFormatters` turn a native value into a text value. Some involve localization, like `DateFormatter` will treat new Date(2000, 0, 15) as '15/01/2000' in 'en-GB' and '01/15/2000' in 'en-US'.
@@ -1778,7 +1778,7 @@ To override it, such as using the abbreviated date format, include the Lookup Ke
 
 Jivs provides these formatters: "ShortDate", "AbbrevDate", "AbbrevDOWDate" (adds day of week), "LongDate", "LongDOWDate" (adds day of week), "TimeOfDay" (omits seconds), "TimeOfDayHMS", "Integer", "Currency", "Percentage" (where 1.0 = 100%), "Percentage100" (where 100 = 100%), "Uppercase", "Lowercase", "Boolean" (say "True" and "False" for boolean values) and "YesNoBoolean" (say "Yes" or "No" for boolean values).
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 #### Building your own
 See [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).
@@ -1847,7 +1847,7 @@ Also [jivs-engine/src/DataTypes/DataTypeParserBase.ts](https://github.com/plblum
 ### DataTypeComparers
 Staying with the "single responsibility pattern", Jivs recommends that you use its comparison Conditions (Range, Equal, NotEqual, LessThan, etc) for all data types. It already knows how to handle comparing strings, numbers, dates and booleans. It does so with implementations of IDataTypeComparer. It also uses the Converters to get a Date, number or string from the value. So its pretty unusual to need to provide your own Comparer class. But its here if you need it.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### DataTypeCheckGenerator
 In Jivs, "Data Type Check" means a Condition that can determine if the data supplied is fully compatible with what the model property intended. 
@@ -1858,7 +1858,7 @@ DataTypeCheckCondition doesn't apply when no conversion is required. Strings are
   
 Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### Creating your own Lookup Keys
 The LookupKey enumerated type doesn't cover everything.

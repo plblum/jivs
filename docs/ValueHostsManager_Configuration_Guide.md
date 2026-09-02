@@ -368,7 +368,7 @@ Error messages can be kept separately in the global configuration by using [Text
 ```ts
 builder.field('StartDate').requireText();
 ```
-For details on all validators using the Builder API, see [All condition configurations](Conditions.md).
+For details on all validators using the Builder API, see [All condition configurations](./API/Conditions/Conditions_Included_with_Jivs.md).
 
 ## The Form Configuration Adapter
 The **Form Configuration Adapter** (`FormConfigAdapter class`) is used within `IAdaptModelRulesToForm.adaptToForm()`. It targets adapting

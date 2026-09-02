@@ -9,16 +9,12 @@
         "docs/Terminology.md",
         "docs/Learning_Jivs/Home.md",
         "docs/ValueHostsManager_Configuration_Guide.md",
-        "docs/Jivs_API.md",
-        "docs/Testing_Configurations.md",
         "docs/Understanding_Builder.md"
     ],
     "readme": "README.md",
     "projectDocuments": [
         "docs/Terminology.md",
         "docs/ValueHostsManager_Configuration_Guide.md",
-        "docs/Jivs_API.md",
-        "docs/Testing_Configurations.md",
         "docs/Understanding_Builder.md",
         "docs/Learning_Jivs/Home.md",
         "docs/Learning_Jivs/Initializing_the_Client_Form.md",

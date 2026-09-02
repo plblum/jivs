@@ -81,3 +81,7 @@ tls.registerSummaryMessage('MyParserErrorCode', null, {
     '*': '{Label} has this invalid input.'
 });    
 ```
+---
+Go to [Validators Home](./Home.md)
+
+Go to [API Home](../Home.md)

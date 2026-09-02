@@ -79,7 +79,7 @@ Localization is supplied through:
 - The active Culture at the time of formatting.
 Configuration can be adjusted in the `createJivsServices()` function.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ## Create your own DataTypeFormatters
 Jivs has these examples:
@@ -95,3 +95,7 @@ Register your `IDataTypeFormatter` class like this:
 ```ts
 services.dataTypeFormatterService.register(new MyDataTypeFormatter());
 ```
+---
+Go to [Data Type Support Home](./Home.md)
+
+Go to [API Home](../Home.md)

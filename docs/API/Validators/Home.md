@@ -60,9 +60,5 @@ function formValidated(valueHostsManager: IValueHostsManager, validationState: V
 }
 
 ```
-
-
-
-
-
-
+---
+Go to [API Home](../Home.md)

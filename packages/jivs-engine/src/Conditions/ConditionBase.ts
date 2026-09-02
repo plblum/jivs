@@ -18,11 +18,13 @@ import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { ConditionType } from './ConditionTypes';
 
 /**
- * Base implementation of ICondition.
+ * Base implementation of {@link jivs-engine/Conditions/Types!ICondition | ICondition}.
+ * 
  * Subclass to build a business rule that will evaluate value(s).
  * Conditions exist for each business rule pattern, such as 
  * required, string matches the data type, compare value to another.
- * Instances should be registered in the ConditionFactory.
+ * 
+ * Instances should be registered in the {@link jivs-engine/Services/ConcreteClasses/ConditionFactory!ConditionFactory | ConditionFactory}.
  */
 export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     implements IDisposable, IConditionCore<TConditionConfig>, IMessageTokenSource, IGatherValueHostNames {

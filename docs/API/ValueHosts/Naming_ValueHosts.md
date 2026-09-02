@@ -70,3 +70,7 @@ const firstNameElement = document.querySelector(
     '[data-role="editor"]'
 );
 ```
+---
+Go to [ValueHost Home](./Home.md)
+
+Go to [API Home](../Home.md)

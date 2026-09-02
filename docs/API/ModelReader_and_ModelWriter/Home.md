@@ -222,3 +222,5 @@ Register in the service:
 ```ts
 jivsServices.valueAdapterService.registerThenFunction('year2000', replaceWithYear2000);
 ```
+---
+Go to [API Home](../Home.md)

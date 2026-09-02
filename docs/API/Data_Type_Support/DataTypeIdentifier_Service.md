@@ -3,7 +3,7 @@ You can leave the `ValueHostConfig.dataType` property blank and Jivs will identi
 
 Add your own when you have a class representing some data. Check out an actual example here: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts). In this example, we have a new class, RelativeDate. We've created a new Lookup Key name called "RelativeDate" and associated it with a new DataTypeIdentifier.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ## Registering the DataTypeIdentifier with its Service
 Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
@@ -14,3 +14,7 @@ Register your `IDataTypeIdentifier` class like this:
 ```ts
 services.dataTypeIdentifierService.register(new MyDataTypeIdentifier());
 ```
+---
+Go to [Data Type Support Home](./Home.md)
+
+Go to [API Home](../Home.md)

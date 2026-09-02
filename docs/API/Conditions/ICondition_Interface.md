@@ -28,3 +28,10 @@ As you can see, all require that you supply a **conditionType** value. That’s 
     would be Contents. By setting up both, you can have different error messages. "That is not a valid postal code" vs "We only ship to [location names]."
     - `Children` - Evaluating results of child Conditions. `AllMatchesCondition`, `AnyMatchesCondition`, and `CountMatchesCondition` all use this category.
     - `Undetermined` - For anything else.
+    
+API Reference: [ICondition interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_Type.ICondition.html)
+
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

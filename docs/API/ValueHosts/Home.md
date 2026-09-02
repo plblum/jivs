@@ -19,3 +19,5 @@ Every value that you expose to Jivs is kept in a `ValueHost`. They identify what
 - [Disabling a ValueHost](./Disabling_a_ValueHost.md)
 - [Injecting errors on demand](./Injecting_errors_on_demand.md)
 
+---
+Go to [API Home](../Home.md)

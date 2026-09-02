@@ -159,3 +159,7 @@ All of these actions can change the validation state whether on `ValueHostsManag
 - `clearExternalIssuesFound()`
 - using any of these with the `{ validate: true }` option as a parameter: `setValue()`, `setValues()`, `setTextValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
+---
+Go to [Validators Home](./Home.md)
+
+Go to [API Home](../Home.md)

@@ -139,3 +139,7 @@ There are two places you can select a culture. Each takes a cultureId like 'en' 
     // once the ValueHostsManager exists, change it at will
     vhm.behaviors.activeCultureId = 'de';
     ```    
+---
+Go to [JivsServices Home](./Home.md)
+
+Go to [API Home](../Home.md)

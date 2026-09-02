@@ -5,7 +5,7 @@ It takes a function where you return the condition instance.
  (requestor: ValidatorConfig)=> ICondition | null
 ``` 
 
-> Its often better to create a Condition class, so it can be reused, tested, and work itself into the Builder syntax. See [Creating your own Conditions](#creating-your-own-conditions)
+> Its often better to create a Condition class, so it can be reused, tested, and work itself into the Builder syntax. See [Creating your own Conditions](./Creating_Your_Own.md)
 > Configurations can be cached. However, using callback functions
 ```ts
 customRule(requestHandler);
@@ -25,7 +25,7 @@ customRule(requestHandler,
 ```
 Error message tokens: `{Label}`
 
-Choose one of the methodologies below. Then attach it using the Builder API with the customRule() function:
+Choose one of the methodologies below. Then attach it using the Builder API with the `customRule()` function:
 
 ```ts
 builder.field('fieldname')
@@ -45,7 +45,7 @@ builder.field('fieldname')
         conditionType: 'MyConditionType';
     }
     ```
-- Implement directly from `ICondition` as a class
+- Implement directly from [`ICondition`](ICondition_Interface.md) as a class
     ```ts
     export class MyCondition implements ICondition 
     {
@@ -64,3 +64,7 @@ builder.field('fieldname').customRule((requestor)=> {
     return new RegExpCondition({ expression: /^\d{7}$/ });
 });
 ```
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

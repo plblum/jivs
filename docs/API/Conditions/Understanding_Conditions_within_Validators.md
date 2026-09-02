@@ -1,8 +1,7 @@
 # Understanding Conditions within Validators
 A validator is the combination of two classes: 
 1. The *Condition* which is the rule that evaluates the data, determining validity.
-2. The *Validator* which hosts the error messages and one Condition object. It contains the `validate()` function
-that uses the `Condition` to determine validity and interacts with the containing `ValueHost` and `ValueHostsManager`, who deliver the results to the UI.
+2. The *Validator* which hosts the error messages and one Condition object. It contains the `validate()` function that uses the `Condition` to determine validity and interacts with the containing `ValueHost` and `ValueHostsManager`, who deliver the results to the UI.
 
 To emphasize this separation, let's see how our configuration objects look:
 ```ts
@@ -61,3 +60,7 @@ builder.field('field').conditionName(required parameters, { validator parameters
   ```
 
 For details, see [Configuring Validators](#configuring-validators).
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

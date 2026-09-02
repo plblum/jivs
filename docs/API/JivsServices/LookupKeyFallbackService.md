@@ -42,3 +42,7 @@ export function createLookupKeyFallbackService(): ILookupKeyFallbackService
     return service;
 }
 ```
+---
+Go to [JivsServices Home](./Home.md)
+
+Go to [API Home](../Home.md)

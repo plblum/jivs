@@ -143,3 +143,5 @@ interface ValueHostRulesOptions {
 to determine how to transition from the base rules to the form-specific rules.
 When true or undefined, delete any error messages supplied by business logic for which
 you have a replacement in `TextLocalizationService`.
+---
+Go to [API Home](../Home.md)

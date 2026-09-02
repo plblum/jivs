@@ -240,3 +240,7 @@ let chainedLogger = new ConsoleLoggerService(LoggingLevel.Error)
 vs.loggerService = new MyLoggerService(LoggingLevel.Error, chainedLogger);
 ```
 > Note that a chained logger will act as if it has LoggingLevel.Debug, knowing that the top-level logging service will only call it if its own minLevel is met.
+---
+Go to [JivsServices Home](./Home.md)
+
+Go to [API Home](../Home.md)

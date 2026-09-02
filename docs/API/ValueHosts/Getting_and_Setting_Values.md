@@ -369,3 +369,7 @@ These properties are all related to validation:
     _Use case:_ page generated on the server after a round trip. The server may have changed
     elements. As we scrape the HTML for values, we want to retain the validation state of those unchanged.
 
+---
+Go to [ValueHost Home](./Home.md)
+
+Go to [API Home](../Home.md)

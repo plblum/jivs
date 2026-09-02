@@ -17,7 +17,7 @@ By knowing the data type, Jivs can lookup a specific object to handle these case
 - Comparing two values, using [DataTypeComparer](./DataTypeComparers_Service.md).
 
 ## Lookup Keys
-We use the term **Lookup Key** when specifying the name in the `ValueHostConfig.dataType` property. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all Lookup Keys supplied with Jivs and how they are used.
+We use the term **Lookup Key** when specifying the name in the `ValueHostConfig.dataType` property. Please [see this page](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all Lookup Keys supplied with Jivs and how they are used.
 
 We recommend using the `LookupKey` enumerated type instead of strings for lookup key parameters.
 ```ts
@@ -45,7 +45,7 @@ You will use it in several places while configuring `ValueHostsManager`:
 ### Use Cases
 - An actual data type associated with native data structures, like 'DateTime', 'String', and 'Number'.
 - A variant of a data type making it more specialized, like "Date", "Email", and "Integer". The supporting services (parsers, formatters, etc) all configured to the supplied Lookup Key.
-- A name used for a specific `DataTypeParser`, `DataTypeFormatter`, or `DataTypeConverter` that is better than the one assigned to `ValueHostConfig.dataType`. Some examples that we already supply: "AbbrevDOW", "LongDate", "Minutes", "Seconds". They are used in these configuration properties to supercede the `ValueHostConfig.dataType`: `parserLookupKey`, `formatterLookupKey`, `conversionLookupKey`, and `secondConversionLookupKey`. [See this page for a full list](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+- A name used for a specific `DataTypeParser`, `DataTypeFormatter`, or `DataTypeConverter` that is better than the one assigned to `ValueHostConfig.dataType`. Some examples that we already supply: "AbbrevDOW", "LongDate", "Minutes", "Seconds". They are used in these configuration properties to supercede the `ValueHostConfig.dataType`: `parserLookupKey`, `formatterLookupKey`, `conversionLookupKey`, and `secondConversionLookupKey`. [See this page for a full list](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 - [Tokens in error messages.](./DataTypeFormatters_Service.md#localized-tokens-in-error-messages) For example: "{label} must be between {Minimum:Currency} and {Maximum:Currency}". 
 
 ## Creating your own Lookup Keys
@@ -67,3 +67,5 @@ Here are some use cases for creating your own Lookup Key:
     + Comparing, to compare two instances of the same class
     + Formatting, to show the current value in an error message
     + Parsing, to convert user input into your class.
+---
+Go to [API Home](../Home.md)

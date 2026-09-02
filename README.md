@@ -161,7 +161,7 @@ You know that a number can represent a unit of measurement, currency value, perc
 
 Jivs wants you to tell it about your usages, not just of built-in primitives, but also of any data types you introduce. 
 
-It uses "Lookup Keys", strings that identifies the data type more precisely. [See a list of those supplied](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html). When configuring a field, specify its Lookup Key to establish the data type. You will immediately get benefits around that data type like formatting error message tokens, parsing text, and validation specific to that data type.
+It uses "Lookup Keys", strings that identifies the data type more precisely. [See a list of those supplied](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html). When configuring a field, specify its Lookup Key to establish the data type. You will immediately get benefits around that data type like formatting error message tokens, parsing text, and validation specific to that data type.
 
 In this example, we immediately get the benefits for a validator to confirm the text is a date and to parse from text to a Date object.
 ```ts

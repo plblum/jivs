@@ -13,3 +13,7 @@ Start with a `ValueHostsManager` instance. It should already be configured with 
 |`vhm.vh.any('name')`|Base to all `ValueHosts`|Throws error|
 |`vhm.getFieldByElementIdentifier('element identifier')`|`FieldValueHost` by matching its `elementIdentifier` configuration property|Returns null|
 |`vhm.getFieldByPropertyName('property name')`|`FieldValueHost` by matching its `propertyName` configuration property|Returns null|
+---
+Go to [ValueHost Home](./Home.md)
+
+Go to [API Home](../Home.md)

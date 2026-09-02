@@ -20,3 +20,7 @@ vhm.getFieldValueHost('field1').clearInjectedError();
 ```
 
 See [Injecting errors on demand](../Validators/Injecting_errors_on_demand.md) for more.
+---
+Go to [ValueHost Home](./Home.md)
+
+Go to [API Home](../Home.md)

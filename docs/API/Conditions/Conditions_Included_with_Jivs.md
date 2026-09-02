@@ -1,6 +1,4 @@
 # Conditions supplied with Jivs
-See [Jivs API](./Jivs_API.md/#Conditions) for an overview.
-
 Each Condition is found as a validator name on the Builder. Code shown here is based on the Builder API.
 
 _Index_
@@ -56,9 +54,9 @@ builder.field('fieldname').requireText({
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `RequireTextCondition`
+Condition class: [`RequireTextCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextCondition.html)
 
-Condition config:
+Condition config: [`RequireTextConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextConditionConfig.html)
 ```ts
 interface RequireTextConditionConfig = {
     conditionType: ConditionType.RequireText;
@@ -97,9 +95,9 @@ builder.field('fieldname').notNull({
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `NotNullCondition`
+Condition class: [`NotNullCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullCondition.html)
 
-Condition config:
+Condition config: [`NotNullConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullConditionConfig.html)
 ```ts
 interface NotNullConditionConfig = {
     conditionType: ConditionType.NotNull;
@@ -166,9 +164,9 @@ builder.field('fieldname').regExp(/^\d*$/,
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `RegExpCondition`
+Condition class: [`RegExpCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpCondition.html)
 
-Condition config:
+Condition config: [`RegExpConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpConditionConfig.html)
 ```ts
 interface RegExpConditionConfig = {
     conditionType: ConditionType.RegExp;
@@ -207,9 +205,9 @@ builder.field('fieldname').range(1, 5,
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `RangeCondition`
+Condition class: [`RangeCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeCondition.html)
 
-Condition config:
+Condition config: [`RangeConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeConditionConfig.html)
 ```ts
 interface RangeConditionConfig = {
     conditionType: ConditionType.Comparison;
@@ -220,7 +218,7 @@ interface RangeConditionConfig = {
 }
 ```
 ## Comparing two values
-Compare two values. There are many comparison conditions:
+Compare two values (but not to another `ValueHost`). There are many comparison conditions:
 - `equalTo(value)` or `eq(value)`
 - `notEqualTo(value)` or `neq(value)`
 - `lessThan(value)` or `lt(value)`
@@ -228,7 +226,7 @@ Compare two values. There are many comparison conditions:
 - `greaterThan(value)` or `gt(value)`
 - `greaterThanOrEqual(value)` or `gte(value)`
 
-The value can come from a ValueHost like this:
+When the value comes from a `ValueHost`:
 - `equalTo(valueHost('value_host_name'))` or `eq(valueHost('value_host_name'))`
 - `notEqualTo(valueHost('value_host_name'))` or `neq(valueHost('value_host_name'))`
 - `lessThan(valueHost('value_host_name'))` or `lt(valueHost('value_host_name'))`
@@ -273,9 +271,15 @@ builder.field('fieldname').equalTo(valueHost('Fieldname2'),
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `EqualToCondition`, `NotEqualToCondition`, `LessThanCondition`, `LessThanOrEqualCondition`, `GreaterThanCondition`, `GreaterThanOrEqualCondition`.
 
-Condition config:
+Condition classes: [`EqualToCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.EqualToCondition.html),
+[`NotEqualToCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotEqualToCondition.html),
+[`LessThanCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.LessThanCondition.html),
+[`LessThanOrEqualCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.LessThanOrEqualCondition.html),
+[`GreaterThanCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanCondition.html),
+[`GreaterThanOrEqualCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanOrEqualCondition.html)
+
+Condition config: [`CompareToValueConditionBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CompareToValueConditionBaseConfig.html)
 ```ts
 interface CompareToValueConditionBaseConfig = {
     conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
@@ -283,54 +287,6 @@ interface CompareToValueConditionBaseConfig = {
     valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
     secondValue?: any;  // right operand
     secondValueHostName?: string;  // right operand value comes from this valueHost 
-    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts right operand value into another type prior to evaluation
-}
-```
-## Comparing two values where the second value comes from another field
-Compare two values. There are many comparison conditions:
-- `equalTo(valueHostName)` or `eq(valueHostName)`
-- `notEqualTo(valueHostName)` or `neq(valueHostName)`
-- `lessThan(valueHostName)` or `lt(valueHostName)`
-- `lessThanOrEqual(valueHostName)` or `lte(valueHostName)`
-- `greaterThan(valueHostName)` or `gt(valueHostName)`
-- `greaterThanOrEqual(valueHostName)` or `gte(valueHostName)`
-```ts
-equalTo(valueHostName, errorMessage?, summaryMessage?);
-equalTo(valueHostName, 
-    { // these are the validator parameters
-        errorMessage?: null | string | ((host) => string);
-        errorMessagel10n?: null | string;
-        summaryMessage?: null | string | ((host) => string);
-        summaryMessagel10n?: null | string;
-        
-        severity?: ValidationSeverity | ((host) => ValidationSeverity);
-        errorCode?: string; 
-        enabled?: boolean | ((host) => boolean);
-      // condition properties:
-        secondConversionLookupKey?: string | null; 
-    });
-```
-Error message tokens: `{Label} {SecondLabel} {Value} {CompareTo}`
-
-**Examples**
-```ts
-builder.field('fieldname').equalTo('Fieldname2');
-builder.field('fieldname').equalTo('Fieldname2', 'error message', 'summary message')
-builder.field('fieldname').equalTo('Fieldname2', 
-{ 
-    errorMessage: 'error message',
-    summaryMessage: 'summary message' 
-});	
-```
-Condition class: `EqualToCondition`, `NotEqualToCondition`, `LessThanCondition`, `LessThanOrEqualCondition`, `GreaterThanCondition`, `GreaterThanOrEqualCondition`.
-
-Condition config:
-```ts
-interface CompareToSecondValueHostConditionBaseConfig = {
-    conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
-    category: ConditionCategory.Comparison;
-    valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
-    secondValueHostName: string;  // right operand value comes from this valueHost 
     secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts right operand value into another type prior to evaluation
 }
 ```
@@ -373,9 +329,9 @@ builder.field('fieldname').stringLength(100,
     minimum: 2
 });	
 ```
-Condition class: `StringLengthCondition`
+Condition class: [`StringLengthCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthCondition.html)
 
-Condition config:
+Condition config: [`StringLengthConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthConditionConfig.html)
 ```ts
 interface StringLengthConditionConfig = {
     conditionType: ConditionType.StringLength;
@@ -417,9 +373,9 @@ builder.field('fieldname').positive(
     summaryMessage: 'summary message'
 });	
 ```
-Condition class: `PositiveCondition`
+Condition class: [`PositiveCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveCondition.html)
 
-Condition config:
+Condition config: [`PositiveConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveConditionConfig.html)
 ```ts
 interface PositiveConditionConfig = {
     conditionType: ConditionType.Positive;
@@ -457,9 +413,9 @@ builder.field('fieldname').integer(
   summaryMessage: 'summary message'
 });	
 ```
-Condition class: `IntegerCondition`
+Condition class: [`IntegerCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerCondition.html)
 
-Condition config:
+Condition config: [`IntegerConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerConditionConfig.html)
 ```ts
 interface IntegerConditionConfig = {
     conditionType: ConditionType.Integer;
@@ -494,9 +450,9 @@ builder.field('fieldname').maxDecimals(2,
     summaryMessage: 'summary message'
 });	
 ```
-Condition class: `MaxDecimalsCondition`
+Condition class: [`MaxDecimalsCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsCondition.html)
 
-Condition config:
+Condition config: [`MaxDecimalsConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsConditionConfig.html)
 ```ts
 interface MaxDecimalsConditionConfig = {
     conditionType: ConditionType.MaxDecimals;
@@ -532,9 +488,9 @@ builder.field('fieldname').dataTypeCheck({
     summaryMessage: 'summary message' 
 });	
 ```
-Condition class: `DataTypeCheckCondition`
+Condition class: [`DataTypeCheckCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckCondition.html)
 
-Condition config:
+Condition config: [`DataTypeCheckConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckConditionConfig.html)
 ```ts
 interface DataTypeCheckConditionConfig = {
     conditionType: ConditionType.RequireText;
@@ -616,9 +572,12 @@ builder.field('fieldname').countMatches(1, 2, (childBuilder) => {
         errorCode: 'AllRequired' // user override optional
     });	
 ```
-Condition class: `AllMatchCondition`, `AnyMatchCondition`, `CountMatchesCondition`.
+Condition classes: [`AllMatchCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.AllMatchCondition.html),
+[`AnyMatchCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.AnyMatchCondition.html),
+[`CountMatchesCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CountMatchesCondition.html)
 
-Condition config:
+Condition config: [`EvaluateChildConditionResultsBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.EvaluateChildConditionResultsBaseConfig.html)
+
 ```ts
 interface EvaluateChildConditionResultsBaseConfig = {
     conditionType: ConditionType.[All, Any, CountMatches];
@@ -687,9 +646,9 @@ builder.field('fieldname').when(
         summaryMessage: 'summary message',
     });	
 ```
-Condition class: `WhenCondition`
+Condition class: [`WhenCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenCondition.html)
 
-Condition config:
+Condition config: [`WhenConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenConditionConfig.html)
 ```ts
 interface WhenConditionConfig = {
     conditionType: ConditionType.When;
@@ -767,9 +726,9 @@ builder.field('fieldname').not(
         errorCode: 'invert'  // optional. Allows multiple not conditions in the same validator
     });	
 ```
-Condition class: `NotCondition`
+Condition class: [`NotCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotCondition.html)
 
-Condition config:
+Condition config: [`NotConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotConditionConfig.html)
 ```ts
 interface NotConditionConfig = {
     conditionType: ConditionType.Not;
@@ -777,9 +736,13 @@ interface NotConditionConfig = {
     childConditionConfig: ConditionConfig; // configures the child condition
 ```
 #### More Examples
-Illegal characters in a string using RegExpCondition
+Illegal characters in a string using `RegExpCondition`
 ```ts
 builder.field('password').not(
     (childBuilder)=> childBuilder.parentValue().regExp(/[:|'_]/));  // parentValue uses the value from 'password'
     // use fieldValue(field name) if you want to specify a different field's value
 ```
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

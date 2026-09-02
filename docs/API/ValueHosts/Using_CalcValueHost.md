@@ -24,3 +24,8 @@ builder.calc('TimesTen', LookupKey.Integer,
 ```
 
 See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
+
+---
+Go to [ValueHost Home](./Home.md)
+
+Go to [API Home](../Home.md)

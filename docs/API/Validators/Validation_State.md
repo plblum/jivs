@@ -106,3 +106,7 @@ interface IssueFound {
     It is essential when using the `TextLocalizerService`.
     Its value is initially the Condition's ConditionType. You can override it using the Validator's `errorCode` configuration property
     If supplied through `ValueHostsManager.addExternalIssueFound()`, it can be null/undefined and the system will generate one. In doing so, the developer opts out of validator alignment. See [Using the errorCode](./Configuration.md#using-the-errorcode) for more.
+---
+Go to [Validators Home](./Home.md)
+
+Go to [API Home](../Home.md)

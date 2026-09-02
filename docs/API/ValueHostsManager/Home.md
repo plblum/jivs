@@ -252,3 +252,6 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
     ```ts
     config.notifyValidationStateChangedDelay = 500;
     ```    
+
+---
+Go to [API Home](../Home.md)

@@ -1,12 +1,12 @@
 # Creating your own Conditions
 Jivs provides many `Condition classes`, covering typical cases. Often your condition needs will be solved by using them. Consider:
-- `RegExpCondition` is your go-to for string patterns. If you need help with Regular Expressions, we recommend [regex101.com](https://regex101.com/)
+- [`RegExpCondition`](./Conditions_Included_with_Jivs.md#regexp) is your go-to for string patterns. If you need help with Regular Expressions, we recommend [regex101.com](https://regex101.com/)
 - When complex logic is involved, it is often built using AND and OR operators upon simpler types. Use `AllMatchCondition` or `AnyMatchCondition`.
 - When the comparison conditions (EqualTo, LessThan, etc) look ideal except your data is not supported, create a `DataTypeComparer` to establish support.
 - For the one-off use cases, wire up the `customRule()` function on the Builder. 
 
 ## Pick your starting point
-- Subclass from `RegExpCondition` especially when you create a new data type.
+- Subclass from [`RegExpCondition`](./Conditions_Included_with_Jivs.md#regexp) especially when you create a new data type.
     ```ts
     export class LicenseNumberCondition extends RegExpCondition 
     {
@@ -21,7 +21,7 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
     }
     ```
     See this sample code for more: [jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
-- Subclass from `RegExpConditionBase` to develop a regular expression condition that has its own configuration settings.
+- Subclass from [`RegExpConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_RegExpConditionBase.html) to develop a regular expression condition that has its own configuration settings.
     ```ts
     export interface LicenseNumberConditionConfig extends RegExpConditionBaseConfig
     {
@@ -40,7 +40,8 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
         public get conditionType(): string { return 'LicenseNumber'; }
     }
     ```    
-- Subclass from `ConditionBase` to start at the most abstract class. Create a configuration object by extending ConditionConfig.
+- Subclass from [`ConditionBase`]((http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.html)) to start at the most abstract class. 
+    Create a configuration object by extending [`ConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_Types_ConditionConfig.html).
     ```ts
     interface MyConditionConfig extends ConditionConfig
     {
@@ -67,8 +68,8 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
         }
     }
     ```
-- Subclass `OneValueConditionBase` to start with a slightly richer starting point that knows how to convert a null valueHost parameter into the primary valuehost. See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
-- Implement the `ICondition` interface to create the class. See [ICondition interface](#icondition-interface).
+- Subclass [`OneValueConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_OneValueConditionBase.html) to start with a slightly richer starting point that knows how to convert a null valueHost parameter into the primary valuehost. See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
+- Implement the [`ICondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_Types.ICondition.html) interface to create the class.
 
 ### Additional Guidance
 - Look here for source code to the concrete and abstract Conditions classes within Jivs:
@@ -79,7 +80,7 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
 - `conditionType` values are case sensitive.
 
 ## Add your Condition Class to the factory
-Once created, go to the `registerConditions() function` that is [part of the startup code](#jivsservices) and add it like this:
+Once created, go to the `registerConditions() function` that is [part of the startup code](../JivsServices/Home.md#configuring-jivsservices) and add it like this:
 ```ts
 export function registerConditions(cf: ConditionFactory): void
 {
@@ -91,3 +92,7 @@ export function registerConditions(cf: ConditionFactory): void
 You can also extend the Builder API to support it.
 
 See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

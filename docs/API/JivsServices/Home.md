@@ -91,3 +91,5 @@ let config = rules.configure();
 let vhm = new ValueHostsManager(config);
 ```
 
+---
+Go to [API Home](../Home.md)

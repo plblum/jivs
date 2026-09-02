@@ -67,7 +67,7 @@ Configuration can be adjusted in the `createJivsServices()` function.
 
 There are far better parsers, especially in the date and time space. Wrap your favorite in a class that implements IDataTypeParser and register it instead of Jivs own.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ## Create your own DataTypeParsers
 Jivs has these examples:
@@ -84,3 +84,7 @@ Register your `IDataTypeParser` class like this:
 ```ts
 services.dataTypeParserService.register(new MyDataTypeParser());
 ```
+---
+Go to [Data Type Support Home](./Home.md)
+
+Go to [API Home](../Home.md)

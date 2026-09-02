@@ -1,5 +1,5 @@
 # Conditions
-The `Condition` is the rule that evaluates the data, providing one of these answers: Match, NoMatch, Undetermined. It is used in several ways:
+The `Condition` is the rule that evaluates the data, providing one of these answers: `Match`, `NoMatch`, `Undetermined`. It is used in several ways:
 - Within the `Validator object`. The `Validator object` itself is a single class, and gets wired up to the right `Condition` to make it handle that rule.
 - To enable a `ValueHost`. It is assigned to `ValueHostConfig.enablerConfig`.
 - As a component of these conditions:
@@ -37,3 +37,10 @@ Additional topics:
 - [Creating on-off conditions](./Custom_Rule.md)
 - [Understanding Conditions within Validators](./Understanding_Conditions_within_Validators.md)
 - [ICondition interface](./ICondition_Interface.md)
+
+API References:
+- [ConditionBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.ConditionBase.html)
+- [ConditionFactory](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteClasses_ConditionFactory.ConditionFactory.html)
+
+---
+Go to [API Home](../Home.md)

@@ -1,65 +1,67 @@
 # DataTypeConverters
-Change the value supplied to Conditions with implementations of `IDataTypeConverter` before comparing the value.
-Jivs consumes them in two ways:
-- Supports on-demand conversion where you want a validator+condition to have a reworked version of the incoming value. This is particularly useful with dates and times, as the Date object contains many values (year, day, hour, etc).
-    
-    Assign the destination type's lookup key to the condition's `conversionLookupKey` or `secondConversionLookupKey` property.
+A `DataTypeConverter` transforms a value into another representation.
 
-    In this example, source = `LookupKey.TimeOfDay` and result = `LookupKey.Minutes`. TimeOfDayOnlyConverter will be used. 
+For example, a JavaScript Date can be converted into:
+
+- milliseconds representing its complete date and time
+- days representing only its date
+- minutes representing its time of day
+
+`DataTypeConverters` are associated with two [Lookup Keys](./Home.md#lookup-keys). One for the source value and the other for the result. For example:
+- `LookupKey.DateTime` → `LookupKey.Milliseconds` is handled by `DateTimeConverter`
+- `LookupKey.Date` → `LookupKey.TotalDays` is handled by `UTCDateOnlyConverter`
+- `LookupKey.TimeOfDay` → `LookupKey.Minutes` is handled by `TimeOfDayOnlyConverter`
+
+Jivs uses converters in two situations:
+
+- Preparing values for comparison within `Conditions`. The default `DataTypeComparer` only compares numbers and strings. Other values can be converted into one of those types before comparison. For example, a Date can be converted into milliseconds.
+- Selecting a particular representation of a value. For example, `LookupKey.DateTime`, `LookupKey.Date`, and `LookupKey.TimeOfDay` all represent different aspects of a JavaScript Date.
+
+Jivs automatically selects a `DataTypeConverter` when needed. Just be sure the `DataTypeConverters` are registered with the `DataTypeConverterService`.
+
+## Common Usages
+- **Select a representation through the dataType property** Many Lookup Keys are specialized representations of ordinary data types. 
+    By assigning the specialized Lookup Key to the ValueHost's `dataType` configuration property, you will employ a DataTypeConverter:
     ```ts
-    builder.field('Time', LookupKey.TimeOfDay) // source: dataType's Lookup Key
-        .lessThan(60 * 60 * 12, { // only before noon
-            conversionLookupKey: LookupKey.Minutes // result: converts Date object's time of day to number of minutes
+    // Date object has Date + Time. This uses only the Date part
+    builder.field('BirthDate', LookupKey.Date).greaterThan(new Date(1900, 0, 1));
+    // Number type can be decimal. This uses only integer part
+    builder.field('Counter', LookupKey.Integer).greaterThan(5);
+    ```
+
+- **Apply conversion specifically to the Condition** Comparison Conditions provide `conversionLookupKey` and `secondConversionLookupKey` configuration properties.
+    Assign them to a specialized Lookup Key to apply conversion you need for the comparison.
+
+    For example, case-insensitive string comparison is handled this way: 
+    ```ts
+    builder.field('FirstName', LookupKey.String)
+        .notEqual(valueHost('LastName'), {
+            conversionLookupKey: LookupKey.CaseInsensitive,
+            secondConversionLookupKey: LookupKey.CaseInsensitive	   
         });
     ```
-    In this example, the `NotEqualToCondition` configured to be CaseInsensitive:
-    ```ts
-        builder.field('FirstName', LookupKey.String, { label: 'First name'})
-            .notEqual('LastName', {
-                conversionLookupKey: LookupKey.CaseInsensitive,
-                secondConversionLookupKey: LookupKey.CaseInsensitive	   
-            });
-    ```    
-- Supports the comparison conditions through their [comparison objects](#datatypecomparers). The built-in comparer only works with numbers, strings, and booleans. For dates and other types, you need DataTypeConverters. Jivs supplies and preregisters those for dates and times. 
 
-In both cases, the `DataTypeConverterService` identifies the source and result lookup keys to search for a registered `DataTypeConverter`. 
+- **Use application-specific classes with standard Conditions.** Once Jivs can identify the class, a converter can expose a representation that existing Conditions know how to use.
+    - A `FullName` class might be converted into a string containing the first and last names.
+    - An `Address` class might be converted into only its postal code.
 
-The `DataTypeComparerService` calls upon the `DataTypeConverterService` to convert the source value to either a string or number.
-
-## Some Use Cases
-Consider these *Use Cases*:
-- Change from one data type to another, which is the classic Use Case. We covered string-to-number above. Jivs also provides number-to-integer conversion with IntegerConverter, and several related to dates, described later.
-
-- Provide case insensitive string matching by converting to lowercase. Set the conversionLookupKey properties to "CaseInsensitive" (uses CaseInsensitiveStringConverter). See example above.
-
-- Using a Date object as something other than Date+Time. You may be interested only in the date, the time, or even parts like Month or Hours. Jivs supplies several converters for these. See below.
-    
-- Perhaps you want to compare the difference in days between two dates. For that you need to convert a Date object into a number – the number of days since some fixed point. 
-    
-    Jivs includes the "TotalDays" Lookup Key and UTCDateOnlyConverter.
-
-    See an example here: [jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts).
-  
-- Changing your own class (already setup with an Converter) into something as simple as a string, number, or Date also requires a Converter. You will see how in the RelativeDate class example [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) and a TimeSpan class example [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts).
-- Suppose that you have a class "FullName" with properties of FirstName and LastName. Create a converter to return a string that is both concatenated.
-- Suppose that you have a class "StreetAddress" with properties of Street, City, Region, PostalCode. Create a converter to return just the postal code.
+  See the examples below for more.
 
 ## Supplied DataTypeConverters
-These are preregistered in the createJivsServices() function.
+|Source Lookup Key|Result Lookup Key|Converter Class|Comments|
+|----------|-----|-----------|---------|
+|Date|Number or Days|UTCDateOnlyConverter|Just the date part in UTC as a number of days|
+|LocalDate|Number or Days|LocalDateOnlyConverter|Just the date part in local time as a number of days|
+|TimeOfDay|Number or Minutes|TimeOfDayOnlyConverter|Time of day only as total minutes|
+|TimeOfDayHMS|Number or Seconds|TimeOfDayHMSOnlyConverter|Time of day only as total seconds|
+|String|CaseInsensitive|CaseInsensitiveStringConverter|Match strings case insensitively|
+|Number|Integer|IntegerConverter|Converts decimal number to whole number|
+|String|Number or Integer|NumericStringToNumberConverter|String to number|
 
-|Lookup Key|Class|Source type|Result type|Comments|
-|----------|-----|-----------|---------|---------|
-|DateTime|DateTimeConverter|Date object|Number|Full date and time in milliseconds|
-|LocalDate|LocalDateOnlyConverter|Date object|Number|Just the date part in local time as a number of days|
-|TimeOfDay|TimeOfDayOnlyConverter|Date object|Number|Time of day only as total minutes|
-|TimeOfDayHMS|TimeofDayHMSOnlyConverter|Date object|Number|Time of day only as total seconds|
-|Date|UTCDateOnlyConverter|Date object|Number|Just the date part in UTC as a number of days|
-|CaseInsensitive|CaseInsensitiveStringConverter|String|String|Match strings case insensitively|
-|Integer|IntegerConverter|Number|Number|Converts decimal number to whole number|
-|Number and Integer|NumericStringToNumberConverter|String|Number|String to number|
+> These are preregistered in the `createJivsServices()` function.
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
-## Create your own DataTypeConverters
+## Creating your own DataTypeConverters
 Jivs has these examples:
 - Date object to Month/Year as a number: [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts). It defines the MonthYear Lookup Key.
 - Date object to Month/Day as a number: [jivs-examples/src/AnniversaryConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts). It defines the Anniversary Lookup Key.
@@ -67,8 +69,12 @@ Jivs has these examples:
     builder.field('Expiry', 'MonthYear', { label: 'Expiration date'});
     builder.field('MarriageDate', 'Anniversary', { label: 'Marriage date'});
 ```
+- Defines a RelativeDate class that gets converted to a date value: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts)
+- Defines a TimeSpan class that gets converted to a number of seconds: [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts).
 
-## Registering a DataTypeConverter with its service
+
+## Registering a DataTypeConverter
+The `DataTypeConverterService` where you register `DataTypeConverters`.
 Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
 
 `services.dataTypeConverterService`
@@ -78,12 +84,11 @@ Register your `IDataTypeConverter` class like this:
 services.dataTypeConverterService.register(new MyDataTypeConverter());
 ```
 
-## Accessing the DataTypeConverterService
-Like all services, this is part of the JivsService and can be configured in your createJivsServices() function.
+API References:
+- [IDataTypeConverter interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeConverter.IDataTypeConverter.html)
+- [DataTypeConverterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeConverters.DataTypeConverterBase.html)
+- [DataTypeConverterService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeConverterService.DataTypeConverterService.html)
+---
+Go to [Data Type Support Home](./Home.md)
 
-`services.dataTypeConverterService`
-
-Register your `IDataTypeConverter` class like this:
-```ts
-services.dataTypeConverterService.register(new MyDataTypeConverter());
-```
+Go to [API Home](../Home.md)

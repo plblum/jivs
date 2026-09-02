@@ -50,3 +50,7 @@ let vhm = new ValueHostsManager(config);
 vhm.behaviors.activeCultureId = 'es-MX';
 ```
 You can change that value on demand. However, don't setup ValueHostManager to be shared by multiple page requests if you allow for changes because your on demand change will impact all threads.
+---
+Go to [JivsServices Home](./Home.md)
+
+Go to [API Home](../Home.md)
