@@ -12,20 +12,16 @@ It is pretty unusual to need to provide your own Comparer class. But it's here i
 Internally Jivs is using `BooleanDataTypeComparer` to compare booleans.
 
 ## Creating your own DataTypeComparers
-See these sources:
-- [/jivs-engine/src/DataTypes/DataTypeComparers.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeComparers.ts).
+Use these resources to help when implementing a `DataTypeComparer`:
+- [/jivs-engine/src/DataTypes/DataTypeComparers.ts](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/DataTypes/DataTypeComparers.ts) contains the `DataTypeComparers` supplied by Jivs.
 
 ## Registering a DataTypeComparer with its service
 The `DataTypeComparerService` where you register `DataTypeComparers`.
 Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
-
-`services.dataTypeComparerService`
-
-Register your `IDataTypeComparer` class like this:
 ```ts
 services.dataTypeComparerService.register(new MyDataTypeComparer());
 ```
-API References:
+## API References
 - [IDataTypeComparer interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeComparer.IDataTypeComparer.html)
 - [BooleanDataTypeComparer class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeComparers.BooleanDataTypeComparer.html)
 - [DataTypeComparerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeComparerService.DataTypeComparerService.html)

@@ -62,29 +62,27 @@ Jivs automatically selects a `DataTypeConverter` when needed. Just be sure the `
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ## Creating your own DataTypeConverters
-Jivs has these examples:
-- Date object to Month/Year as a number: [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts). It defines the MonthYear Lookup Key.
-- Date object to Month/Day as a number: [jivs-examples/src/AnniversaryConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts). It defines the Anniversary Lookup Key.
-```ts
-    builder.field('Expiry', 'MonthYear', { label: 'Expiration date'});
-    builder.field('MarriageDate', 'Anniversary', { label: 'Marriage date'});
-```
-- Defines a RelativeDate class that gets converted to a date value: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts)
-- Defines a TimeSpan class that gets converted to a number of seconds: [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts).
+Use these resources to help when implementing a DataTypeConverter:
+- [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts) defines the `MonthYear` Lookup Key with conversion from Date object to a number representing a month and year.
+    ```ts
+        builder.field('Expiry', 'MonthYear', { label: 'Expiration date'});
+    ```
+- [jivs-examples/src/AnniversaryConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/AnniversaryConverter.ts) defines the `Anniversary` Lookup Key with conversion from Date object to a number representing a monday and day.
+    ```ts
+        builder.field('MarriageDate', 'Anniversary', { label: 'Marriage date'});
+    ```
+- [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) defines the class RelativeDate and provides conversion from RelativeDate to a Date object.
+- [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts) defines the class TimeSpan and provides conversion from TimeSpan to a number of seconds.
 
 
 ## Registering a DataTypeConverter
 The `DataTypeConverterService` where you register `DataTypeConverters`.
 Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
-
-`services.dataTypeConverterService`
-
-Register your `IDataTypeConverter` class like this:
 ```ts
 services.dataTypeConverterService.register(new MyDataTypeConverter());
 ```
 
-API References:
+## API References
 - [IDataTypeConverter interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeConverter.IDataTypeConverter.html)
 - [DataTypeConverterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeConverters.DataTypeConverterBase.html)
 - [DataTypeConverterService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeConverterService.DataTypeConverterService.html)

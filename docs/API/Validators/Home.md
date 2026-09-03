@@ -4,8 +4,8 @@ Validation is really just a process that evaluates some rule and returns a resul
 There are several aspects to validation:
 - [Configuration](./Configuration.md), which happens when you setup the `ValueHostsManager`. It uses the `ValidatorConfig object`, which contains:
     - a `ConditionConfig object` describing the condition to use
-    - [two error messages](./Configuration.md#error-messages), with one targetting a ValidationSummary
-    - an optional [errorCode](./Configuration.md#using-the-errorcode)
+    - [two error messages](./Error_Messages.md), with one targetting a ValidationSummary
+    - an optional [errorCode](./ErrorCodes.md)
     - an optional severity
 - [Invoking the validation process](./Invoking_Validation.md).
 - [The results of validation](./Handling_ValidationState_Changes.md)

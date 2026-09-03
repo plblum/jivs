@@ -89,7 +89,7 @@ import
         TimeofDayFormatter, TimeofDayHMSFormatter,
         UppercaseStringFormatter
     } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
-import { DataTypeParserBase, DateTimeCultureInfo, NumberCultureInfo } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
+import { DataTypeParserBase, DateTimeCultureInfo, NumberCultureInfo, DatePatternParserBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import
     {
         BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser,
@@ -347,6 +347,13 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
         });
         service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Number, {
             '*': '{Label} has an invalid value. Enter a number.'
+        });
+        // it looked like a date, but not a real date
+        service.registerErrorMessage(DatePatternParserBase.invalidDateErrorCode, LookupKey.Date, {
+            '*': 'Invalid date.'
+        });
+        service.registerSummaryMessage(DatePatternParserBase.invalidDateErrorCode, LookupKey.Date, {
+            '*': '{Label} has an invalid date.'
         });
 
         // --- for the {DataType} token in error messages
@@ -635,7 +642,7 @@ export function registerDataTypeParsers(dtps: DataTypeParserService): void {
         // expected when you store it.
         // You will still need validators to reject the final text when it is not the expected pattern.
         /*
-        dtps.register(new CleanUpStringParser("USPhoneNumber", {
+        dtps.register(new CleanUpStringParser('USPhoneNumber', {
             trim: true,
             compressWhitespace: true,
             replaceWhitespace: '-',
