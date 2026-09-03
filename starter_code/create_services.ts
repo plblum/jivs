@@ -222,7 +222,7 @@ export function createJivsServices(defaultCultureId: string,
 
 /**
  * Cultures that you want to localize. 
- * -> Create an array of CultureIdWithFallback objects in configureCultures()
+ * -> Create an array of CultureIdWithFallback objects in registerCultures()
  */
 export function registerCultures(cs: ICultureService): void
 {
@@ -283,16 +283,6 @@ export function createTextLocalizerService(usage: 'client' | 'server' | 'all' = 
             '*': '{Label} has an invalid value. Expects {DataType}.'
         });
 
-        service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': 'Invalid value. Enter a date.',
-            'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
-        service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
-            '*': '{Label} has an invalid value. Enter a date.',
-            'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-            'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-        });
         service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
             '*': 'Invalid value. Enter a number.',
         });

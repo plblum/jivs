@@ -41,6 +41,29 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('es', 'goodbye', 'esfallback')).toBe('esfallback');
 
     });    
+    test('en-US, en-GB and en registered.', () =>
+    {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en-US': 'en-US-Hello',
+            'en-GB': 'en-GB-Hello',
+            'en': 'en-Hello',
+            '*': '*-Hello'
+        });
+        expect(testItem.localize('en', 'hello', 'fallback')).toBe('en-Hello');
+        expect(testItem.localize('en-GB', 'hello', 'GB-fallback')).toBe('en-GB-Hello');
+        expect(testItem.localize('en-US', 'hello', 'US-fallback')).toBe('en-US-Hello');
+        expect(testItem.localize('en-CA', 'hello', 'US-fallback')).toBe('en-Hello');
+        expect(testItem.localize('en-CA', 'hello', null)).toBe('en-Hello');
+
+        // unsupported culture uses the registered wildcard
+        expect(testItem.localize('fr', 'hello', 'frFallback')).toBe('*-Hello');
+        // valid key, but not registered.
+        expect(testItem.localize('en', 'goodbye', 'fallback')).toBe('fallback');
+        expect(testItem.localize('es', 'goodbye', 'esfallback')).toBe('esfallback');
+
+    });    
+
     test('Fallback uses * culture when supplied', () => {
         let testItem = new TextLocalizerService();
         testItem.register('hello', {
@@ -50,6 +73,7 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('*-Hello');
         expect(testItem.localize('es', 'hello', 'fallback')).toBe('*-Hello');
         expect(testItem.localize('fr', 'hello', 'fallback')).toBe('fr-Hello');
+        expect(testItem.localize('fr-FR', 'hello', 'fallback')).toBe('fr-Hello');
     });        
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
         let testItem = new TextLocalizerService();
@@ -70,7 +94,7 @@ describe('TextLocalizerService.localize', () => {
         });
         let fallbackService = new TextLocalizerService();
         testItem.fallbackService = fallbackService;
-        testItem.register('hello', {
+        fallbackService.register('hello', {
             'en': 'en-Hello-fallbackService'
         });
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('en-Hello-fallbackService');
@@ -82,7 +106,7 @@ describe('TextLocalizerService.localize', () => {
         });
         let fallbackService = new TextLocalizerService();
         testItem.fallbackService = fallbackService;
-        testItem.register('hello', {
+        fallbackService.register('hello', {
             'en': 'en-Hello-fallback'
         });
         expect(testItem.localize('en', 'X', 'fallback')).toBe('fallback');
@@ -156,6 +180,33 @@ describe('TextLocalizerService.localizeWithDetails', () => {
             text: 'GBfallback',
             result: 'fallback',
             requestedCultureId: 'en-GB'
+        });
+    });
+    test('Exact culture takes precedence over language and *', () => {
+        let testItem = new TextLocalizerService();
+        testItem.register('hello', {
+            'en-US': 'en-US-Hello',
+            'en': 'en-Hello',
+            '*': '*-Hello'
+        });
+
+        expect(testItem.localizeWithDetails('en-US', 'hello', 'fallback')).toEqual<LocalizedDetailsResult>({
+            text: 'en-US-Hello',
+            result: 'localized',
+            requestedCultureId: 'en-US',
+            actualCultureId: 'en-US'
+        });
+        expect(testItem.localizeWithDetails('en-GB', 'hello', 'fallback')).toEqual<LocalizedDetailsResult>({
+            text: 'en-Hello',
+            result: 'localized',
+            requestedCultureId: 'en-GB',
+            actualCultureId: 'en'
+        });
+        expect(testItem.localizeWithDetails('fr', 'hello', 'fallback')).toEqual<LocalizedDetailsResult>({
+            text: '*-Hello',
+            result: 'localized',
+            requestedCultureId: 'fr',
+            actualCultureId: '*'
         });
     });
     test('en and es registered only. Stored value on en or es, fallback on anything else', () => {

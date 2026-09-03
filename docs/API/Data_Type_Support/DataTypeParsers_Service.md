@@ -61,23 +61,9 @@ Each `DataTypeParser` can run into parsing errors, where the text is not a match
 
 `setTextValue()` knows to convert the error info into a Validator so it will appear in both the Field Error Display and Validation Summary widgets.
 
-The error message itself may need to be replaced by something more suitable to the UI. Their error info includes an error code, which is used to align it with text you have registered in the `TextLocalizerService`.
+The error message itself may need to be replaced by something more suitable to the UI. Their error info includes an error code, which is used to align it with text you have registered in the `TextLocalizerService`. See [Localizing DataTypeParser Error Messages](../JivsServices/TextLocalizerService.md#localizing-datatypeparser-error-messages).
 
-Error codes are shown in the table below. Most use 'ParserError'. The following comes from the `createJivsServices()` function, and shows how we handle the same error code with multiple data types:
-```ts
-service.registerErrorMessage(DataTypeParserBase.ParserErrorCode, null, {
-    '*': 'Invalid value.'
-});
-service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, null, {
-    '*': '{Label} has an invalid value.'
-});
-service.registerErrorMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Date, {
-    '*': 'Invalid value. Enter a date.'
-});
-service.registerSummaryMessage(DataTypeParserBase.ParserErrorCode, LookupKey.Date, {
-    '*': '{Label} has an invalid value. Enter a date.'
-});
-```
+
 ## Supplied DataTypeParsers
 The supplied `createJivsServices()` function registers these `DataTypeParsers`. Each is selected through its [Lookup Key](./Home.md#lookup-keys).
 

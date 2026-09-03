@@ -2,15 +2,26 @@
 The `JivsServices class` gives Jivs the power of dependency injection for all kinds of operations surrounding the `ValueHostsManager`, `ValueHosts`, and `Validators`.
 Its really loaded, as there a multitude of services and factories supporting those common validation activities.
 
-This class is essential to anything you do in Jivs. You must have an instance of JivsServices in order to even create a ValueHostsManager.
+This class is essential to anything you do in Jivs. You must have an instance of JivsServices in order to even create a `ValueHostsManager`.
 ```ts
 let services = createJivsServices('en-US'); // creates JivsServices. We'll see this function below
 let rules = new SomeValueHostRules(services);
 let config = rules.configure();
 let vhm = new ValueHostsManager(config);
 ```
-As a result, it is essential that you have a createJivsServices() function, and gone through it to ensure it configures dependency injection according to your needs. 
-If you haven't already, see [Configuration JivsServices](#configuring-jivsservices).
+As a result, it is essential that you have a `createJivsServices()` function, and gone through it to ensure it configures dependency injection according to your needs. 
+
+## Configuring JivsServices
+Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+
+Add the contents of `create_services.ts` to your project. It results in several new functions starting with this one.
+```ts
+export function createJivsServices(... parameters ...): JivsServices {
+…
+}
+// also many register() functions plus registerCultures() and createTextLocalizerService
+```
+Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
 
 ## JivsServices class
 JivsServices implements this interface:
@@ -48,48 +59,45 @@ interface IJivsServices {
     setService(serviceName, service): void;
 }
 ```
+> JivsServices employs lazy loading for many of its members.
 ### Services that you often have to setup
 - `cultureService` - Identifies the ISO language-region names that your app supports. See [CultureService](./CultureServices.md).
 - `textLocalizerService` - Supports localized strings for error messages, labels, and more. See [Localization](./Localization.md).
-- `loggerService` - Our default logger is often replaced within unit tests to use our CapturingLogger. Its minLevel is often adjusted to one of these values: Debug, Info, Warn, Error, both in unit tests and `createJivsServices()` function. See [Logging](./Logging.md)
-- `lookupKeyFallbackService` - When you create a new Lookup Key, update this to give it a fallback Lookup Key that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
-- `valueAdapterService` - Supports ModelReader, DictionaryReader, FormReader, and ModelWriter to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../ModelReader_and_ModelWriter/Home.md#value-adapter-rules).
+- `loggerService` - Our default logger is often replaced within unit tests to use our [`CapturingLogger`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Support/CapturingLogger.ts). Its minLevel is often adjusted to one of these values: Debug, Info, Warn, Error, both in unit tests and `createJivsServices()` function. See [Logging](./Logging.md)
+- `lookupKeyFallbackService` - When you create a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), update this to give it a fallback Lookup Key that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
+- `valueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../ModelReader_and_ModelWriter/Home.md#value-adapter-rules).
 
 ### Factories where its common to register objects
-- `conditionFactory` - Register your Condition classes. See [Conditions](../Conditions/Creating_Your_Own.md).
-- `dataTypeParserService`: Register your own DataTypeParsers. See [DataTypeParsers](../Data_Type_Support/DataTypeParsers_Service.md).
-- `dataTypeFormatterService`: Register your own DataTypeFormatters. See [DataTypeFormatters](../Data_Type_Support/DataTypeFormatters_Service.md).
-- `dataTypeConverterService` - Register your own DataTypeConverters. See [DataTypeConverters](../Data_Type_Support/DataTypeConverters_Service.md).
+- `conditionFactory` - Register your `Condition` classes. See [Conditions](../Conditions/Creating_Your_Own.md).
+- `dataTypeParserService`: Register your own `DataTypeParsers`. See [DataTypeParsers](../Data_Type_Support/DataTypeParsers_Service.md).
+- `dataTypeFormatterService`: Register your own `DataTypeFormatters`. See [DataTypeFormatters](../Data_Type_Support/DataTypeFormatters_Service.md).
+- `dataTypeConverterService` - Register your own `DataTypeConverters`. See [DataTypeConverters](../Data_Type_Support/DataTypeConverters_Service.md).
 
 ### Less commonly modified factories
-- `autoGenerateDataTypeCheckService`: Register your own DataTypeCheckGenerators. See [DataTypeCheckGenerators](../Data_Type_Support/DataTypeCheckGenerator_Service.md).
+- `autoGenerateDataTypeCheckService`: Register your own `DataTypeCheckGenerators`. See [DataTypeCheckGenerators](../Data_Type_Support/DataTypeCheckGenerator_Service.md).
 - `dataTypeIdentifierService`: Register your own DataTypeIdentifiers. See [DataTypeIdentifiers](../Data_Type_Support/DataTypeIdentifiers_Service.md).
 - `dataTypeComparerService`: Register your own DataTypeComparers. See [DataTypeComparers](../Data_Type_Support/DataTypeComparers_Service.md).
 
 ### More
 Use the source code and TypeDoc output to better understand these services and factories.
 
-See this folder: [https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Services](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Services)
 
-## Configuring JivsServices
-Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+## API References
+- [Sources](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Services)
+- [JivsServices](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_JivsServices.JivsServices.html)
+- [CultureService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_CultureService.CultureService.html)
+- [TextLocalizerService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [LoggerService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_LoggerService.ConsoleLoggerService.html)
+- [LookupKeyFallbackService](http://jivs.peterblum.com/TypeDoc/classes/)
+- [ValueAdapterService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ValueAdapterService.ValueAdapterService.html)
+- [ConditionFactory](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ConditionFactory.html)
+- [DataTypeParserService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeParserService.DataTypeParserService.html)
+- [DataTypeFormatterService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeFormatterService.DataTypeFormatterService.html)
+- [DataTypeConverterService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeConverterService.DataTypeConverterService.html)
+- [AutoGenerateDataTypeCheckService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_AutoGenerateDataTypeCheckService.html)
+- [DataTypeIdentifierService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeIdentifierService.DataTypeIdentifierService.html)
+- [DataTypeComparerService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeComparerService.DataTypeComparerService.html)
 
-Add the contents of this file to your project. It results in several new functions starting with this one.
-```ts
-export function createJivsServices(... parameters ...): JivsServices {
-…
-}
-// also many register() functions plus configureCultures() and createTextLocalizerService
-```
-Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-
-Now that you have the `createJivsServices() function`, use it during `ValueHostsManager` configuration.
-```ts
-let services = createJivsServices('en-US');
-let rules = new PersonModelRules(services); // subclass of ValueHostRulesBase for your PersonModel class
-let config = rules.configure();
-let vhm = new ValueHostsManager(config);
-```
 
 ---
 Go to [API Home](../Home.md)
