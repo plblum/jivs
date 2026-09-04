@@ -22,7 +22,7 @@ Like all services, this is part of the `JivsService` and can be configured in yo
 services.dataTypeComparerService.register(new MyDataTypeComparer());
 ```
 ## API References
-- [IDataTypeComparer interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeComparer.IDataTypeComparer.html)
+- [IDataTypeComparer interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeComparer.IDataTypeComparer.html)
 - [BooleanDataTypeComparer class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeComparers.BooleanDataTypeComparer.html)
 - [DataTypeComparerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeComparerService.DataTypeComparerService.html)
 ---

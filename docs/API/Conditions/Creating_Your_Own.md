@@ -21,7 +21,7 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
     }
     ```
     See this sample code for more: [jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
-- Subclass from [`RegExpConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_RegExpConditionBase.html) to develop a regular expression condition that has its own configuration settings.
+- Subclass from [`RegExpConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_RegExpConditionBase.RegExpConditionBase.html) to develop a regular expression condition that has its own configuration settings.
     ```ts
     export interface LicenseNumberConditionConfig extends RegExpConditionBaseConfig
     {
@@ -40,8 +40,8 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
         public get conditionType(): string { return 'LicenseNumber'; }
     }
     ```    
-- Subclass from [`ConditionBase`]((http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.html)) to start at the most abstract class. 
-    Create a configuration object by extending [`ConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_Types_ConditionConfig.html).
+- Subclass from [`ConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.ConditionBase.html) to start at the most abstract class. 
+    Create a configuration object by extending [`ConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html).
     ```ts
     interface MyConditionConfig extends ConditionConfig
     {
@@ -68,8 +68,8 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
         }
     }
     ```
-- Subclass [`OneValueConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_OneValueConditionBase.html) to start with a slightly richer starting point that knows how to convert a null valueHost parameter into the primary valuehost. See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
-- Implement the [`ICondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_Types.ICondition.html) interface to create the class.
+- Subclass [`OneValueConditionBase`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_OneValueConditionBase.OneValueConditionBase.html) to start with a slightly richer starting point that knows how to convert a null valueHost parameter into the primary valuehost. See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
+- Implement the [`ICondition`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ICondition.html) interface to create the class.
 
 ### Additional Guidance
 - Look here for source code to the concrete and abstract Conditions classes within Jivs:
