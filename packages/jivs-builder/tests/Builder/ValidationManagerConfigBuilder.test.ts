@@ -2,7 +2,7 @@ import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryIn
 import { RegExpConditionConfig, RequireTextCondition } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { IValidatableValueHostBase, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
+import { IValidatableValueHost, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IValueHost, ValueHostConfig, ValueHostInstanceState } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -10,6 +10,7 @@ import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFac
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ValueHostsManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
+import { createCapturedStateAsString, createStateContainer } from '@plblum/jivs-engine/tests/TestSupport/utilities';
 
 
 function createVMConfig(): ValueHostsManagerConfig {
@@ -57,8 +58,7 @@ describe('constructor', () => {
         let testItem = new ValueHostsManagerConfigBuilder(services);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
-        expect(testItem.savedInstanceState).toBeNull();
-        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.capturedState).toBeUndefined();
         expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();
@@ -74,8 +74,7 @@ describe('constructor', () => {
         let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
-        expect(testItem.savedInstanceState).toBeNull();
-        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.capturedState).toBeUndefined();
         expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();
@@ -96,8 +95,7 @@ describe('function build()', () => {
 
         expect(result.onConfigChanged).toBeUndefined();
         expect(result.notifyValidationStateChangedDelay).toBeUndefined();
-        expect(result.savedInstanceState).toBeUndefined();
-        expect(result.savedValueHostInstanceStates).toBeUndefined();
+        expect(result.capturedState).toBeUndefined();
         expect(result.onTextValueChanged).toBeUndefined();
         expect(result.onValueHostValidationStateChanged).toBeUndefined();
         expect(result.onValidationStateChanged).toBeUndefined();
@@ -118,8 +116,7 @@ describe('function build()', () => {
         expect(result.valueHostConfigs).toEqual([]);
         expect(result.onConfigChanged).toBeUndefined();
         expect(result.notifyValidationStateChangedDelay).toBeUndefined();
-        expect(result.savedInstanceState).toBeUndefined();
-        expect(result.savedValueHostInstanceStates).toBeUndefined();
+        expect(result.capturedState).toBeUndefined();
         expect(result.onTextValueChanged).toBeUndefined();
         expect(result.onValueHostValidationStateChanged).toBeUndefined();
         expect(result.onValidationStateChanged).toBeUndefined();
@@ -128,69 +125,55 @@ describe('function build()', () => {
     });
 });
 describe('instance state properties', () => {
-    test('savedInstanceState', () => {
+    test('capturedState on ValueHostsManager', () => {
         const initialState: ValueHostsManagerInstanceState = {
             stateChangeCounter: 10
         };
         const replacementState: ValueHostsManagerInstanceState = {
             stateChangeCounter: 20,
         };
+        let initial = createStateContainer([]);
+        initial.vhm = initialState;
+        let initialSC = JSON.stringify(initial);
+        let replacement = createStateContainer([]);
+        replacement.vhm = replacementState;
+        let replacementSC = JSON.stringify(replacement);
 
         let services = createJivsServicesForTesting();
         let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
-            savedInstanceState: initialState
+            capturedState: initialSC
         };
         let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.savedInstanceState).toBe(initialState);
-        testItem.savedInstanceState = replacementState;
-        expect(testItem.savedInstanceState).toBe(replacementState);
+        expect(testItem.capturedState).toBe(initialSC);
+        testItem.capturedState = replacementSC;
+        expect(testItem.capturedState).toBe(replacementSC);
         let result = testItem.complete();
-        expect(result.savedInstanceState).toBe(replacementState);
+        expect(result.capturedState).toBe(replacementSC);
     });    
-    test('savedValueHostInstanceStates', () => {
+    test('capturedState on ValueHosts', () => {
         const initialState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'A' }];
         const replacementState: Array<ValueHostInstanceState> = [{ name: 'Property1', value: 'B' }];
+        let initialSC = JSON.stringify(createStateContainer(initialState));
+        let replacementSC = JSON.stringify(createStateContainer(replacementState));
 
         let services = createJivsServicesForTesting();
         let vmConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [],
-            savedValueHostInstanceStates: initialState
+            capturedState: initialSC
         };
         let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.savedValueHostInstanceStates).toBe(initialState);
-        testItem.savedValueHostInstanceStates = replacementState;
-        expect(testItem.savedValueHostInstanceStates).toBe(replacementState);
+        expect(testItem.capturedState).toBe(initialSC);
+        testItem.capturedState = replacementSC;
+        expect(testItem.capturedState).toBe(replacementSC);
         let result = testItem.complete();
-        expect(result.savedValueHostInstanceStates).toBe(replacementState);
+        expect(result.capturedState).toBe(replacementSC);
     });    
     
 });
 describe('Callbacks get and set', () => {
-    test('onValueHostInstanceStateChanged', () => {
-        function handler(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void
-        {
-            
-        }
-        function replacementHandler(valueHost: IValueHost, stateToRetain: ValueHostInstanceState): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onValueHostInstanceStateChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onValueHostInstanceStateChanged).toBe(handler);
-        testItem.onValueHostInstanceStateChanged = replacementHandler;
-        expect(testItem.onValueHostInstanceStateChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onValueHostInstanceStateChanged).toBe(replacementHandler);
-    });
     test('onValueChanged', () => {
         function handler(valueHost: IValueHost, oldValue: any): void
         {
@@ -237,29 +220,6 @@ describe('Callbacks get and set', () => {
         expect(result.onTextValueChanged).toBe(replacementHandler);
     });
     
-    
-    test('onInstanceStateChanged', () => {
-        function handler(valueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
-        {
-            
-        }
-        function replacementHandler(valueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onInstanceStateChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onInstanceStateChanged).toBe(handler);
-        testItem.onInstanceStateChanged = replacementHandler;
-        expect(testItem.onInstanceStateChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onInstanceStateChanged).toBe(replacementHandler);
-    });
     test('onConfigChanged', () => {
         function handler(valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
         {
@@ -283,11 +243,11 @@ describe('Callbacks get and set', () => {
         expect(result.onConfigChanged).toBe(replacementHandler);
     });    
     test('onValueHostValidationStateChanged', () => {
-        function handler(valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState): void
+        function handler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
         {
             
         }
-        function replacementHandler(valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState): void
+        function replacementHandler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
         {
             
         }

@@ -4,6 +4,7 @@
  */
 
 import { FieldValueHostSetValueOptions, IFieldValueHost } from '../Interfaces/FieldValueHost';
+import { ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ModelReaderBase } from './ModelReaderBase';
 
@@ -12,14 +13,12 @@ import { ModelReaderBase } from './ModelReaderBase';
  * 
  * @template T - The type of the model object. Can be a class instance or a plain object.
  */
-export class ModelReader<T extends object = object> extends ModelReaderBase<T>
+export class ModelReader<T extends object = object, TOptions extends ModelReaderOptions = ModelReaderOptions>
+    extends ModelReaderBase<T, TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: T,
-        disableFormatter: boolean = false,
-        skipValueChangedCallback: boolean = false
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
     {
-        super(valueHostsManager, model, disableFormatter, skipValueChangedCallback);
+        super(valueHostsManager, model, options);
     }
 
 }
@@ -29,18 +28,28 @@ export class ModelReader<T extends object = object> extends ModelReaderBase<T>
  * 
  * @template T - The type of the dictionary object. Must be an object with string keys and any values.
  */
-export class DictionaryReader<T extends { [key: string]: any; } = { [key: string]: any; }>
-    extends ModelReaderBase<T>
+export class DictionaryReader<T extends { [key: string]: any; } = { [key: string]: any; },
+    TOptions extends ModelReaderOptions = ModelReaderOptions>
+    extends ModelReaderBase<T, TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: T,
-        disableFormatter: boolean = false,
-        skipValueChangedCallback: boolean = false
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
     {
-        super(valueHostsManager, model, disableFormatter, skipValueChangedCallback);
+        super(valueHostsManager, model, options);
     }
 }
 
+export interface FormReaderOptions extends ModelReaderOptions
+{
+    /**
+     * When true, enables the reformatTextValues feature that can be used to reformat the text values in the form. 
+     * When false, the text values are not reformatted. ValueHosts must be setup for both
+     * parsing and formatting features to work. The reformatTextValues feature is useful for forms that
+     * are used to edit existing data. It will reformat the text values in the form to match the
+     * formatting rules of the ValueHosts.
+     * Even if enabled, individual FieldValueHostConfig.reformatTextValue can block this when false.
+     */
+    reformatTextValue?: boolean;
+}
 /**
  * Targets HTML forms. Supports dictionaries of string values that need to be converted to native values.
  * Writes the text values using FieldValueHost.setTextValue() instead of FieldValueHost.setValue().
@@ -62,8 +71,14 @@ export class DictionaryReader<T extends { [key: string]: any; } = { [key: string
  *      formReader.readFromModel();
  * });
  * ```
+ * The options parameter of the constructor has meaningful options:
+ * - skipValueChangedCallback - If you setup ValueHostsManager.onTextValueChanged, this option
+ * determines if that callback occurs. Usually the callback sets the element in the UI,
+ * and your decision is based on if you are using this Reader to programmatically set the form values.
+ * - disableFormatter - It will always be treated as false, regardless of the value passed in the options.
  */
-export class FormReader extends ModelReaderBase<{ [key: string]: string; }>
+export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
+    extends ModelReaderBase<{ [key: string]: string; }, TOptions>
 {
     /**
      * 
@@ -76,47 +91,35 @@ export class FormReader extends ModelReaderBase<{ [key: string]: string; }>
      *      formReader.readFromModel();
      * });
      * ```
-     * @param reformatTextValues - When true, enables the reformatTextValues feature that can be used to reformat the text values in the form. 
-     * When false, the text values are not reformatted. ValueHosts must be setup for both
-     * parsing and formatting features to work. The reformatTextValues feature is useful for forms that
-     * @param skipValueChangedCallback - When true, the valueChangedCallback is not called when setting the value into the ValueHost.
      */
-    constructor(valueHostsManager: IValueHostsManager, model: { [key: string]: string; },
-        reformatTextValues: boolean = false,
-        skipValueChangedCallback: boolean = false
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: { [key: string]: string; }, options?: TOptions)
     {
-        super(valueHostsManager, model, false, skipValueChangedCallback);
-        this._reformatTextValues = reformatTextValues;
+        super(valueHostsManager, model, options);
+        this.options.disableFormatter = false;
     }
 
-    /**
-     * When true, enables the reformatTextValues feature that can be used to reformat the text values in the form. 
-     * When false, the text values are not reformatted. ValueHosts must be setup for both
-     * parsing and formatting features to work. The reformatTextValues feature is useful for forms that
-     * are used to edit existing data. It will reformat the text values in the form to match the
-     * formatting rules of the ValueHosts.
-     * Even if enabled, individual FieldValueHostConfig.reformatTextValue can block this when false.
-     */
-    protected get reformatTextValues(): boolean
+    public override readFromModel(): void
     {
-        return this._reformatTextValues;
-    }
-    private _reformatTextValues: boolean;
-
-    override setValueIntoValueHost(valueHost: IFieldValueHost, value: any, options: FieldValueHostSetValueOptions): void
-    {
-        options.disableParser = false; // ensure parser is enabled for text values
         let saved = this.valueHostsManager.behaviors.reformatTextValue;
-        this.valueHostsManager.behaviors.reformatTextValue = this._reformatTextValues;
+        this.valueHostsManager.behaviors.reformatTextValue = this.options.reformatTextValue;
         try
         {
-            valueHost.setTextValue(value, options);
+            super.readFromModel();
         }
         finally
         {
             this.valueHostsManager.behaviors.reformatTextValue = saved;
         }
+    }
 
+    protected override getSetValueOptions(): FieldValueHostSetValueOptions
+    {
+        let options: FieldValueHostSetValueOptions = super.getSetValueOptions();
+        options.disableParser = false; // ensure parser is enabled for text values
+        return options;
+    }
+    protected override setValueIntoValueHost(valueHost: IFieldValueHost, value: any, options?: FieldValueHostSetValueOptions): void
+    {
+        valueHost.setTextValue(value, options);
     }
 }

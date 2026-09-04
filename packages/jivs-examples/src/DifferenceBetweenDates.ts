@@ -4,10 +4,14 @@
 // the other is the number of days. It uses the LessThan condition, with the number of days set to 10.
 
 import {
-    DataTypeCheckCondition, DataTypeCheckConditionConfig, LessThanOrEqualCondition,
-    LessThanOrEqualConditionConfig, LessThanValueCondition, LessThanValueConditionConfig,
-    LessThanCondition, LessThanConditionConfig
+    DataTypeCheckCondition, DataTypeCheckConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+    LessThanOrEqualCondition,
+    LessThanOrEqualConditionConfig, LessThanCondition, LessThanConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import { valueHost } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
+
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
@@ -33,8 +37,8 @@ export class DateRangeFormRules extends ValueHostRulesBase {
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: ValueHostRulesOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
-            .lessThanOrEqual('EndDate')
-            .lessThan('NumOfDays',   // right operand of the comparison
+            .lessThanOrEqual(valueHost('EndDate'))
+            .lessThan(valueHost('NumOfDays'),   // right operand of the comparison
                 {
                     valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,
@@ -83,8 +87,8 @@ function createJivsServicesForThisExample(): IJivsServices {
     // DataTypeCheck is auto generated. So its needed here.
     conditionFactory.register<DataTypeCheckConditionConfig>(ConditionType.DataTypeCheck,
         (config) => new DataTypeCheckCondition(config));
-    conditionFactory.register<LessThanValueConditionConfig>(ConditionType.LessThanValue,
-        (config) => new LessThanValueCondition(config));
+    conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,
+        (config) => new LessThanCondition(config));
     conditionFactory.register<LessThanOrEqualConditionConfig>(ConditionType.LessThanOrEqual,
         (config) => new LessThanOrEqualCondition(config));
     conditionFactory.register<LessThanConditionConfig>(ConditionType.LessThan,

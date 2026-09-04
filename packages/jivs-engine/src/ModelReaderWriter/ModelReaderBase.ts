@@ -6,7 +6,7 @@
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost, FieldValueHostSetValueOptions } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import { IModelReader } from '../Interfaces/ModelReaderAndWriter';
+import { IModelReader, ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { FieldValueHost } from '../ValueHosts/FieldValueHost';
@@ -21,7 +21,7 @@ import { ModelReaderWriterBase } from './ModelReaderWriterBase';
  * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  */
 
-export abstract class ModelReaderBase<T extends object>
+export abstract class ModelReaderBase<T extends object, TOptions extends ModelReaderOptions = ModelReaderOptions>
     extends ModelReaderWriterBase<T>
     implements IModelReader
 {
@@ -29,44 +29,18 @@ export abstract class ModelReaderBase<T extends object>
      *
      * @param valueHostsManager - The manager for the ValueHosts.
      * @param model - The model object to be read.
-     * @param disableFormatter - See {@link ModelReaderBase.disableFormatter} for details.
-     * @param skipValueChangedCallback - See {@link ModelReaderBase.skipValueChangedCallback} for details.
      */
-    constructor(valueHostsManager: IValueHostsManager, model: T,
-        disableFormatter: boolean = false,
-        skipValueChangedCallback: boolean = false
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
     {
         super(valueHostsManager, model);
-        this._disableFormatter = disableFormatter;
-        this._skipValueChangedCallback = skipValueChangedCallback;
+        this._options = options ?? {} as TOptions;
     }
 
-    /**
-     * Controls behavior of setValue to turn off its ability to
-     * convert the value to text through an associated DataTypeFormatter.
-     * When true, do not convert the value to text. Just set the native value.
-     * When false, other options remain to do the same thing:
-     *   - valueHostsManager.behaviors.disableFormatterOnValueChange
-     *   - FieldValueHostConfig.formatterLookupKey = null
-     * This effectively sets the setValues(value, { disableFormatter: value }) option.
-     */
-    protected get disableFormatter(): boolean
+    protected get options(): TOptions
     {
-        return this._disableFormatter;
+        return this._options;
     }
-    private _disableFormatter: boolean;
-
-    /**
-     * Controls behavior of setValue to skip the ValueHost's onValueChanged and onTextValueChanged callbacks.
-     * When true, skip the callback. When false, call it if setup.
-     * This effectively sets the setValues(value, { skipValueChangedCallback: value }) option.
-     */
-    protected get skipValueChangedCallback(): boolean
-    {
-        return this._skipValueChangedCallback;
-    }
-    private _skipValueChangedCallback: boolean;
+    private _options: TOptions;
 
     /**
      * Reads all values from the model into the corresponding ValueHosts.
@@ -117,6 +91,7 @@ export abstract class ModelReaderBase<T extends object>
         if (typeof arg1 === "string") {
             modelPropertyName = arg1;
             destination = arg2 as IFieldValueHost;
+
         } else {
             destination = arg1 as IFieldValueHost;
             modelPropertyName = destination.getPropertyName();
@@ -131,6 +106,8 @@ export abstract class ModelReaderBase<T extends object>
         if (modelPropertyResult.skip)
         {
             this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' does not exist in the model. ValueHost '${ destination.getName() }' will be treated as unassigned.`);
+            if (this.options.alignEnabled)
+                destination.setEnabled(false);
             return false;
         }
         return this.setValueWithRule(modelPropertyName, modelPropertyResult.value, destination);
@@ -156,7 +133,9 @@ export abstract class ModelReaderBase<T extends object>
                 this.logger.message(LoggingLevel.Error, () => `Cannot find ValueHost '${ destination }' to assign model property '${ modelPropertyName }' value.`);
                 return false;
             }
-        } else {
+        }
+        else
+        {
             valueHost = destination;
         }
         let valueHostName = valueHost.getName();
@@ -165,7 +144,11 @@ export abstract class ModelReaderBase<T extends object>
         {
             let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
             if (result.skip)
+            {
+                if (this.options.alignEnabled)
+                    valueHost.setEnabled(false);
                 return false;
+            }
             modelPropertyValue = result.value;
         }
 
@@ -173,27 +156,26 @@ export abstract class ModelReaderBase<T extends object>
         else if (rule === undefined && modelPropertyValue === undefined)
         {
             this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
+            if (this.options.alignEnabled)
+                valueHost.setEnabled(false);
             return false;
         }
 
         // we have a value to assign.
-        let options: FieldValueHostSetValueOptions = {
-            disableFormatter: this.disableFormatter,
-            skipValueChangedCallback: this.skipValueChangedCallback,
-            validate: false,
-            reset: true
-        };
+        let setValueOptions = this.getSetValueOptions();
         if (modelPropertyValue !== undefined)
         {
-            this.setValueIntoValueHost(valueHost, modelPropertyValue, options);
+            this.setValueIntoValueHost(valueHost, modelPropertyValue, setValueOptions);
             this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value assigned to ValueHost '${ valueHostName }'.`);
         }
 
         else
         {
-            valueHost.setValueToUndefined(options);
+            valueHost.setValueToUndefined(setValueOptions);
             this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value of undefined will be assigned to ValueHost '${ valueHostName }'.`);
         }
+        if (this.options.alignEnabled)
+            valueHost.setEnabled(true);
         return true;
     }
 
@@ -259,10 +241,21 @@ export abstract class ModelReaderBase<T extends object>
      * valueHost.setTextValue(textValue, options) instead of valueHost.setValue(value, options).
      * @param valueHost
      * @param value
-     * @param options
+     * @param setValueOptions
      */
-    protected setValueIntoValueHost(valueHost: IFieldValueHost, value: any, options: FieldValueHostSetValueOptions): void
+    protected setValueIntoValueHost(valueHost: IFieldValueHost, value: any,
+        setValueOptions: FieldValueHostSetValueOptions): void
     {
-        valueHost.setValue(value, options);
+        valueHost.setValue(value, setValueOptions);
+    }
+
+    protected getSetValueOptions(): FieldValueHostSetValueOptions
+    {
+        return <FieldValueHostSetValueOptions> {
+            disableFormatter: this.options.disableFormatter ?? false,
+            skipValueChangedCallback: this.options.skipValueChangedCallback ?? false,
+            validate: false,
+            reset: true
+        };
     }
 }

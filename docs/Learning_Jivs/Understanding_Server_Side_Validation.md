@@ -148,4 +148,4 @@ Continue with the path that matches the server:
 - [Using Jivs for Server-Side Validation](Using_Jivs_for_Server_Side_Validation.md)
 - [Integrating Non-Jivs Server Validation](Integrating_Non_Jivs_Server_Validation.md)
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

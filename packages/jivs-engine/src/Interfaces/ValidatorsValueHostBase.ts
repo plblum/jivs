@@ -3,10 +3,10 @@
  */
 import { IValidator, ValidatorConfig } from './Validator';
 import {
-    IValidatableValueHostBase, IValidatableValueHostBaseCallbacks,
+    IValidatableValueHost, IValidatableValueHostCallbacks,
     ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
     ValidatableValueHostBaseSetValueOptions,
-    toIValidatableValueHostBase, toIValidatableValueHostBaseCallbacks
+    toIValidatableValueHost, toIValidatableValueHostCallbacks
 } from './ValidatableValueHostBase';
 import { ValueHostConfig } from './ValueHost';
 import { ValueHostType } from './ValueHostFactory';
@@ -14,8 +14,8 @@ import { ValueHostType } from './ValueHostFactory';
 /**
 * Extends ValidatableValueHost to use the Validators class in support of validation.
 */
-export interface IValidatorsValueHostBase<TOptions extends ValidatorsValueHostSetValueOptions = ValidatorsValueHostSetValueOptions>
-    extends IValidatableValueHostBase<TOptions>  {
+export interface IValidatorsValueHost<TOptions extends ValidatorsValueHostSetValueOptions = ValidatorsValueHostSetValueOptions>
+    extends IValidatableValueHost<TOptions>  {
 
     /**
      * Gets an Validator already assigned to this ValidatorsValueHostBase.
@@ -104,9 +104,9 @@ export interface ValidatorsValueHostBaseSetValueOptions extends ValidatableValue
 
 
 /**
- * Provides callback hooks for the consuming system to supply to IValidatorsValueHostBases.
+ * Provides callback hooks for the consuming system to supply to IValidatorsValueHosts.
  */
-export interface IValidatorsValueHostBaseCallbacks extends IValidatableValueHostBaseCallbacks {
+export interface IValidatorsValueHostCallbacks extends IValidatableValueHostCallbacks {
 
 }
 
@@ -126,30 +126,30 @@ export interface ValidatorsValueHostSetValueOptions extends ValidatableValueHost
 }
 
 /**
- * Determines if the object implements IValidatorsValueHostBaseCallbacks.
+ * Determines if the object implements IValidatorsValueHostCallbacks.
  * @param source 
- * @returns source typecasted to IValidatorsValueHostBaseCallbacks if appropriate or null if not.
+ * @returns source typecasted to IValidatorsValueHostCallbacks if appropriate or null if not.
  */
-export function toIValidatorsValueHostBaseCallbacks(source: any): IValidatorsValueHostBaseCallbacks | null
+export function toIValidatorsValueHostCallbacks(source: any): IValidatorsValueHostCallbacks | null
 {
-    if (toIValidatableValueHostBaseCallbacks(source))
+    if (toIValidatableValueHostCallbacks(source))
     {
-        return source as IValidatorsValueHostBaseCallbacks;
+        return source as IValidatorsValueHostCallbacks;
     }
     return null;
 }
 
 /**
- * Determines if the object implements IValidatorsValueHostBase.
+ * Determines if the object implements IValidatorsValueHost.
  * @param source 
- * @returns source typecasted to IValidatorsValueHostBase if appropriate or null if not.
+ * @returns source typecasted to IValidatorsValueHost if appropriate or null if not.
  */
-export function toIValidatorsValueHostBase(source: any): IValidatorsValueHostBase | null
+export function toIValidatorsValueHost(source: any): IValidatorsValueHost | null
 {
-    if (toIValidatableValueHostBase(source))
+    if (toIValidatableValueHost(source))
     {
-        const test = source as IValidatorsValueHostBase;    
-        // some select members of IValidatorsValueHostBase
+        const test = source as IValidatorsValueHost;    
+        // some select members of IValidatorsValueHost
         if (test.getValidator !== undefined &&
             test.getInjectedError !== undefined &&
             test.setInjectedError !== undefined &&

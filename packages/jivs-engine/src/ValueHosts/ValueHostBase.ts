@@ -6,7 +6,7 @@ import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { LoggingLevel } from '../Interfaces/LoggerService';
-import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import type { IValueHostsManager, StateContainer } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
@@ -122,7 +122,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
 
     /**
     * Replaces the typed value and optionally validates in subclasses
-    * that implement IValidatableValueHostBase. 
+    * that implement IValidatableValueHost. 
     * Call when the typed value was changed directly by consuming code.
     * @param value - The typed value to store. Use undefined to indicate that the
     * typed value could not be resolved from the text value, such as when parsing fails.
@@ -162,13 +162,21 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     /**
      * For setValue functions to check for disabled before trying to change.
      */
-    protected canChangeValueCheck(options: TOptions): boolean {
-        if (!options.overrideDisabled && !this.isEnabled()) {
-            this.logger.message(LoggingLevel.Warn, () => `ValueHost "${this.getName()}" disabled. Value not changed`);
-            return false;
-        }
-        if (options.overrideDisabled && !this.isEnabled()) {
-            this.logger.message(LoggingLevel.Info, () =>`overrideDisabled option on ValueHost "${this.getName()}". Value changed`);
+    protected canChangeValueCheck(options: TOptions): boolean
+    {
+        if (!this.isEnabled())
+        {
+            if (options.ensureEnabled) {
+                this.setEnabled(true);
+                options.reset = true;   // forced
+            }
+            else if (!options.overrideDisabled)
+            {
+                this.logger.message(LoggingLevel.Warn, () => `ValueHost "${ this.getName() }" disabled. Value not changed`);
+                return false;
+            }
+            else
+                this.logger.message(LoggingLevel.Info, () => `overrideDisabled option on ValueHost "${ this.getName() }". Value changed`);
         }
         return true;
     }
@@ -332,7 +340,22 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
 
     //#endregion IValueHost
 
-    //#region State
+    //#region instancestate
+    /**
+     * Broadcasts the current state of the ValueHost to any listeners or managers that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    public broadcastState(): void
+    {
+
+    }
+    
     /* 
      * Current state for the associated ValueHost.
      * Only ValueHostsManager owns the state. This instance is a reference
@@ -346,6 +369,16 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
         return this._instanceState;
     }
     private _instanceState: TState;
+
+    /**
+     * Returns the internal state of the ValueHost, which includes all the instance-specific data.
+     * This state is used internally by the ValueHost. This internally exposes it to ValueHostsManager
+     * for the ValueHostsManager to manage and persist state.
+     */
+    public _captureState(stateContainer: StateContainer): void
+    {
+        stateContainer.vh?.push(this._instanceState);
+    }
 
     /**
      * Use to change anything in ValueHostInstanceState without impacting the immutability 

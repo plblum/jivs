@@ -22,7 +22,7 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { IValueHostResolver } from './ValueHostResolver';
-import { IValueHostsManagerAccessor } from './ValueHostsManager';
+import { IValueHostsManagerAccessor, StateContainer } from './ValueHostsManager';
 import { IDisposable } from './General_Purpose';
 import { ConditionConfig } from './Conditions';
 /**
@@ -59,7 +59,7 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
 
     /**
     * Replaces the typed value and optionally validates in subclasses
-    * that implement IValidatableValueHostBase. 
+    * that implement IValidatableValueHost. 
     * Call when the typed value was changed directly by consuming code.
     * @param value - The typed value to store. Use undefined to indicate that the
     * typed value could not be resolved from the text value, such as when parsing fails.
@@ -165,6 +165,25 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      * @param enabled 
      */
     setEnabled(enabled: boolean): void;
+
+    /**
+     * Broadcasts the current state of the ValueHost to any listeners or managers that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    broadcastState(): void;
+
+    /**
+     * Returns the internal state of the ValueHost, which includes all the instance-specific data.
+     * This state is used internally by the ValueHost. This internally exposes it to ValueHostsManager
+     * for the ValueHostsManager to manage and persist state.
+     */
+    _captureState(stateContainer: StateContainer): void;
 }
 
 /**
@@ -216,6 +235,14 @@ export interface SetValueOptions {
      * Use case: You may want to initialize a ValueHost with a value that is disabled.
      */
     overrideDisabled?: boolean;
+
+    /**
+     * When true, ensures that the ValueHost is enabled as part of setting the value.
+     * This is useful in scenarios where the ValueHost might be disabled by default, 
+     * but you want to ensure it is enabled when setting a new value.
+     * When applied, the reset option will be forced to true to clear the validation and change state.
+     */
+    ensureEnabled?: boolean;    
 }
 
 /**
@@ -391,7 +418,6 @@ export function toIGatherValueHostNames(source: any): IGatherValueHostNames | nu
 }
 
 export type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
-export type ValueHostInstanceStateChangedHandler = (valueHost: IValueHost, stateToRetain: ValueHostInstanceState) => void;
 
 /**
  * Determines if the object implements IValueHost.
@@ -420,14 +446,6 @@ export function toIValueHost(source: any): IValueHost | null
  * Provides callback hooks for the consuming system to get feedback from ValueHosts.
  */
 export interface IValueHostCallbacks {
-    /**
-     * Called when any ValueHost had its ValueHostInstanceState changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setValueHostInstanceState() with the stateToRetain.
-     * You can setup the same callback on individual ValueHosts.
-     * Here, it aggregates all ValueHost notifications.
-     */
-    onValueHostInstanceStateChanged?: ValueHostInstanceStateChangedHandler | null;
 
     /**
      * Called when the ValueHost's Value property has changed.
@@ -448,8 +466,7 @@ export function toIValueHostCallbacks(source: any): IValueHostCallbacks | null
     if (source && typeof source === 'object')
     {
         const test = source as IValueHostCallbacks;     
-        if (test.onValueHostInstanceStateChanged !== undefined && 
-            test.onValueChanged !== undefined)
+        if (test.onValueChanged !== undefined)
             return test;
     }
     return null;

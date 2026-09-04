@@ -11,7 +11,7 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { ValidatorConfig } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
-import { LessThanValueConditionConfig } from '../../src/Conditions/ConcreteConditions';
+import { LessThanConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
@@ -467,8 +467,8 @@ describe('ValueHostConfigMergeService', () => {
                 labell10n: 'BD',
                 validatorConfigs: [
                     {
-                        conditionConfig: <LessThanValueConditionConfig>{
-                            conditionType: ConditionType.LessThanValue,
+                        conditionConfig: <LessThanConditionConfig>{
+                            conditionType: ConditionType.LessThan,
                             value: new Date(2000, 0, 1),
                             valueHostName: null
                         }
@@ -503,8 +503,8 @@ describe('ValueHostConfigMergeService', () => {
                             }
                         },
                         {
-                            conditionConfig: <LessThanValueConditionConfig>{
-                                conditionType: ConditionType.LessThanValue,
+                            conditionConfig: <LessThanConditionConfig>{
+                                conditionType: ConditionType.LessThan,
                                 value: new Date(2000, 0, 1),
                                 valueHostName: null
                             }

@@ -68,17 +68,10 @@ export class EvenNumberCondition extends OneValueConditionBase<EvenNumberConditi
     }
 }
 
-// export interface IEvenNumberConditionBuilder extends IConditionBuilder {
-
-//     evenNumber(): void;
-// }
-
-
-//#region Fluent syntax
-// Fluent: Subclass ConditionBuilder and add your condition functions.
+//#region Builder syntax
+// Builder: Subclass ConditionBuilder and add your condition functions.
 export class EvenNumberConditionBuilder
     extends ConditionBuilder
- //   implements IEvenNumberConditionBuilder
 {
 
     public evenNumber(): void {
@@ -89,18 +82,9 @@ export class EvenNumberConditionBuilder
         this.setConfig(config as any);
     }
 }
-// export interface IEvenNumberValidatorBuilder extends IValidatorBuilder {
-//     evenNumber(
-//         errorMessage?: string | null,
-//         summaryMessage?: string | null): IValidatorBuilder;
-//     evenNumber(
-//         validatorParameters: FluentValidatorConfig): IValidatorBuilder;
-// }
-// Fluent: Subclass ValidatorBuilder and add your validator functions. This requires 2 overloads.
 
 export class EvenNumberValidatorBuilder
     extends ValidatorBuilder
-//    implements IEvenNumberValidatorBuilder
 {
     public evenNumber(
         errorMessage?: string | null, 
@@ -138,7 +122,7 @@ declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
         evenNumber(): void;
     }
 }
-//#endregion Fluent syntax
+//#endregion Builder syntax
 
 // Register after you have JivsServices instance. Setup only on the JivsServices
 export function registerEvenNumberCondition(services: IJivsServices): void

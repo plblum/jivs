@@ -1,4 +1,5 @@
 import { ValueHostsManagerConfigBuilder } from "@plblum/jivs-builder/build/Builder/ValueHostsManagerConfigBuilder";
+import { valueHost } from "@plblum/jivs-builder/build/Builder/ValidatorBuilder";
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { NumericStringToNumberConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { NumberParser } from "@plblum/jivs-engine/build/DataTypes/DataTypeParsers";
@@ -9,7 +10,7 @@ import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
+import { TestingJivsServicesOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
@@ -116,7 +117,7 @@ describe('ConfigAnalysisBase class', () => {
             };
         });
     }
-    function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
+    function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: TestingJivsServicesOptions): {
         testItem: Publicify_ConfigAnalysisBase,
         services: IJivsServices,
         helper: AnalysisResultsHelper<IJivsServices>,
@@ -769,7 +770,7 @@ describe('ValueHostsManagerConfigAnalysis', () => {
         let builder = new ValueHostsManagerConfigBuilder(services);
         builder.field('testValueHost1', LookupKey.String, {
             parserLookupKey: LookupKey.Number,
-        }).requireText().lessThan('testValueHost2', {
+        }).requireText().lessThan(valueHost('testValueHost2'), {
             secondConversionLookupKey: LookupKey.Number,
         });
         builder.field('testValueHost2', LookupKey.String).regExp(/^\d+$/);

@@ -1,7 +1,28 @@
 /**
  * Base for Conditions that compare the ValueHost's against a second value, supplied in 
  * CompareToValueConditionBaseConfig.secondValue.
- * The Config introduces valueHostName.
+ * 
+ * It is used by these concrete conditions:
+ * - equalTo
+ * - notEqualTo
+ * - greaterThan
+ * - lessThan
+ * - greaterThanOrEqual
+ * - lessThanOrEqual
+ * 
+ * There are two sources for the value within CompareToValueConditionConfig:
+ * - secondValue: The actual value to compare against.
+ * - secondValueHostName: The name of the ValueHost that provides the second value.
+ * At least one must not be undefined.
+ * 
+ * ## When using the builder
+ * The first parameter of each comparison condition takes either the secondValue or the secondValueHostName,
+ * however wrap the second value in the valueHost() function first.
+ * ```ts
+ * builder.field('field1', LookupKey.String).equalTo(10);
+ * builder.field('field1', LookupKey.String).equalTo(valueHost('field2'))
+ * ```
+ * 
  * @module jivs-engine/Conditions/AbstractClasses/CompareToValueConditionBase
  */
 
@@ -10,17 +31,25 @@ import { ComparersResult } from '../Interfaces/DataTypeComparerService';
 import { TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { OneValueConditionBaseConfig, OneValueConditionBase } from './OneValueConditionBase';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 
 /**
  * ConditionConfig for CompareToValueConditionBase.
  */
 export interface CompareToValueConditionBaseConfig extends OneValueConditionBaseConfig, SupportsDataTypeConverter {
     /**
-     * Native data type representing the right operand of the comparison
+     * Native data type representing the right operand of the comparison.
+     * Either this or secondValueHostName must have an assignment.
      */
     secondValue?: any;
+
+    /**
+     * The name of the ValueHost that provides the second value for comparison.
+     * Either this or secondValue must have an assignment.
+     */
+    secondValueHostName?: string;
 
     /**
      * Associated with secondValue only.
@@ -56,10 +85,23 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
             this.logNothingToEvaluate('value', valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
-        
-        if (this.config.secondValue == null)    // null/undefined
+
+        let secondValueSource = this.config.secondValueHostName !== undefined ? 'secondValueHostName' : 'secondValue';
+        let secondValue: any = undefined;
+        let secondValueLookupKey: string | null = null;
+        try
         {
-            this.logNothingToEvaluate('secondValue', valueHostsManager.services);
+            let result = this.getSecondValue(valueHostsManager);
+            secondValue = result.value;
+            secondValueLookupKey = result.valueHost?.getDataType() ?? null;
+        } catch (error)
+        {
+            // will already be logged by getSecondValue
+            return ConditionEvaluateResult.Undetermined;
+        }
+        if (secondValue == null)    // null/undefined
+        {
+            this.logNothingToEvaluate(secondValueSource, valueHostsManager.services);
             return ConditionEvaluateResult.Undetermined;
         }
 
@@ -67,19 +109,18 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
             this.config.conversionLookupKey, valueHostsManager.services);
         if (valueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
-
-        // !!! The secondValue initially is expected to be a native data type.
-        // !!! However, this isn't ideal. We should offer config.secondValueLookupKey        
         
-        const secondValueDetails = this.tryConversion(this.config.secondValue, null,   
+        const secondValueDetails = this.tryConversion(secondValue, secondValueLookupKey,   
             this.config.secondConversionLookupKey, valueHostsManager.services);
         if (secondValueDetails.failed)
             return ConditionEvaluateResult.Undetermined;
 
         const comparison = valueHostsManager.services.dataTypeComparerService.compare(
-            valueDetails.value, secondValueDetails.value, valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
+            valueDetails.value, secondValueDetails.value,
+            valueDetails.lookupKey ?? null, secondValueDetails.lookupKey ?? null);
         if (comparison === ComparersResult.Undetermined) {
-            this.logTypeMismatch(valueHostsManager.services, 'value', 'secondValue', valueDetails.value, secondValueDetails.value);
+            this.logTypeMismatch(valueHostsManager.services, 'value', secondValueSource,
+                valueDetails.value, secondValueDetails.value);
 
             return ConditionEvaluateResult.Undetermined;
         }
@@ -87,20 +128,86 @@ export abstract class CompareToValueConditionBase<TConfig extends CompareToValue
     }
     protected abstract compareTwoValues(comparison: ComparersResult):
         ConditionEvaluateResult;
-
-    public override getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    
+    public override gatherValueHostNames(collection: Set<ValueHostName>, valueHostsManager: IValueHostsManager): void {
+        super.gatherValueHostNames(collection, valueHostsManager);
+        if (this.config.secondValueHostName)
+            collection.add(this.config.secondValueHostName);
+    }
+    /**
+     * Supports:
+     * {CompareTo} - value retrieved
+     * {SecondLabel} - label for secondValueHostName
+     * @param valueHost 
+     * @param valueHostsManager 
+     * @returns 
+     */
+    public override getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         let list: Array<TokenLabelAndValue> = [];
         list = list.concat(super.getValuesForTokens(valueHost, valueHostsManager));
-        const secondValue = this.config.secondValue;
+        let secondValue: any = null;
+        try {
+            let result = this.getSecondValue(valueHostsManager);
+            secondValue = result.value;
+        } catch (error) {
+            // will already be logged by getSecondValue
+        }
         
         list.push({
             tokenLabel: 'CompareTo',
             associatedValue: secondValue ?? null,
             purpose: 'value'
         });
+
+        let secondLabel: string | null = null;
+        if (this.config.secondValueHostName)
+        {
+            const vh = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
+            if (vh)
+                secondLabel = vh.getLabel();
+        }
+        list.push({
+            tokenLabel: 'SecondLabel',
+            associatedValue: secondLabel ?? '',
+            purpose: 'label'
+        });
+
         return list;
     }
     protected get defaultCategory(): ConditionCategory {
         return ConditionCategory.Comparison;
+    }
+
+    /**
+     * If ResolveValueHost is used but does not have a known ValueHost,
+     * it logs and throws.
+     * @param valueHostsManager 
+     * @returns 
+     */
+    protected getSecondValue(valueHostsManager: IValueHostsManager): { valueHost?: IValueHost, value: any; }
+    {
+        let result = { valueHost: undefined as IValueHost | undefined, value: undefined };
+        result.value = this.config.secondValue;
+        if (result.value === undefined)
+        {
+            if (this.config.secondValueHostName != null)    // null or undefined
+            {
+                let secondValueHost = this.getValueHost(this.config.secondValueHostName, valueHostsManager);
+                if (secondValueHost)
+                {
+                    result.value = secondValueHost.getValue();
+                    result.valueHost = secondValueHost;
+                }
+                else
+                {
+                    this.logUnknownValueHost(valueHostsManager.services,
+                        'secondValueHostName', this.config.secondValueHostName);
+                }
+            }
+            else
+                this.throwInvalidPropertyData('secondValue', 'is not assigned', valueHostsManager.services);
+        }
+
+        return result;
     }
 }

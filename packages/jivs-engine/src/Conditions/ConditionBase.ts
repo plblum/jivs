@@ -11,18 +11,20 @@ import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interf
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { LoggerFacade } from '../Utilities/LoggerFacade';
 import { ConditionType } from './ConditionTypes';
 
 /**
- * Base implementation of ICondition.
+ * Base implementation of {@link jivs-engine/Conditions/Types!ICondition | ICondition}.
+ * 
  * Subclass to build a business rule that will evaluate value(s).
  * Conditions exist for each business rule pattern, such as 
  * required, string matches the data type, compare value to another.
- * Instances should be registered in the ConditionFactory.
+ * 
+ * Instances should be registered in the {@link jivs-engine/Services/ConcreteClasses/ConditionFactory!ConditionFactory | ConditionFactory}.
  */
 export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     implements IDisposable, IConditionCore<TConditionConfig>, IMessageTokenSource, IGatherValueHostNames {
@@ -131,7 +133,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @returns An array. If an empty array if there are no token to offer.
      * This base class has no tokens to offer.
      */
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager): Array<TokenLabelAndValue> {
         return [];
     }
 
@@ -279,6 +281,22 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         const msg = 'lacks value to evaluate';
         this.logInvalidPropertyData(propertyName, msg, services);
     }
+    protected logUnknownValueHost(services: IJivsServices, propertyName: string, valueHostName: ValueHostName): void
+    {
+        this.logger(services).log(LoggingLevel.Error, (options?: LogOptions) =>
+        {
+            const details: LogDetails = {
+                message: `ValueHost not found: ${ valueHostName }`,
+                category: LoggingCategory.Configuration
+            };
+            if (options?.includeData)
+                details.data = {
+                    propertyName: propertyName,
+                    valueHostName: valueHostName
+                };
+            return details;
+        });
+    }    
 }
 
 /** 

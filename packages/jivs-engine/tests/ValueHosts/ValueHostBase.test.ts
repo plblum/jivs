@@ -7,13 +7,12 @@ import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 import
     {
         type IValueHost,
-        IValueHostCallbacks, toIValueHostCallbacks,
+        IValueHostCallbacks, SetValueOptions, toIValueHostCallbacks,
         ValueHostConfig,
-        type ValueHostInstanceState,
-        ValueHostInstanceStateChangedHandler
+        type ValueHostInstanceState
     } from "../../src/Interfaces/ValueHost";
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, StateContainer, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
@@ -24,6 +23,7 @@ import { ValueHostBase } from "../../src/ValueHosts/ValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { TestLogCallsLoggingService } from "../TestSupport/TestLogCallsLoggingService";
+import { createCapturedStateAsString } from '../TestSupport/utilities';
 
 
 interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
@@ -36,29 +36,36 @@ interface IPublicifiedValueHostInstanceState extends ValueHostInstanceState
  */
 class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifiedValueHostInstanceState>
 {
-    constructor(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState) {
+    constructor(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState)
+    {
         super(valueHostsManager, config, state);
     }
-    public get exposeServices(): IJivsServices {
+    public get exposeServices(): IJivsServices
+    {
         return this.services;
     }
 
-    public get exposeConfig(): ValueHostConfig {
+    public get exposeConfig(): ValueHostConfig
+    {
         return this.config;
     }
 
-    public get exposeState(): IPublicifiedValueHostInstanceState {
+    public get exposeState(): IPublicifiedValueHostInstanceState
+    {
         return this.instanceState;
     }
-    public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
+    public publicify_log(level: LoggingLevel, gatherFn: logGatheringHandler): void
+    {
         this.logger.log(level, gatherFn);
     }
 
-    public publicify_logMessage(level: LoggingLevel, messageFn: () => string): void {
+    public publicify_logMessage(level: LoggingLevel, messageFn: () => string): void
+    {
         this.logger.message(level, messageFn);
 
     }
-    public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void {
+    public publicify_logError(error: Error, gatherFn?: logGatheringErrorHandler): void
+    {
         this.logger.error(error, gatherFn);
     }
 
@@ -66,17 +73,22 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
 /**
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
  */
-class PublicifiedValueHostBaseGenerator implements IValueHostGenerator {
-    public canCreate(config: ValueHostConfig): boolean {
+class PublicifiedValueHostBaseGenerator implements IValueHostGenerator
+{
+    public canCreate(config: ValueHostConfig): boolean
+    {
         return config.valueHostType === testValueHostType;
     }
-    public create(valueHostsManager : IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost {
+    public create(valueHostsManager: IValueHostsManager, config: ValueHostConfig, state: IPublicifiedValueHostInstanceState): IValueHost
+    {
         return new PublicifiedValueHostBase(valueHostsManager, config, state);
     }
-    public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void {
+    public cleanupInstanceState(state: IPublicifiedValueHostInstanceState, config: ValueHostConfig): void
+    {
         state.counter = 0;
     }
-    public createInstanceState(config: ValueHostConfig): IPublicifiedValueHostInstanceState {
+    public createInstanceState(config: ValueHostConfig): IPublicifiedValueHostInstanceState
+    {
         let state: IPublicifiedValueHostInstanceState = {
             name: config.name,
             value: config.initialValue,
@@ -102,13 +114,15 @@ const testValueHostType = 'PublicifyValueHostBase';
  * ValueHostsManager, Services, ValueHosts, the complete Config,
  * and the state.
  */
-function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): {
-    services: MockJivsServices,
-    valueHostsManager: MockValueHostsManager,
-    config: ValueHostConfig,
-    state: ValueHostInstanceState,
-    valueHost: PublicifiedValueHostBase
-} {
+function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any):
+    {
+        services: MockJivsServices,
+        valueHostsManager: MockValueHostsManager,
+        config: ValueHostConfig,
+        state: ValueHostInstanceState,
+        valueHost: PublicifiedValueHostBase;
+    }
+{
     let services = new MockJivsServices(false, false);
     let factory = new ValueHostFactory();
     factory.register(new PublicifiedValueHostBaseGenerator());
@@ -142,9 +156,11 @@ function setupValueHost(config?: Partial<ValueHostConfig>, initialValue?: any): 
 }
 
 // constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState)
-describe('constructor and resulting property values', () => {
+describe('constructor and resulting property values', () =>
+{
 
-    test('constructor with valid parameters created and sets up Services, Config, and State', () => {
+    test('constructor with valid parameters created and sets up Services, Config, and State', () =>
+    {
         let services = new MockJivsServices(true, true);
         let vhm = new MockValueHostsManager(services);
         let vhConfig: ValueHostConfig = {
@@ -152,7 +168,7 @@ describe('constructor and resulting property values', () => {
             valueHostType: 'TestValidatableValueHost',
         };
         let testItem: PublicifiedValueHostBase | null = null;
-        expect(()=> testItem = new PublicifiedValueHostBase(vhm, vhConfig,
+        expect(() => testItem = new PublicifiedValueHostBase(vhm, vhConfig,
             {
                 name: 'Field1',
                 counter: 0,
@@ -175,14 +191,16 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.valueHostsManager).toBe(vhm);
     });
 
-    test('constructor with Config.dataType undefined results in getDataType = null', () => {
+    test('constructor with Config.dataType undefined results in getDataType = null', () =>
+    {
         let setup = setupValueHost({
             dataType: undefined
         });
         let testItem = setup.valueHost;
         expect(testItem.getDataType()).toBeNull();
     });
-    test('constructor with Config.labell10n setup. GetLabel results in localized lookup', () => {
+    test('constructor with Config.labell10n setup. GetLabel results in localized lookup', () =>
+    {
         let setup = setupValueHost({
             labell10n: 'Label1-key'
         });
@@ -194,7 +212,8 @@ describe('constructor and resulting property values', () => {
 
         expect(testItem.getLabel()).toBe('*-Label1');
     });
-    test('constructor with Config.labell10n setup but not in the textlocalizer and no value in config.label. GetLabel results in empty string', () => {
+    test('constructor with Config.labell10n setup but not in the textlocalizer and no value in config.label. GetLabel results in empty string', () =>
+    {
         let setup = setupValueHost({
             labell10n: 'Label1-key',
             label: undefined
@@ -206,11 +225,12 @@ describe('constructor and resulting property values', () => {
         let testItem = setup.valueHost;
 
         expect(testItem.getLabel()).toBe('');
-    });    
-    test('constructor with null in each parameter throws', () => {
+    });
+    test('constructor with null in each parameter throws', () =>
+    {
 
         let services = new MockJivsServices(false, false);
-        let vhm = new MockValueHostsManager(services);        
+        let vhm = new MockValueHostsManager(services);
         let config: ValueHostConfig = {
             name: 'Field1',
             label: 'Label1',
@@ -232,20 +252,24 @@ describe('constructor and resulting property values', () => {
             config, null!)).toThrow(/state/);
     });
 });
-describe('ValidatableValueHostBase.getValue', () => {
-    test('Set instanceState.Value to undefined; getValue is undefined', () => {
+describe('ValidatableValueHostBase.getValue', () =>
+{
+    test('Set instanceState.Value to undefined; getValue is undefined', () =>
+    {
         let setup = setupValueHost(undefined, undefined);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
         expect(value).toBeUndefined();
     });
-    test('Set instanceState.Value to null; getValue is null', () => {
+    test('Set instanceState.Value to null; getValue is null', () =>
+    {
         let setup = setupValueHost(undefined, null);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
         expect(value).toBeNull();
     });
-    test('Set instanceState.Value to 10; getValue is 10', () => {
+    test('Set instanceState.Value to 10; getValue is 10', () =>
+    {
         let setup = setupValueHost(undefined, 10);
         let value: any = null;
         expect(() => value = setup.valueHost.getValue()).not.toThrow();
@@ -253,65 +277,96 @@ describe('ValidatableValueHostBase.getValue', () => {
     });
 
 });
-describe('updateState', () => {
+
+function restoreValueHostState(setup: { valueHostsManager: any; valueHost: any }): StateContainer
+{
+    let stateContainer: StateContainer = {
+        jivs_state: 'internal',
+        vhm: setup.valueHostsManager.publicify_InstanceState,
+        vh: []
+    };
+    setup.valueHost._captureState(stateContainer);
+    return stateContainer;
+}
+
+describe('_captureState', () =>
+{
+    test('Retrieve the current state from the ValueHostsManager', () =>
+    {
+        let setup = setupValueHost({}, 100);
+        let stateContainer = restoreValueHostState(setup);
+        expect(stateContainer.jivs_state).toBe('internal');
+        expect(stateContainer.vhm).toBeDefined();
+        expect(stateContainer.vhm?.stateChangeCounter).toBe(0);
+        expect(stateContainer.vh).toBeDefined();
+        expect(stateContainer.vh?.length).toBe(1);
+        expect(stateContainer.vh?.[0].name).toBe('Field1');
+        expect(stateContainer.vh?.[0].value).toBe(100);
+    });
+});
+describe('updateState', () =>
+{
+
     test('Update value with +1 results in new instance of State and report to ValueHostsManager',
-        () => {
+        () =>
+        {
             let initialValue = 100;
             let setup = setupValueHost({}, initialValue);
             let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
-            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState => {
+            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState =>
+            {
                 stateToUpdate.value = stateToUpdate.value + 1;
                 return stateToUpdate;
             };
             // try several times
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= 3; i++)
+            {
                 let originalState = testItem.exposeState;
                 expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue + i);
                 expect(testItem.exposeState).not.toBe(originalState);   // different instances
             }
-            let changes = setup.valueHostsManager.getHostStateChanges();
-            expect(changes.length).toBe(3);
-            for (let i = 1; i <= 3; i++) {
-
-                expect(changes[i - 1].name).toBe('Field1');
-                expect(changes[i - 1].value).toBe(initialValue + i);
-            }
-
+            let stateContainer = restoreValueHostState(setup);
+            expect(stateContainer.vh?.length).toBe(1);
+            expect(stateContainer.vh?.[0].value).toBe(initialValue + 3);
+            expect(stateContainer.vh?.[0].name).toBe('Field1');
         });
     test('Update value with +0 results in no change to the state instance or notification to ValueHostsManager',
-        () => {
+        () =>
+        {
             let initialValue = 100;
             let setup = setupValueHost({}, initialValue);
             let testItem = setup.valueHost;
             expect(testItem.getValue()).toBe(initialValue);
-            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState => {
+            let fn = (stateToUpdate: IPublicifiedValueHostInstanceState): IPublicifiedValueHostInstanceState =>
+            {
                 stateToUpdate.value = stateToUpdate.value + 0;  // not actually changing anything
                 return stateToUpdate;
             };
             // try several times
-            for (let i = 1; i <= 3; i++) {
+            for (let i = 1; i <= 3; i++)
+            {
                 let originalState = testItem.exposeState;
                 expect(() => testItem.updateInstanceState(fn, testItem)).not.toThrow();
                 expect(testItem.getValue()).toBe(initialValue);
                 expect(testItem.exposeState).toBe(originalState);   // same instance
             }
-            let changes = setup.valueHostsManager.getHostStateChanges();
-            expect(changes.length).toBe(0);
-
 
         });
-        test('Updater function is null throws',
-        () => {
+    test('Updater function is null throws',
+        () =>
+        {
             let setup = setupValueHost({});
             let testItem = setup.valueHost;
             expect(() => testItem.updateInstanceState(null!, testItem)).toThrow(/updater/);
-        });    
+        });
 });
 
-describe('setValue', () => {
-    test('Value was changed. State changes.', () => {
+describe('setValue', () =>
+{
+    test('Value was changed. State changes.', () =>
+    {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
@@ -319,14 +374,12 @@ describe('setValue', () => {
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
-
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].value).toBe(finalValue);
-        expect(changes[0].changeCounter).toBe(1);
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].changeCounter).toBe(1);
     });
-    test('Value was not changed. State did not change', () => {
+    test('Value was not changed. State did not change', () =>
+    {
         const initialValue = 100;
         const finalValue = initialValue;
         let setup = setupValueHost({}, initialValue);
@@ -334,12 +387,12 @@ describe('setValue', () => {
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
-
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(0);
-
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].changeCounter).toBeUndefined();
     });
-    test('Value was changed with option.Reset = true. State changes, but IsChanged is false.', () => {
+    test('Value was changed with option.Reset = true. State changes, but IsChanged is false.', () =>
+    {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
@@ -348,20 +401,22 @@ describe('setValue', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].value).toBe(finalValue);
-        expect(changes[0].changeCounter).toBe(0);
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].value).toBe(finalValue);
+        expect(restoredState.vh?.[0].changeCounter).toBe(0);
+        expect(restoredState.vh?.[0].name).toBe('Field1');
     });
-    test('Value was changed. OnValueChanged called.', () => {
+    test('Value was changed. OnValueChanged called.', () =>
+    {
         const initialValue = 100;
         const secondValue = 150;
         const finalValue = 200;
 
         let setup = setupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
+        let changedValues: Array<{ newValue: any, oldValue: any; }> = [];
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
+        {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -376,14 +431,16 @@ describe('setValue', () => {
         expect(changedValues[0].newValue).toBe(secondValue);
         expect(changedValues[0].oldValue).toBe(initialValue);
         expect(changedValues[1].newValue).toBe(finalValue);
-        expect(changedValues[1].oldValue).toBe(secondValue);        
+        expect(changedValues[1].oldValue).toBe(secondValue);
     });
-    test('Value was not changed. OnValueChanged is not called.', () => {
+    test('Value was not changed. OnValueChanged is not called.', () =>
+    {
         const initialValue = 100;
 
         let setup = setupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
+        let changedValues: Array<{ newValue: any, oldValue: any; }> = [];
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
+        {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -395,16 +452,18 @@ describe('setValue', () => {
         expect(() => testItem.setValue(initialValue)).not.toThrow();
 
         expect(changedValues.length).toBe(0);
-    
-    });    
-    test('Value was changed. OnValueChanged setup but not called because SkipValueChangedCallback is true.', () => {
+
+    });
+    test('Value was changed. OnValueChanged setup but not called because SkipValueChangedCallback is true.', () =>
+    {
         const initialValue = 100;
         const secondValue = 150;
         const finalValue = 200;
 
         let setup = setupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
+        let changedValues: Array<{ newValue: any, oldValue: any; }> = [];
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
+        {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -416,15 +475,17 @@ describe('setValue', () => {
         expect(() => testItem.setValue(finalValue, { skipValueChangedCallback: true })).not.toThrow();
 
         expect(changedValues.length).toBe(0);
-    });    
-    test('Value was changed. OnValueChanged setup and not called because SkipValueChangedCallback is false', () => {
+    });
+    test('Value was changed. OnValueChanged setup and not called because SkipValueChangedCallback is false', () =>
+    {
         const initialValue = 100;
         const secondValue = 150;
         const finalValue = 200;
 
         let setup = setupValueHost({}, initialValue);
-        let changedValues: Array<{newValue: any, oldValue: any}> = [];
-        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) => {
+        let changedValues: Array<{ newValue: any, oldValue: any; }> = [];
+        setup.valueHostsManager.onValueChanged = (valueHost, oldValue) =>
+        {
             changedValues.push({
                 newValue: valueHost.getValue(),
                 oldValue: oldValue
@@ -433,51 +494,17 @@ describe('setValue', () => {
 
         let testItem = setup.valueHost;
         expect(() => testItem.setValue(secondValue, { skipValueChangedCallback: false })).not.toThrow();
-        expect(() => testItem.setValue(finalValue, { skipValueChangedCallback:false })).not.toThrow();
+        expect(() => testItem.setValue(finalValue, { skipValueChangedCallback: false })).not.toThrow();
 
         expect(changedValues.length).toBe(2);
         expect(changedValues[0].newValue).toBe(secondValue);
         expect(changedValues[0].oldValue).toBe(initialValue);
         expect(changedValues[1].newValue).toBe(finalValue);
-        expect(changedValues[1].oldValue).toBe(secondValue);        
+        expect(changedValues[1].oldValue).toBe(secondValue);
     });
 
-    test('Value was changed. OnValueHostInstanceStateChanged called.', () => {
-        const initialValue = 100;
-        const secondValue = 150;
-        const finalValue = 200;
-
-        let setup = setupValueHost({}, initialValue);
-        let changedState: Array<ValueHostInstanceState> = [];
-        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
-            changedState.push(stateToRetain);
-        };
-
-        let testItem = setup.valueHost;
-        expect(() => testItem.setValue(secondValue)).not.toThrow();
-        expect(() => testItem.setValue(finalValue)).not.toThrow();
-
-        expect(changedState.length).toBe(2);
-        expect(changedState[0].value).toBe(secondValue);
-        expect(changedState[1].value).toBe(finalValue);     
-    });    
-
-    test('Value was not changed. OnValueHostInstanceStateChanged is not called.', () => {
-        const initialValue = 100;
-
-        let setup = setupValueHost({}, initialValue);
-        let changedState: Array<ValueHostInstanceState> = [];
-        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
-            changedState.push(stateToRetain);
-        };
-
-        let testItem = setup.valueHost;
-        expect(() => testItem.setValue(initialValue)).not.toThrow();
-        expect(() => testItem.setValue(initialValue)).not.toThrow();
-
-        expect(changedState.length).toBe(0);
-    });       
-    test('Log call when Level=Debug.', () => {
+    test('Log call when Level=Debug.', () =>
+    {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
@@ -487,7 +514,8 @@ describe('setValue', () => {
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
-    test('isEnabled=false will not change the value.', () => {
+    test('isEnabled=false will not change the value.', () =>
+    {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
@@ -500,7 +528,8 @@ describe('setValue', () => {
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
-    test('isEnabled=false will change the value when option.overrideDisabled=true.', () => {
+    test('isEnabled=false will change the value when option.overrideDisabled=true.', () =>
+    {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
@@ -514,8 +543,10 @@ describe('setValue', () => {
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
 });
-describe('setValueToUndefined', () => {
-    test('Value was changed. State changes.', () => {
+describe('setValueToUndefined', () =>
+{
+    test('Value was changed. State changes.', () =>
+    {
         const initialValue = 100;
         const finalValue = undefined;
         let setup = setupValueHost({}, initialValue);
@@ -523,13 +554,15 @@ describe('setValueToUndefined', () => {
         expect(() => testItem.setValueToUndefined()).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].value).toBe(finalValue);
+        expect(restoredState.vh?.[0].changeCounter).toBe(1);    
+        expect(restoredState.vh?.[0].name).toBe('Field1');
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].value).toBe(finalValue);
     });
-    test('Value was not changed. State did not change', () => {
+    test('Value was not changed. State did not change', () =>
+    {
         const initialValue = undefined;
         const finalValue = initialValue;
         let setup = setupValueHost({}, initialValue);
@@ -538,113 +571,119 @@ describe('setValueToUndefined', () => {
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(0);
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].value).toBe(finalValue);
+        expect(restoredState.vh?.[0].changeCounter).toBeUndefined();
+        expect(restoredState.vh?.[0].name).toBe('Field1');
 
-    });    
+
+    });
 });
 
-describe('ValueHostBase.saveIntoStore and getFromStore', () => {
-    test('Save 10 and get it back.', () => {
+describe('ValueHostBase.saveIntoStore and getFromStore', () =>
+{
+    test('Save 10 and get it back.', () =>
+    {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
         expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].items).not.toBeNull();
-        expect(changes[0].items!['KEY']).toBe(10);
-        expect(testItem.getFromInstanceState('KEY')).toBe(10);        
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].name).toBe('Field1');
+        expect(restoredState.vh?.[0].items).not.toBeNull();
+        expect(restoredState.vh?.[0].items!['KEY']).toBe(10);
+        expect(testItem.getFromInstanceState('KEY')).toBe(10);
     });
-    test('Get without prior Store returns undefined.', () => {
+    test('Get without prior Store returns undefined.', () =>
+    {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
 
-        expect(testItem.getFromInstanceState('KEY')).toBeUndefined();       
+        expect(testItem.getFromInstanceState('KEY')).toBeUndefined();
     });
-    test('Save 10 and save undefined to remove it.', () => {
+    test('Save 10 and save undefined to remove it.', () =>
+    {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
         expect(() => testItem.saveIntoInstanceState('KEY', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY', undefined)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].items).not.toBeNull();
-        expect(changes[0].items!['KEY']).toBe(10);
-        expect(changes[1].name).toBe('Field1');
-        expect(changes[1].items).not.toBeNull();
-        expect(changes[1].items!['KEY']).toBeUndefined();        
-        expect(testItem.getFromInstanceState('KEY')).toBeUndefined;        
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+
+        expect(restoredState.vh?.[0].name).toBe('Field1');
+        expect(restoredState.vh?.[0].items).not.toBeNull();
+        expect(restoredState.vh?.[0].items!['KEY']).toBeUndefined();
+        expect(testItem.getFromInstanceState('KEY')).toBeUndefined();
     });
-    test('Save two different keys and retrieve both.', () => {
+    test('Save two different keys and retrieve both.', () =>
+    {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
         expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].items).not.toBeNull();
-        expect(changes[0].items!['KEY1']).toBe(10);
-        expect(changes[1].name).toBe('Field1');
-        expect(changes[1].items).not.toBeNull();
-        expect(changes[1].items!['KEY2']).toBe(20);  
-        expect(testItem.getFromInstanceState('KEY1')).toBe(10);        
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+
+        expect(restoredState.vh?.[0].name).toBe('Field1');
+        expect(restoredState.vh?.[0].items).not.toBeNull();
+        expect(restoredState.vh?.[0].items!['KEY1']).toBe(10);
+        expect(restoredState.vh?.[0].items!['KEY2']).toBe(20);
+        expect(testItem.getFromInstanceState('KEY1')).toBe(10);
         expect(testItem.getFromInstanceState('KEY2')).toBe(20);
-    });    
-    test('Save two different keys, delete the second, and retrieve both.', () => {
+    });
+    test('Save two different keys, delete the second, and retrieve both.', () =>
+    {
 
         let setup = setupValueHost({});
         let testItem = setup.valueHost;
         expect(() => testItem.saveIntoInstanceState('KEY1', 10)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', 20)).not.toThrow();
         expect(() => testItem.saveIntoInstanceState('KEY2', undefined)).not.toThrow();
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(3);
-        expect(changes[0].name).toBe('Field1');
-        expect(changes[0].items).not.toBeNull();
-        expect(changes[0].items!['KEY1']).toBe(10);
-        expect(changes[1].name).toBe('Field1');
-        expect(changes[1].items).not.toBeNull();
-        expect(changes[1].items!['KEY2']).toBe(20);  
-        expect(changes[2].name).toBe('Field1');
-        expect(changes[2].items).not.toBeNull();
-        expect(changes[2].items!['KEY2']).toBeUndefined();
-        expect(testItem.getFromInstanceState('KEY1')).toBe(10);        
-        expect(testItem.getFromInstanceState('KEY2')).toBeUndefined();
-    });        
+
+        let restoredState = restoreValueHostState(setup);
+        expect(restoredState.vh?.length).toBe(1);
+        expect(restoredState.vh?.[0].name).toBe('Field1');
+        expect(restoredState.vh?.[0].items).not.toBeNull();
+        expect(restoredState.vh?.[0].items!['KEY1']).toBe(10);
+        expect(restoredState.vh?.[0].items!['KEY2']).toBeUndefined();
+    });
 });
 
-describe('toIValueHostCallbacks function', () => {
-    test('Matches interface returns strongly typed object.', () => {
+describe('toIValueHostCallbacks function', () =>
+{
+    test('Matches interface returns strongly typed object.', () =>
+    {
         let testItem: IValueHostCallbacks = {
-            onValueChanged: null,
-            onValueHostInstanceStateChanged: null
+            onValueChanged: null
         };
         expect(toIValueHostCallbacks(testItem)).toBe(testItem);
     });
-    test('Non-matching interface returns null.', () => {
+    test('Non-matching interface returns null.', () =>
+    {
         let testItem: IValueHostCallbacks = {
 
         };
         expect(toIValueHostCallbacks(testItem)).toBeNull();
-    });    
-    test('null returns null.', () => {
+    });
+    test('null returns null.', () =>
+    {
         expect(toIValueHostCallbacks(null)).toBeNull();
-    });        
-    test('Non-object returns null.', () => {
+    });
+    test('Non-object returns null.', () =>
+    {
         expect(toIValueHostCallbacks(100)).toBeNull();
-    });        
+    });
 });
-describe('getDataTypeLabel', () => {
+describe('getDataTypeLabel', () =>
+{
     // Planned data type is "Integer". If it does not have datatype assigned, a datatypeIdentifierService will
     // resolve a number to "Number". 
     function testGetDataTypeLabel(hasDataType: boolean, hasValue: boolean, hasLocalization: boolean, expectedDataTypeLabel: string): void
@@ -653,13 +692,14 @@ describe('getDataTypeLabel', () => {
         let factory = new ValueHostFactory();
         factory.register(new PublicifiedValueHostBaseGenerator());
         services.valueHostFactory = factory;
-        
+
         let tls = new TextLocalizerService();
         services.textLocalizerService = tls; // ensures its inited as empty
-        if (hasLocalization) {
+        if (hasLocalization)
+        {
             tls.registerDataTypeLabel(LookupKey.Number, {
                 'en': 'Localized Number'
-            });            
+            });
             tls.registerDataTypeLabel(LookupKey.Integer, {
                 'en': 'Localized Integer'
             });
@@ -669,7 +709,7 @@ describe('getDataTypeLabel', () => {
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
             valueHostType: testValueHostType
-        }
+        };
         if (hasDataType)
             vhConfig.dataType = LookupKey.Integer;
         if (hasValue)
@@ -682,30 +722,38 @@ describe('getDataTypeLabel', () => {
         expect(vh.getDataTypeLabel()).toBe(expectedDataTypeLabel);
 
     }
-    test('Without localization, no datatype assigned nor value to identify returns empty string', () => {
+    test('Without localization, no datatype assigned nor value to identify returns empty string', () =>
+    {
         testGetDataTypeLabel(false, false, false, '');
     });
-    test('With localization setup, no datatype assigned nor value to identify returns empty string', () => {
+    test('With localization setup, no datatype assigned nor value to identify returns empty string', () =>
+    {
         testGetDataTypeLabel(false, false, true, '');
     });
-    test('Without localization, no datatype assigned but has number to identify returns "Number" from the lookup key', () => {
+    test('Without localization, no datatype assigned but has number to identify returns "Number" from the lookup key', () =>
+    {
         testGetDataTypeLabel(false, true, false, LookupKey.Number);
     });
-    test('With matching localization, no datatype assigned but has number to identify returns the localized name for number.', () => {
+    test('With matching localization, no datatype assigned but has number to identify returns the localized name for number.', () =>
+    {
         testGetDataTypeLabel(false, true, true, 'Localized Number');
     });
-    test('Without localization, datatype assigned returns "Integer" from the lookup key', () => {
+    test('Without localization, datatype assigned returns "Integer" from the lookup key', () =>
+    {
         testGetDataTypeLabel(true, false, false, LookupKey.Integer);
         testGetDataTypeLabel(true, true, false, LookupKey.Integer); // value does not matter
     });
-    test('With matching localization, datatype assigned returns the localized name for integer.', () => {
+    test('With matching localization, datatype assigned returns the localized name for integer.', () =>
+    {
         testGetDataTypeLabel(true, false, true, 'Localized Integer');
         testGetDataTypeLabel(true, true, true, 'Localized Integer'); // value does not matter
-    });    
+    });
 });
 
-describe('dispose', () => {
-    test('dispose kills many references including state and config', () => {
+describe('dispose', () =>
+{
+    test('dispose kills many references including state and config', () =>
+    {
         let setup = setupValueHost({
             name: 'Field1',
             dataType: LookupKey.Number
@@ -714,14 +762,15 @@ describe('dispose', () => {
         expect(setup.valueHost.exposeConfig).toBeUndefined();
         expect(setup.valueHost.exposeState).toBeUndefined();
         expect(() => setup.valueHost.getValue()).toThrow(TypeError);  // value is from config which is undefined
-        expect(()=> setup.valueHost.exposeServices).toThrow(TypeError);
+        expect(() => setup.valueHost.exposeServices).toThrow(TypeError);
 
-    });   
-    
-    test('dispose with ValueHostConfig having its own dispose kills what the config.dispose expects', () => {
+    });
+
+    test('dispose with ValueHostConfig having its own dispose kills what the config.dispose expects', () =>
+    {
         interface X extends ValueHostConfig, IDisposable
         {
-            x: {}
+            x: {};
         }
 
         let setup = setupValueHost({
@@ -731,27 +780,27 @@ describe('dispose', () => {
 
         let valConfig = setup.config as X;
         valConfig.x = {};
-        valConfig.dispose = () => { (valConfig.x as any) = undefined };
+        valConfig.dispose = () => { (valConfig.x as any) = undefined; };
         setup.valueHost.dispose();
 
         expect(valConfig.x).toBeUndefined();
 
-    });               
+    });
 
 });
-describe('isEnabled and related enabled', () => {
+describe('isEnabled and related enabled', () =>
+{
     function setupTestItem(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
-        enablerConfig?: ConditionConfig,
-        stateChangeCallback?: ValueHostInstanceStateChangedHandler
-    ): {
-        vh: PublicifiedValueHostBase,
-        logger: CapturingLogger
-    } {
+        enablerConfig?: ConditionConfig
+    ):
+            {
+                vh: PublicifiedValueHostBase,
+                logger: CapturingLogger;
+            }
+    {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
         let vhm = new MockValueHostsManager(services);
-        if (stateChangeCallback)
-            vhm.onValueHostInstanceStateChanged = stateChangeCallback;
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
             valueHostType: 'TestValidatableValueHost'
@@ -776,24 +825,23 @@ describe('isEnabled and related enabled', () => {
     }
     function setupTestItemWithBuilder(
         enablerConfig?: ConditionConfig,
-        stateEnabled?: boolean,
-        stateChangeCallback?: ValueHostInstanceStateChangedHandler
-    ): {
-        vh: PublicifiedValueHostBase,
-        logger: CapturingLogger,
-        vhm: ValueHostsManager<ValueHostsManagerInstanceState>
-    } {
+        stateEnabled?: boolean
+    ):
+            {
+                vh: PublicifiedValueHostBase,
+                logger: CapturingLogger,
+                vhm: ValueHostsManager<ValueHostsManagerInstanceState>;
+            }
+    {
         let services = new MockJivsServices(true, false);
         services.loggerService.minLevel = LoggingLevel.Debug;
 
-        let vmConfig = <ValueHostsManagerConfig>{ services: services, valueHostConfigs: [] };
-        vmConfig.valueHostConfigs.push(<StaticValueHostConfig>{
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<StaticValueHostConfig> {
             valueHostType: ValueHostType.Static,
             name: 'Field1',
             dataType: LookupKey.String
         });
-        if (stateChangeCallback)
-            vmConfig.onValueHostInstanceStateChanged = stateChangeCallback;
         if (enablerConfig !== undefined)
             vmConfig.valueHostConfigs[0].enablerConfig = enablerConfig;
         let state: IPublicifiedValueHostInstanceState = {
@@ -803,8 +851,8 @@ describe('isEnabled and related enabled', () => {
         };
         if (stateEnabled !== undefined)
             state.enabled = stateEnabled;
-        vmConfig.savedValueHostInstanceStates = [];
-        vmConfig.savedValueHostInstanceStates.push(state);
+
+        vmConfig.capturedState = createCapturedStateAsString([state]);
 
         // let builder = new ValueHostsManagerConfigBuilder(services);
         // if (stateChangeCallback)
@@ -832,83 +880,125 @@ describe('isEnabled and related enabled', () => {
             vh: vhm.getValueHost('Field1') as PublicifiedValueHostBase,
             logger: services.loggerService as CapturingLogger
         };
-    }    
+    }
 
-    describe('constructor', () => {
+    describe('constructor', () =>
+    {
         function testConstructor(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
-            expectedIsEnabled: boolean, expectedStateEnabled: boolean | undefined): void {
+            expectedIsEnabled: boolean, expectedStateEnabled: boolean | undefined): void
+        {
             let setup = setupTestItem(initialEnabled, stateEnabled);
 
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
             expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
         }
-        test('constructor with config.initialEnabled=true, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () => {
+        test('constructor with config.initialEnabled=true, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () =>
+        {
             testConstructor(true, undefined, true, undefined);
         });
-        test('constructor with config.initialEnabled=false, state.enabled=undefined, results in isEnabled=false, state.enabled=undefined', () => {
+        test('constructor with config.initialEnabled=false, state.enabled=undefined, results in isEnabled=false, state.enabled=undefined', () =>
+        {
             testConstructor(false, undefined, false, undefined);
         });
-        test('constructor with config.initialEnabled=true, state.enabled=false, results in isEnabled=false, state.enabled=false', () => {
+        test('constructor with config.initialEnabled=true, state.enabled=false, results in isEnabled=false, state.enabled=false', () =>
+        {
             testConstructor(true, false, false, false);
         });
-        test('constructor with config.initialEnabled=true, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+        test('constructor with config.initialEnabled=true, state.enabled=true, results in isEnabled=true, state.enabled=true', () =>
+        {
             testConstructor(true, true, true, true);
         });
-        test('constructor with config.initialEnabled=false, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+        test('constructor with config.initialEnabled=false, state.enabled=true, results in isEnabled=true, state.enabled=true', () =>
+        {
             testConstructor(false, true, true, true);
         });
-        test('constructor with config.initialEnabled=undefined, state.enabled=true, results in isEnabled=true, state.enabled=true', () => {
+        test('constructor with config.initialEnabled=undefined, state.enabled=true, results in isEnabled=true, state.enabled=true', () =>
+        {
             testConstructor(undefined, true, true, true);
         });
-        test('constructor with config.initialEnabled=undefined, state.enabled=false, results in isEnabled=false, state.enabled=false', () => {
+        test('constructor with config.initialEnabled=undefined, state.enabled=false, results in isEnabled=false, state.enabled=false', () =>
+        {
             testConstructor(undefined, false, false, false);
         });
-        test('constructor with config.initialEnabled=undefined, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () => {
+        test('constructor with config.initialEnabled=undefined, state.enabled=undefined, results in isEnabled=true, state.enabled=undefined', () =>
+        {
             testConstructor(undefined, undefined, true, undefined);
         });
+
+        // option.ensureEnabled tests
+        test('setValue with config.initialEnabled=false, option.ensureEnabled=true, results in isEnabled=true,  option.reset gets set to true', () =>
+        {
+            let setup = setupTestItem(false, undefined);
+            setup.logger.minLevel = LoggingLevel.Debug;
+            let options: SetValueOptions = { ensureEnabled: true }; 
+            setup.vh.setValue('someValue', options);
+            expect(setup.vh.isEnabled()).toBe(true);
+            expect(setup.vh.exposeState.enabled).toBe(true);
+            expect(options.reset).toBe(true);
+            expect(setup.vh.getValue()).toBe('someValue');
+            setup.logger.toConsole();
+            expect(setup.logger.findMessage('setEnabled\\(true\\)', LoggingLevel.Debug, null)).toBeTruthy();
+        });
+        // same but ensureEnabled = false having no change to enabled
+        test('setValue with config.initialEnabled=false, option.ensureEnabled=false, results in isEnabled=false, option.reset remains undefined', () =>
+        {
+            let setup = setupTestItem(false, undefined);
+            setup.logger.minLevel = LoggingLevel.Debug;
+            let options: SetValueOptions = { ensureEnabled: false }; 
+            setup.vh.setValue('someValue', options);
+            expect(setup.vh.isEnabled()).toBe(false);
+            expect(options.reset).toBeUndefined();
+            expect(setup.vh.getValue()).not.toBe('someValue');
+            setup.logger.toConsole();
+            expect(setup.logger.findMessage('Value not changed')).toBeTruthy();
+        });
     });
-    describe('setEnabled and isEnabled', () => {
+    describe('setEnabled and isEnabled', () =>
+    {
         function testSetEnabled(initialEnabled: boolean | undefined, stateEnabled: boolean | undefined,
             newEnabled: boolean, expectedIsEnabled: boolean, expectedStateEnabled: boolean | undefined,
-            expectStateChange: boolean): void {
-            let stateChanged = false;
-            let setup = setupTestItem(initialEnabled, stateEnabled, undefined,
-                (vh, state) => {
-                    stateChanged = true;    
-                }
-            );
+            expectStateChange: boolean): void
+        {
+            let setup = setupTestItem(initialEnabled, stateEnabled);
 
             setup.vh.setEnabled(newEnabled);
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
             expect(setup.vh.exposeState.enabled).toBe(expectedStateEnabled);
-            expect(stateChanged).toBe(expectStateChange);
             expect(setup.logger.findMessage('setEnabled', LoggingLevel.Debug, null)).toBeTruthy();
         }
-        test('setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+        test('setEnabled(true) results in isEnabled=true, state.enabled=true', () =>
+        {
             testSetEnabled(undefined, undefined, true, true, true, true);
         });
-        test('setEnabled(false) results in isEnabled=false, state.enabled=false,', () => {
+        test('setEnabled(false) results in isEnabled=false, state.enabled=false,', () =>
+        {
             testSetEnabled(undefined, undefined, false, false, false, true);
         });
-        test('With initialEnabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+        test('With initialEnabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () =>
+        {
             testSetEnabled(false, undefined, true, true, true, true);
         });
-        test('With initialEnabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false', () => {
+        test('With initialEnabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false', () =>
+        {
             testSetEnabled(false, undefined, false, false, false, true);
         });
-        test('With initial state.enabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () => {
+        test('With initial state.enabled=false, setEnabled(true) results in isEnabled=true, state.enabled=true', () =>
+        {
             testSetEnabled(undefined, false, true, true, true, true);
         });
-        test('With initial state.enabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false and no state change', () => {
+        test('With initial state.enabled=false, setEnabled(false) results in isEnabled=false, state.enabled=false and no state change', () =>
+        {
             testSetEnabled(undefined, false, false, false, false, false);
         });
     });
 
-    describe('config.enablerConfig', () => {
+    describe('config.enablerConfig', () =>
+    {
         function testIsEnabled(enablerConfig: ConditionConfig,
             stateEnabled: boolean | undefined,
             setEnabledValueBefore: boolean | undefined,
-            expectedIsEnabled: boolean): void {
+            expectedIsEnabled: boolean): void
+        {
             let setup = setupTestItem(undefined, stateEnabled, enablerConfig);
             if (setEnabledValueBefore !== undefined)
                 setup.vh.setEnabled(setEnabledValueBefore);
@@ -916,55 +1006,68 @@ describe('isEnabled and related enabled', () => {
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
         }
 
-        test('enablerConfig set to return Match, isEnabled=true', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, undefined, true);
+        test('enablerConfig set to return Match, isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, undefined, true);
         });
-        test('enablerConfig set to return NoMatch, isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, undefined, false);
-        });        
-        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, undefined, true);
-        });     
-        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, false, false);
-        });        
-        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, false, false);
+        test('enablerConfig set to return NoMatch, isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, undefined, false);
         });
-        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, false, false);
-        });        
-        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, true, true);
-        });        
-        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, true, false);
+        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, undefined, true);
         });
-        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, true, true);
-        });        
-        test('enablerConfig set to throw an error logs and throws', () => {
+        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, true, true);
+        });
+        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, true, false);
+        });
+        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, true, true);
+        });
+        test('enablerConfig set to throw an error logs and throws', () =>
+        {
             let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
             expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
-        });             
-        test('invalid enablerConfig throws and logs', () => {
+        });
+        test('invalid enablerConfig throws and logs', () =>
+        {
             let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
             expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
-        });         
+        });
     });
-    describe('builder API enabler to steup', () => {
+    describe('builder API enabler to steup', () =>
+    {
         function testIsEnabled(enablerConfig: ConditionConfig,
             stateEnabled: boolean | undefined,
             setEnabledValueBefore: boolean | undefined,
-            expectedIsEnabled: boolean): void {
+            expectedIsEnabled: boolean): void
+        {
             let setup = setupTestItemWithBuilder(enablerConfig, stateEnabled);
             if (setEnabledValueBefore !== undefined)
                 setup.vh.setEnabled(setEnabledValueBefore);
@@ -972,68 +1075,84 @@ describe('isEnabled and related enabled', () => {
             expect(setup.vh.isEnabled()).toBe(expectedIsEnabled);
         }
 
-        test('enablerConfig set to return Match, isEnabled=true', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, undefined, true);
+        test('enablerConfig set to return Match, isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, undefined, true);
         });
-        test('enablerConfig set to return NoMatch, isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, undefined, false);
-        });        
-        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, undefined, true);
-        });     
-        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, false, false);
-        });        
-        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, false, false);
+        test('enablerConfig set to return NoMatch, isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, undefined, false);
         });
-        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, false, false);
-        });        
-        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () => {
-            testIsEnabled({ conditionType: AlwaysMatchesConditionType}, undefined, true, true);
-        });        
-        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () => {
-            testIsEnabled({ conditionType: NeverMatchesConditionType}, undefined, true, false);
+        test('enablerConfig set to return Undetermined, isEnabled=true because it is a fallback', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, undefined, true);
         });
-        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () => {
-            testIsEnabled({ conditionType: IsUndeterminedConditionType}, undefined, true, true);
-        });        
-        test('enablerConfig set to throw an error logs and throws', () => {
+        test('enablerConfig set to return Match but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return NoMatch but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return Undetermined but setEnabled(false), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, false, false);
+        });
+        test('enablerConfig set to return Match and setEnabled(true), isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: AlwaysMatchesConditionType }, undefined, true, true);
+        });
+        test('enablerConfig set to return NoMatch and setEnabled(true), isEnabled=false', () =>
+        {
+            testIsEnabled({ conditionType: NeverMatchesConditionType }, undefined, true, false);
+        });
+        test('enablerConfig set to return Undetermined and setEnabled(true), isEnabled=true', () =>
+        {
+            testIsEnabled({ conditionType: IsUndeterminedConditionType }, undefined, true, true);
+        });
+        test('enablerConfig set to throw an error logs and throws', () =>
+        {
             let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
             let logger = setup.logger as CapturingLogger;
             expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
-        });             
-        test('invalid enablerConfig throws and logs', () => {
+        });
+        test('invalid enablerConfig throws and logs', () =>
+        {
             let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
             let logger = setup.logger as CapturingLogger;
             expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
-        });         
+        });
     });
 
 });
-describe('logging functions', () => {
-    function setupForLogging(): { valueHost: PublicifiedValueHostBase, services: MockJivsServices, logger: TestLogCallsLoggingService } {
+describe('logging functions', () =>
+{
+    function setupForLogging(): { valueHost: PublicifiedValueHostBase, services: MockJivsServices, logger: TestLogCallsLoggingService; }
+    {
         let originalSetup = setupValueHost();
         let services = originalSetup.services;
         let logger = new TestLogCallsLoggingService(LoggingLevel.Debug);
         services.loggerService = logger;
         return { valueHost: originalSetup.valueHost, services: services, logger: logger };
     }
-    describe('logError', () => {
-        test('No services, does nothing even with an error thrown', () => {
+    describe('logError', () =>
+    {
+        test('No services, does nothing even with an error thrown', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
             const error = new Error('Test error');
             expect(() => testItem.publicify_logError(error)).not.toThrow();
         });
-        test('With services, logs the error correctly', () => {
+        test('With services, logs the error correctly', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
@@ -1047,13 +1166,15 @@ describe('logging functions', () => {
                 identity: 'Field1'
             });
         });
-        test('Gather function is called and additional data is logged', () => {
+        test('Gather function is called and additional data is logged', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
             const error = new Error('Test error with additional data');
             let gatherCalled = false;
-            const gatherFn: logGatheringErrorHandler = (options) => {
+            const gatherFn: logGatheringErrorHandler = (options) =>
+            {
                 gatherCalled = true;
                 return { data: { additionalData: 'Extra info' } };
             };
@@ -1068,7 +1189,8 @@ describe('logging functions', () => {
                 identity: 'Field1'
             });
         });
-        test('Error logged without gather function still captures basic error information', () => {
+        test('Error logged without gather function still captures basic error information', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
@@ -1084,13 +1206,16 @@ describe('logging functions', () => {
         });
     });
 
-    describe('log()', () => {
+    describe('log()', () =>
+    {
 
-        test('log function correctly logs a message with services set', () => {
+        test('log function correctly logs a message with services set', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
-            testItem.publicify_log(LoggingLevel.Info, () => {
+            testItem.publicify_log(LoggingLevel.Info, () =>
+            {
                 return { message: 'Test message with no services' };
             });
             expect(setup.logger.lastLogDetails).toEqual({
@@ -1102,12 +1227,14 @@ describe('logging functions', () => {
         });
 
 
-        test('log function gathers and logs detailed information when provided a gather function', () => {
+        test('log function gathers and logs detailed information when provided a gather function', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 
             let gatherCalled = false;
-            const gatherFn: logGatheringHandler = (options) => {
+            const gatherFn: logGatheringHandler = (options) =>
+            {
                 gatherCalled = true;
                 return { message: 'TestMessage', category: LoggingCategory.Result, data: { key: 'value' } };
             };
@@ -1123,9 +1250,11 @@ describe('logging functions', () => {
             });
         });
     });
-    describe('logQuick()', () => {
+    describe('logQuick()', () =>
+    {
 
-        test('logQuick function logs simple messages without needing a gather function', () => {
+        test('logQuick function logs simple messages without needing a gather function', () =>
+        {
             let setup = setupForLogging();
             let testItem = setup.valueHost;
 

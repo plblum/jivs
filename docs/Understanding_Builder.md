@@ -218,7 +218,7 @@ For example:
 let builder = new ValueHostsManagerConfigBuilder(services);
 builder.static('productVisible', LookupKey.Boolean);
 builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$');
-builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqualValue(0.0);
+builder.field('price', LookupKey.Currency, { label: 'Price' }).greaterThanOrEqual(0.0);
 builder.calc('maxPrice', LookupKey.Currency, calcMaxPrice); // calcMaxPrice is a function declared elsewhere
 let vhm = new ValueHostsManager(builder.complete());
 ```
@@ -270,7 +270,7 @@ These functions take callback parameters that receive one of these child conditi
 
   ```ts
   builder.field('valueHostName').when(
-      (whenToEnableBuilder)=> whenToEnableBuilder.fieldValue('valueHostName').equalToValue(true),
+      (whenToEnableBuilder)=> whenToEnableBuilder.fieldValue('valueHostName').equalTo(true),
       (thenBuilder)=> thenBuilder.parentValue().requireText()
   );
   ```
@@ -443,7 +443,7 @@ It can also be used in condition-only hooks:
 ```ts
 builder.field('EmailAddress', emailAddressLookupKey)
     .when(
-        (whenBuilder) => whenBuilder.fieldValue('SubscribeToNewsletter').equalToValue(true),
+        (whenBuilder) => whenBuilder.fieldValue('SubscribeToNewsletter').equalTo(true),
         (thenBuilder) => thenBuilder.parentValue().emailAddress()
     );
 ```

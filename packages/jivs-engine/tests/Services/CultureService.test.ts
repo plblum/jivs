@@ -1,8 +1,8 @@
 
 import { CultureService, cultureLanguageCode } from '../../src/Services/CultureService';
 
-import { registerCultureIdFallbacksForEn, registerCultureIdFallbacksForFR } from "../TestSupport/utilities";
-import { CultureIdFallback } from "../../src/Interfaces/CultureService";
+import { registerCultureIdWithFallbacksForEn, registerCultureIdWithFallbacksForFR } from "../TestSupport/utilities";
+import { CultureIdWithFallback } from "../../src/Interfaces/CultureService";
 
 
 
@@ -18,7 +18,7 @@ describe('constructor and properties', () => {
     test('Change defaultCultureId in Services impacts cultureIdFallback', () => {
         let testItem = new CultureService('fr');
         expect(testItem.defaultCultureId).toBe('fr');
-        let result: CultureIdFallback | null = null;
+        let result: CultureIdWithFallback | null = null;
         expect(() => result = testItem.find('fr')).not.toThrow();
         expect(result).toBeDefined();
         expect(result).toEqual({
@@ -33,7 +33,7 @@ describe('register and find, ', () => {
     });    
     test('Register 1 returns the same instance in find and update defaultCultureId', () => {
         let testItem = new CultureService('fr');
-        let cif: CultureIdFallback = {
+        let cif: CultureIdWithFallback = {
             cultureId: 'fr'
         }
         expect(() => testItem.register(cif)).not.toThrow();
@@ -42,7 +42,7 @@ describe('register and find, ', () => {
     });
     test('Explicitly set defaultCultureId to en and register 1 returns the same instance in find and retains defaultCultureId=en', () => {
         let testItem = new CultureService('en');
-        let cif: CultureIdFallback = {
+        let cif: CultureIdWithFallback = {
             cultureId: 'fr'
         }
         expect(() => testItem.register(cif)).not.toThrow();
@@ -52,19 +52,19 @@ describe('register and find, ', () => {
     });    
     test('When defaultCultureId is explicitly set to en, while there is a registration for fr and none for en, the defaultCultureId ensures find returns en', () => {
         let testItem = new CultureService('en');
-        expect(() => testItem.register(<CultureIdFallback>{ cultureId: 'fr'})).not.toThrow();
-        expect(testItem.find('en')).toEqual(<CultureIdFallback>{ cultureId: 'en' });                        
+        expect(() => testItem.register(<CultureIdWithFallback>{ cultureId: 'fr'})).not.toThrow();
+        expect(testItem.find('en')).toEqual(<CultureIdWithFallback>{ cultureId: 'en' });                        
     });        
     test('Register several and all are returned by find', () => {
         let testItem = new CultureService('en');
-        let fr: CultureIdFallback = {
+        let fr: CultureIdWithFallback = {
             cultureId: 'fr'
         };
-        let frFR: CultureIdFallback = {
+        let frFR: CultureIdWithFallback = {
             cultureId: 'fr-FR',
             fallbackCultureId: 'fr'
         };
-        let frDE: CultureIdFallback = {
+        let frDE: CultureIdWithFallback = {
             cultureId: 'fr-DE',
             fallbackCultureId: 'fr-FR'
         };        
@@ -77,13 +77,13 @@ describe('register and find, ', () => {
     });
     test('Register same cultureID twice replaces', () => {
         let testItem = new CultureService('en');
-        let cif: CultureIdFallback = {
+        let cif: CultureIdWithFallback = {
             cultureId: 'en-US',
             fallbackCultureId: 'en'
         };
         testItem.register(cif);
 
-        let cif2: CultureIdFallback = {
+        let cif2: CultureIdWithFallback = {
             cultureId: 'en-US',
             fallbackCultureId: 'en-CA'
         };
@@ -101,7 +101,7 @@ describe('CultureServices.getClosestCultureId', () => {
     describe('getClosestCultureId with en as final fallback', () => {
         test('Various', () => {
             let testItem = new CultureService('en');
-            registerCultureIdFallbacksForEn(testItem);
+            registerCultureIdWithFallbacksForEn(testItem);
             expect(testItem.getClosestCultureId('en')).toBe('en');
             expect(testItem.getClosestCultureId('fr')).toBe('fr');
             expect(testItem.getClosestCultureId('fr-FR')).toBe('fr-FR');
@@ -115,7 +115,7 @@ describe('CultureServices.getClosestCultureId', () => {
     describe('getClosestCultureId with fr as final fallback', () => {
         test('Various', () => {
             let testItem = new CultureService('fr');
-            registerCultureIdFallbacksForFR(testItem);
+            registerCultureIdWithFallbacksForFR(testItem);
             expect(testItem.getClosestCultureId('fr')).toBe('fr');
             expect(testItem.getClosestCultureId('fr-FR')).toBe('fr-FR');
             expect(testItem.getClosestCultureId('en-US')).toBe('en-US');
@@ -168,13 +168,13 @@ describe('availableCultures', () => {
     });
 
     test('Register new culture returns default and new culture', () => {
-        let culture: CultureIdFallback = { cultureId: 'en-US' };
+        let culture: CultureIdWithFallback = { cultureId: 'en-US' };
         testItem.register(culture);
         expect(testItem.availableCultures()).toEqual(['en', 'en-US']);
     });
 
     test('Returns multiple registered cultures', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en-US', fallbackCultureId: 'en' },
             { cultureId: 'fr-FR' },
             { cultureId: 'es-ES' }
@@ -184,7 +184,7 @@ describe('availableCultures', () => {
     });
 
     test('Does not return duplicates if the same culture is registered multiple times', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en-US', fallbackCultureId: 'en' },
             { cultureId: 'en-US' }, // duplicate - however, this will REPLACE the previous registration, so duplicates are never a problem
             { cultureId: 'en' }
@@ -208,13 +208,13 @@ describe('availableLanguages', () => {
     });
 
     test('Returns a single language code when one culture is registered', () => {
-        let culture: CultureIdFallback = { cultureId: 'en-US' };
+        let culture: CultureIdWithFallback = { cultureId: 'en-US' };
         testItem.register(culture);
         expect(testItem.availableLanguages()).toEqual(['en']);
     });
 
     test('Returns multiple language codes for registered cultures', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en-US', fallbackCultureId: 'en' },
             { cultureId: 'fr-FR' },
             { cultureId: 'es-ES' }
@@ -224,7 +224,7 @@ describe('availableLanguages', () => {
     });
 
     test('Does not return duplicate language codes if the same language is registered multiple times', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en-US', fallbackCultureId: 'en' },
             { cultureId: 'en-GB' },
             { cultureId: 'fr-FR' }
@@ -234,7 +234,7 @@ describe('availableLanguages', () => {
     });
 
     test('Correctly extracts language codes from culture IDs with region codes', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en-US' },
             { cultureId: 'fr-CA' },
             { cultureId: 'es-MX' }
@@ -244,7 +244,7 @@ describe('availableLanguages', () => {
     });
 
     test('Handles cultures without region codes', () => {
-        let cultures: CultureIdFallback[] = [
+        let cultures: CultureIdWithFallback[] = [
             { cultureId: 'en' },
             { cultureId: 'fr' },
             { cultureId: 'es' }

@@ -8,7 +8,8 @@ import { NumberParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParser
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
-import { EqualToValueCondition, EqualToValueConditionConfig, RequireTextCondition, RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { RequireTextCondition, RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 
 import { CalcFnPropertyAnalyzer, DataTypePropertyAnalyzer, LabelPropertiesAnalyzer, ParserLookupKeyPropertyAnalyzer, ValueHostNamePropertyAnalyzer, ValueHostTypePropertyAnalyzer } from './../../src/Analyzers/ValueHostConfigPropertyAnalyzerClasses';
 import { ValueHostConfigAnalyzer } from './../../src/Analyzers/ValueHostConfigAnalyzer';
@@ -325,22 +326,22 @@ describe('ValueHostConfigAnalyzer', () => {
             expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
             expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.RequireText);
         });
-        // using EqualToValueConditionConfig, it will need to setup a comparer.
+        // using EqualToConditionConfig, it will need to setup a comparer.
         // The LookupKeyCAResult for service comparer should be setup without error
         // when dataType=String.
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerConditionResult setup and LookupKeyCAResult for String identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToConditionConfig should have result.enablerConditionResult setup and LookupKeyCAResult for String identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: LookupKey.String,
-                enablerConfig: <EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                enablerConfig: <EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     value: 'Test',
                     valueHostName: 'name'   // normally this would be a different valuehostname...
                 }
             };
             let services = createServices();
-            services.conditionFactory.register<EqualToValueConditionConfig>(
-                ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+            services.conditionFactory.register<EqualToConditionConfig>(
+                ConditionType.EqualTo, (config) => new EqualToCondition(config));
             let cpa: Array<IConditionConfigPropertyAnalyzer> = [
 
             ];
@@ -354,25 +355,25 @@ describe('ValueHostConfigAnalyzer', () => {
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerConditionResult).toBeDefined();
             expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
-            expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualToValue);
+            expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualTo);
             checkLookupKeyResultsForService(helper.results.lookupKeyResults, LookupKey.String, ServiceName.comparer);
         });
         // similar but now the comparer fails to be setup and adds a warning message
         // to the results.enablerConditionResult object.
         // It fails because the LookupKey is "Custom" which is unknown
-        test('Config.enablerConfig is defined with EqualToValueConditionConfig should have result.enablerConditionResult setup and LookupKeyCAResult for Custom identifies the comparer service', () => {
+        test('Config.enablerConfig is defined with EqualToConditionConfig should have result.enablerConditionResult setup and LookupKeyCAResult for Custom identifies the comparer service', () => {
             const testConfig: ValueHostConfig = {
                 name: 'Test', 
                 dataType: 'Custom',
-                enablerConfig: <EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                enablerConfig: <EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     value: 'Test',
                     valueHostName: 'name'   // normally this would be a different valuehostname...
                 }
             };
             let services = createServices();
-            services.conditionFactory.register<EqualToValueConditionConfig>(
-                ConditionType.EqualToValue, (config) => new EqualToValueCondition(config));
+            services.conditionFactory.register<EqualToConditionConfig>(
+                ConditionType.EqualTo, (config) => new EqualToCondition(config));
             let cpa: Array<IConditionConfigPropertyAnalyzer> = [
 
             ];
@@ -386,7 +387,7 @@ describe('ValueHostConfigAnalyzer', () => {
             let results = testItem.analyze(testConfig, null, []);
             expect(results.enablerConditionResult).toBeDefined();
             expect(results.enablerConditionResult!.feature).toBe(CAFeature.condition);
-            expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualToValue);
+            expect(results.enablerConditionResult!.conditionType).toBe(ConditionType.EqualTo);
             checkLookupKeyResultsForService(helper.results.lookupKeyResults, 'Custom', ServiceName.comparer);
             expect(results.enablerConditionResult!.severity).toBe(CAIssueSeverity.warning);
             expect(results.enablerConditionResult!.message).toContain('No sample value found');

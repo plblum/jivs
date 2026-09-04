@@ -1,0 +1,748 @@
+# Conditions supplied with Jivs
+Each Condition is found as a validator name on the Builder. Code shown here is based on the Builder API.
+
+_Index_
+- [RequireTextCondition](#requiretext)
+- [NotNullCondition](#notnull)
+- [RegExpCondition](#regexp)
+- [RangeCondition](#range)
+- [EqualToCondition](#comparing-two-values)
+- [NotEqualToCondition](#comparing-two-values)
+- [LessThanCondition](#comparing-two-values)
+- [LessThanOrEqualToCondition](#comparing-two-values)
+- [GreaterThanCondition](#comparing-two-values)
+- [GreaterThanOrEqualToCondition](#comparing-two-values)
+- [StringLengthCondition](#stringlength)
+- [DataTypeCheckCondition](#datatypecheck)
+- [PositiveCondition](#positive)
+- [IntegerCondition](#integer)
+- [MaxDecimalsCondition](#maxdecimals)
+- [Combining conditionsCondition](#combining-conditions-with-all-any-and-countmatches)
+    + [AllMatchCondition](#all-any-and-countmatches-conditions)
+    + [AnyMatchCondition](#all-any-and-countmatches-conditions)
+    + [CountMatchesCondition](#all-any-and-countmatches-conditions)
+- [WhenCondition](#when--using-one-condition-to-enable-another)
+- [NotCondition](#not--negate-the-result)
+
+## RequireText
+Use when the value is a string. Reports an error when the string is empty or null.
+This validator will also run when validating with `validateOptions.duringEdit = true`.
+```ts
+requireText(errorMessage?, summaryMessage?);
+requireText({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+        // condition properties:
+        trim?: boolean; 
+        nullValueResult?: ConditionEvaluateResult; 
+    });
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').requireText();
+builder.field('fieldname').requireText('error message', 'summary message')
+builder.field('fieldname').requireText({ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: [`RequireTextCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextCondition.html)
+
+Condition config: [`RequireTextConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextConditionConfig.html)
+```ts
+interface RequireTextConditionConfig = {
+    conditionType: ConditionType.RequireText;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    trim?: boolean; // trims whitespace before validating. Defaults to true
+    nullValueResult?: ConditionEvaluateResult;  // Determines how null is evaluated. Defaults to ConditionEvaluateResult.NoMatch
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
+}
+```
+## NotNull
+Evaluates the native value to ensure it is not null. This is another type of "required" condition.
+The [RequireText](#requiretext) condition also handles null, but targets string native values which also may have
+an empty string to report an error.
+```ts
+notNull(errorMessage?, summaryMessage?);
+notNull({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').notNull();
+builder.field('fieldname').notNull('error message', 'summary message')
+builder.field('fieldname').notNull({ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: [`NotNullCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullCondition.html)
+
+Condition config: [`NotNullConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullConditionConfig.html)
+```ts
+interface NotNullConditionConfig = {
+    conditionType: ConditionType.NotNull;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+## RegExp
+Evaluates the native value, which must be a string, against a regular expression.
+This validator will also run when validating with `validateOptions.duringEdit = true`.
+```ts
+regExp(expression as string, ignoreCase as boolean?, errorMessage?, summaryMessage?);
+regExp(expression as RegExp object, errorMessage?, summaryMessage?);
+regExp(expression as string, ignoreCase as boolean?, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        trim?: boolean; 
+        multiline?: boolean; 
+        supportsDuringEdit?: boolean;
+    });
+regExp(expression as RegExp, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        trim?: boolean; 
+        multiline?: boolean; 
+        supportsDuringEdit?: boolean;
+    }
+);
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').regExp('^\\d*$');
+builder.field('fieldname').regExp('hello', true);   // ignores case
+builder.field('fieldname').regExp('^\\d*$', null, 'error message', 'summary message')
+builder.field('fieldname').regExp('^\\d*$', null, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+builder.field('fieldname').regExp(/^\d*$/);
+builder.field('fieldname').regExp(/hello/i);   // ignores case
+builder.field('fieldname').regExp(/^\d*$/, 'error message', 'summary message')
+builder.field('fieldname').regExp(/^\d*$/, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: [`RegExpCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpCondition.html)
+
+Condition config: [`RegExpConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpConditionConfig.html)
+```ts
+interface RegExpConditionConfig = {
+    conditionType: ConditionType.RegExp;
+    category: ConditionCategory.Contents;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    trim?: boolean; // Removes leading and trailing whitespace before evaluating the string. Defaults to true
+    multiline?: boolean;  // Determines how null is evaluated. Defaults to ConditionEvaluateResult.NoMatch
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.DuringEdit is true.
+}
+```
+## Range
+Compare the native datatype value against two other values to ensure it is with the range established. The minimum and maximum are included in the range.
+```ts
+range(minimum, maximum, errorMessage?, summaryMessage?);
+range(minimum, maximum, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label} {Value} {Minimum} {Maximum}`
+
+**Examples**
+```ts
+builder.field('fieldname').range(1, 5);
+builder.field('fieldname').range(1, 5, 'error message', 'summary message')
+builder.field('fieldname').range(1, 5, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: [`RangeCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeCondition.html)
+
+Condition config: [`RangeConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeConditionConfig.html)
+```ts
+interface RangeConditionConfig = {
+    conditionType: ConditionType.Comparison;
+    category: ConditionCategory.Require;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    minimum: any,   // greater than or equal to. When undefined/null, no minimum.
+    maximum: any    // less than or equal to. When undefined/null, no maximum.
+}
+```
+## Comparing two values
+Compare two values (but not to another `ValueHost`). There are many comparison conditions:
+- `equalTo(value)` or `eq(value)`
+- `notEqualTo(value)` or `neq(value)`
+- `lessThan(value)` or `lt(value)`
+- `lessThanOrEqual(value)` or `lte(value)`
+- `greaterThan(value)` or `gt(value)`
+- `greaterThanOrEqual(value)` or `gte(value)`
+
+When the value comes from a `ValueHost`:
+- `equalTo(valueHost('value_host_name'))` or `eq(valueHost('value_host_name'))`
+- `notEqualTo(valueHost('value_host_name'))` or `neq(valueHost('value_host_name'))`
+- `lessThan(valueHost('value_host_name'))` or `lt(valueHost('value_host_name'))`
+- `lessThanOrEqual(valueHost('value_host_name'))` or `lte(valueHost('value_host_name'))`
+- `greaterThan(valueHost('value_host_name'))` or `gt(valueHost('value_host_name'))`
+- `greaterThanOrEqual(valueHost('value_host_name'))` or `gte(valueHost('value_host_name'))`
+
+```ts
+equalTo(value, errorMessage?, summaryMessage?);
+equalTo(value, 
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+      // condition properties:
+        secondConversionLookupKey?: string | null; 
+    });
+```
+Error message tokens: `{Label} {Value} {CompareTo} {SecondLabel}`
+
+**Examples**
+```ts
+builder.field('fieldname').equalTo(1);
+builder.field('fieldname').equalTo(1, 'error message', 'summary message')
+builder.field('fieldname').equalTo(1, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+```ts
+builder.field('fieldname').equalTo(valueHost('Fieldname2'));
+builder.field('fieldname').equalTo(valueHost('Fieldname2'), 'error message', 'summary message')
+builder.field('fieldname').equalTo(valueHost('Fieldname2'), 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+
+Condition classes: [`EqualToCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.EqualToCondition.html),
+[`NotEqualToCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotEqualToCondition.html),
+[`LessThanCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.LessThanCondition.html),
+[`LessThanOrEqualCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.LessThanOrEqualCondition.html),
+[`GreaterThanCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanCondition.html),
+[`GreaterThanOrEqualCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanOrEqualCondition.html)
+
+Condition config: [`CompareToValueConditionBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CompareToValueConditionBaseConfig.html)
+```ts
+interface CompareToValueConditionBaseConfig = {
+    conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
+    category: ConditionCategory.Comparison;
+    valueHostName: ValueHostName | null;  // left operand. Use null to inherit the ValueHost.name
+    secondValue?: any;  // right operand
+    secondValueHostName?: string;  // right operand value comes from this valueHost 
+    secondConversionLookupKey?: string | null;   // Data Type Lookup Key that converts right operand value into another type prior to evaluation
+}
+```
+## StringLength
+Evaluates the length of a string in characters (after trimming if the `trim` property is true).
+
+While its normal to apply a maximum, you can also set a minimum in the validator parameters.
+
+This validator will also run when validating with `validateOptions.duringEdit = true`.
+```ts
+stringLength(maximum, errorMessage?, summaryMessage?);
+stringLength(maximum,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    // condition properties
+        minimum?: number | null;
+        trim?: boolean;
+    });
+len(maximum, errorMessage?, summaryMessage?)
+len(maximum, { validator parameters including minimum })
+```
+Error message tokens: `{Label} {Value} {Maximum} {Minimum} {Length}`
+
+**Examples**
+```ts
+builder.field('fieldname').stringLength(100);
+builder.field('fieldname').len(100);
+builder.field('fieldname').stringLength(100, 'error message', 'summary message')
+builder.field('fieldname').stringLength(100, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message',
+    minimum: 2
+});	
+```
+Condition class: [`StringLengthCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthCondition.html)
+
+Condition config: [`StringLengthConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthConditionConfig.html)
+```ts
+interface StringLengthConditionConfig = {
+    conditionType: ConditionType.StringLength;
+    category: ConditionCategory.Comparison;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    minimum?: number | null;   // greater than or equal to. When undefined/null, no minimum.
+    maximum?: number | null;   // less than or equal to. When undefined/null, no maximum.
+    trim?: boolean; // trims whitespace before validating. Defaults to true
+    supportsDuringEdit?: boolean; // When true or undefined, this evaluates when ValidateOption.duringEdit is true.
+}
+```
+## Positive
+Evaluates a number to confirm it is 0 or higher.
+```ts
+positive(errorMessage?, summaryMessage?);
+positive({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+pos(errorMessage?, summaryMessage?)
+pos({ validator parameters })
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').positive();
+builder.field('fieldname').pos();
+builder.field('fieldname').positive('error message', 'summary message')
+builder.field('fieldname').positive(
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message'
+});	
+```
+Condition class: [`PositiveCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveCondition.html)
+
+Condition config: [`PositiveConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveConditionConfig.html)
+```ts
+interface PositiveConditionConfig = {
+    conditionType: ConditionType.Positive;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+## Integer
+Evaluates a number to confirm it is a whole number.
+```ts
+integer(errorMessage?, summaryMessage?);
+integer({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+int(errorMessage?, summaryMessage?)
+int({ validator parameters })
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').integer();
+builder.field('fieldname').int();
+builder.field('fieldname').integer('error message', 'summary message')
+builder.field('fieldname').integer(
+{ 
+  errorMessage: 'error message',
+  summaryMessage: 'summary message'
+});	
+```
+Condition class: [`IntegerCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerCondition.html)
+
+Condition config: [`IntegerConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerConditionConfig.html)
+```ts
+interface IntegerConditionConfig = {
+    conditionType: ConditionType.Integer;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+## MaxDecimals
+Evaluates a number to confirm it does not exceed the specified number of decimal digits.
+```ts
+maxDecimals(maxDecimals, errorMessage?, summaryMessage?);
+maxDecimals(maxDecimals, { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').maxDecimals(2);
+builder.field('fieldname').maxDecimals(2, 'error message', 'summary message')
+builder.field('fieldname').maxDecimals(2, 
+{ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message'
+});	
+```
+Condition class: [`MaxDecimalsCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsCondition.html)
+
+Condition config: [`MaxDecimalsConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsConditionConfig.html)
+```ts
+interface MaxDecimalsConditionConfig = {
+    conditionType: ConditionType.MaxDecimals;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+    maxDecimals: number;    // Maximum number of decimal places allowed.
+}
+```
+## DataTypeCheck
+Added automatically for most data types that require conversion/parsing from a string
+into another data type or a well formatted string.
+```ts
+dataTypeCheck(errorMessage?, summaryMessage?);
+dataTypeCheck({ // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label} {Value}`
+
+**Examples**
+```ts
+builder.field('fieldname').dataTypeCheck();
+builder.field('fieldname').dataTypeCheck('error message', 'summary message')
+builder.field('fieldname').dataTypeCheck({ 
+    errorMessage: 'error message',
+    summaryMessage: 'summary message' 
+});	
+```
+Condition class: [`DataTypeCheckCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckCondition.html)
+
+Condition config: [`DataTypeCheckConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckConditionConfig.html)
+```ts
+interface DataTypeCheckConditionConfig = {
+    conditionType: ConditionType.RequireText;
+    category: ConditionCategory.DataTypeCheck;
+    valueHostName: ValueHostName | null;  // use null to inherit the ValueHost.name
+}
+```
+## Combining Conditions with all, any, and countMatches
+Complex logic is often the result of using boolean expressions against existing conditions. These three conditions can evaluate two or more conditions together to determine a single result. 
+- `all()` - the `AllMatchesCondition` requires that all child conditions evaluate as a match to be considered valid. Think of this as an "AND" operator.
+- `any()` - the `AnyMatchesCondition` requires that at least one child condition evaluates as a match to be considered valid.
+- `countMatches()` - the `CountMatchesCondition` sets a minimum and/or maximum number of children that evaluate as a match to be considered valid.
+
+You might also use these to bury several conditions under a single error message.
+
+### Requirements for children of all, any, and countMatches
+Let's focus on the structure of setting up children using all() as an example:
+```ts
+builder.field('fieldname').all((childBuilder)=>{
+    childBuilder.parentValue().requireText();
+    childBuilder.fieldValue('fieldname2').requireText(parameters);
+    childBuilder.fieldValue('fieldname2').regExp('^[A-D]');
+    childBuilder.fieldValue('fieldname3').equalTo('fieldname4');
+    childBuilder.any((grandchildBuilder)=> {
+        grandchildBuilder.fieldValue('fieldname10').requireText();
+        grandchildBuilder.fieldValue('fieldname11').requireText();
+    })
+});
+```
+`childBuilder` is a builder designed for children. It has only these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
+- `when()` employs the `WhenCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
+
+### All, Any, and CountMatches Conditions
+```ts
+all(childBuilderHandler);
+all(childBuilderHandler,
+    errorMessage?, summaryMessage?);
+all(childBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    // condition properties:
+        treatUndeterminedAs?: ConditionEvaluateResult;
+    });
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').all((childBuilder) => {
+    childBuilder.parentValue().requireText();
+    childBuilder.fieldValue('fieldname2').requireText();
+    childBuilder.fieldValue('fieldname3').requireText();
+});
+builder.field('fieldname').any((childBuilder) => {
+        childBuilder.parentValue().requireText();
+        childBuilder.fieldValue('fieldname2').requireText();
+        childBuilder.fieldValue('fieldname3').requireText();
+    },
+    'error message', 'summary message')
+builder.field('fieldname').countMatches(1, 2, (childBuilder) => {
+        childBuilder.parentValue().requireText();
+        childBuilder.fieldValue('fieldname2').requireText();
+        childBuilder.fieldValue('fieldname3').requireText();
+    },
+    { 
+        errorMessage: 'error message',
+        summaryMessage: 'summary message',
+        errorCode: 'AllRequired' // user override optional
+    });	
+```
+Condition classes: [`AllMatchCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.AllMatchCondition.html),
+[`AnyMatchCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.AnyMatchCondition.html),
+[`CountMatchesCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CountMatchesCondition.html)
+
+Condition config: [`EvaluateChildConditionResultsBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.EvaluateChildConditionResultsBaseConfig.html)
+
+```ts
+interface EvaluateChildConditionResultsBaseConfig = {
+    conditionType: ConditionType.[All, Any, CountMatches];
+    category: ConditionCategory.Children;
+    treatUndeterminedAs?: ConditionEvaluateResult; // When a child condition evaluates as Undetermined, this indicates how to handle it.Defaults to Undetermined.
+}
+```
+## When: Using one condition to enable another
+When you have a condition that shouldn't be evaluated until another condition is met, use the WhenCondition. Think of this as "when"→"then" logic.
+
+Suppose that you have a textbox and a nearby checkbox that is used to enable/disable the textbox. Since a disabled textbox should not be validated, we use the When condition.
+```ts
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText()
+)
+```
+`whenToEnableBuilder` and `thenBuilder` are builders designed to add a single child. They have these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
+- `when()` employs the `WhenCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
+```ts
+when(whenToEnableBuilderHandler, thenBuilderHandler);
+when(whenToEnableBuilderHandler, thenBuilderHandler,
+    errorMessage?, summaryMessage?);
+when(whenToEnableBuilderHandler, thenBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText()
+);
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText(),
+    'error message', 'summary message'
+);
+builder.field('fieldname').when(
+    (whenToEnableBuilder) => 
+        whenToEnableBuilder.fieldValue('checkbox1').equals(true),
+    (thenBuilder) =>
+        thenBuilder.parentValue().requireText(),
+    { 
+        errorMessage: 'error message',
+        summaryMessage: 'summary message',
+    });	
+```
+Condition class: [`WhenCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenCondition.html)
+
+Condition config: [`WhenConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenConditionConfig.html)
+```ts
+interface WhenConditionConfig = {
+    conditionType: ConditionType.When;
+    category: ConditionCategory.Children;
+    whenToEnableConfig: ConditionConfig; // configures the condition that enables the Then config
+    thenConfig: ConditionConfig;    // configures the condition intended to run when enabled
+}
+```
+#### More examples
+Regular expression for postal code depends on culture ID
+```ts
+builder.static('countryCode', LookupKey.String, { initialValue: 'US' });
+builder.field('PostalCode')
+   .when(
+        (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('US'), 
+        (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}(\s\d{4})?$/))  // parentValue = uses the value of PostalCode
+   .when(
+        (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('CA'), 
+        (thenBuilder)=> thenBuilder.parentValue().regExp(/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/))
+   .when(
+        (whenBuilder)=> whenBuilder.fieldValue('countryCode').equalTo('MX'), 
+        (thenBuilder)=> thenBuilder.parentValue().regExp(/^\d{5}$/));
+```
+
+## Not: Negate the result
+Negates the result of a single child condition. Does nothing if the child condition
+results in Undetermined.
+```ts
+builder.field('fieldname').not(
+    (childBuilder) =>
+        childBuilder.parentValue().requireText()
+)
+```
+`childBuilder` is a builder designed to add a single child. It has these functions:
+- `parentValue()` - Starts building a condition that will use the same valueHostName as the parent. In the above example, the condition will use `valueHostName='fieldname'`.
+- `fieldValue(valueHostName)` - Starts building a condition that uses the `valueHostName` supplied for the condition that follows.
+- `all()`, `any()`, `countMatches()` - Build logic involving two or more Conditions.
+- `not()` employs the `NotCondition` to selectively enable a single child condition.
+- `not()` employs the `NotCondition` to invert the result of the child's evaluation. Match→NoMatch or NoMatch→Match.
+```ts
+not(childBuilderHandler);
+not(childBuilderHandler,
+    errorMessage?, summaryMessage?);
+not(childBuilderHandler,
+    { // these are the validator parameters
+        errorMessage?: null | string | ((host) => string);
+        errorMessagel10n?: null | string;
+        summaryMessage?: null | string | ((host) => string);
+        summaryMessagel10n?: null | string;
+        
+        severity?: ValidationSeverity | ((host) => ValidationSeverity);
+        errorCode?: string; 
+        enabled?: boolean | ((host) => boolean);
+    });
+```
+Error message tokens: `{Label}`
+
+**Examples**
+```ts
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText()
+);
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText(),
+    'error message', 'summary message'
+);
+builder.field('fieldname').not(
+    (childBuilder)=>
+        childBuilder.parentValue().requireText(),
+    { 
+        errorMessage: 'error message',
+        summaryMessage: 'summary message',
+        errorCode: 'invert'  // optional. Allows multiple not conditions in the same validator
+    });	
+```
+Condition class: [`NotCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotCondition.html)
+
+Condition config: [`NotConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotConditionConfig.html)
+```ts
+interface NotConditionConfig = {
+    conditionType: ConditionType.Not;
+    category: ConditionCategory.Children;
+    childConditionConfig: ConditionConfig; // configures the child condition
+```
+#### More Examples
+Illegal characters in a string using `RegExpCondition`
+```ts
+builder.field('password').not(
+    (childBuilder)=> childBuilder.parentValue().regExp(/[:|'_]/));  // parentValue uses the value from 'password'
+    // use fieldValue(field name) if you want to specify a different field's value
+```
+---
+Go to [Conditions Home](./Home.md)
+
+Go to [API Home](../Home.md)

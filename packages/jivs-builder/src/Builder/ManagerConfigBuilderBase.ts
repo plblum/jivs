@@ -61,7 +61,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * export class PersonEditFormRules extends PersonModelRules implements IAdaptModelRulesToForm {
  *   adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
  *      adapter.field('birthDate', null, { label: 'Birth date' })
- *        .lessThan('today');
+ *        .lessThan(valueHost('today'));
  *      adapter.static('today', LookupKey.Date, { initialValue: new Date() });
  *   }
  * }
@@ -75,7 +75,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * builder.field('firstname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.field('lastname', LookupKey.String).requireText({ errorMessage: 'Requires a value'});
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
- *        .lessThan('today');
+ *        .lessThan(valueHost('today'));
  * builder.static('today', LookupKey.Date, { initialValue: new Date() });
  * let vhm = new ValueHostsManager(builder); // consider builder disposed at this point
  * ```
@@ -462,9 +462,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * If called on a ValueHost already with an enabler, it will replace the existing enabler.
      * ```ts
      * builder.whenToEnable('Field1', (childBuilder)=>
-     *  childBuilder.fieldName('Field2').equalToValue('YES'));
+     *  childBuilder.fieldValue('Field2').equalTo('YES'));
      * builder.whenToEnable('Field1', (childBuilder)=>
-     *  childBuilder.fieldName('Field2').conditionConfig(existingConditionConfig));
+     *  childBuilder.fieldValue('Field2').conditionConfig(existingConditionConfig));
      * builder.whenToEnable('Field1', handler).any validator can be chained
      * ```
      * Sets this value:

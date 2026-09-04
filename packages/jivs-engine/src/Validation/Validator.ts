@@ -26,7 +26,7 @@ import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interf
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
 import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from '../Interfaces/ValueHost';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
@@ -51,7 +51,7 @@ import { ValueHostsManager } from './ValueHostsManager';
  * 
  * Each instance depends on a few things, all passed into the constructor
  * and treated as immutable.
- * - IValidatorsValueHostBase - name, label, and values from the consuming system.
+ * - IValidatorsValueHost - name, label, and values from the consuming system.
  * - ValidatorConfig - The business logic supplies these rules
  *   to implement validation including Condition, Enabler, and error messages
  * If the caller changes any of these, discard the instance
@@ -60,13 +60,13 @@ import { ValueHostsManager } from './ValueHostsManager';
 export class Validator implements IValidator {
     // As a rule, ValidatorsValueHostBase discards Validator when anything contained in these objects
     // has changed.
-    constructor(valueHost: IValidatorsValueHostBase, config: ValidatorConfig) {
+    constructor(valueHost: IValidatorsValueHost, config: ValidatorConfig) {
         assertNotNull(valueHost, 'valueHost');
         assertNotNull(config, 'config');
-        this._valueHost = new WeakRef<IValidatorsValueHostBase>(valueHost);
+        this._valueHost = new WeakRef<IValidatorsValueHost>(valueHost);
         this._config = config;
     }
-    private readonly _valueHost: WeakRef<IValidatorsValueHostBase>;
+    private readonly _valueHost: WeakRef<IValidatorsValueHost>;
     /**
     * The business rules behind this validator.
     */
@@ -78,7 +78,7 @@ export class Validator implements IValidator {
         return this.valueHostsManager.services;
     }
 
-    protected get valueHost(): IValidatorsValueHostBase {
+    protected get valueHost(): IValidatorsValueHost {
         assertWeakRefExists(this._valueHost, 'ValueHost disposed');
         return this._valueHost.deref()!;
     }
@@ -594,7 +594,7 @@ export class Validator implements IValidator {
      * Plus any from the Condition in use.     
      * {DataType} - the name of the data type. Uses values registered with TextLocalizerService and LookupKey enum's strings as a fallback.
      */
-    public getValuesForTokens(valueHost: IValidatorsValueHostBase, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
+    public getValuesForTokens(valueHost: IValidatorsValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let tlv: Array<TokenLabelAndValue> = [
             {
                 tokenLabel: 'Label',
@@ -676,7 +676,7 @@ export class ValidatorFactory implements IValidatorFactory {
         return config.validatorType == null || this.isRegistered(config.validatorType);
     }
     
-    public create(valueHost: IValidatorsValueHostBase, config: ValidatorConfig): IValidator {
+    public create(valueHost: IValidatorsValueHost, config: ValidatorConfig): IValidator {
         if (config.validatorType == null)   // null or undefined
             return new Validator(valueHost, config);
         const fn = this._map.get(config.validatorType);

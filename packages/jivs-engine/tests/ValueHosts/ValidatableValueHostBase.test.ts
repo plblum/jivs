@@ -1,15 +1,15 @@
 import { IssueFound, ValidationStatus } from './../../src/Interfaces/Validation';
-import { IValidatableValueHostBaseCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostBaseCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
-import { toIValidatableValueHostBase } from "../../src/ValueHosts/ValidatableValueHostBase";
+import { IValidatableValueHostCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
+import { toIValidatableValueHost } from "../../src/ValueHosts/ValidatableValueHostBase";
 import { LoggingLevel } from "../../src/Interfaces/LoggerService";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
-import { ValidatableValueHostBaseConfig, IValidatableValueHostBase } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValidatableValueHostBaseConfig, IValidatableValueHost } from "../../src/Interfaces/ValidatableValueHostBase";
 import {
     ValueHostValidateResult, ValidationSeverity, ValidateOptions
 } from "../../src/Interfaces/Validation";
 import { IValidator } from "../../src/Interfaces/Validator";
-import { IValueHostsManager, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { SetValueOptions, IValueHost, ValueHostInstanceState, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
@@ -18,6 +18,7 @@ import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../sr
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
+import { restoreCapturedState } from '../TestSupport/utilities';
 
 
 
@@ -147,20 +148,6 @@ describe('setValue', () => {
 
     });
 
-    test('Value was changed. OnValueHostInstanceStateChanged called.(confirm ancestor was not broken) ', () => {
-        const initialValue = 100;
-
-        let setup = setupValidatableValueHostBase();
-        let callbackInvoked = 0;
-        setup.valueHostsManager.onValueHostInstanceStateChanged = (valueHost, stateToRetain) => {
-            callbackInvoked++;
-        };
-        let testItem = setup.valueHost;
-        testItem.setValue(initialValue);
-
-        expect(callbackInvoked).toBe(1);
-    });
-
     test('SetValue called with duringEdit=true reports that it is not supported into the log', () => {
         let setup = setupValidatableValueHostBase();
         let logger = setup.valueHostsManager.services.loggerService as CapturingLogger;
@@ -250,24 +237,15 @@ describe('clearValidation', () => {
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
 
-        let stateChanges = setup.valueHostsManager.getHostStateChanges();
-        expect(stateChanges).not.toBeNull();
-        expect(stateChanges.length).toBe(2);
-        let expectedChanges: Array<ValidatableValueHostBaseInstanceState> = [
-            {
-                name: 'Field1',
-                status: ValidationStatus.Undetermined,
-                issuesFound: null,
-                value: undefined
-            },
-            {
-                name: 'Field1',
-                status: ValidationStatus.NotAttempted,
-                issuesFound: null,
-                value: undefined
-            },
-        ];
-        expect(stateChanges).toEqual(expectedChanges);
+        let state = restoreCapturedState(setup.valueHostsManager);
+        expect(state.vh[0]).toEqual({
+            changeCounter: undefined,
+            name: 'Field1',
+            status: ValidationStatus.NotAttempted,
+            issuesFound: null,
+            value: undefined
+        });
+
 
     });
     test('Without calling validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
@@ -278,9 +256,8 @@ describe('clearValidation', () => {
         expect(result).toBe(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
         expect(setup.valueHost.getIssueFound(IsUndeterminedConditionType)).toBeNull();
-        let stateChanges = setup.valueHostsManager.getHostStateChanges();
-        expect(stateChanges).not.toBeNull();
-        expect(stateChanges.length).toBe(0);
+        let state = restoreCapturedState(setup.valueHostsManager);
+        expect(state.vhm.stateChangeCounter).toBe(0);
 
     });
 
@@ -296,31 +273,15 @@ describe('clearValidation', () => {
         expect(() => result = setup.valueHost.clearValidation()).not.toThrow();
         expect(result).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
-        let stateChanges = setup.valueHostsManager.getHostStateChanges();
-        expect(stateChanges).not.toBeNull();
-        expect(stateChanges.length).toBe(2);
-        let expectedChanges: Array<ValidatableValueHostBaseInstanceState> = [
-            {
-                name: 'Field1',
-                status: ValidationStatus.NotAttempted,
-                issuesFound: null,
-                value: undefined,
-                externalIssuesFound: [
-                    {
-                        errorMessage: 'ERROR',
-                        severity: ValidationSeverity.Error,
-                        doNotSave: true
-                    }
-                ]
-            },
-            {
-                name: 'Field1',
-                status: ValidationStatus.NotAttempted,
-                issuesFound: null,
-                value: undefined,
-            },
-        ];
-        expect(stateChanges).toEqual(expectedChanges);
+
+        let state = restoreCapturedState(setup.valueHostsManager);
+        expect(state.vh[0]).toEqual({
+            changeCounter: undefined,
+            name: 'Field1',
+            status: ValidationStatus.NotAttempted,
+            issuesFound: null,
+            value: undefined,
+        });
     });
 });
 // doNotSave: boolean
@@ -853,16 +814,13 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1); // first changes the value; second changes ValidationStatus
-        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange.externalIssuesFound).toBeDefined();
+        let state = restoreCapturedState(setup.valueHostsManager);
+        let valueChange = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(
             <IssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error,
                 doNotSave: true
-
             });
     });
 
@@ -878,25 +836,40 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Warning
         }, true)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2);
-        let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange1.externalIssuesFound).toBeDefined();
-        expect(valueChange1.externalIssuesFound![0]).toEqual(
+        // let changes = setup.valueHostsManager.getHostStateChanges();
+        // expect(changes.length).toBe(2);
+        // let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
+        // expect(valueChange1.externalIssuesFound).toBeDefined();
+        // expect(valueChange1.externalIssuesFound![0]).toEqual(
+        //     <IssueFound>{
+        //         errorMessage: 'ERROR',
+        //         severity: ValidationSeverity.Error,
+        //         doNotSave: true
+        //     });
+        // let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        // expect(valueChange2.externalIssuesFound).toBeDefined();
+        // expect(valueChange2.externalIssuesFound![0]).toEqual(
+        //     <IssueFound>{
+        //         errorMessage: 'ERROR',
+        //         severity: ValidationSeverity.Error,
+        //         doNotSave: true
+        //     });
+        // expect(valueChange2.externalIssuesFound![1]).toEqual(
+        //     <IssueFound>{
+        //         errorMessage: 'WARNING',
+        //         severity: ValidationSeverity.Warning,
+        //         doNotSave: false
+        //     });
+        let state = restoreCapturedState(setup.valueHostsManager);
+        let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
+        expect(valueChange.externalIssuesFound).toBeDefined();
+        expect(valueChange.externalIssuesFound![0]).toEqual(
             <IssueFound>{
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error,
                 doNotSave: true
             });
-        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
-        expect(valueChange2.externalIssuesFound).toBeDefined();
-        expect(valueChange2.externalIssuesFound![0]).toEqual(
-            <IssueFound>{
-                errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error,
-                doNotSave: true
-            });
-        expect(valueChange2.externalIssuesFound![1]).toEqual(
+        expect(valueChange.externalIssuesFound![1]).toEqual(
             <IssueFound>{
                 errorMessage: 'WARNING',
                 severity: ValidationSeverity.Warning,
@@ -908,8 +881,9 @@ describe('addExternalIssueFound', () => {
 
         expect(() => setup.valueHost.addExternalIssueFound(null!, true)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(0);
+        let state = restoreCapturedState(setup.valueHostsManager);
+        let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
+        expect(valueChange.externalIssuesFound).toBeUndefined();
     });
 
     test('With ValueHost.isEnabled=false, still applied and now has a logged message', () => {
@@ -920,16 +894,15 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).not.toThrow();
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2); // first changes the enabled flag; second changes ValidationStatus
-        let valueChange = <ValidatableValueHostBaseInstanceState>changes[1];
-        expect(valueChange.externalIssuesFound).toBeDefined();
+        let state = restoreCapturedState(setup.valueHostsManager);
+        let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(
-            <IssueFound>{
+            <IssueFound> {
                 errorMessage: 'ERROR',
                 severity: ValidationSeverity.Error,
                 doNotSave: true
             });
+
         let logger = setup.services.loggerService as CapturingLogger;
         expect(logger.findMessage('IssueFound applied on disabled ValueHost', LoggingLevel.Warn, null)).toBeTruthy();
     });
@@ -943,11 +916,9 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
-        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange.externalIssuesFound).toBeDefined();
+        let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error,
@@ -966,10 +937,8 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
-
-        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
+        let state = restoreCapturedState(setup.valueHostsManager);
+        let valueChange = <ValidatableValueHostBaseInstanceState> state.vh[0];
         expect(valueChange.externalIssuesFound).toBeDefined();
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
             errorMessage: 'ERROR',
@@ -993,10 +962,9 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Warning
         }, true)).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
-        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeDefined();
         expect(valueChange2.externalIssuesFound!.length).toBe(1);
         expect(valueChange2.externalIssuesFound![0]).toEqual(<IssueFound>{
@@ -1022,10 +990,9 @@ describe('addExternalIssueFound', () => {
             severity: ValidationSeverity.Error
         }, true)).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
-        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeDefined();
         expect(valueChange2.externalIssuesFound!.length).toBe(2);
         expect(valueChange2.externalIssuesFound![0]).toEqual(<IssueFound>{
@@ -1149,10 +1116,9 @@ describe('addExternalIssueFound', () => {
 
         expect(result).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(1);
+        let state = restoreCapturedState(setup.valueHostsManager);
 
-        let valueChange = <ValidatableValueHostBaseInstanceState>changes[0];
+        let valueChange = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange.externalIssuesFound![0]).toEqual(<IssueFound>{
             errorMessage: 'ERROR',
             severity: ValidationSeverity.Error,
@@ -1216,8 +1182,8 @@ describe('clearExternalIssuesFound', () => {
         expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(false);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(0);
+        let state = restoreCapturedState(setup.valueHostsManager);
+        expect(state.vhm.stateChangeCounter).toBe(0);
     });
     test('Set then Clear creates two state entries with state.ExternalIssuesFound undefined by the end', () => {
         let setup = setupValidatableValueHostBase();
@@ -1230,17 +1196,9 @@ describe('clearExternalIssuesFound', () => {
         expect(() => result = setup.valueHost.clearExternalIssuesFound()).not.toThrow();
         expect(result).toBe(true);
 
-        let changes = setup.valueHostsManager.getHostStateChanges();
-        expect(changes.length).toBe(2); // first changes the value; second changes ValidationStatus
-        let valueChange1 = <ValidatableValueHostBaseInstanceState>changes[0];
-        expect(valueChange1.externalIssuesFound).toBeDefined();
-        expect(valueChange1.externalIssuesFound![0]).toEqual(
-            <IssueFound>{
-                errorMessage: 'ERROR',
-                severity: ValidationSeverity.Error,
-                doNotSave: true
-            });
-        let valueChange2 = <ValidatableValueHostBaseInstanceState>changes[1];
+        let state = restoreCapturedState(setup.valueHostsManager);
+
+        let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeUndefined();
     });
     test('onValueHostValidationStateChanged called', () => {
@@ -1914,7 +1872,7 @@ describe('otherValueHostChangedNotification', () => {
         expect(setup.valueHost.exposed_issuesFound).not.toBeNull();
     });
 });
-describe('toIValidatableValueHostBase', () => {
+describe('toIValidatableValueHost', () => {
     test('Real instance match', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vhm, {
@@ -1925,10 +1883,10 @@ describe('toIValidatableValueHostBase', () => {
             value: null,
             status: ValidationStatus.Undetermined
         });
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Compatible object match', () => {
-        let testItem: IValidatableValueHostBase = {
+        let testItem: IValidatableValueHost = {
             valueHostsManager: {} as IValueHostsManager,
             dispose(): void { },
             otherValueHostChangedNotification: function (valueHostIdThatChanged: string, revalidate: boolean): void {
@@ -2008,9 +1966,16 @@ describe('toIValidatableValueHostBase', () => {
             },
             groupCheck: function (options?: ValidateOptions | undefined): boolean {
                 throw new Error('Function not implemented.');
-            }
+            },
+            _captureState(stateContainer: StateContainer): void {
+                throw new Error("Method not implemented.");
+            },
+            broadcastState(): void
+            {
+                throw new Error("Method not implemented.");
+            }            
         }
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Wrong instance class returns null', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
@@ -2020,12 +1985,12 @@ describe('toIValidatableValueHostBase', () => {
             name: 'Field1',
             value: null,
         });
-        expect(toIValidatableValueHostBase(new Date())).toBeNull();
-        expect(toIValidatableValueHostBase(vh)).toBeNull();
+        expect(toIValidatableValueHost(new Date())).toBeNull();
+        expect(toIValidatableValueHost(vh)).toBeNull();
     });
     test('Wrong plain old object returns null', () => {
-        expect(toIValidatableValueHostBase({})).toBeNull();
-        expect(toIValidatableValueHostBase({ getName: null })).toBeNull();
+        expect(toIValidatableValueHost({})).toBeNull();
+        expect(toIValidatableValueHost({ getName: null })).toBeNull();
     });
 });
 describe('currentValidationState', () => {
@@ -2207,7 +2172,7 @@ describe('groupCheck tests', () => {
         expect(setup.valueHost.groupCheck({ group: 'Group2' })).toBe(false);
     });
 });
-describe('toIValidatableValueHostBase function', () => {
+describe('toIValidatableValueHost function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let vhm = new MockValueHostsManager(new MockJivsServices(false, false));
         let testItem = new TestValidatableValueHost(vhm, {
@@ -2220,9 +2185,9 @@ describe('toIValidatableValueHostBase function', () => {
                 issuesFound: null,
                 status: ValidationStatus.NotAttempted,
             });
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
-    class TestIValidatableValueHostBaseImplementation implements IValidatableValueHostBase {
+    class TestIValidatableValueHostImplementation implements IValidatableValueHost {
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;  
         dispose(): void {}
         groupCheck(options?: ValidateOptions | undefined): boolean {
@@ -2322,51 +2287,58 @@ describe('toIValidatableValueHostBase function', () => {
         getValidator(errorCode: string): IValidator | null {
             throw new Error("Method not implemented.");
         }
-
+        _captureState(stateContainer: StateContainer): void
+        {
+            throw new Error("Method not implemented.");
+        }
+        broadcastState(): void
+        {
+            throw new Error("Method not implemented.");
+        }        
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIValidatableValueHostBaseImplementation();
+        let testItem = new TestIValidatableValueHostImplementation();
 
-        expect(toIValidatableValueHostBase(testItem)).toBe(testItem);
+        expect(toIValidatableValueHost(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIValidatableValueHostBase(testItem)).toBeNull();
+        expect(toIValidatableValueHost(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIValidatableValueHostBase(null)).toBeNull();
+        expect(toIValidatableValueHost(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIValidatableValueHostBase(100)).toBeNull();
+        expect(toIValidatableValueHost(100)).toBeNull();
     });
 });
 
-describe('toIValidatableValueHostBaseCallbacks function', () => {
+describe('toIValidatableValueHostCallbacks function', () => {
     test('Passing actual ValidatableValueHostBase matches interface returns same object.', () => {
         let testItem = new MockValueHostsManager(new MockJivsServices(false, false));
 
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostCallbacks(testItem)).toBe(testItem);
     });
-    class TestIValidatableValueHostBaseCallbacksImplementation implements IValidatableValueHostBaseCallbacks {
+    class TestIValidatableValueHostCallbacksImplementation implements IValidatableValueHostCallbacks {
         onValueChanged(vh: IValueHost, old: any) { }
         onValueHostInstanceStateChanged(vh: IValueHost, state: ValueHostInstanceState) { }
-        onTextValueChanged(vh: IValidatableValueHostBase, old: any) { }
-        onValueHostValidationStateChanged(vh: IValidatableValueHostBase, validationState: ValueHostValidationState) { }
+        onTextValueChanged(vh: IValidatableValueHost, old: any) { }
+        onValueHostValidationStateChanged(vh: IValidatableValueHost, validationState: ValueHostValidationState) { }
     }
     test('Passing object with interface match returns same object.', () => {
-        let testItem = new TestIValidatableValueHostBaseCallbacksImplementation();
+        let testItem = new TestIValidatableValueHostCallbacksImplementation();
 
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBe(testItem);
+        expect(toIValidatableValueHostCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {
         let testItem = {};
-        expect(toIValidatableValueHostBaseCallbacks(testItem)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(testItem)).toBeNull();
     });
     test('null returns null.', () => {
-        expect(toIValidatableValueHostBaseCallbacks(null)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(null)).toBeNull();
     });
     test('Non-object returns null.', () => {
-        expect(toIValidatableValueHostBaseCallbacks(100)).toBeNull();
+        expect(toIValidatableValueHostCallbacks(100)).toBeNull();
     });
 });
 

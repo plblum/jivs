@@ -1,7 +1,7 @@
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { CalcValueHostConfig, CalcValueHostInstanceState, ICalcValueHost } from "../../src/Interfaces/CalcValueHost";
 import { ValueHostType } from "../../src/Interfaces/ValueHostFactory";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHostsManager, StateContainer } from "../../src/Interfaces/ValueHostsManager";
 import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../src/ValueHosts/CalcValueHost";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
@@ -376,6 +376,13 @@ describe('toICalcValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         setEnabled(enabled: boolean): void {
+            throw new Error("Method not implemented.");
+        }
+        _captureState(stateContainer: StateContainer): void {
+            throw new Error("Method not implemented.");
+        }
+        broadcastState(): void
+        {
             throw new Error("Method not implemented.");
         }
     }

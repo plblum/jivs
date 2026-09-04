@@ -1,7 +1,10 @@
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import {
-    EqualToValueConditionConfig, RangeConditionConfig, RequireTextConditionConfig
+    RangeConditionConfig, RequireTextConditionConfig
 } from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+import {
+    EqualToConditionConfig
+} from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
 import { WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
@@ -197,8 +200,8 @@ describe('when()', () => {
         startBuilder.when(
             (whenBuilder) =>
                 // normally the whenBuilder would be used to create a child condition config, but for this test we can just return a config directly
-                whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                whenBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 }),
             (thenBuilder) =>
@@ -208,8 +211,8 @@ describe('when()', () => {
         let startBuilderConfig = startBuilder.getConfig();
         const expectedParentConfig: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            whenToEnableConfig: <EqualToValueConditionConfig>{
-                conditionType: ConditionType.EqualToValue,
+            whenToEnableConfig: <EqualToConditionConfig>{
+                conditionType: ConditionType.EqualTo,
                 secondValue: 5,
             },
             thenConfig: <RequireTextConditionConfig>{
@@ -240,8 +243,8 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
-                (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                (whenBuilder) => whenBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 }),
                 null!);
@@ -265,8 +268,8 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(services, parentBuilder);
         expect(() => {
             startBuilder.when(
-                (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                (whenBuilder) => whenBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 }),
                 (thenBuilder) => null!);
@@ -278,8 +281,8 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.parentValue();
         conditionBuilder.when(
-            (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                conditionType: ConditionType.EqualToValue,
+            (whenBuilder) => whenBuilder.conditionConfig(<EqualToConditionConfig>{
+                conditionType: ConditionType.EqualTo,
                 secondValue: 5
             }),
             (thenBuilder) => thenBuilder.conditionConfig(<RequireTextConditionConfig>{
@@ -295,8 +298,8 @@ describe('when()', () => {
         let parentConfig = parentBuilder.getConfig();
         const expectedParentConfig: WhenConditionConfig = {
             conditionType: ConditionType.When,
-            whenToEnableConfig: <EqualToValueConditionConfig>{
-                conditionType: ConditionType.EqualToValue,
+            whenToEnableConfig: <EqualToConditionConfig>{
+                conditionType: ConditionType.EqualTo,
                 secondValue: 5,
             },
             thenConfig: <RequireTextConditionConfig>{
@@ -316,8 +319,8 @@ describe('when()', () => {
         let startBuilder = new StartConditionBuilder(services, parentBuilder);
         let conditionBuilder = startBuilder.fieldValue('myField');
         conditionBuilder.when(
-            (whenBuilder) => whenBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                conditionType: ConditionType.EqualToValue,
+            (whenBuilder) => whenBuilder.conditionConfig(<EqualToConditionConfig>{
+                conditionType: ConditionType.EqualTo,
                 secondValue: 5
                 // will inherit valuehostName='myField'
             }),
@@ -336,8 +339,8 @@ describe('when()', () => {
         const expectedParentConfig = {
             conditionType: ConditionType.When,
             valueHostName: 'myField',   // even though it does not exist as a property on the WhenConditionConfig
-            whenToEnableConfig: <EqualToValueConditionConfig>{
-                conditionType: ConditionType.EqualToValue,
+            whenToEnableConfig: <EqualToConditionConfig>{
+                conditionType: ConditionType.EqualTo,
                 secondValue: 5,
                 valueHostName: 'myField'
             },
@@ -485,8 +488,8 @@ describe('all()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                allBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                allBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
                 allBuilder.conditionConfig(<RangeConditionConfig>{
@@ -505,7 +508,7 @@ describe('all()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 },
                 {
@@ -530,8 +533,8 @@ describe('all()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                allBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                allBuilder.fieldValue('Field2').conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
             });
@@ -544,7 +547,7 @@ describe('all()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5,
                     valueHostName: 'Field2'
                 }
@@ -687,8 +690,8 @@ describe('any()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                allBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                allBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
                 allBuilder.conditionConfig(<RangeConditionConfig>{
@@ -707,7 +710,7 @@ describe('any()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 },
                 {
@@ -732,8 +735,8 @@ describe('any()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                allBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                allBuilder.fieldValue('Field2').conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
             });
@@ -746,7 +749,7 @@ describe('any()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5,
                     valueHostName: 'Field2'
                 }
@@ -895,8 +898,8 @@ describe('countMatches()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                countMatchesBuilder.conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                countMatchesBuilder.conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
                 countMatchesBuilder.conditionConfig(<RangeConditionConfig>{
@@ -917,7 +920,7 @@ describe('countMatches()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 },
                 {
@@ -943,8 +946,8 @@ describe('countMatches()', () => {
                     conditionType: ConditionType.RequireText,
                     valueHostName: 'F1'
                 });
-                countMatchesBuilder.fieldValue('Field2').conditionConfig(<EqualToValueConditionConfig>{
-                    conditionType: ConditionType.EqualToValue,
+                countMatchesBuilder.fieldValue('Field2').conditionConfig(<EqualToConditionConfig>{
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5
                 });
             });
@@ -959,7 +962,7 @@ describe('countMatches()', () => {
                     valueHostName: 'F1'
                 },
                 {
-                    conditionType: ConditionType.EqualToValue,
+                    conditionType: ConditionType.EqualTo,
                     secondValue: 5,
                     valueHostName: 'Field2'
                 }

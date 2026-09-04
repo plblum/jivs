@@ -1,7 +1,6 @@
 /**
- * For creating Conditions given an ConditionConfig.
- * Setup its instance on JivsServices.ConditionFactory.
- * @module jivs-engine/Conditions/ConcreteClasses/ConditionFactory
+ * {@inheritDoc jivs-engine/Services/ConcreteClasses/ConditionFactory!ConditionFactory:class}
+ * @module jivs-engine/Services/ConcreteClasses/ConditionFactory
  */
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import type { ConditionConfig, ICondition, IConditionCore, IConditionFactory } from '../Interfaces/Conditions';
@@ -13,10 +12,15 @@ import { cleanString } from '../Utilities/Utilities';
 
 
 /**
- * Creates instances of Conditions given an ConditionConfig.
- * Setup its instance on JivsServices.ConditionFactory.
- * ConditionConfig.conditionType is used to determine the Condition class to create.
- * Supports IConditionCore implementations of ICondition.
+ * The Factory for creating instances of Conditions given a 
+ * {@link jivs-engine/Conditions/Types!ConditionConfig | ConditionConfig}.
+ * 
+ * It is found on {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices:class | JivsServices} 
+ * and typically registrations occur in the `createJivsServices()` function.
+ * ```ts
+ * let factory = jivsServices.conditionFactory;
+ * factory.register('MyConditionType', (config) => new MyCondition(config));
+ * ```
  */
 export class ConditionFactory implements IConditionFactory, IDisposable {
 

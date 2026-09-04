@@ -7,7 +7,7 @@ import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../I
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { IValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { assertNotNull, CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 
@@ -27,7 +27,7 @@ export class MessageTokenResolverService extends ServiceWithAccessorBase impleme
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    public resolveTokens(message: string, valueHost: IValidatorsValueHostBase, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
+    public resolveTokens(message: string, valueHost: IValidatorsValueHost, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
     {
         assertNotNull(message, 'message');
         assertNotNull(valueHostsManager, 'valueHostResolver');

@@ -64,17 +64,20 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
 
     /**
      * Returns the localized version of the text for the given culture.
-     * Will try the language from the culture ('en' from 'en-US')
-     * and a code called '*' to be used as a general fallback. You will have to 
-     * register the '*' code along with your language code translations if you want
+     * Will try language+region first, if supplied. Fall back to the language alone.
+     * Then fall back to a code called '*'.
+     * You will have to register the '*' code along with your language code translations if you want
      * support of '*'.
      * service.Register('TRUE', {
      *     '*': 'true',
      *     'en': 'true',
+     *     'en-US': 'true',
+     *     'en-LA': 'PRO', // entirely fake culture (English is Los Angeles) that uses "PRO" and "CON" for this example :)
      *     'es': 'verdadero'
      * });
      * If nothing is matched, it returns the fallback text.
-     * @param cultureIdToMatch - It will only use the language code part, like 'en' in 'en-US'.
+     * @param cultureIdToMatch - Tries to match the full culture ID first (like 'en-US'), 
+     * then the language code (like 'en').
      * It will always attempt to match to '*' if the language code doesn't match.
      * @param l10nKey - Localization key, which is the text that identifies which word,
      * phrase, or other block of text is requested. If '' or null, no localization is requested.
@@ -93,6 +96,11 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         const mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
+            if (cultureIdToMatch.includes('-')) {
+                let text = mapped[cultureIdToMatch];
+                if (text !== undefined)
+                    return text;
+            }
             let text = mapped[cultureLanguageCode(cultureIdToMatch)];
             if (text !== undefined)
                 return text;
@@ -137,6 +145,15 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
         const mapped = this._l10nKeyMap.get(l10nKey);
         if (mapped)
         {
+            if (cultureIdToMatch.includes('-')) {
+                let text = mapped[cultureIdToMatch];
+                if (text !== undefined) {
+                    r.text = text;
+                    r.actualCultureId = cultureIdToMatch;
+                    r.result = 'localized';
+                    return r;
+                }
+            }
             const languageCode = cultureLanguageCode(cultureIdToMatch);
             let text = mapped[languageCode];
             if (text !== undefined) {
