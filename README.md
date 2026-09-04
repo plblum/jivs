@@ -263,7 +263,7 @@ Please use these documents:
   - [Conditions](./docs/API/Conditions/Home.md)
   - [JivsServices](./docs/API/JivsServices/Home.md)
   - [ValueHost Rules](./docs/API/ValueHost_Rules/Home.md)
-  - [Builder API](../docs/API/ValueHostsManager_Configuration_Guide.md)
+  - [Builder API](./docs/ValueHostsManager_Configuration_Guide.md)
   - [ModelReader and ModelWriter](./docs/API/ModelReader_and_ModelWriter/Home.md)
   - [ValidationState and IssueFound](./docs/API/Validators/Validation_State.md)
 

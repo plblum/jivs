@@ -13,7 +13,7 @@ By knowing the data type, Jivs can lookup a specific object to handle these case
 - Formatting from native value to text value, using [DataTypeFormatter](./DataTypeFormatters_Service.md).
 - Converting between data types, using [DataTypeConverter](./DataTypeConverters_Service.md).
 - Attaching a validator to perform a Data Type Check automatically, using [DataTypeCheckGenerator](./DataTypeCheckGenerator_Service.md).
-- Giving an identity to an object you use as a datatype, using [DataTypeIdentifier](./DataTypeIdentifier_Service.md).
+- Giving an identity to an object you use as a datatype, using [DataTypeIdentifier](./DataTypeIdentifiers_Service.md).
 - Comparing two values, using [DataTypeComparer](./DataTypeComparers_Service.md).
 
 ## Lookup Keys

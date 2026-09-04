@@ -223,7 +223,7 @@ Jivs-ConfigAnalysis is available on npm: [Jivs-ConfigAnalysis npm package](https
 ```
 npm install --save @plblum/jivs-configanalysis
 ```
-[Source code](https://github.com/plblum/jivs/packages/jivs-configanalysis) is open source on GitHub.
+[Source code](https://github.com/plblum/jivs/tree/main/packages/jivs-configanalysis) is open source on GitHub.
 
 # Using Jivs-ConfigAnalysis
 Call the `analyze() function` on `ConfigAnalysisServices` after configuring, but before creating
