@@ -223,11 +223,11 @@ Register in the service:
 jivsServices.valueAdapterService.registerThenFunction('year2000', replaceWithYear2000);
 ```
 ## API References
-- [ModelReaderWriterBase](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_AbstractClasses.ModelReaderWriterBase.html)
-- [ModelReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelReader.html)
-- [DictionaryReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.DictionaryReader.html)
-- [FormReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.FormReader.html)
-- [ModelWriter](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelWriter.html)
-- [ValueAdapterRulesService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ValueAdapterService.ValueAdapterService.html)
+- [ModelReaderWriterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_AbstractClasses.ModelReaderWriterBase.html)
+- [ModelReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelReader.html)
+- [DictionaryReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.DictionaryReader.html)
+- [FormReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.FormReader.html)
+- [ModelWriter class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelWriter.html)
+- [ValueAdapterRulesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ValueAdapterService.ValueAdapterService.html)
 ---
 Go to [API Home](../Home.md)

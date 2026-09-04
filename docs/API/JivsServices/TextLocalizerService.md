@@ -245,7 +245,7 @@ service.registerSummaryMessage(DatePatternParserBase.invalidDateErrorCode, Looku
 The supplied `create_services.ts` file includes registrations for the standard parser error codes. Add registrations when introducing custom parsers, error codes, or Lookup Keys.
 
 ## API References
-- [TextLocalizerService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
 
 ---
 Go to [JivsServices Home](./Home.md)

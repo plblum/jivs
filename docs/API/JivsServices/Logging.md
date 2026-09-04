@@ -57,7 +57,7 @@ If you want to use the Debug or Info levels, expect to get a lot of content (exa
 2. Run your code.
 3. Review the log to identify characteristics you want to keep.
 4. Create one or more `OverrideMinLevelWhenRule objects` with those characteristics. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
-5. Call the `LoggerService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
+5. Call the `LoggerService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
 6. Restore the minLevel to your normal setting.
 
 ### Logging content example with overrideMinLevelWhen

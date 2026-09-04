@@ -175,8 +175,8 @@ services.dataTypeFormatterService.register(new MyDataTypeFormatter());
 ```
 
 ## API References
-- [IDataTypeFormatter interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeFormatter.IDataTypeFormatter.html)
-- [DataTypeFormatterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeFormatters.DataTypeFormatterBase.html)
+- [IDataTypeFormatter interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeFormatter.IDataTypeFormatter.html)
+- [DataTypeFormatterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_AbstractClasses_DataTypeFormatterBase.DataTypeFormatterBase.html)
 - [DataTypeFormatterService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeFormatterService.DataTypeFormatterService.html)
 
 ```

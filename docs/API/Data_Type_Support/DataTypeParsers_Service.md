@@ -143,7 +143,7 @@ Like all services, this is part of the `JivsService` and can be configured in yo
 services.dataTypeParserService.register(new MyDataTypeParser());
 ```
 ## API References
-- [IDataTypeParser interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeParser.IDataTypeParser.html)
+- [IDataTypeParser interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeParser.IDataTypeParser.html)
 - [DataTypeParserBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_AbstractClasses_DataTypeParsers.DataTypeParserBase.html)
 - [CleanUpStringParser class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeParsers.CleanUpStringParser.html)
 - [DataTypeParserService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeParserService.DataTypeParserService.html)

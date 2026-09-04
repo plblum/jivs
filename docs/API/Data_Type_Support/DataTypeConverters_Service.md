@@ -83,7 +83,7 @@ services.dataTypeConverterService.register(new MyDataTypeConverter());
 ```
 
 ## API References
-- [IDataTypeConverter interface](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_Types_IDataTypeConverter.IDataTypeConverter.html)
+- [IDataTypeConverter interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeConverter.IDataTypeConverter.html)
 - [DataTypeConverterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeConverters.DataTypeConverterBase.html)
 - [DataTypeConverterService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeConverterService.DataTypeConverterService.html)
 ---
