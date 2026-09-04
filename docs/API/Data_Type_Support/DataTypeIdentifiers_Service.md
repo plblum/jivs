@@ -14,6 +14,11 @@ Like all services, this is part of the `JivsService` and can be configured in yo
 ```ts
 services.dataTypeIdentifierService.register(new MyDataTypeIdentifier());
 ```
+
+## API References
+- [IDataTypeIdentifier interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeIdentifier.IDataTypeIdentifier.html)
+- [DataTypeIdentifierService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeIdentifierService.DataTypeIdentifierService.html)
+
 ---
 Go to [Data Type Support Home](./Home.md)
 

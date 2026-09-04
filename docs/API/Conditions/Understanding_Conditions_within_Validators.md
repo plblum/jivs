@@ -60,6 +60,12 @@ builder.field('field').conditionName(required parameters, { validator parameters
   ```
 
 For details, see [Configuring Validators](#configuring-validators).
+
+## API References:
+- [ConditionBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.ConditionBase.html) 
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+
 ---
 Go to [Conditions Home](./Home.md)
 

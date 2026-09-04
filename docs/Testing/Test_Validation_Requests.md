@@ -66,7 +66,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     expect(startDateResult.summaryMessage).toBe('the expected summary message');
 });
 ```
-The result of `ValueHostsManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
+The result of `ValueHostsManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Validation_Types.ValidationState.html) which looks like this:
 ```ts
 interface ValidationState {
     isValid: boolean;
@@ -75,7 +75,7 @@ interface ValidationState {
     asyncProcessing: boolean;
 }
 ```
-Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single `ValueHost`).
+Each [IssueFound object](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Validation_Types.IssueFound.html) is from a specific validator that was not valid. (There may be several for a single `ValueHost`).
 ```ts
 interface IssueFound {
     valueHostName?: string;
@@ -87,7 +87,7 @@ interface IssueFound {
 }
 ```
 ## Individual ValueHosts using valueHost.validate()
-If we want, we can test individual `ValueHosts` for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValueHostValidateResult.html) or null for no issue.
+If we want, we can test individual `ValueHosts` for more focused tests. The `ValueHost.validate() function` returns either [ValueHostValidationResult](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Validation_Types.ValueHostValidateResult.html) or null for no issue.
 ```ts
 interface ValueHostValidateResult {
     status: ValidationStatus;

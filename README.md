@@ -251,27 +251,5 @@ Edit as needed, although initially leave most of the classes it registers alone,
 For more, see [JivsServices](./docs/API/JivsServices/Home.md).
 
 # Digging in
-Please use these documents:
-
-- [Learning Jivs](./docs/Learning_Jivs/Home.md)
-- [Terminology](./docs/Terminology.md)
-- [ValueHostsManager Configuration Guide](./docs/ValueHostsManager_Configuration_Guide.md)
-- [The API](./docs/API/Home.md)
-  - [ValueHostsManager](./docs/API/ValueHostsManager/Home.md)
-  - [ValueHosts](./docs/API/ValueHosts/Home.md)
-  - [Validators](./docs/API/Validators/Home.md)
-  - [Conditions](./docs/API/Conditions/Home.md)
-  - [JivsServices](./docs/API/JivsServices/Home.md)
-  - [ValueHost Rules](./docs/API/ValueHost_Rules/Home.md)
-  - [Builder API](./docs/ValueHostsManager_Configuration_Guide.md)
-  - [ModelReader and ModelWriter](./docs/API/ModelReader_and_ModelWriter/Home.md)
-  - [ValidationState and IssueFound](./docs/API/Validators/Validation_State.md)
-
-## Additional topics
-- [Understanding Conditions within Validators](./docs/API/Conditions/Understanding_Conditions_within_Validators.md)
-- [Invoking Validation](./docs/API/Validators/Invoking_Validation.md)
-- [Handling ValidationState Changes](./docs/API/Validators/Handling_ValidationState_Changes.md)
-- [Data Types and Companion Services](./docs/API/Data_Type_Support/Home.md)
-- [Localization](./docs/Localization.md)
-- [Logging](./docs/API/JivsServices/Logging.md)
-- [Testing your work](./docs/Testing/Home.md)
+We have a massive documentation library. Start here:
+[Jivs Documentation Library](./docs/Home.md)

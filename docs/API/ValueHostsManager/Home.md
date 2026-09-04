@@ -258,7 +258,7 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
 - [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)
 - [ValueHostValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatableValueHostBase.ValueHostValidationState.html)
 - [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
-- [JivsServices](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_JivsServices.JivsServices.html)
+- [JivsServices class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_JivsServices.JivsServices.html)
 
 ---
 Go to [API Home](../Home.md)

@@ -56,7 +56,7 @@ builder.field('fieldname').requireText({
 ```
 Condition class: [`RequireTextCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextCondition.html)
 
-Condition config: [`RequireTextConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RequireTextConditionConfig.html)
+Condition config: [`RequireTextConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.RequireTextConditionConfig.html)
 ```ts
 interface RequireTextConditionConfig = {
     conditionType: ConditionType.RequireText;
@@ -97,7 +97,7 @@ builder.field('fieldname').notNull({
 ```
 Condition class: [`NotNullCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullCondition.html)
 
-Condition config: [`NotNullConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotNullConditionConfig.html)
+Condition config: [`NotNullConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.NotNullConditionConfig.html)
 ```ts
 interface NotNullConditionConfig = {
     conditionType: ConditionType.NotNull;
@@ -166,7 +166,7 @@ builder.field('fieldname').regExp(/^\d*$/,
 ```
 Condition class: [`RegExpCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpCondition.html)
 
-Condition config: [`RegExpConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpConditionConfig.html)
+Condition config: [`RegExpConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.RegExpConditionConfig.html)
 ```ts
 interface RegExpConditionConfig = {
     conditionType: ConditionType.RegExp;
@@ -207,7 +207,7 @@ builder.field('fieldname').range(1, 5,
 ```
 Condition class: [`RangeCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeCondition.html)
 
-Condition config: [`RangeConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RangeConditionConfig.html)
+Condition config: [`RangeConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.RangeConditionConfig.html)
 ```ts
 interface RangeConditionConfig = {
     conditionType: ConditionType.Comparison;
@@ -279,7 +279,7 @@ Condition classes: [`EqualToCondition`](http://jivs.peterblum.com/TypeDoc/classe
 [`GreaterThanCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanCondition.html),
 [`GreaterThanOrEqualCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.GreaterThanOrEqualCondition.html)
 
-Condition config: [`CompareToValueConditionBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CompareToValueConditionBaseConfig.html)
+Condition config: [`CompareToValueConditionBaseConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_AbstractClasses_CompareToValueConditionBase.CompareToValueConditionBaseConfig.html)
 ```ts
 interface CompareToValueConditionBaseConfig = {
     conditionType: ConditionType.[EqualTo, NotEqualTo, etc];
@@ -331,7 +331,7 @@ builder.field('fieldname').stringLength(100,
 ```
 Condition class: [`StringLengthCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthCondition.html)
 
-Condition config: [`StringLengthConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.StringLengthConditionConfig.html)
+Condition config: [`StringLengthConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.StringLengthConditionConfig.html)
 ```ts
 interface StringLengthConditionConfig = {
     conditionType: ConditionType.StringLength;
@@ -375,7 +375,7 @@ builder.field('fieldname').positive(
 ```
 Condition class: [`PositiveCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveCondition.html)
 
-Condition config: [`PositiveConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.PositiveConditionConfig.html)
+Condition config: [`PositiveConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.PositiveConditionConfig.html)
 ```ts
 interface PositiveConditionConfig = {
     conditionType: ConditionType.Positive;
@@ -415,7 +415,7 @@ builder.field('fieldname').integer(
 ```
 Condition class: [`IntegerCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerCondition.html)
 
-Condition config: [`IntegerConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.IntegerConditionConfig.html)
+Condition config: [`IntegerConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.IntegerConditionConfig.html)
 ```ts
 interface IntegerConditionConfig = {
     conditionType: ConditionType.Integer;
@@ -452,7 +452,7 @@ builder.field('fieldname').maxDecimals(2,
 ```
 Condition class: [`MaxDecimalsCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsCondition.html)
 
-Condition config: [`MaxDecimalsConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsConditionConfig.html)
+Condition config: [`MaxDecimalsConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.MaxDecimalsConditionConfig.html)
 ```ts
 interface MaxDecimalsConditionConfig = {
     conditionType: ConditionType.MaxDecimals;
@@ -490,7 +490,7 @@ builder.field('fieldname').dataTypeCheck({
 ```
 Condition class: [`DataTypeCheckCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckCondition.html)
 
-Condition config: [`DataTypeCheckConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckConditionConfig.html)
+Condition config: [`DataTypeCheckConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions.DataTypeCheckConditionConfig.html)
 ```ts
 interface DataTypeCheckConditionConfig = {
     conditionType: ConditionType.RequireText;
@@ -576,7 +576,7 @@ Condition classes: [`AllMatchCondition`](http://jivs.peterblum.com/TypeDoc/class
 [`AnyMatchCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.AnyMatchCondition.html),
 [`CountMatchesCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.CountMatchesCondition.html)
 
-Condition config: [`EvaluateChildConditionResultsBaseConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.EvaluateChildConditionResultsBaseConfig.html)
+Condition config: [`EvaluateChildConditionResultsBaseConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_AbstractClasses_EvaluateChildConditionResultsBase.EvaluateChildConditionResultsBaseConfig.html)
 
 ```ts
 interface EvaluateChildConditionResultsBaseConfig = {
@@ -646,9 +646,9 @@ builder.field('fieldname').when(
         summaryMessage: 'summary message',
     });	
 ```
-Condition class: [`WhenCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenCondition.html)
+Condition class: [`WhenCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions_WhenCondition.WhenCondition.html)
 
-Condition config: [`WhenConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.WhenConditionConfig.html)
+Condition config: [`WhenConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions_WhenCondition.WhenConditionConfig.html)
 ```ts
 interface WhenConditionConfig = {
     conditionType: ConditionType.When;
@@ -726,9 +726,9 @@ builder.field('fieldname').not(
         errorCode: 'invert'  // optional. Allows multiple not conditions in the same validator
     });	
 ```
-Condition class: [`NotCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotCondition.html)
+Condition class: [`NotCondition`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions_NotCondition.NotCondition.html)
 
-Condition config: [`NotConditionConfig`](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.NotConditionConfig.html)
+Condition config: [`NotConditionConfig`](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_ConcreteConditions_NotCondition.NotConditionConfig.html)
 ```ts
 interface NotConditionConfig = {
     conditionType: ConditionType.Not;
