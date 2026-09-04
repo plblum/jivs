@@ -45,7 +45,7 @@
  * // Create AllMatchesCondiiton with (existing AND new).
  * // Requires an errorcode because we've built a new condition rule
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
- *     .and(errorCode, (newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(10));
+ *     .and(errorCode, (newCondBuilder)=> newCondBuilder.fieldValue('field1').equalTo(10));
  * ```
  * Same as:
  * ```ts
@@ -69,12 +69,12 @@
  * // creates AnyMatchesCondiiton with (existing OR new).
  * // Requires an errorcode because we've built a new condition rule
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
- *     .or(errorCode, (newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(10));
+ *     .or(errorCode, (newCondBuilder)=> newCondBuilder.fieldValue('field1').equalTo(10));
  * ```
  * Use the WhenCondition to conditionally apply a new validation rule based on a custom condition.
  * ```ts
  * adapter.modify('fieldValue').validator(ConditionType.RequireText)
- *     .when((newCondBuilder)=> newCondBuilder.fieldName('field1').equalTo(true));
+ *     .when((newCondBuilder)=> newCondBuilder.fieldValue('field1').equalTo(true));
  * ```
  * Disable an existing validator.
  * ```ts
@@ -514,7 +514,7 @@ export class ModifyFieldBuilder
      * If called on a ValueHost already with an enabler, it will replace the existing enabler.
      * ```ts
      * builder.whenToEnable((childBuilder)=>
-     *  childBuilder.fieldName('Field2').equalTo('YES'));
+     *  childBuilder.fieldValue('Field2').equalTo('YES'));
      * builder.whenToEnable((childBuilder)=>
      *  childBuilder.conditionConfig(existingConditionConfig));
      * builder.whenToEnable(handler).any validator can be chained
@@ -600,7 +600,7 @@ export class ModifyValidatorBuilder
      * ```ts
      * builder.validator(ConditionType.RequireText).and('customErrorCode', 
      *  (newCondBuilder)=>
-     *      newCondBuilder.fieldName('Field2').equalTo('YES'));
+     *      newCondBuilder.fieldValue('Field2').equalTo('YES'));
      * ```
      * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.
@@ -619,7 +619,7 @@ export class ModifyValidatorBuilder
      * ```ts
      * builder.validator(ConditionType.RequireText).or('customErrorCode', 
      *  (newCondBuilder)=>
-     *      newCondBuilder.fieldName('Field2').equalTo('YES'));
+     *      newCondBuilder.fieldValue('Field2').equalTo('YES'));
      * ```
      * NOTE: If an AllMatchesCondition is created, it inherits the error code from the existing validator. 
      * @param builderCallback - A callback function that receives a new StartConditionBuilder.

@@ -33,7 +33,7 @@ Jivs has a lot of depth in its error message support.
 - Error messages are localizable with the [TextLocalizerService](#using-the-textlocalizerservice).
 
 ## Using the TextLocalizerService
-The `TextLocalizerService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [TextLocalizerService](../JivsServices/Localization.md#setup-for-validatorconfigerrormessage-and-summarymessage-properties).
+The `TextLocalizerService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [TextLocalizerService](../JivsServices/TextLocalizerService.md).
 
 Configure your error messages within your `createJivsServices()` function.
 

@@ -159,7 +159,7 @@ Your `ValueHost` configuration determines if formatting will happen.
     ```ts
     config.behaviors.activeCultureId = 'fr-FR';
     ```          
-    See also [Localization](../JivsServices/Localization.md).
+    See also [Localization](../../Localization.md).
 ### setTextValue() function
 Set the text value on a `FieldValueHost`. 
 - Optionally applies a `DataTypeParser` and sets the native value from the result.

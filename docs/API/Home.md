@@ -18,7 +18,7 @@
 - [Invoking Validation](./Validators/Invoking_Validation.md)
 - [Handling ValidationState Changes](./Validators/Handling_ValidationState_Changes.md)
 - [Data Types and Companion Services](./Data_Type_Support/Home.md)
-- [Localization](./JivsServices/Localization.md)
+- [Localization](../Localization.md)
 - [Logging](./JivsServices/Logging.md)
 - [Testing your work](../Testing/Home.md)
 
@@ -80,10 +80,9 @@ flowchart LR
     SERVICES --> CONVERTER["DataTypeConverter Factory"]
     SERVICES --> CONDITIONS["Conditions Factory"]
     SERVICES --> CULTURE["CultureService"]
+    SERVICES --> ERRORMESSAGES["TextLocalizerService"]
     SERVICES --> LOOKUP["LookupKeyFallBackService"]
     SERVICES --> CHECK["DataTypeCheckGenerator Factory"]
-    SERVICES --> LOCALIZATION["TextLocalizerService"]
-    SERVICES --> LOGGING["LoggerService"]
     SERVICES --> MORE["Many more services and factories"]
 ```
 
@@ -95,7 +94,8 @@ flowchart LR
 - [`DataTypeConverter`](./Data_Type_Support/DataTypeConverters_Service.md) – For converting values between types, such as a Date object to a number of seconds.
 - [`Conditions`](./Conditions/Creating_Your_Own.md)
 - [`CultureService`](./JivsServices/CultureServices.md) - Identifies the Cultures used by your app through ISO language/region codes.
+- [`TextLocalizerService`](./JivsServices/TextLocalizerService.md) - Supports validation error messages through a library of defaults and language localization.
 - [`LookupKeyFallbacksService`](./JivsServices/LookupKeyFallbackService.md) - Provides fallbacks for Lookup Keys so that if they cannot be matched to a parser, formatter, converter, etc, another Lookup Key will be used.
 - [`DataTypeCheckGenerator`](./Data_Type_Support/DataTypeCheckGenerator_Service.md) - Ensures the automatic generation of a "Data Type Check" validator on each `FieldValueHost` based on its data type.
 
-There are numerous other extensibility points on [`JivsServices`](./JivsServices/Home.md). Its where you will find [logging](./JivsServices/Logging.md) and [localization](./JivsServices/Localization.md), for instance.
+There are numerous other extensibility points on [`JivsServices`](./JivsServices/Home.md).

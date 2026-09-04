@@ -62,7 +62,7 @@ interface IJivsServices {
 > JivsServices employs lazy loading for many of its members.
 ### Services that you often have to setup
 - `cultureService` - Identifies the ISO language-region names that your app supports. See [CultureService](./CultureServices.md).
-- `textLocalizerService` - Supports localized strings for error messages, labels, and more. See [Localization](./Localization.md).
+- `textLocalizerService` - Supports localized strings for error messages, labels, and more. See [TextLocalizerService](./TextLocalizerService.md).
 - `loggerService` - Our default logger is often replaced within unit tests to use our [`CapturingLogger`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Support/CapturingLogger.ts). Its minLevel is often adjusted to one of these values: Debug, Info, Warn, Error, both in unit tests and `createJivsServices()` function. See [Logging](./Logging.md)
 - `lookupKeyFallbackService` - When you create a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), update this to give it a fallback Lookup Key that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
 - `valueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../ModelReader_and_ModelWriter/Home.md#value-adapter-rules).

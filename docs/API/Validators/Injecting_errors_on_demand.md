@@ -52,7 +52,7 @@ firstNameFld.attachEventListener('onchange', (evt)=> {
 ```
 ## Localizing your injected error
 Setup all localization in the `createJivsService()` function, with code associated
-with `TextLocalizerService`. See [Localization](../JivsServices/Localization.md) for more.
+with `TextLocalizerService`. See [TextLocalizerService](../JivsServices/TextLocalizerService.md) for more.
 
 Like with validator error messages, any value you directly supply can be overridden by 
 the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,

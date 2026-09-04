@@ -46,10 +46,13 @@ Each time its created, `ValueHostsManager` inherits the default culture from the
 
 Use this to override that default:
 ```ts
+// prior to creating the ValueHostsManager
+config.behaviors.activeCultureId = 'en';
 let vhm = new ValueHostsManager(config);
+// once the ValueHostsManager exists, change it at will
 vhm.behaviors.activeCultureId = 'es-MX';
 ```
-You can change that value on demand. However, don't setup ValueHostManager to be shared by multiple page requests if you allow for changes because your on demand change will impact all threads.
+You can change that value on demand. However, don't share `ValueHostManager` between multiple page requests if you allow for changes because your on demand change will impact all threads.
 
 ## API References
 - [CultureService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_CultureService.CultureService.html)
