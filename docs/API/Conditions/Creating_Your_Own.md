@@ -92,6 +92,15 @@ export function registerConditions(cf: ConditionFactory): void
 You can also extend the Builder API to support it.
 
 See this example: [jivs-examples/src/EvenNumberCondition.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EvenNumberCondition.ts)
+
+## API References:
+- [ConditionBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.ConditionBase.html) 
+- [ConditionConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html)
+- [RegExpCondition class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_ConcreteConditions.RegExpCondition.html)
+- [RegExpConditionBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_RegExpConditionBase.RegExpConditionBase.html)
+- [ConditionFactory class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ConditionFactory.ConditionFactory.html)
+
+
 ---
 Go to [Conditions Home](./Home.md)
 

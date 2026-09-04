@@ -40,7 +40,7 @@ Additional topics:
 
 API References:
 - [ConditionBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Conditions_AbstractClasses_ConditionBase.ConditionBase.html)
-- [ConditionFactory](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ConditionFactory.ConditionFactory.html)
+- [ConditionFactory class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ConditionFactory.ConditionFactory.html)
 
 ---
 Go to [API Home](../Home.md)

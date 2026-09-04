@@ -6,40 +6,12 @@
         "packages/jivs-engine/src/",
         "packages/jivs-builder/src/",
         "packages/jivs-configanalysis/src/",
-        "docs/Terminology.md",
-        "docs/Learning_Jivs/Home.md",
-        "docs/ValueHostsManager_Configuration_Guide.md",
-        "docs/Understanding_Builder.md"
+        "docs/Home.md",
+        "docs/Terminology.md"
     ],
-    "readme": "README.md",
+    "readme": "typedoc/EntryPoint.md",
     "projectDocuments": [
-        "docs/Terminology.md",
-        "docs/ValueHostsManager_Configuration_Guide.md",
-        "docs/Understanding_Builder.md",
-        "docs/Learning_Jivs/Home.md",
-        "docs/Learning_Jivs/Initializing_the_Client_Form.md",
-        "docs/Learning_Jivs/Integrating_Non_Jivs_Server_Validation.md",
-        "docs/Learning_Jivs/Intro_to_Creating_a_ValueHostsManager.md",
-        "docs/Learning_Jivs/Submitting_the_Client_Form.md",
-        "docs/Learning_Jivs/Understanding_Jivs.md",
-        "docs/Learning_Jivs/Understanding_Server_Side_Validation.md",
-        "docs/Learning_Jivs/Understanding_Value_Management.md",
-        "docs/Learning_Jivs/Using_Jivs_for_Server_Side_Validation.md",
-        "docs/Learning_Jivs/Using_the_ValueHostsManager_within_the_Client.md",
-        "docs/Learning_Jivs/Presentation/Accessible_Client_Validation_UI.md",
-        "docs/Learning_Jivs/Presentation/Field_Presentation_Field_Error_Displays.md",
-        "docs/Learning_Jivs/Presentation/Field_Presentation_of_Jivs_Validation.md",
-        "docs/Learning_Jivs/Presentation/Form_Presentation_of_Jivs_Validation.md",
-        "docs/Learning_Jivs/Presentation/From_Jivs_Validation_State_to_Client_Presentation.md",
-        "docs/Learning_Jivs/Presentation/Home.md",
-        "docs/Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md",
-        "docs/Learning_Jivs/Presentation/Presentation_Quick_Start.md",
-        "docs/Learning_Jivs/Presentation/The_Jivs_SimpleDom_Approach.md",
-        "docs/Learning_Jivs/Server_Pages/Home.md",
-        "docs/Learning_Jivs/Server_Pages/Server_pages_workflow_page_load.md",
-        "docs/Learning_Jivs/Server_Pages/Server_pages_workflow_page_save.md",
-        "docs/Learning_Jivs/Server_Pages/Server_pages_workflow_round_trip.md",
-        "docs/Learning_Jivs/Server_Pages/Server_pages_workflow_elements_changed.md"
+        "docs/Terminology.md"
     ],
     "entryPointStrategy": "expand",
     "exclude": [
@@ -53,7 +25,7 @@
     "excludePrivate": true,
     "plugin": ["typedoc-plugin-extras", "typedoc-plugin-merge-modules"],
     //NOTE: Plugin for mermaid, typedoc-plugin-mermaid, is not used because it does not render correctly for our diagrams in markdown
-    "customTitle": "Jivs",          //typedoc-plugin-extras
+    "customTitle": "Jivs Complete API",          //typedoc-plugin-extras
     "footerTypedocVersion": true,   //typedoc-plugin-extras
     "footerLastModified": true,      //typedoc-plugin-extras
     "mergeModulesRenameDefaults": false, // typedoc-plugin-merge-modules

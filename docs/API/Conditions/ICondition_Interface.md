@@ -29,7 +29,8 @@ As you can see, all require that you supply a **conditionType** value. That’s 
     - `Children` - Evaluating results of child Conditions. `AllMatchesCondition`, `AnyMatchesCondition`, and `CountMatchesCondition` all use this category.
     - `Undetermined` - For anything else.
     
-API Reference: [ICondition interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ICondition.html)
+## API References
+- [ICondition interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ICondition.html)
 
 ---
 Go to [Conditions Home](./Home.md)

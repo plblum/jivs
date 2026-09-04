@@ -43,7 +43,7 @@ export function createLookupKeyFallbackService(): ILookupKeyFallbackService
 }
 ```
 ## API References
-- [LookupKeyFallbackService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_LookupKeyFallbackService.LookupKeyFallbackService.html)
+- [LookupKeyFallbackService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_LookupKeyFallbackService.LookupKeyFallbackService.html)
 
 ---
 Go to [JivsServices Home](./Home.md)
