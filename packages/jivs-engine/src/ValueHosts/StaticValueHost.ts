@@ -9,7 +9,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { CalcValueHost, hasICalcValueHostSpecificMembers } from './CalcValueHost';
-import { toIValidatableValueHostBase } from '../Interfaces/ValidatableValueHostBase';
+import { toIValidatableValueHost } from '../Interfaces/ValidatableValueHostBase';
 
 
 /**
@@ -91,7 +91,7 @@ export function toIStaticValueHost(source: any): IStaticValueHost | null {
     if (source instanceof CalcValueHost)
         return null;
     // defenses for class types that are compatible but offer no different members
-    if (toIValueHost(source) && !toIValidatableValueHostBase(source) && !hasICalcValueHostSpecificMembers(source)) {
+    if (toIValueHost(source) && !toIValidatableValueHost(source) && !hasICalcValueHostSpecificMembers(source)) {
         return source as IStaticValueHost;
     }
     return null;

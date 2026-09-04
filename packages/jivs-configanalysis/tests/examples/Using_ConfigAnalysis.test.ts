@@ -2,10 +2,12 @@ import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Inte
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
 import {
-  LessThanCondition, LessThanConditionConfig, LessThanOrEqualCondition,
-  LessThanOrEqualConditionConfig, LessThanOrEqualValueCondition,
-  LessThanOrEqualValueConditionConfig, RequireTextCondition, RequireTextConditionConfig
+  RequireTextCondition, RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+  LessThanOrEqualCondition,
+  LessThanOrEqualConditionConfig
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
@@ -20,6 +22,7 @@ import { createMinimalJivsServices } from '../../examples/support';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
+import { LessThanConditionConfig, LessThanCondition } from '@plblum/jivs-engine/src/Conditions/ComparisonCondition_classes';
 
 
 /**
@@ -330,7 +333,7 @@ describe('Demonstrate the results from various use cases', () => {
             protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions | undefined): void {
                 builder.field('BirthDate', LookupKey.Date, {
                     parserLookupKey: LookupKey.Date
-                }).lessThanOrEqualValue(new Date(), {
+                }).lessThanOrEqual(new Date(), {
                     conversionLookupKey: LookupKey.Number   // from LookupKey.Date to LookupKey.Number
                 });
             }
@@ -338,15 +341,15 @@ describe('Demonstrate the results from various use cases', () => {
         test('Report with all Lookup Key results', () => {
             // We're using a different ValueHostRulesBase subclass, JustADateValueHostRules.
             // It has a single valueHost of data Type Date,
-            // with a LessThanOrEqualValue condition. It uses a parser.
+            // with a LessThanOrEqual condition. It uses a parser.
             // There should be one Lookup Key, "Date", with an identifier, converter, comparer, and parser.
 
             // Setup Services 
             let services = createBasicServices();    // start with no populated services.
 
-            services.conditionFactory.register<LessThanOrEqualValueConditionConfig>(
-                ConditionType.LessThanOrEqualValue,
-                (config) => new LessThanOrEqualValueCondition(config));
+            services.conditionFactory.register<LessThanOrEqualConditionConfig>(
+                ConditionType.LessThanOrEqual,
+                (config) => new LessThanOrEqualCondition(config));
             services.dataTypeConverterService.register(new UTCDateOnlyConverter());
             // no comparer supplied because with UTCDateOnlyConverter, the defaultComparer is used.
             services.dataTypeParserService.register(
@@ -595,7 +598,7 @@ describe('Demonstrate the results from various use cases', () => {
 
     test('throwOnErrors finds an error in ValueHostConfigs', () => {
         // We're using DateRangeFormRules.
-        // It requires support around LookupKey.Date and ConditionType.LessThanOrEqualValue. 
+        // It requires support around LookupKey.Date and ConditionType.LessThanOrEqual. 
         // We will not register those services, so the configuration will have errors.
 
         // setup Services
@@ -613,7 +616,7 @@ describe('Demonstrate the results from various use cases', () => {
 
     test('throwOnErrors and write to console finds an error in ValueHostConfigs', () => {
         // Using DateRangeFormRules.
-        // It requires support around LookupKey.Date and ConditionType.LessThanOrEqualValue. 
+        // It requires support around LookupKey.Date and ConditionType.LessThanOrEqual. 
         // We will not register those services, so the configuration will have errors.
         // setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors

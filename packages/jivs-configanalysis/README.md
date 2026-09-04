@@ -100,7 +100,7 @@ The test calls `explorer.reportToConsole()`. It outputs json like this:
 ```
 npm install --save @plblum/jivs-configanalysis
 ```
-[Documentation](../../docs/Testing_Configurations.md)
+[Documentation](../../docs/Testing/Testing_Configurations.md)
 
 [Source code](https://github.com/plblum/jivs/packages/jivs-configanalysis)
 

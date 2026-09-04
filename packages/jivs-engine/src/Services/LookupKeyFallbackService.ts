@@ -1,6 +1,6 @@
 /**
  * {@inheritDoc jivs-engine/Services/Types/ILookupKeyFallbackService!ILookupKeyFallbackService:interface } 
- * @module jivs-engine/Services/Types/ILookupKeyFallbackService
+ * @module jivs-engine/Services/ConcreteClasses/LookupKeyFallbackService
  */
 
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';

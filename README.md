@@ -4,8 +4,6 @@ I'm looking for an assessment of the architecture. I've been tweaking and refact
 it plenty in hopes it's easy to use and really delivers. Getting the API right early on
 avoids the hassle of breaking changes later. --- Peter Blum*
 
-*For the full API, go to [http://jivs.peterblum.com/typedoc](http://jivs.peterblum.com/typedoc)*
-
 ## What is Jivs?
 <details open>
 Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
@@ -36,9 +34,9 @@ The UI uses that information to change the visuals, like showing the error messa
 
 ## When to use Jivs?
 <details>
--	Your app needs to validate values, whether from user input or Model properties.
--	Your app uses JavaScript or TypeScript
--	Your app targets the browser and/or Node.js
+- Your app needs to validate values, whether from user input or Model properties.
+- Your app uses JavaScript or TypeScript
+- Your app targets the browser and/or Node.js
 </details>
 
 ## What features does Jivs offer?
@@ -54,7 +52,7 @@ Some of what follows expands on those topics.
 ### Validation rule features
 A validation rule is a single _condition_ that evaluates the incoming data and determines if it is valid or not. There may be several distinct rules on a single input, such as "requires a value", "must be a date", etc. It is the heart of input validation.
 
--	Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
+- Validation rules can be configured by the business logic layer, allowing UI widgets to remain unaware of validation rules, but still supply suitable error messages. Jivs notifies UI widgets with validation outcomes.
     ```ts
     export class PersonModelRules extends ValueHostRulesBase {
       protected configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void {
@@ -63,16 +61,16 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
       }
     }
     ```
--	The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
-      ```ts
-      export class PersonFormEditorRules 
+- The UI may introduce its own validation rules too, either to compliment those from business logic or as an alternative to having business logic supply them.
+    ```ts
+    export class PersonFormEditorRules 
         extends PersonModelRules 
         implements IAdaptModelRulesToForm {
         protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void {
           // apply some properties to the fields and validators
           adapter.modify('firstName', {label: 'First Name'}).validator(ConditionType.RequireText, '{Label} is required.');
           adapter.modify('lastName', {label: 'Last Name'}).whenToEnable((whenBuilder) =>
-            whenBuilder.fieldValue('checkbox1').equalToValue(true));
+            whenBuilder.fieldValue('checkbox1').equalTo(true));
           // the UI adds its own field that is used in the previous line.
           adapter.field('checkbox1', LookupKey.Boolean);
         }
@@ -81,36 +79,36 @@ A validation rule is a single _condition_ that evaluates the incoming data and d
     > The most important concept here is that business logic owns the rules, and the UI owns the appearance.
     So you cannot modify the rules.
 - Provides "Condition" objects to define the validation rules.
-    - Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](http://jivs.peterblum.com/typedoc/enums/Conditions_Types.ConditionType.html)
-    - Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate. [Learn more.](#conditions-the-validation-rules)
+    - Some of the supplied conditions are: Require, Regular Expression, Range, Compare Two Values, String Length, Not Null, All Match and Any Match. Use All and Any Match to build complex validation rules. [See a complete list.](./docs/API/Conditions/Conditions_Included_with_Jivs.md)
+    - Create your own validation rules by defining your own Condition objects. Conditions support asynchronous evaluate, as often the server has the info needed to validate.
 
--	Most validation rules come from business logic. The UI's inputs are often textboxes, where a string representing the native value is entered. So the UI is responsible for adding validation for when the parser fails. Jivs automatically injects the "Data Type Check" validation rule to handle this.
--	Sometimes the UI must selectively enable a rule from business logic. It can wrap the validation rule in a "WhenCondition" to handle this.
+- Most validation rules come from business logic. The UI's inputs are often textboxes, where a string representing the native value is entered. So the UI is responsible for adding validation for when the parser fails. Jivs automatically injects the "Data Type Check" validation rule to handle this.
+- Sometimes the UI must selectively enable a rule from business logic. It can wrap the validation rule in a "WhenCondition" to handle this.
 
--	Taking a single responsibility pattern approach, comparison Conditions (equals, greater than, range, etc) offload data type-specific operations to other classes. That means you don't have to write another comparison validator when introducing a new data type. Instead, you write a few objects that support your data type and register them with the appropriate factories. The existing Conditions will continue to work.
+- Taking a single responsibility pattern approach, comparison Conditions (equals, greater than, range, etc) offload data type-specific operations to other classes. That means you don't have to write another comparison validator when introducing a new data type. Instead, you write a few objects that support your data type and register them with the appropriate factories. The existing Conditions will continue to work.
   
 - You can supply values into the validation rules from several sources:
-  + Fields - Your UI inputs, model properties, or anything else that allows change
+    - Fields - Your UI inputs, model properties, or anything else that allows change
   and needs validation.
-  + Static - Static values, like Today's date, or the current culture identifier.
-  + Calculated - Runs a calculation function whose result is its value.
+    - Static - Static values, like Today's date, or the current culture identifier.
+    - Calculated - Runs a calculation function whose result is its value.
   
-  Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
+    Within the validation rule, just assign the name of a "value host" and you can expect its value to be used in validation.
 
-  In this example, the lessThanOrEqual validator gets its value from NumOfDays, a static value, and DiffDays, a calculated value.
-  ```ts
-  builder.field('StartDate', LookupKey.Date)
+    In this example, the lessThanOrEqual validator gets its value from NumOfDays, a static value, and DiffDays, a calculated value.
+    ```ts
+    builder.field('StartDate', LookupKey.Date)
     .lessThan('EndDate')
     .lessThanOrEqual('NumOfDays', null, 'DiffDays',
-      'The two dates must be less than {CompareTo} days apart.');
-  builder.field('EndDate', LookupKey.Date, { label: 'End date' });
+        'The two dates must be less than {CompareTo} days apart.');
+    builder.field('EndDate', LookupKey.Date, { label: 'End date' });
 
-  // provide a calculation for StartDate <= NumOfDays
-  builder.calc('DiffDays', LookupKey.Number, this.differenceBetweenDates);
+    // provide a calculation for StartDate <= NumOfDays
+    builder.calc('DiffDays', LookupKey.Number, this.differenceBetweenDates);
 
-  // provide a constant for the number of days used in the calculation
-  builder.static('NumOfDays', LookupKey.Number);
-  ```  
+    // provide a constant for the number of days used in the calculation
+    builder.static('NumOfDays', LookupKey.Number);
+    ```  
 ### Error message features
 The error message guides the user into understanding what is invalid and often suggests how to correct it. For example "Enter a date in the form MM/DD/YYYY". A poorly written error message will not be helpful. So Jivs has a lot of depth in its error message support.
 
@@ -143,10 +141,10 @@ The error message guides the user into understanding what is invalid and often s
 - Jivs can provide every error on a field, not just the first one found, to the UI ensuring thorough feedback and guidance.
 - When an error has been corrected, Jivs notifies the UI, which may show a checkmark to indicate the fix was accepted.
 - When you ask Jivs to validate, there are times that some validators should get skipped for better user experience.
-  + Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
-  + Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
-  + Validators can be wrapped in the WhenCondition to disable themselves based on a rule. For example, unless a checkbox is marked, an associated text box will not report errors. Also the containing field can be configured to disable all of its validators based on a rule.
-  + If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
+    - Run form validation after the form is setup can skip the required validators, as it does not make sense to call out errors when the user hasn't had a chance to edit those fields.
+    - Run field validation as the user types. Only these validators make sense to interactively update error messages: Required, regular expression, and string length.
+    - Validators can be wrapped in the WhenCondition to disable themselves based on a rule. For example, unless a checkbox is marked, an associated text box will not report errors. Also the containing field can be configured to disable all of its validators based on a rule.
+    - If the user has edited a field and it has yet to be validated, the form reports "do not save", helping prevent form submission without validation.
 
 ### Data submission features
 Data submission has 3 phases to ensure nothing illegal gets through:
@@ -154,14 +152,14 @@ Data submission has 3 phases to ensure nothing illegal gets through:
 - Upon receiving the form's data, the server again must validate that data. This is key to protect against hackers attempts to bypass the client-side validation. If your server is using Node.js, Jivs can handle this using the same configuration you created for the client-side.
 
   The server's business logic may run additional validation rules that may fail or the act of saving itself fails.
-- If the server finds any issues preventing saving, it can package up the errors to send back to the client, where Jivs will update the form accordingly. Jivs is able to replace server's error messages with those developed for the UI and even assign them to the appropriate inputs. Check out an actual example here: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts).
+- If the server finds any issues preventing saving, it can package up the errors to send back to the client, where Jivs will update the form accordingly.
 
 ### Deep support for data types
 You know that a number can represent a unit of measurement, currency value, percentage and much more. Strings can represent phone numbers, names, product codes, etc. Dates can represent expiry (month/year), date only (omit time), time of day (omit date), etc.
 
 Jivs wants you to tell it about your usages, not just of built-in primitives, but also of any data types you introduce. 
 
-It uses "Lookup Keys", strings that identifies the data type more precisely. [See a list of those supplied](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html). When configuring a field, specify its Lookup Key to establish the data type. You will immediately get benefits around that data type like formatting error message tokens, parsing text, and validation specific to that data type.
+It uses "Lookup Keys", strings that identifies the data type more precisely. [See a list of those supplied](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html). When configuring a field, specify its Lookup Key to establish the data type. You will immediately get benefits around that data type like formatting error message tokens, parsing text, and validation specific to that data type.
 
 In this example, we immediately get the benefits for a validator to confirm the text is a date and to parse from text to a Date object.
 ```ts
@@ -173,22 +171,12 @@ We encourage you to add to our list. For example, add a lookup key for "EmailAdd
 Jivs is designed around the services and factory patterns. Most of its types, whether focused classes or full services are built using interfaces, allowing extension and replacement.
 
 Jivs accommodates unique usage scenarios through extensive customizability:
-- Formatters: Convert values into the strings shown in error message tokens. For instance, configure error messages to show dates in an abbreviated format rather than a short date format using third party localization library.
-- Converters: During validation, often a supplied value needs to be converted before actually validating it. For example, you supply JavaScript Date object and want to treat it as one of these: anniversary, expiry, total days, date with time, or time alone. There are many more use cases for converters. See [Converters](#datatypeconverters).
 - Parsers: Transform the strings from your inputs into their native types.
-- Identifiers: Integrate custom objects to be treated as standard data types, enabling complex comparisons. For example, an object denoting "tomorrow" or "next month" can be converted to a Date object for comparison purposes.
-- Comparers: Supports Conditions that compare two values so they can handler your non-standard data types. 
-
-You may prefer to entirely replace the built-in versions. For example, Jivs formatters use the [Intl class built into JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl). You can replace it with your preferred localization library.
-
-Almost all objects in Jivs are based upon interfaces, allowing you to replace them. 
-
-- Consider switching to your preferred libraries.
-- Introduce new classes by registering them with factories.
-- Even Jivs own services and factories are replaceable.
+- Formatters: Convert values into the strings shown in error message tokens. For instance, configure error messages to show dates in an abbreviated format rather than a short date format using third party localization library.
+- Converters: During validation, often a supplied value needs to be converted before actually validating it.
   
 ### Logging and diagnostics
-- Jivs includes a logging object to help you diagnose issues. Like everything else, logging has an interface, so you can replace the built-in Console logging with anything you like.
+- Jivs includes a logging object to help you diagnose issues.
 - Logging only works well if the code base uses it - and avoids overusing it causing inefficiencies. We've used it quite a bit for debugging/diagnostics level cases, but all logging is "lazy", only requesting the logging data when the logging level permits.
 - The Logging base class has a filtering model that allows you to selectively use a lower logging level based on what you want to focus on. So you can keep logging all errors, and only get info or debug level content from the validation process. 
 
@@ -196,15 +184,29 @@ Almost all objects in Jivs are based upon interfaces, allowing you to replace th
 Elsewhere we've mentioned that Jivs unit tests have nearly 100% code coverage. Your code should be able to write effective tests covering validation too. To that end:
 - By being a service and by using dependency injection throughout, you can write those tests without having HTML involved. Your focus can be "given this input value, what is the validation result?"
 - Your tests can use logging at a debugging level to further expose what happened when a test fails.
-- Dependency injection involves separating configuration from executing code. Often its not obvious what DI resolves, or if there are configuration errors until its consumed. Jivs provides a tool — the Config Analysis Service — to help. Activate it during development and testing to get a report of errors in the configuration. It also can reveal the final configuration of each Lookup Key: I want my "EmailAddress" Lookup Key to use X, Y, and Z. Did that actually happen?
+- Dependency injection involves separating configuration from executing code. Often its not obvious what DI resolves, or if there are configuration errors until its consumed. Jivs provides a tool — the **Config Analysis Service** — to help. Activate it during development and testing to get a report of errors in the configuration. It also can reveal the final configuration of each Lookup Key: I want my "EmailAddress" Lookup Key to use X, Y, and Z. Did that actually happen?
 
 ### Single Source of Truth
 Single Source of Truth — SSOT — is a popular buzzword, but is also a great pattern. Jivs can be the SSOT of your model in a form!
 > Using Jivs for SSOT is entirely optional. It just fits well in the role.
 
-Each UI input or model property is represented by a "Value Host". That object knows the name, data type, and its current value, because that is needed for validation. It also knows how to parse text values and format output for error message tokens. You can always expect it to have the latest values and if it parsed correctly, the actual value that you may store in the model... so long as its valid, which the Value Host also knows.
+When using Jivs, each Model property keeps its value in two places in the UI:
+- The UI editor widget
+- Jivs own ValueHostsManager
 
-When you setup your form, why not configure Jivs to represent your entire model and assign all initial values into it? Get your initial form values from it. You already have to write code to report value changes from input into Jivs, keeping it up-to-date. When submitting, reassemble your model from its values. 
+The value stored in ValueHostsManager is already converted from the editor's string to the native type required by the Model property. So why not use it when reading to or writing from the Model?
+```mermaid
+flowchart LR
+    MODEL["Model"] --> VHM["ValueHostsManager"]
+    VHM --> INPUT["Editor Elements"]
+```
+```mermaid
+flowchart LR
+    INPUT["Editor Elements"] --> VHM["ValueHostsManager"]
+    VHM --> MODEL["Model"] 
+``` 
+If you do this, Jivs will handle the parsers and formatters you normally write for converting between native value and the editor's value. That will reduce those scope of your coding, and use Jivs' well-tested parsers and formatters.
+
 </details>
 
 
@@ -238,33 +240,38 @@ npm install --save @plblum/jivs-engine
 
 **For each application**, go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
 
-Add the contents of this file to your project. It results in several new functions starting with this one.
+Add the contents of the `create_services.ts` file to your project. It results in several new functions starting with this one.
 ```ts
-export function createJivsServices(... parameters ...): JivsServices {
+export function createJivsServices(... parameters ...): IJivsServices {
 …
 }
-// also many register() functions plus configureCultures() and createTextLocalizerService
+// plus numerous other functions
 ```
-Once it transpiles, you can edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-For more, see [JivsServices](#jivsservices).
+Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
+For more, see [JivsServices](./docs/API/JivsServices/Home.md).
 
 # Digging in
 Please use these documents:
 
-- [Learning Jivs](./docs/Learning_Jivs/Learning_Jivs_Home.md)
+- [Learning Jivs](./docs/Learning_Jivs/Home.md)
 - [Terminology](./docs/Terminology.md)
-- [Configuring the ValueHosts](./docs/ValueHostsManager_Configuration_Guide.md)
-- [The API](./docs/Jivs_API.md)
-  + [Conditions - the validation rules](./docs/Jivs_API.md#conditions-the-validation-rules)
-  + [ValueHosts](./docs/Jivs_API.md#valuehosts)
-  + [Validators](./docs/Jivs_API.md#validators-connecting-conditions-to-error-messages)
-  + [ValueHostsManager](./docs/Jivs_API.md#valuehostsmanager)
-  + [Rules](./docs/Jivs_API.md#valuehost-rules)
-  + [JivsServices](./docs/Jivs_API.md#jivsservices)
-- Supporting topics
-  + [Creating your own Conditions](./docs/Jivs_API.md#creating-your-own-conditions)
-  + [Lookup Keys: DataTypes and Companion tools](./docs/Jivs_API.md#lookup-keys-data-types-and-companion-tools)
-  + [Localization](./docs/Jivs_API.md#localization)
-  + [Validation Deep Dive](./docs/Jivs_API.md#validation-deep-dive)
-  + [Logging](./docs/Jivs_API.md#logging)
-  + [Testing your work](./docs/Jivs_API.md#testing-your-work)
+- [ValueHostsManager Configuration Guide](./docs/ValueHostsManager_Configuration_Guide.md)
+- [The API](./docs/API/Home.md)
+  - [ValueHostsManager](./docs/API/ValueHostsManager/Home.md)
+  - [ValueHosts](./docs/API/ValueHosts/Home.md)
+  - [Validators](./docs/API/Validators/Home.md)
+  - [Conditions](./docs/API/Conditions/Home.md)
+  - [JivsServices](./docs/API/JivsServices/Home.md)
+  - [ValueHost Rules](./docs/API/ValueHost_Rules/Home.md)
+  - [Builder API](./docs/ValueHostsManager_Configuration_Guide.md)
+  - [ModelReader and ModelWriter](./docs/API/ModelReader_and_ModelWriter/Home.md)
+  - [ValidationState and IssueFound](./docs/API/Validators/Validation_State.md)
+
+## Additional topics
+- [Understanding Conditions within Validators](./docs/API/Conditions/Understanding_Conditions_within_Validators.md)
+- [Invoking Validation](./docs/API/Validators/Invoking_Validation.md)
+- [Handling ValidationState Changes](./docs/API/Validators/Handling_ValidationState_Changes.md)
+- [Data Types and Companion Services](./docs/API/Data_Type_Support/Home.md)
+- [Localization](./docs/Localization.md)
+- [Logging](./docs/API/JivsServices/Logging.md)
+- [Testing your work](./docs/Testing/Home.md)

@@ -1,10 +1,11 @@
-import { ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
-import { IValueHost, ValueHostConfig } from "../../src/Interfaces/ValueHost";
+import { ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
+import { IValueHost, ValueHostConfig, ValueHostInstanceState } from "../../src/Interfaces/ValueHost";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 
 
 
-export class Publicify_ValueHostsManager extends ValueHostsManager
+export class Publicify_ValueHostsManager<TState extends ValueHostsManagerInstanceState = ValueHostsManagerInstanceState>
+    extends ValueHostsManager<TState>
 {
     public getValueHostConfig(valueHostName: string): ValueHostConfig | null
     {
@@ -20,9 +21,23 @@ export class Publicify_ValueHostsManager extends ValueHostsManager
     public get publicify_valueHostConfigs(): Map<string, ValueHostConfig> {
         return this.valueHostConfigs;
     }
- 
+    public get publicify_InstanceState(): ValueHostsManagerInstanceState {
+        return this.instanceState;
+    }
     public publicify_invokeOnConfigChanged(): void
     {
         super.invokeOnConfigChanged();
     }
+
+    override notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void
+    {
+        super.notifyValueHostInstanceStateChanged(valueHost, instanceState);
+        if (this.onNotifyValueHostInstanceStateChanged) {
+            this.onNotifyValueHostInstanceStateChanged(valueHost, instanceState);
+        }
+    }
+    /**
+     * Callback hook for when a ValueHost's instance state changes.
+     */
+    public onNotifyValueHostInstanceStateChanged?: (valueHost: IValueHost, instanceState: ValueHostInstanceState) => void;
 }

@@ -6,7 +6,7 @@ One of the main advantages of using Jivs on both the client and server is that t
 
 For example, a shared rules class might define the value validation for a `Person` Model:
 
-```ts id="3bvq3o"
+```ts
 export class PersonModelRules extends ValueHostRulesBase {
     protected override configureRules(
         builder: IValueHostsManagerConfigBuilder,
@@ -35,7 +35,7 @@ That keeps the Model's ValueHost validation rules in one codebase rather than ma
 
 The same server-side process introduced earlier now has Jivs implementing the value-management stages:
 
-```mermaid id="t594mb"
+```mermaid
 flowchart LR
     REQUEST["Receive Request"] --> PREPARE["Prepare Values"]
     PREPARE --> VALIDATE["Validate Values<br/>with ValueHostsManager"]
@@ -51,7 +51,7 @@ Jivs does not replace request handling, Model-level business logic, persistence,
 
 Server-side code uses the same creation pattern introduced earlier:
 
-```ts id="1lsgpl"
+```ts
 const services = createJivsServices('en-US');
 const rules = new PersonModelRules(services);
 const config = rules.configure();
@@ -63,7 +63,7 @@ The important difference from a client-side form is which rules class is used.
 
 A form may derive from `PersonModelRules` to add labels, messages, ElementIdentifiers, or other UI-specific adaptations. The server normally uses the shared Model rules directly.
 
-```mermaid id="ovbnsp"
+```mermaid
 flowchart LR
     MODEL["PersonModelRules"] --> SERVER["Server ValueHostsManager"]
     MODEL --> FORM["PersonFormRules"]
@@ -82,8 +82,8 @@ JSON may already have been deserialized into values suitable for validation and 
 
 `ModelReader` supplies Native Values from an object to the configured `FieldValueHosts`:
 
-```ts id="2sqbw9"
-const reader = new ModelReader(vhm, requestData);
+```ts
+const reader = new ModelReader(vhm, requestData, options);
 reader.readFromModel();
 ```
 
@@ -91,7 +91,7 @@ reader.readFromModel();
 
 It uses the Model property mapping configured for each `FieldValueHost`. When the ValueHost name differs from the Model property name, configure `propertyName`:
 
-```ts id="kebuw2"
+```ts
 builder.field('FirstName', LookupKey.String, {
     propertyName: 'firstName'
 });
@@ -101,11 +101,11 @@ This mapping lets `ModelReader` obtain the Native Value from `requestData.firstN
 
 Sometimes the Model value itself needs adjustment before it can be assigned to the `FieldValueHost`. For example, the Model and Jivs may use different values to represent an unassigned field.
 
-Use `modelReaderRules` to adapt the value during transfer:
+Use `modelReaderRule` to adapt the value during transfer:
 
-```ts id="4kc105"
+```ts
 builder.field('Count', LookupKey.Number, {
-    modelReaderRules: {
+    modelReaderRule: {
         when: 'undefined',
         then: '0'
     }
@@ -120,7 +120,7 @@ See [Value Adapter rules](../Jivs_API.md#value-adapter-rules) for the available 
 
 HTML form posts commonly supply a dictionary of Text Values. With Express, `express.urlencoded()` can populate that dictionary from the request body:
 
-```ts id="83fm9r"
+```ts
 const express = require('express');
 const app = express();
 
@@ -129,7 +129,9 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/submit', (req, res) => {
     const formValues = req.body;
 
-    const reader = new FormReader(vhm, formValues);
+    const reader = new FormReader(vhm, formValues,{
+        alignEnabled: true  // recommended to setup ValueHosts enabled flags based on the presence of a form entry
+    });
     reader.readFromModel();
 
     const validationState = vhm.validate();
@@ -142,9 +144,9 @@ app.post('/submit', (req, res) => {
 
 Application code can also supply individual values when needed:
 
-```ts id="rii7mf"
-vhm.vh('BirthDate').setValue(nativeBirthDate);
-vhm.vh('BirthDateText').setTextValue(birthDateText);
+```ts
+vhm.vh.field('BirthDate').setValue(nativeBirthDate);
+vhm.vh.field('BirthDateText').setTextValue(birthDateText);
 ```
 
 Use `setValue()` for Native Values and `setTextValue()` for Text Values.
@@ -153,7 +155,7 @@ Use `setValue()` for Native Values and `setTextValue()` for Text Values.
 
 Once the request values have been supplied, validate the complete `ValueHostsManager`:
 
-```ts id="5r6kua"
+```ts
 const validationState = vhm.validate();
 
 if (validationState.doNotSave) {
@@ -173,7 +175,7 @@ If validation succeeds, the Native Values are ready for Model construction.
 
 `ModelWriter` copies the validated Native Values into the Model:
 
-```ts id="nd8v08"
+```ts
 const person = new Person();
 const writer = new ModelWriter(vhm, person);
 writer.writeToModel();
@@ -181,7 +183,7 @@ writer.writeToModel();
 
 `ModelWriter` needs to know which Model property corresponds to each `FieldValueHost`. When the ValueHost name differs from the Model property name, configure `propertyName`:
 
-```ts id="6ji3uj"
+```ts
 builder.field('FirstName', LookupKey.String, {
     propertyName: 'firstName'
 });
@@ -191,7 +193,7 @@ This maps the `FirstName` ValueHost to `person.firstName`. The same mapping is u
 
 Sometimes the Native Value also needs adjustment before it is assigned to the Model. Use `modelWriterRules` to adapt the value during transfer:
 
-```ts id="gtq6ao"
+```ts
 builder.field('FirstName', LookupKey.String, {
     modelWriterRules: {
         when: 'emptystring',
@@ -208,13 +210,13 @@ See [Value Adapter rules](../Jivs_API.md#value-adapter-rules) for the available 
 
 After Jivs validation succeeds, later application logic may discover additional validation issues. Gather these into a single `IssueFound[]` as processing continues:
 
-```ts id="3vge9g"
+```ts
 const issuesFound: IssueFound[] = [];
 ```
 
 Each issue uses the `IssueFound` datatype:
 
-```ts id="jtzc67"
+```ts
 interface IssueFound {
     errorMessage: string;
     errorCode?: string;
@@ -236,7 +238,7 @@ Because both sides use Jivs in this path, server code can usually supply the Jiv
 
 For example:
 
-```ts id="ahrckv"
+```ts
 issuesFound.push({
     errorMessage: 'This email address is already in use.',
     errorCode: 'EmailAlreadyUsed',
@@ -259,7 +261,7 @@ Model validation is useful for rules that need the completed Model or informatio
 
 Pass the completed Model to the application's broader business logic and gather any issues it finds:
 
-```ts id="32qmxz"
+```ts
 issuesFound.push(
     ...validatePersonBeforeSave(person)
 );
@@ -282,7 +284,7 @@ Some problems occur later and do not belong to this stage:
 
 Once value validation and Model validation succeed, continue with the application's normal operation:
 
-```ts id="cbkn3s"
+```ts
 const saveResult = await savePerson(person);
 ```
 
@@ -296,7 +298,7 @@ The operation can still produce one of three outcomes:
 
 Business logic does not need to know about Jivs or `IssueFound`. When it returns validation-like errors in the application's normal error format, convert them at the Jivs integration boundary:
 
-```ts id="kztood"
+```ts
 if (saveResult.issues.length > 0) {
     issuesFound.push(
         ...toIssuesFound(saveResult.issues)
@@ -314,14 +316,14 @@ Operational failures use the application's normal error response instead.
 
 For Jivs validation alone:
 
-```ts id="a2droz"
+```ts
 const validationPayload =
     vhm.toValidationPayload(null);
 ```
 
 When later application processing has gathered additional issues:
 
-```ts id="zojig2"
+```ts
 const validationPayload =
     vhm.toValidationPayload(issuesFound);
 ```
@@ -332,7 +334,7 @@ Place that string wherever the application's response contract carries validatio
 
 For example, it can be a string property in a JSON response:
 
-```http id="fkvets"
+```http
 HTTP/1.1 200 OK
 Content-Type: application/json
 
@@ -343,7 +345,7 @@ Content-Type: application/json
 
 or carried in an HTTP header:
 
-```http id="5jc4n0"
+```http
 HTTP/1.1 200 OK
 Jivs-Validation: <encoded Jivs validation payload string>
 ```
@@ -358,7 +360,7 @@ Published APIs can use the same Jivs validation process without adopting these p
 
 The final response depends on the outcome of the server-side process:
 
-```mermaid id="fw3a2s"
+```mermaid
 flowchart LR
     VALIDATION["Validation Issues"] --> VR["Jivs Validation Payload String"]
     FAILURE["Operational Failure"] --> ER["Application Error Response"]
@@ -371,7 +373,7 @@ Validation results use the application's chosen transport for the Jivs Validatio
 
 The complete flow uses the same Jivs setup and processing stages shown throughout this document:
 
-```ts id="p4jco1"
+```ts
 async function processPersonRequest(
     requestData: PersonRequestData
 ): Promise<SavePersonResponse> {
@@ -440,7 +442,7 @@ The server sends the Jivs Validation Payload as an opaque string. On the client,
 
 When transferred validation messages will be displayed in HTML, use the supplied `htmlEncoder`:
 
-```ts id="dt6f8i"
+```ts
 vhm.fromValidationPayload(
     response.validationPayload,
     htmlEncoder
@@ -449,7 +451,7 @@ vhm.fromValidationPayload(
 
 If HTML encoding is not needed, the payload can also be restored without an encoder:
 
-```ts id="wfqxm4"
+```ts
 vhm.fromValidationPayload(response.validationPayload);
 ```
 
@@ -461,4 +463,4 @@ The complete client submission flow is covered in [Submitting the Client Form](S
 
 For servers using another validation system, continue with [Integrating Non-Jivs Server Validation](Integrating_Non_Jivs_Server_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

@@ -42,7 +42,7 @@ export interface IDataTypeComparerService extends IDataTypeService<IDataTypeComp
     * let comparisonResult = services.dataTypeComparerService.compare(convertedResult.value, 5, LookupKey.Integer, null);
     * ```
     * ## Condition objects
-    * Many Condition objects use this compare() function, such as RangeCondition, EqualToValueCondition, etc.
+    * Many Condition objects use this compare() function, such as RangeCondition, EqualToCondition, etc.
     * They have these properties on their Config objects to provide conversion prior to comparision:
     * - conversionLookupKey
     * - secondConversionLookupKey

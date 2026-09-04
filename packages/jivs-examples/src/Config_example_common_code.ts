@@ -17,15 +17,18 @@ import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/Bu
 import {
     DataTypeCheckCondition,
     DataTypeCheckConditionConfig,
-    LessThanCondition,
-    LessThanConditionConfig,
-    LessThanOrEqualCondition,
-    LessThanOrEqualConditionConfig,
     NotNullCondition,
     NotNullConditionConfig,
     RequireTextCondition,
     RequireTextConditionConfig
 } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import {
+    LessThanCondition,
+    LessThanConditionConfig,
+    LessThanOrEqualCondition,
+    LessThanOrEqualConditionConfig,
+
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { NumberFormatter, StringFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';

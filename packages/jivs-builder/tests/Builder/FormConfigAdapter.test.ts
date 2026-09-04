@@ -95,8 +95,7 @@ describe('constructor', () => {
         let testItem = new FormConfigAdapter(state);
         expect(testItem.onConfigChanged).toBeNull();
         expect(testItem.notifyValidationStateChangedDelay).toBe(0);
-        expect(testItem.savedInstanceState).toBeNull();
-        expect(testItem.savedValueHostInstanceStates).toBeNull();
+        expect(testItem.capturedState).toBeUndefined();
         expect(testItem.onTextValueChanged).toBeNull();
         expect(testItem.onValueHostValidationStateChanged).toBeNull();
         expect(testItem.onValidationStateChanged).toBeNull();
@@ -1729,7 +1728,7 @@ describe('whenToEnable()', () => {
         let modifyBuilder = formAdapter.modify('Field1');
         let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
         let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
-        result.whenToEnable((childBuilder) => childBuilder.parentValue().equalToValue(10));
+        result.whenToEnable((childBuilder) => childBuilder.parentValue().equalTo(10));
         let vh1 = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
         let expectedConfig: FieldValueHostConfig = {
             valueHostType: ValueHostType.Field,
@@ -1739,7 +1738,7 @@ describe('whenToEnable()', () => {
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
-                            conditionType: ConditionType.EqualToValue,
+                            conditionType: ConditionType.EqualTo,
                             secondValue: 10
                         },
                         thenConfig: {
@@ -1762,7 +1761,7 @@ describe('whenToEnable()', () => {
         existingValidator.conditionConfig = null!;
         let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
         expect(() => {
-            result.whenToEnable((childBuilder) => childBuilder.parentValue().equalToValue(10));
+            result.whenToEnable((childBuilder) => childBuilder.parentValue().equalTo(10));
         }).toThrow(/condition is null/);
     });
     // second parameter does not take any action, meaning it has no child condition for the When. Throws

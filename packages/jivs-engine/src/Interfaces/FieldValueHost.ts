@@ -2,10 +2,10 @@
  * @module jivs-engine/ValueHosts/Types/FieldValueHost
  */
 import { ValueAdapterRule } from './ValueAdapterService';
-import { IValidatableValueHostBase, toIValidatableValueHostBaseCallbacks } from './ValidatableValueHostBase';
+import { IValidatableValueHost, toIValidatableValueHostCallbacks } from './ValidatableValueHostBase';
 import
     {
-        IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
+        IValidatorsValueHost, IValidatorsValueHostCallbacks,
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
         ValidatorsValueHostSetValueOptions
     } from './ValidatorsValueHostBase';
@@ -46,7 +46,7 @@ import
  * ```
 */
 export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
-    extends IValidatorsValueHostBase<TOptions>
+    extends IValidatorsValueHost<TOptions>
 {
 
     /**
@@ -340,7 +340,14 @@ export interface FieldValueHostInstanceState extends ValidatorsValueHostBaseInst
 
 }
 
-export type TextValueChangedHandler = (valueHost: IValidatableValueHostBase, oldValue: any) => void;
+/**
+ * Represents the signature of a callback function that is invoked when the text value of a FieldValueHost changes.
+ * @param oldValue - The receiver is expecting a string. We provide 3 states:
+ * - string - The previous text value as a string.
+ * - null which means we have no value assigned
+ * - undefined which means we don't have any previous value available
+ */
+export type TextValueChangedHandler = (valueHost: IValidatableValueHost, oldValue?: string | null) => void;
 
 export interface IFieldValueHostChangedCallback
 {
@@ -356,7 +363,7 @@ export interface IFieldValueHostChangedCallback
 /**
  * Provides callback hooks for the consuming system to supply to IFieldValueHosts.
  */
-export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback, IValidatorsValueHostBaseCallbacks {
+export interface IFieldValueHostCallbacks extends IFieldValueHostChangedCallback, IValidatorsValueHostCallbacks {
 
 }
 
@@ -377,6 +384,16 @@ export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetVal
      * the native value into its text value with setValue().
      */
     disableFormatter?: boolean;
+
+    /**
+    * Only available with setTextValue().
+    * When true, the value supplied is compared to the existing value and no further action is taken
+    * when they match.
+    *
+    * Use case: page generated on the server after a round trip. The server may have changed
+    * elements. As we scrape the HTML for values, we want to retain the validation state of those unchanged.
+     */
+    skipIfUnchanged?: boolean;
 }
 
 /**
@@ -386,7 +403,7 @@ export interface FieldValueHostSetValueOptions extends ValidatorsValueHostSetVal
  */
 export function toIFieldValueHostCallbacks(source: any): IFieldValueHostCallbacks | null
 {
-    if (toIValidatableValueHostBaseCallbacks(source))
+    if (toIValidatableValueHostCallbacks(source))
     {
         const test = source as IFieldValueHostCallbacks;
         if (test.onTextValueChanged !== undefined)

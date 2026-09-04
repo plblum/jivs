@@ -20,7 +20,7 @@ import {
 /**
 * Manages a value that may use field validation.
 */
-export interface IValidatableValueHostBase<TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
+export interface IValidatableValueHost<TOptions extends ValidatableValueHostBaseSetValueOptions = ValidatableValueHostBaseSetValueOptions>
     extends IValueHost<TOptions>, IGatherValueHostNames
 {
 
@@ -246,7 +246,7 @@ export interface ValidatableValueHostBaseSetValueOptions extends SetValueOptions
 }
 
 
-export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableValueHostBase, validationState: ValueHostValidationState) => void;
+export type ValueHostValidationStateChangedHandler = (valueHost: IValidatableValueHost, validationState: ValueHostValidationState) => void;
 
 
 /**
@@ -270,16 +270,16 @@ export interface ValueHostValidationState extends ValidationState
 
 
 /**
- * Determines if the object implements IValidatorsValueHostBase.
+ * Determines if the object implements IValidatorsValueHost.
  * @param source 
- * @returns source typecasted to IValidatorsValueHostBase if appropriate or null if not.
+ * @returns source typecasted to IValidatorsValueHost if appropriate or null if not.
  */
-export function toIValidatableValueHostBase(source: any): IValidatableValueHostBase | null
+export function toIValidatableValueHost(source: any): IValidatableValueHost | null
 {
     if (toIValueHost(source))
     {
-        const test = source as IValidatableValueHostBase;    
-        // some select members of IValidatorsValueHostBase
+        const test = source as IValidatableValueHost;    
+        // some select members of IValidatorsValueHost
         if (test.otherValueHostChangedNotification !== undefined &&
             test.validate !== undefined &&
             test.clearValidation !== undefined &&
@@ -293,9 +293,9 @@ export function toIValidatableValueHostBase(source: any): IValidatableValueHostB
 
 
 /**
- * Provides callback hooks for the consuming system to supply to IValidatableValueHostBaseCallbacks.
+ * Provides callback hooks for the consuming system to supply to IValidatableValueHostCallbacks.
  */
-export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks {
+export interface IValidatableValueHostCallbacks extends IValueHostCallbacks {
     /**
      * Called when the state of validation has changed on a ValidatableValueHost.
      * That includes validate(), clearValidation(), addExternalIssuesFound(), 
@@ -310,15 +310,15 @@ export interface IValidatableValueHostBaseCallbacks extends IValueHostCallbacks 
     onValueHostValidationStateChanged?: ValueHostValidationStateChangedHandler | null;
 }
 /**
- * Determines if the object implements IValidatableValueHostBaseCallbacks.
+ * Determines if the object implements IValidatableValueHostCallbacks.
  * @param source 
- * @returns source typecasted to IValidatableValueHostBaseCallbacks if appropriate or null if not.
+ * @returns source typecasted to IValidatableValueHostCallbacks if appropriate or null if not.
  */
-export function toIValidatableValueHostBaseCallbacks(source: any): IValidatableValueHostBaseCallbacks | null
+export function toIValidatableValueHostCallbacks(source: any): IValidatableValueHostCallbacks | null
 {
     if (toIValueHostCallbacks(source))
     {
-        const test = source as IValidatableValueHostBaseCallbacks;
+        const test = source as IValidatableValueHostCallbacks;
         if (test.onValueHostValidationStateChanged !== undefined)
             return test;
     }

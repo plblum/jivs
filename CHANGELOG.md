@@ -2,6 +2,15 @@
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
 
+## 0.23.0
+- **Breaking API change** - Replaced state management. Callbacks have been replaced by ValueHostsManager.getCapturedState()
+and ValueHostsManagerConfig.capturedState. This simplifies the work needed for server generated pages to retain state during
+a round trip.
+- **Breaking API change** - Consolidated the comparison conditions and their builder references. Previously we had
+EqualTo() for valuehost lookups and EqualToValue() for other values. Now we have EqualTo() alone, handling both
+sources of values. In the builder, to specify a valuehost, use builder.field('name').equalTo(valueHost('field2')).
+This applies to all comparison conditions.
+
 ## 0.22.0 
 Same as 0.21.0
 

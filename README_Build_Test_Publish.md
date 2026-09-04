@@ -159,3 +159,20 @@ We use the npm package madge to call out circular dependencies.
 ```bash
 npx madge --circular --extensions ts ./src
 ```
+
+## Hyperlink verification using Lychee
+Goes through all markdown documents to ensure hyperlinks are valid.
+
+[https://github.com/lycheeverse/lychee](https://github.com/lycheeverse/lychee)
+
+
+- Install. (Within VSCode, start with admin rights.) 
+    ```bash
+    choco install lychee
+    ```
+- In VS Code PowerShell terminal, the command lychee is now available.
+- In the Jivs root of terminal:
+    ```bash
+    cd C:\Code\Jivs-Suite\jivs
+    lychee docs/**/*.md readme.md --exclude https://www.npmjs.com
+    ```

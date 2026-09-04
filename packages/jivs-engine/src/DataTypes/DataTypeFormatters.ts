@@ -229,12 +229,6 @@ export class IntegerFormatter extends NumberFormatterBase
             maximumFractionDigits: 0
         };
     }
-
-    // public format(value: any, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string> {
-    //     if (typeof value === 'number')
-    //         value = Math.trunc(value);
-    //     super.format(value, dataTypeLookupKey, cultureId);
-    // }
 }
 
 /**

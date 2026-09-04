@@ -1,7 +1,7 @@
 import { IJivsServices, ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
+import { EqualToCondition, EqualToConditionConfig } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { AlwaysMatchesCondition } from '@plblum/jivs-engine/build/Support/conditionsForTesting';

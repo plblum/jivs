@@ -76,17 +76,17 @@ let compareVal: ValidatorConfig = {
     errorMessage: 'Error message',
     summaryMessage: 'Summary message',
     severity: ValidationSeverity.Error,
-    conditionConfig: <EqualToValueConditionConfig>{
-        conditionType: ConditionType.EqualToValue,
+    conditionConfig: <EqualToConditionConfig>{
+        conditionType: ConditionType.EqualTo,
         secondValue: 20
     }
 }
 ```
 Use the **Builder API** syntax to better convey what you are trying to do.
 ```ts
-builder.field('FieldName1').equalToValue(2, 'Error message', 'Summary message');
+builder.field('FieldName1').equalTo(2, 'Error message', 'Summary message');
 ```
-The Builder flattens the validator and condition, as the parameters for equalToValue are a combination of condition (_secondValue_) and validator (_errorMessage_ and _summaryMessage_).
+The Builder flattens the validator and condition, as the parameters for equalTo are a combination of condition (_secondValue_) and validator (_errorMessage_ and _summaryMessage_).
 
 ### Intro to configuring Validators
 Each validator has these two syntaxes within the Builder API.
@@ -132,18 +132,12 @@ Here are the Condition-building functions of the Builder API:
 - [NotNull](./Conditions.md#notnull)
 - [RegExp](./Conditions.md#regexp)
 - [Range](./Conditions.md#range)
-- [EqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [NotEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [LessThanValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [LessThanOrEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [GreaterThanOrEqualToValue](./Conditions.md#comparing-two-values-where-second-value-is-specified)
-- [EqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [NotEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThan](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [LessThanOrEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThan](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
-- [GreaterThanOrEqualTo](./Conditions.md#comparing-two-values-where-the-second-value-comes-from-another-field)
+- [EqualTo](./Conditions.md#comparing-two-values)
+- [NotEqualTo](./Conditions.md#comparing-two-values)
+- [LessThan](./Conditions.md#comparing-two-values)
+- [LessThanOrEqualTo](./Conditions.md#comparing-two-values)
+- [GreaterThan](./Conditions.md#comparing-two-values)
+- [GreaterThanOrEqualTo](./Conditions.md#comparing-two-values)
 - [StringLength](./Conditions.md#stringlength)
 - [DataTypeCheck](./Conditions.md#datatypecheck)
 - [Positive](./Conditions.md#positive)
@@ -250,12 +244,13 @@ To use them, you need to provide a configuration with properties specific to its
 
 We'll work with this example: Compare a date from the Input to today's date.
 
-The `EqualToValueCondition` is the right Condition for the job.  Here are the properties available for configuration:
+The `EqualToCondition` is the right Condition for the job.  Here are the properties available for configuration:
 ```ts
-interface EqualToValueConditionConfig {
-    conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualToValue
+interface EqualToConditionConfig {
+    conditionType: string;	// get this value from the ConditionType type: ConditionType.EqualTo
     valueHostName?: null | string; // leave null/undefined to inherit ValueHost.name.
-    secondValue?: any;
+    secondValue?: any;  // right operand
+    secondValueHostName?: string;   // right operand when the value is retrieved from a ValueHost
     conversionLookupKey?: null | string;
     secondConversionLookupKey?: null | string;
     category?: ConditionCategory; // ConditionCategory.Comparison
@@ -265,7 +260,7 @@ interface EqualToValueConditionConfig {
 
 We'll use the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class) to deliver its properties as it is easier, and allows us to setup the error message too:
 ```ts
-builder.field('SignedOnDate').equalToValue(new Date(), "Enter today's date", { conversionLookupKey: LookupKey.Date });
+builder.field('SignedOnDate').equalTo(new Date(), "Enter today's date", { conversionLookupKey: LookupKey.Date });
 ```
 The Builder API assigns conditionType, category, and secondValue (to new Date()). We're using the conversionLookupKey here to ensure that the value of new Date() is just the date part.
 
@@ -956,7 +951,7 @@ There are two ways to set and change it: using the 'enabled' state, which is a b
   
   // example
   builder.field('field1').requireText();
-  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.equalToValue('YES', 'Field2'));
+  builder.enabler('field1', (enablerBuilder)=> enablerBuilder.equalTo('YES', 'Field2'));
   ```
 
 ## Validators: Connecting Conditions to Error Messages
@@ -1076,12 +1071,13 @@ With Jivs, the UI uses the `ValueHostsManager class` to manage the `ValueHosts`,
 Here is pseudo-code representation of its interface (omitting some members).
 ```ts
 interface IValueHostsManager {
-    services: IJivsServices;
-    
-    getValueHost(valueHostName): null | IValueHost;
-    getValidatorsValueHost(valueHostName): null | IValidatableValueHostBase;
-    getTextValueHost(valueHostName): null | IFieldValueHost;
+    getValueHost(valueHostName: string): null | IValueHost;
+    getFieldValueHost(valueHostName: string): null | IFieldValueHost;
+    getCalcValueHost(valueHostName: string): null | ICalcValueHost;
+    getStaticValueHost(valueHostName: string): null | IStaticValueHost;
     vh: ValueHostAccessor;
+    getFieldByElementIdentifier(elementIdentifier: string): null | IFieldValueHost;
+    getFieldByPropertyName(propertyname: string): null | IFieldValueHost;
 
     validate(options?): ValidationState;
     clearValidation(options?): boolean;
@@ -1096,8 +1092,91 @@ interface IValueHostsManager {
 
     toValidationPayload(externalIssues: Array<IssueFound> | null): string;
     fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean; 
+    getCapturedState(): string;
+    broadcastState(): void;
 }
 ```
+### Getting ValueHosts Members
+- `getValueHost(valueHostName)` - Returns any `ValueHost` type, but weakly typed to the base class.
+- `getFieldValueHost(valueHostName)` - Returns the `FieldValueHost` or null
+- `getCalcValueHost(valueHostName)` - Returns the `CalcValueHost` or null
+- `getStaticValueHost(valueHostName)` - Returns the `StaticValueHost` or null
+- `vh` - Another syntax for getting to a value that is similar to the builder. Each of these throw an exception if the `ValueHost` is not found or not a match to the type:
+    - `vh.field(valueHostName) : IFieldValueHost`
+    - `vh.calc(valueHostName) : ICalcValueHost`
+    - `vh.static(valueHostName) : IStaticValueHost`
+    - `vh.any(valueHostName): IValueHost`
+- `getFieldByElementIdentifier(elementIdentifier)` - Pass in an Element Identifier to match to the configured elementIdentifier property.
+    ```ts
+    build.field('name', LookupKey.String, {
+        elementIdentifier: 'element identifier'
+    });
+    ```
+- `getFieldByPropertyName(propertyName)` - Pass in a property name to match the configured propertyName property.
+    ```ts
+    build.field('name', LookupKey.String, {
+        propertyName: 'property_name'
+    });
+    ```
+### Validation Members
+- `validate(options)` - Runs validation against all qualified validatable ValueHosts. Returns the [`ValidationState object`](#validation-state-and-issues-found).
+    Its options are this object:
+    ```ts
+    interface ValidateOptions
+    {
+        group?: string;
+        preliminary?: boolean;
+        duringEdit?: boolean;
+        skipCallback?: boolean;
+    }    
+    ```
+    - `group` - If assigned, only match to FieldValueHosts that are configured with the same group name.
+        ```ts
+        build.field('name', LookupKey.String, {
+            group: 'groupName'
+        })
+        ```
+    - `preliminary` - Set to true when running a validation prior to a submit activity.
+        Typically set to true just after loading the form to report any errors already present.
+        During this phase, Validators setup with Category=Require are not checked as the user doesn't need
+        the noise complaining about missing input when they haven't had a chance to address it.
+        When undefined, it is the same as false.
+    - `duringEdit` - Set to true when handling an intermediate change activity, such as a keystroke
+        changed a textbox but the user remains in the textbox. For example, on the 
+        HTMLInputElement.oninput event.
+        This will involve only validators that make sense during such an edit.
+        When undefined, it is the same as false.
+    - `skipCallback` - If you have setup a `onValidationStateChanged` or `onValueHostValidationStateChanged` callback,
+        you may not want it to fire when you expressly call validate().
+        In that case, set this to true.
+
+- `clearValidation(options)` - Resets all qualified `FieldValueHosts` to their `NotAttempted` status, as if the 
+    user has not yet interacted with the form.
+
+#### ValidationState Members
+Learn about `IssueFound objects` [here](#issuefound).
+- `addExternalIssuesFound(IssueFound[])` - Supply a list of `IssuesFound` that are generated outside of Jivs, such as during business logic validation at the model level. Through callbacks, they will notify your error display elements (field and ValidationSummary) as if they are part of Jivs. 
+- `addExternalIssueFound(IssueFound)` - Handles a single `IssueFound` that is generated outside of Jivs.
+- `isValid` - Any IssuesFound that has its `isValid` property set to false makes this false. Always use `doNotSave` to prevent saving/submitting.
+- `doNotSave` - Any `IssueFound` that has its `doNotSave` property set ot true makes this true. Use this to determine if you can save or submit.
+- `asyncProcessing` - Any `IssueFound` that has its asyncProcessing property set to true makes this true. `doNotSave` will also be true to ensure you don't submit while an async process is running.
+- `getIssuesForInput(valueHostName)` - Get the list of `IssueFound objects` currently on the FieldValueHost.
+- `getIssuesFound(group)` - Get the list of `IssueFound objects` across all qualified FieldValueHosts.
+
+#### Transfer Between Client and Server Members
+- `toValidationPayload(IssueFound[])` - Used on the server side when Jivs is executing on the server to return the value to pass back to the client for use in `fromValidationPayload()`.
+- `fromValidationPayload(payload)` - The client-side handling of the payload supplied by `toValidationPayload()` on the server side.
+- `getCapturedState()` - Use together with server generated pages, which may replace the entire content of the page and force instanciating a new `ValueHostsManager`. It returns a string to send to the server. The server is expected to return it back unchanged. When configuring the `ValueHostsManager`, assign the result to the `ValueHostsManagerConfig.capturedState` property.
+    ```ts
+    config.capturedState = retrievedfromServer;
+    let vhm = new ValueHostsManager(config);
+    ... when finished with setup ...
+    vhm.broadcastState();
+    ```
+- `broadcastState()` - Invokes these callbacks on demand: `onTextValueChanged`, `onValidationStateChanged`, `onValueHostValidationStateChanged`.
+Targets the capturedState process, as shown in the prior example. Those callbacks are used by the UI to update itself
+and are normally called automatically. However, after recreating `ValueHostsManager` with the captured state, they are not called.
+Call this to complete the `ValueHostManager` setup.
 
 ### Configuring the ValueHostsManager
 > Please visit "[Configuring Jivs](#configuring-jivs)" for an overview of the process.
@@ -1293,7 +1372,7 @@ The actual transfer process is pretty simple, but requires configuration describ
 ```ts
 let vhm = new ValueHostsManager(builder.complete());
 let model = getMyModel(); // your code
-let reader = new ModelReader(vhm, model);
+let reader = new ModelReader(vhm, model, {});   // various options available in third parameter
 reader.readFromModel();  // data is now in the ValueHosts
 
 // ... interact with the data and finish up with validation before trying to save it ...
@@ -1330,6 +1409,38 @@ let vhm = new ValueHostsManager(builder.complete());
     writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
     writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
     ```
+### Other Readers: FormReader and DictionaryReader
+- `FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each FieldValueHost.setTextValue, instead of setValue. It uses a parser to convert the text value into the native value.
+    ```ts
+    const express = require("express");
+    const app = express();
+    app.use(express.urlencoded({ extended: true }));
+    app.post("/submit", (req, res) => {
+        const formData = req.body;
+        const formReader = new FormReader(valueHostsManager, formData, {});
+        formReader.readFromModel();
+    });
+    ```
+- `DictionaryReader` is a variation of `ModelReader` that expects its data to be a dictionary of native values. Its conceptually the same as an object supplying a model.
+    ```ts
+    let reader = new DictionaryReader(vhm, dictionaryData, options);
+    ```
+
+### Reader constructor options
+```ts
+const reader = new ModelReader(vhm, model, options);
+const reader = new FormReader(valueHostsManager, formData, options);
+const reader = new DictionaryReader(vhm, dictionaryData, options);
+```
+The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object that supports these values:
+- `disableFormatter` - (Not on `FormReader`) When true, do not convert the value to text. Just set the native value.
+    When false, these settings still disable the formatter:
+    - `valueHostsManager.behaviors.disableFormatterOnValueChange`
+    - `FieldValueHostConfig.formatterLookupKey = null`
+- `skipValueChangedCallback` - Use when you have setup `ValueHostsManager.onValueChanged` or `onTextValueChanged` callbacks to avoid them from being called. Set to true when you have them setup and expect them to be called while the user is editing the form, but not while initializing its values.
+- `alignEnabled` - When true, it updates the enabled setting on each `ValueHost`, allowing them to be determined by whether the source (model, form, dictionary) had a matching property. So long as the `ValueHost` cannot find a source, it is disabled. Otherwise, it is enabled.
+- reformatTextValue - (Only on `FormReader`) When true, allow the text value to be reformatted before assigning it to the `FieldValueHost's` text value or calling `onTextValueChanged`. Reformatting requires that both parser and formatter are setup. Even if enabled, individual `FieldValueHostConfig.reformatTextValue` can block this when false.
+
 ### Configuring the ValueHosts
 There are two challenges related to transferring data between models and `ValueHosts` that require configuration:
 1. The property name on the model may not match the name assigned to `ValueHost`. It could be something as little as property names use _camelCase_ while `ValueHosts` use _PascalCase_.
@@ -1368,15 +1479,15 @@ without some adjustment, or may need to be skipped. The `ValueAdapterService` ha
 
 Frequently the value representing "unassigned" differs. Jivs uses the JavaScript value `undefined` to mean unassigned. You might use undefined, null, 0, etc. This is a typical case for adapting values.
 
-When a value needs adjustment, setup rules within the `modelReaderRules` or `modelWriterRules` properties of `FieldValueHostConfig`.
+When a value needs adjustment, setup rules within the `modelReaderRule` or `modelWriterRule` properties of `FieldValueHostConfig`.
 ```ts
 builder.field('Field1', LookupKey.Number, { 
-    modelReaderRules: // if undefined in the model, use 0 in the ValueHost
+    modelReaderRule: // if undefined in the model, use 0 in the ValueHost
     {
         when: 'undefined',
         then: '0'
     },
-    modelWriterRules: // if 0 in the valuehost, assign undefined in the model
+    modelWriterRule: // if 0 in the valuehost, assign undefined in the model
     {
         when: '0',
         then: 'undefined'
@@ -1521,7 +1632,7 @@ builder.static('name', 'String');
 ```
 You *must* assign dataType to the name of a data type when the data is not a string, boolean, number or Date, and *should* assign it for those types when you need to be more precise, such as an "EmailAddress" instead of just "String".
 
-We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
+We use the term "Lookup Key" when specifying the name of a data type. Please [see this page](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html) for a detailed look at all supplied with Jivs and how they are used.
 
 We recommend using the LookupKey enumerated type instead of strings for lookup key parameters.
 ```ts
@@ -1543,7 +1654,7 @@ You can leave the dataType property blank and Jivs will identify its name for yo
 
 Add your own when you have a class representing some data. Check out an actual example here: [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts). In this example, we have a new class, RelativeDate. We've created a new Lookup Key name called "RelativeDate" and associated it with a new DataTypeIdentifier.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### DataTypeConverters
 Change the value supplied to Conditions with implementations of `IDataTypeConverter` before comparing the value. The built-in [comparison objects](#datatypecomparers) only work with numbers, strings, and booleans. Everything else either needs conversion to these types or a `IDataTypeComparer` object.
@@ -1562,7 +1673,7 @@ dtcs.register(new NumericStringToNumberConverter());
 ```
 ```ts
 builder.field('Cycles', LookupKey.String) // dataType's Lookup Key
-    .lessThanValue(100, {
+    .lessThan(100, {
         conversionLookupKey: LookupKey.Number // converts 'Cycles' from string to number  
     });
 ```
@@ -1613,7 +1724,7 @@ Consider these *Use Cases*:
 - Suppose that you have a class "FullName" with properties of FirstName and LastName. Create a converter to return a string that is both concatenated.
 - Suppose that you have a class "StreetAddress" with properties of Street, City, Region, PostalCode. Create a converter to return just the postal code.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ### DataTypeFormatters
 `DataTypeFormatters` turn a native value into a text value. Some involve localization, like `DateFormatter` will treat new Date(2000, 0, 15) as '15/01/2000' in 'en-GB' and '01/15/2000' in 'en-US'.
@@ -1667,7 +1778,7 @@ To override it, such as using the abbreviated date format, include the Lookup Ke
 
 Jivs provides these formatters: "ShortDate", "AbbrevDate", "AbbrevDOWDate" (adds day of week), "LongDate", "LongDOWDate" (adds day of week), "TimeOfDay" (omits seconds), "TimeOfDayHMS", "Integer", "Currency", "Percentage" (where 1.0 = 100%), "Percentage100" (where 100 = 100%), "Uppercase", "Lowercase", "Boolean" (say "True" and "False" for boolean values) and "YesNoBoolean" (say "Yes" or "No" for boolean values).
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html).
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 #### Building your own
 See [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).
@@ -1736,7 +1847,7 @@ Also [jivs-engine/src/DataTypes/DataTypeParserBase.ts](https://github.com/plblum
 ### DataTypeComparers
 Staying with the "single responsibility pattern", Jivs recommends that you use its comparison Conditions (Range, Equal, NotEqual, LessThan, etc) for all data types. It already knows how to handle comparing strings, numbers, dates and booleans. It does so with implementations of IDataTypeComparer. It also uses the Converters to get a Date, number or string from the value. So its pretty unusual to need to provide your own Comparer class. But its here if you need it.
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### DataTypeCheckGenerator
 In Jivs, "Data Type Check" means a Condition that can determine if the data supplied is fully compatible with what the model property intended. 
@@ -1747,7 +1858,7 @@ DataTypeCheckCondition doesn't apply when no conversion is required. Strings are
   
 Take a look at [this example for Email Address](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
 
-[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/DataTypes_Types_LookupKey.LookupKey.html)
+[See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html)
 
 ### Creating your own Lookup Keys
 The LookupKey enumerated type doesn't cover everything.
@@ -2025,6 +2136,111 @@ There are two places you can select a culture. Each takes a cultureId like 'en' 
     ```    
 
 ## Validation Deep Dive
+### Validation State and Issues Found
+Your user interface will receive a `ValidationState object` through its `onValidationStateChanged` callback. You will use its data to determine if there are any validation issues, and to show its issues. Those issues are within IssueFound objects.
+
+It will received `ValueHostValidationState objects` through its `onValueHostValidationStateChanged` callback. Its data is specific to a single `FieldValueHost`, and identifies if there are validation issues. Use those issues, found in IssueFound objects, to display error messages.
+
+#### ValidationState
+The `ValidationState object` is returned by `ValueHostsManager.validate()` and through its `onValidationStateChanged` callback. 
+
+```ts
+interface ValidationState {
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: null | IssueFound[];
+    asyncProcessing: boolean;
+}
+```
+- `isValid` - When true, there is nothing known to block validation. However, there are other factors
+    to consider: there may be warning issues found or an async validator is still running. 
+    So check `doNotSave` as the ultimate guide to saving.
+    When false, there is at least one validation error.
+- `doNotSave` - When true, do not allow submission or saving, as the data is not in a state to be saved.
+    Unlike isValid, this will resolve as true:
+    - Validators yet to be validated
+    - Validators marked Invalid
+    - Validators still running asynchronously
+- `issuesFound` - All `IssueFound objects`, each supplying an error message and other supporting data. See it below. They come from several sources:
+    - Validators that ran validation and identified an `IssueFound`, which includes when severity=Warning.
+    - Added through the `ValueHostsManager.addExternalIssuesFound()` and `addExternalIssueFound()` functions.
+- `asyncProcessing` - When true, an asynchronous validation process is still running.
+
+```ts
+config.onValidationStateChanged = myValStateChanged;
+let vhm = new ValueHostsManager(config); // assume fully setup with validators
+...
+let valState = vhm.validate();  // Most likely, you'll let valState come through onValidationStateChanged
+
+function myValStateChanged(valueHostsManager: IValueHostsManager, valState: ValidationState)
+{
+    if (valState.issuesFound?.length > 0)
+    {
+        // create error message content
+        let errors: string = '';
+        for (let i = 0, valState.issuesFound.length - 1, i++)
+        {
+            let issueFound = valState.issuesFound[i];
+            errors += '<br >' + issueFound.errorMessage;
+        }
+        // show that content
+    }
+    else
+    {
+        // remove error message content
+    }
+}
+```
+#### ValueHostValidationState
+The `ValueHostValidationState object` is returned through the `ValueHostsManager.onValueHostValidationStateChanged` callback.
+```ts
+interface ValueHostValidationState extends ValidationState
+{
+    corrected: boolean;    
+    status: ValidationStatus;
+}
+```
+- `isValid`, `doNotSave`, `issuesFound`, and `asyncProcessing` are shown above.
+- `corrected` - Set to true when the user has fixed all invalid validators on this `FieldValueHost`.
+- `status` - Reports the current `ValidationStatus`.
+    - `NotAttempted` - Indicates that `validate()` has yet to be attempted
+    - `NeedsValidation` - Indicates that either native value or text value was changed
+        but has yet to be validated.
+    - `Undetermined` - Validation was not run, including when the Validator.severity is Off.
+    - `Valid` - Validation completed with all Conditions evaluating as Match
+    - `Invalid` - Validation completed with at least one Condition evaluating as NoMatch
+    - `Disabled` - ValueHost is disabled, thus so is validation.
+
+#### IssueFound
+Each `IssueFound object` is the result of some validator having something to report. Most reports
+are for invalid data. Those with severity=Warning are considered valid.
+These are the source of error messages.
+
+```ts
+interface IssueFound {
+    errorMessage: string;
+    summaryMessage?: string;
+    severity?: ValidationSeverity;
+    errorCode?: string;
+    valueHostName?: string;
+    doNotSave?: boolean;
+}
+```
+- `errorMessage` - The error message, with all tokens and localization already applied.
+- `summaryMessage` - A companion error message that is ideal for the Validation Summary element. 
+  If null or undefined, use `errorMessage` as no `summaryMessage` was supplied.
+- `severity` - Determines how a Validator behaves if there was an issue:
+    - `Error` (or null/undefined) - Normal error
+    - `Severe` - When there are multiple validators, normally they all get a chance to validate. With Severe,
+      validation stops, leaving the remaining validators set to `ValidationStatus.Undetermined`.
+    - `Warning` - The issue isn't enough to block saving. Its informative. For example,
+      "Person is under age 18. Please confirm with Parent."
+- `errorCode` - Identifies the issue type so the consumer can align it with a specific validator or business rule.
+    It is essential when using the `TextLocalizerService`.
+    Its value is initially the Condition's ConditionType. You can override it using the Validator's `errorCode` configuration property
+    If supplied through `ValueHostsManager.addExternalIssueFound()`, it can be null/undefined and the system will generate one. In doing so, the developer opts out of validator alignment.
+
+
 ### What invokes validation
 Both the ValueHostsManager and validatable ValueHosts have a `validate()` function, as described in the next two sections.
 #### ValueHost.validate()

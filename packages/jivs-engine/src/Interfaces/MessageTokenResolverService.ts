@@ -5,7 +5,7 @@
 import { IMessageTokenSource } from './MessageTokenSource';
 import { IServiceWithAccessor } from './Services';
 import { IValueHostsManager } from './ValueHostsManager';
-import { IValidatorsValueHostBase } from './ValidatorsValueHostBase';
+import { IValidatorsValueHost } from './ValidatorsValueHostBase';
 
 /**
  * Replaces all tokens in a message with a user friendly value.
@@ -38,6 +38,6 @@ export interface IMessageTokenResolverService extends IServiceWithAccessor {
      * @param hosts 
      * @returns the message with formatting resolved
      */
-    resolveTokens(message: string, valueHost: IValidatorsValueHostBase,
+    resolveTokens(message: string, valueHost: IValidatorsValueHost,
         valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string;
 }

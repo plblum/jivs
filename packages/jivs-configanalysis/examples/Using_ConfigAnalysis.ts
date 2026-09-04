@@ -1,6 +1,7 @@
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
+import { valueHost } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
@@ -77,8 +78,8 @@ export class DateRangeFormRules extends ValueHostRulesBase
     protected configureRules(builder: IValueHostsManagerConfigBuilder,
         options?: ValueHostRulesOptions): void {
         builder.field('StartDate', LookupKey.Date, { label: 'Start date' })
-            .lessThan('EndDate')
-            .lessThanOrEqual('NumOfDays',   // right operand of the comparison
+            .lessThan(valueHost('EndDate'))
+            .lessThanOrEqual(valueHost('NumOfDays'),   // right operand of the comparison
                 {
                     valueHostName: 'DiffDays',  // compare to this valueHost, not StartDate
                     errorMessage: 'Less than {compareTo} days apart',   // our preferred error message,

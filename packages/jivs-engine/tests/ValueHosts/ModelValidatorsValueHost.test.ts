@@ -3,7 +3,7 @@ import { ModelValidatorsValueHost, ModelValidatorsValueHostType } from "../../sr
 import { MockValueHostsManager, MockJivsServices } from "../TestSupport/mocks";
 import { objectKeysCount } from '../../src/Utilities/Utilities';
 import { ValidationStatus, ValueHostValidateResult, IssueFound, ValidationSeverity } from '../../src/Interfaces/Validation';
-import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHostBase } from '../../src/Interfaces/ValidatableValueHostBase';
+import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, IValidatableValueHost } from '../../src/Interfaces/ValidatableValueHostBase';
 
 
 interface ITestSetupConfig {
@@ -301,7 +301,7 @@ describe('ModelValidatorsValueHostGenerator members', () => {
             value: undefined,
         };
         let testItem = new ModelValidatorsValueHostGenerator();
-        let vh: IValidatableValueHostBase | null = null;
+        let vh: IValidatableValueHost | null = null;
         expect(() => vh = testItem.create(vhm, config, state)).not.toThrow();
         expect(vh).not.toBeNull();
         expect(vh).toBeInstanceOf(ModelValidatorsValueHost);

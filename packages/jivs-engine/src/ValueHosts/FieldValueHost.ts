@@ -17,7 +17,7 @@ import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
 import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
-import { IValidatorsValueHostBase, toIValidatorsValueHostBase } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { ensureError } from '../Utilities/ErrorHandling';
@@ -142,11 +142,6 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         return false;
     }
 
-    protected useOnTextValueChanged(changed: boolean, oldValue: any, options: TOptions): void
-    {
-        if (changed && (!options || !options.skipValueChangedCallback))
-            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
-    }    
     //#region IFieldValueHost
     /**
      * Gets the current text value exactly as last provided.
@@ -182,40 +177,51 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      * parsing fails.
      *
      * @param textValue - The text value to store exactly as supplied.
-     * @param options -
-     * duringEdit - Set to true for an intermediate edit activity rather than a completed change.
-     *   For example, on the client side this may be used for an HTMLInputElement.oninput event,
-     *   where the user is still editing. In this mode, only validators intended for in-progress
-     *   edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
-     *   and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
-     *   ICondition.evaluate().
-     * validate - Invoke validation after setting the text value.
-     * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     * disableParser - When true, do not use the DataTypeParser to resolve the typed value
-     *   from the text value.
-     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
-     *      an error. Assign this object to contain the error message and other info.
-     *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
-     *      use the errorCode value of 'InjectedError' to localize the error message. 
-     *      You can also provide a summaryMessage for use in a summary of validation errors.
-     * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     * @param options
+     *  - duringEdit - Set to true for an intermediate edit activity rather than a completed change.
+     *    For example, on the client side this may be used for an HTMLInputElement.oninput event,
+     *    where the user is still editing. In this mode, only validators intended for in-progress
+     *    edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
+     *    and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
+     *    ICondition.evaluate().
+     *  - validate - Invoke validation after setting the text value.
+     *  - reset - Clear validation state, unless validate = true, and set IsChanged to false.
+     *  - disableParser - When true, do not use the DataTypeParser to resolve the typed value
+     *    from the text value.
+     *  - injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *       an error. Assign this object to contain the error message and other info.
+     *       Internally Jivs will provide a Validator with the error message to report the error.
+     *       If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *       use the errorCode value of 'InjectedError' to localize the error message. 
+     *       You can also provide a summaryMessage for use in a summary of validation errors.
+     *  - skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     public setTextValue(textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
 
         if (!options)
             options = {} as TOptions;
+        let oldEnabled = this.instanceState.enabled ?? true;
         if (!this.canChangeValueCheck(options))
             return;        
+        let newEnabled = this.instanceState.enabled ?? true;
+
+        // as a rule, if we enable the field via options.ensureEnabled, it also reflects a change
+        // even if skipIfUnchanged is true.
+        const oldValue: any = this.instanceState.textValue;
+        const changed = !deepEquals(textValue, oldValue) || oldEnabled !== newEnabled;        
+        if (!changed && options.skipIfUnchanged)
+        {
+            this.logger.message(LoggingLevel.Debug, () => `skipped because value is unchanged with skipIfUnchanged=true`);
+            return;
+        }
         if (this.tryParse(textValue, options))
         {
             this.tryReformatTextValue(textValue!, options);
             return; 
         }
 
-        const oldValue: any = this.instanceState.textValue;
-        const changed = !deepEquals(textValue, oldValue);
+
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -340,7 +346,6 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
                 this.logger.message(LoggingLevel.Debug, () => 'Reformatting skipped. Either nativeValue is undefined or formatting is disabled.');
                 return false;
             }
-
 
             const dtfs = this.services.dataTypeFormatterService;
             if (dtfs.isActive())
@@ -594,6 +599,39 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         const elementIdentifier = this.instanceState.elementIdentifier ?? this.config.elementIdentifier;
         return elementIdentifier != null && elementIdentifier !== '';
     }
+
+    /**
+     * Invokes the ValueHostsManager.onTextValueChanged callback.
+     * Never invokes when changed = false, or options.skipValueChangedCallback is true.
+     * @param changed - Only invoked when true
+     * @param oldValue - The previous text value, which can be a string, null, or undefined.
+     * - string - The previous text value as a string.
+     * - null which means we have no value assigned
+     * - undefined which means we don't have any previous value available
+     * @param options - The options provided to the setTextValue() method.
+     */
+    protected useOnTextValueChanged(changed: boolean, oldValue: string | null | undefined, options: TOptions): void
+    {
+        if (changed && (!options || !options.skipValueChangedCallback))
+            toIFieldValueHostCallbacks(this.valueHostsManager)?.onTextValueChanged?.(this, oldValue);
+    }        
+    
+    /**
+     * Broadcasts the current state of the ValueHost to any listeners or managers that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    public override broadcastState(): void
+    {
+        super.broadcastState();
+        // Notify listeners that the text value has potentially changed.
+        this.useOnTextValueChanged(true, undefined, {} as TOptions);
+    }    
 }
 
 /**
@@ -605,7 +643,7 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
     if (source instanceof FieldValueHost)
         return source as IFieldValueHost;
 
-    if (toIValidatorsValueHostBase(source) &&
+    if (toIValidatorsValueHost(source) &&
         hasIFieldValueHostSpecificMembers(source)) {
         return source as IFieldValueHost;
     }
@@ -616,7 +654,7 @@ export function toIFieldValueHost(source: any): IFieldValueHost | null {
  * @param source 
  * @returns 
  */
-export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHostBase): boolean
+export function hasIFieldValueHostSpecificMembers(source: IValidatorsValueHost): boolean
 {
     const test = source as IFieldValueHost;
     return (test.getTextValue !== undefined &&

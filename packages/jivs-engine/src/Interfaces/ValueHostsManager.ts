@@ -12,13 +12,11 @@
  * - Retain InstanceState objects that reflects the states of all ValueHost instances.
  *   This system can operate in a stateless way, so long as you keep
  *   these objects and pass them back via the Configuration object.
- *   Its OnInstanceStateChanged and OnValueHostInstanceStateChanged properties are callbacks
  *   provide the latest InstanceState objects to you.
  * - Execute validation on demand to the consuming system, going
  *   through all eligible ValidatorsValueHostBases.
- * - Report a list of Issues Found for an individual UI element.
- * - Report a list of Issues Found for the entire system for a UI 
- *   element often known as "Validation Summary".
+ * - Expose the validation state including a list of issues found
+ * - Provide callbacks to notify the UI to take an action.
  * 
  * @module jivs-engine/ValueHostsManager/Types
  */
@@ -29,8 +27,8 @@ import { ValidateOptions, IssueFound, ValidationState } from './Validation';
 import { IValueHost, IValueHostCallbacks, ValueHostConfig, ValueHostInstanceState } from './ValueHost';
 
 import {
-    IValidatorsValueHostBase, IValidatorsValueHostBaseCallbacks,
-    toIValidatorsValueHostBaseCallbacks
+    IValidatorsValueHost, IValidatorsValueHostCallbacks,
+    toIValidatorsValueHostCallbacks
 } from './ValidatorsValueHostBase';
 import { IJivsServices } from './JivsServices';
 import { IFieldValueHost, IFieldValueHostChangedCallback } from './FieldValueHost';
@@ -51,9 +49,9 @@ export interface IValueHostsManager extends IValueHostResolver {
      * 
      * Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - disableFormattingOnValueChange = true, which turns off formatting when setTextValue() is used. Alternative, use 
+     * - disableFormattingOnValueChange = false, which turns off formatting when setTextValue() is used. Alternative, use 
      * `setTextValue("some text", { disableFormatter: true });` to selectively turn off formatting.
-     * - disableParsingOnValueChange = true, which turns off parsing when setValue() is used. Alternative, use 
+     * - disableParsingOnValueChange = false, which turns off parsing when setValue() is used. Alternative, use 
      * `setValue(value, { disableParser: true });` to selectively turn off parsing.
      */
     readonly behaviors: Behaviors;
@@ -120,11 +118,11 @@ export interface IValueHostsManager extends IValueHostResolver {
     enumerateValueHosts(filter ?: (valueHost: IValueHost) => boolean): Generator<IValueHost>;
 
     /**
-     * Retrieves the IValidatorsValueHostBase of the identified by valueHostName
+     * Retrieves the IValidatorsValueHost of the identified by valueHostName
      * @param valueHostName - Matches to the ValidatorsValueHostBaseConfig.name property
      * Returns the instance or null if not found or found a different type of value host.
      */
-    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHostBase | null;    
+    getValidatorsValueHost(valueHostName: ValueHostName): IValidatorsValueHost | null;    
 
     /**
      * Retrieves the FieldValueHost of the identified by valueHostName
@@ -153,13 +151,13 @@ export interface IValueHostsManager extends IValueHostResolver {
      * match the validation group supplied in options.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * Important to set options.BeforeSubmit to true if invoking validate() prior to submitting.
+     * Important to set options.preliminary to true if invoking validate() prior to submitting.
      * @returns The ValidationState object, which packages several key
      * pieces of information: isValid, doNotSave, and issues found.
      */
     validate(options?: ValidateOptions): ValidationState;
     /**
-     * Changes the validation state to itself initial: Undetermined
+     * Changes the validation state to itself initial: NotAttempted
      * with no error messages.
      * @returns true when there was something cleared
      */
@@ -288,7 +286,29 @@ export interface IValueHostsManager extends IValueHostResolver {
      called htmlEncoder(string): string so the user just drops that name in as the parameter.
     * @returns true if state changed
     */
-    fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean;    
+    fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean;    
+    //#region state management
+
+    /**
+     * Get the current state of the ValueHostsManager as a string.
+     * It packages state in StateContainer and converts to JSON for transfer.
+     * Typically used with the page generated on the server after a round-trip.
+     * @returns The JSON string representing the current state of the ValueHostsManager.
+     */
+    captureState(): string;
+    /**
+     * Broadcasts the current state of both ValueHostsManager and ValueHosts
+     * to any listeners that need to be aware of changes.
+     * FieldValueHost uses this to report its textvalue through ValueHostsManager.onTextValueChanged
+     * and validation state through ValueHostsManager.onValueHostValidationStateChanged.
+     * ValueHostsManager reports its own ValidationState through onValidationStateChanged.
+     * Normally those events are fired at appropriate times.
+     * However, when recreating ValueHostsManager with its state from a previous lifecycle,
+     * that state does not cause the usual events to be fired automatically.
+     * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
+     * This mostly targets pages generated on the server side, like MVC.
+     */
+    broadcastState(): void;
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
@@ -313,11 +333,11 @@ export interface IValueHostsManager extends IValueHostResolver {
     
     /**
      * Report that a ValueHost had its instance state changed.
-     * Invokes onValueHostInstanceStateChanged if setup.
      * @param valueHost 
      * @param instanceState 
      */
     notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void;    
+//#endregion
 }
 
 /**
@@ -361,8 +381,8 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
     /**
      * Behavioral settings for how ValueHostsManager should operate. Here are its options with their default values:
      * - activeCultureID = from CultureService.defaultCultureId
-     * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
-     * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
+     * - disableFormattingOnValueChange = false, which means when a value changes, it is formatted and the formatted value is set.
+     * - disableParsingOnValueChange = false, which means when a text value changes, it is parsed and the parsed value is set.
      * 
      * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
      * It is also available in the ValueHostsManager.behaviors property.
@@ -370,35 +390,16 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
     behaviors?: Behaviors;
 
     /**
-     * The InstanceState for the ValueHostsManager itself.
-     * Its up to you to retain stateful information so that the service works statelessly.
-     * It will supply you with the changes to states through the OnInstanceStateChanged property.
-     * Whatever it gives you, you supply here to rehydrate the ValueHostsManager with 
-     * the correct state.
-     * If you don't have any state, leave this null or undefined and ValueHostsManager will
-     * initialize its state.
+     * The state previously captured by ValueHostsManager.captureState(). 
+     * This property is used to restore the state of the ValueHostsManager when it is constructed.
+     * Its value is expected to be a JSON string previously returned by ValueHostsManager.captureState() with no changes.
+     * Typically used with the page generated on the server after a round-trip.
      */
-    savedInstanceState?: ValueHostsManagerInstanceState | null;
-    /**
-     * The state for each ValueHost. The array may not have the same states for all the ValueHostConfigs
-     * you are supplying. It will create defaults for those missing and discard those no longer in use.
-     * 
-     * Its up to you to retain stateful information so that the service works statelessly.
-     * It will supply you with the changes to states through the OnValueHostInstanceStateChanged property.
-     * Whatever it gives you, you supply here to rehydrate the ValueHostsManager with 
-     * the correct state. You can also supply the state of an individual ValueHost when using
-     * the addValueHost or addOrUpdateValueHost methods.
-     * If you don't have any state, leave this null or undefined and ValueHostsManager will
-     * initialize its state.
-     */
-    savedValueHostInstanceStates?: Array<ValueHostInstanceState> | null;
+    capturedState?: string;
 }
 
 export type ValidationStateChangedHandler
     = (valueHostsManager: IValueHostsManager, validationState: ValidationState) => void;
-
-export type ValueHostsManagerInstanceStateChangedHandler
-    = (ValueHostsManager: IValueHostsManager, stateToRetain: ValueHostsManagerInstanceState) => void;
 
 export type ValueHostsManagerConfigChangedHandler
     = (valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>) => void;
@@ -409,16 +410,9 @@ export type ValueHostsManagerConfigChangedHandler
  */
 export interface IValueHostsManagerCallbacks
     extends IValueHostCallbacks,
-    IValidatorsValueHostBaseCallbacks,
+    IValidatorsValueHostCallbacks,
     IFieldValueHostChangedCallback
 {
-
-    /**
-     * Called when the ValueHostsManager's InstanceState has changed.
-     * React example: React component useState feature retains this value
-     * and needs to know when to call the setState function with the stateToRetain
-     */
-    onInstanceStateChanged?: ValueHostsManagerInstanceStateChangedHandler | null;
 
     /**
      * Use this when caching the configuration for a later creation of ValueHostsManager.
@@ -470,8 +464,8 @@ export const DefaultNotifyValidationStateChangedDelay = 100;
  * They are here to allow the consuming system to change the behavior of ValueHostsManager.
  * The default behaviors are:
  * - activeCultureID = undefined, which means use the default culture from CultureService.defaultCultureId
- * - disableFormattingOnValueChange = true, which means when a value changes, it is formatted and the formatted value is set.
- * - disableParsingOnValueChange = true, which means when a text value changes, it is parsed and the parsed value is set.
+ * - disableFormattingOnValueChange = false, which means when a value changes, it is formatted and the formatted value is set.
+ * - disableParsingOnValueChange = false, which means when a text value changes, it is parsed and the parsed value is set.
  * 
  * These properties can be set in the ValueHostsManagerConfig.behaviors or Builder.behaviors property. 
  * It is also available in the ValueHostsManager.behaviors property.
@@ -526,6 +520,25 @@ export function createBehaviors(services: IJivsServices): Behaviors
 }
 
 /**
+ * ValueHostsManager retains its state through a string containing this object in JSON format.
+ * It is generated by ValueHostsManager.getState() and restored through the constructor using
+ * ValueHostsManagerConfig.state.
+ */
+export interface StateContainer
+{
+    jivs_state: 'internal',
+    /**
+     * The InstanceState for the ValueHostsManager itself.
+     */
+    vhm: ValueHostsManagerInstanceState;
+    /**
+     * The state for each ValueHost. The array may not have the same states for all the ValueHostConfigs
+     * you are supplying. It will create defaults for those missing and discard those no longer in use.
+     */
+    vh: Array<ValueHostInstanceState>;
+}
+
+/**
  * Determines if the object implements IValueHostsManager.
  * @param source 
  * @returns source typecasted to IValueHostsManager if appropriate or null if not.
@@ -559,11 +572,10 @@ export function toIValueHostsManager(source: any): IValueHostsManager | null
  */
 export function toIValueHostsManagerCallbacks(source: any): IValueHostsManagerCallbacks | null
 {
-    if (toIValidatorsValueHostBaseCallbacks(source))
+    if (toIValidatorsValueHostCallbacks(source))
     {
         const test = source as IValueHostsManagerCallbacks;     
-        if (test.onInstanceStateChanged !== undefined &&
-            test.onValidationStateChanged !== undefined &&
+        if (test.onValidationStateChanged !== undefined &&
             test.onConfigChanged !== undefined)
             return test;
     }

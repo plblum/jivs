@@ -1,35 +1,35 @@
-import {
-    type RangeConditionConfig,
-    RequireTextCondition, EqualToCondition,
-    type RequireTextConditionConfig,
-    RangeCondition,
-    EqualToConditionConfig,
+import
+    {
+        type RangeConditionConfig,
+        type RequireTextConditionConfig,
+        RangeCondition,
+        RequireTextCondition
+    } from "../../src/Conditions/ConcreteConditions";
 
-} from "../../src/Conditions/ConcreteConditions";
-
-import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { IMessageTokenSource, toIMessageTokenSource, type TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { MockValueHostsManager, MockJivsServices, MockFieldValueHost } from "../TestSupport/mocks";
-import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
-import { ValueHostName } from '../../src/DataTypes/BasicTypes';
-import { type ICondition, ConditionEvaluateResult, ConditionCategory, ConditionConfig } from '../../src/Interfaces/Conditions';
-import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
-import { ValidationSeverity, ValidateOptions, IssueFound } from '../../src/Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../../src/Interfaces/Validator';
-import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
-import { IValueHost } from '../../src/Interfaces/ValueHost';
-import { ConditionType } from "../../src/Conditions/ConditionTypes";
-import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
+import { EqualToCondition, EqualToConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
-import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { IValidatorsValueHostBase } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
+import { ValueHostName } from '../../src/DataTypes/BasicTypes';
+import { LookupKey } from "../../src/DataTypes/LookupKeys";
+import { type ICondition, ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
+import { IDisposable } from "../../src/Interfaces/General_Purpose";
+import type { IJivsServices } from "../../src/Interfaces/JivsServices";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { type TokenLabelAndValue, IMessageTokenSource, toIMessageTokenSource } from "../../src/Interfaces/MessageTokenSource";
+import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { IValidator, ValidatorConfig, ValidatorValidateResult } from '../../src/Interfaces/Validator';
+import { IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
+import { IValueHost } from '../../src/Interfaces/ValueHost';
+import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
+import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
+import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
+import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
+import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
+import { MockFieldValueHost, MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 
 // subclass of Validator to expose many of its protected members so they
@@ -44,7 +44,7 @@ class PublicifiedValidator extends Validator {
     public exposeValueHostsManager(): IValueHostsManager {
         return this.valueHostsManager;
     }
-    public exposeValueHost(): IValidatorsValueHostBase {
+    public exposeValueHost(): IValidatorsValueHost {
         return this.valueHost;
     }
 

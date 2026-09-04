@@ -11,7 +11,7 @@ import { IServiceWithAccessor } from './Services';
 /**
  * @inheritDoc jivs-engine/Services/ConcreteClasses/ConfigMergeService!ConfigMergeServiceBase:class
  */
-export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
+export interface IConfigMergeService<TConfig> extends IServiceWithAccessor {
 
     /**
      * Assigns the rule for a property on any Config and subclass.
@@ -33,7 +33,7 @@ export interface IConfigMergeServiceBase<TConfig> extends IServiceWithAccessor {
 /**
  * Interface for all ConfigMergeServices built for the ValueHostConfig and its subclasses.
  */
-export interface IValueHostConfigMergeService extends IConfigMergeServiceBase<ValueHostConfig> {
+export interface IValueHostConfigMergeService extends IConfigMergeService<ValueHostConfig> {
     /**
      * Attempts to merge the source's properties into the destination.
      * It only makes changes to the destination based on the rules
@@ -56,7 +56,7 @@ export interface IValueHostConfigMergeService extends IConfigMergeServiceBase<Va
 /**
  * Interface for all ConfigMergeServices built for the ValidatorConfig.
  */
-export interface IValidatorConfigMergeService extends IConfigMergeServiceBase<ValidatorConfig> {
+export interface IValidatorConfigMergeService extends IConfigMergeService<ValidatorConfig> {
     /**
      * Handles merging and conflict resolution for the validatorConfigs in
      * both source and destination.

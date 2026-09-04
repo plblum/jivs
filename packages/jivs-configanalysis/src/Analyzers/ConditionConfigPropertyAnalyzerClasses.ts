@@ -3,11 +3,10 @@
  * @module jivs-configanalysis/Analyzers/ConcreteClasses/Conditions
  */
 
-import { CompareToSecondValueHostConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToSecondValueHostConditionBase';
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { ConditionWithOneChildBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithOneChildBase';
 import { ConditionCategory, ConditionConfig, SupportsDataTypeConverter } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-
+import { CompareToValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/CompareToValueConditionBase';
 import { ServiceName } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { cleanString, findCaseInsensitiveValueInStringEnum, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Utilities';
@@ -47,7 +46,7 @@ export class ConditionWithConversionLookupKeyPropertyAnalyzer extends ConditionC
             helper.checkLookupKeyProperty('conversionLookupKey',
                 supportsConversionConfig.conversionLookupKey, ServiceName.converter, valueHostConfig,
                 results.properties, 'DataTypeConverter', 'conversionLookupKey');
-        const secondVHConfig = config as CompareToSecondValueHostConditionBaseConfig;
+        const secondVHConfig = config as CompareToValueConditionBaseConfig;
         if (secondVHConfig.secondConversionLookupKey)   // this will also cover CompareToValueConditionBaseConfig
             helper.checkLookupKeyProperty('secondConversionLookupKey',
                 secondVHConfig.secondConversionLookupKey, ServiceName.converter, valueHostConfig,
@@ -222,7 +221,12 @@ export class ConditionWithValueHostNamePropertyAnalyzer extends ConditionConfigP
  */
 export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
     public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
-        valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
+        valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void
+    {// SecondValueHostName is only checked if the secondValue is not provided.
+        if ((config as any).secondValue != null)
+        {
+            return;
+        }
         const secondValueHostName = (config as any).secondValueHostName;
         if (secondValueHostName === undefined &&
             this.ensurePropertyIsDefinedConditionTypes.has(config.conditionType))
@@ -266,7 +270,11 @@ export class ConditionWithSecondValueHostNamePropertyAnalyzer extends ConditionC
  */
 export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPropertyAnalyzerBase {
     public analyze(config: ConditionConfig, results: ConditionConfigCAResult,
-        valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void {
+        valueHostConfig: ValueHostConfig, helper: IAnalysisResultsHelper<any>): void
+    {
+        // If the secondValueHostName property is defined (even if null), no further analysis is needed for secondValue.
+        if ((config as any).secondValueHostName != null) // null or undefined
+            return;
         const secondValue = (config as any).secondValue;
         const secondConversionLookupKey = (config as any).secondConversionLookupKey;
         if (secondValue === undefined &&
@@ -290,12 +298,12 @@ export class ConditionWithSecondValuePropertyAnalyzer extends ConditionConfigPro
         return this._ensurePropertyIsDefinedConditionTypes;
     }
     private readonly _ensurePropertyIsDefinedConditionTypes = new Set<string>([
-        ConditionType.EqualToValue,
-        ConditionType.NotEqualToValue,
-        ConditionType.GreaterThanValue,
-        ConditionType.LessThanValue,
-        ConditionType.GreaterThanOrEqualValue,
-        ConditionType.LessThanOrEqualValue
+        ConditionType.EqualTo,
+        ConditionType.NotEqualTo,
+        ConditionType.GreaterThan,
+        ConditionType.LessThan,
+        ConditionType.GreaterThanOrEqual,
+        ConditionType.LessThanOrEqual
     ]);
     
 }

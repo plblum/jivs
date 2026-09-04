@@ -40,9 +40,8 @@ describe('ModelReader and ModelWriter round trip tests', () =>
             logger: CapturingLogger;
         }
     {
-        let services = createJivsServicesForTesting({ logger: 'capturing' });
-        let logger = services.loggerService as CapturingLogger;
-        logger.minLevel = LoggingLevel.Debug;
+        let services = createJivsServicesForTesting({ loggerLevel: LoggingLevel.Debug });
+        let logger = services.loggerService;
         // provide a default for birthDate being undefined.
         services.valueAdapterService.registerThenFunction('twoThousand', (value: any) => { return { value: new Date('2000-01-01') }; });
         let valueHostsManagerConfig: ValueHostsManagerConfig = {

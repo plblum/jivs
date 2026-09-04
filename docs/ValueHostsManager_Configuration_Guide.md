@@ -3,6 +3,8 @@ The `ValueHostsManager` is the central object you use with a form or model. It c
  Use it to get and set values, validate, retrieve validation results, and report additional errors determined by your business logic.
 
 The `ValueHostsManager` requires a configuration that reflects all of those, which it gets through a `ValueHostsManagerConfig` object tree. 
+
+## The hard way - no way!
 `ValueHostsManagerConfig` is rather complex, due to describing everything a model or form needs for validation.
 
 <details>
@@ -54,7 +56,12 @@ let vhm = new ValueHostsManager(vmConfig);
 
 </details>
 
-Instead, you derive a class from [`ValueHostRulesBase`](Jivs_API.md#valuehost-rules). 
+## The easy way - yay!
+We provide these tools designed to construct the same configuration in a compact and readable format.
+- ValueHost Rules
+- Builder and its Builder API
+
+Derive a class from [`ValueHostRulesBase`](#defining-rules-to-configure-a-valuehost) and use the [Builder API](#the-valuehostsmanagerconfigbuilder-class) to configure each field.
 ```ts
 class PersonModelRules extends ValueHostRulesBase {
     protected override configureRules(
@@ -72,17 +79,17 @@ class PersonModelRules extends ValueHostRulesBase {
 }
 ```
 
-Then do this to create the ValueHostsManager.
+Then use it to create the `ValueHostsManager`.
 
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
-const rules = new PersonModelRules(services); // documented below
+const rules = new PersonModelRules(services);
 const config = rules.configure();
 // attach any callback hooks to config at this point
 const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
 ```
 
-## ValueHostRulesBase: Defining rules to configure a ValueHost
+## Defining rules to configure a ValueHost
 
 ### Starting with a model from Business Logic
 Suppose your app edits this model:
@@ -97,7 +104,7 @@ class Person {
 }
 ```
 
-Create a [`ValueHostRulesBase`](Jivs_API.md#valuehost-rules) subclass to define the validation rules for that model:
+Create a [`ValueHostRulesBase`](./API/ValueHost_Rules/Home.md#using-valuehostrulesbase) subclass to define the validation rules for that model:
 
 ```ts
 class PersonModelRules extends ValueHostRulesBase {
@@ -120,8 +127,7 @@ class PersonModelRules extends ValueHostRulesBase {
     }
 }
 ```
-
-This example introduces the [`ValueHostsManagerConfigBuilder class`](#the-valuehostsmanagerconfigbuilder-class), which is used inside `configureRules()` to define `ValueHosts` and their validators. Most developers will use the Builder API this way, inside a rules class, rather than building configuration directly in page or component code.
+The _builder_ parameter is an instance of [ValueHostsManagerConfigBuilder](#the-valuehostsmanagerconfigbuilder-class), which provides the Builder API, our syntax for compact and readable field configurations.
 
 ### Using PersonModelRules class to create the ValueHostsManager
 Expect to use model-specific rules classes when writing server-side code for node.js,
@@ -140,22 +146,22 @@ A form can start with the model's rules and adapt them to its own needs. This is
 
 The form _should_ subclass from the model's ValueHostRules subclass and implement the `IAdaptModelRulesToForm` interface. Use its `adaptToForm()` method to further extend the configuration to reflect the needs of your form. `adaptToForm()` passes you a [Form Configuration Adapter](#the-form-configuration-adapter). 
 
-> Form Configuration Adapter is designed to _prevent_ you from modifying the validation rules, while _allowing_
+> Form Configuration Adapter is designed to _prevent_ you from breaking the model's validation rules, while _allowing_
 changes to whatever impacts the UI.
 
-- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method. See [Defining the rules](Jivs_API.md#valuehost-rules).
+- Add entirely new `ValueHosts` using the same `field()`, `static()` and `calc()` functions used in the `configureRules()` method.
 - Modify many aspects of existing ValueHosts through the `modify(valueHostName)` method including:
-    + labels
-    + parsers and formatters
-    + enabling
-    + validation groups
-    ```ts
-    modify(valueHostName, {
-        label: 'label',
-        initialEnabled: false,
-        group: 'group name'
-    });
-    ```
+    - labels
+    - parsers and formatters
+    - enabling
+    - validation groups
+        ```ts
+        modify(valueHostName, {
+            label: 'label',
+            initialEnabled: false,
+            group: 'group name'
+        });
+        ```
 - Modify the data type name to use more specialized tools. For example, the original data type is "String"
 but the UI wants to use tools around "Email". `modify(valueHostName).refineDataType(data type)`
 - Modify existing Validators through the `modify(valueHostName).validator(validator name)` method including:
@@ -176,14 +182,14 @@ but the UI wants to use tools around "Email". `modify(valueHostName).refineDataT
     + `modify(valueHostName).validator(validator name).or(your condition)`
     ```ts
     modify('Field1').validator(ConditionType.RegExp).and(
-        (childBuilder=> childBuilder.fieldValue('AnotherField').equalToValue(true)));
+        (childBuilder=> childBuilder.fieldValue('AnotherField').equalTo(true)));
     ```
 - Disable an existing validator. While frowned upon, this provides high visibility to the action.
     + `modify(valueHostName).validator(validator name).disable()`
 - Add another validator to an existing ValueHost
     + `modify(valueHostName).addValidator().[specify the validator]`.
     ```ts
-    modify('Field1').addValidator().equalToValue(true, 'error message');
+    modify('Field1').addValidator().equalTo(true, 'error message');
     ```
 
 See [Form Configuration Adapter](#the-form-configuration-adapter) for details.
@@ -305,51 +311,44 @@ class ValueHostsManagerConfigBuilder {
         callback: (builder: IStartConditionWithOneChildBuilder) => void): IManagerConfigBuilder; 
 
     // callbacks for various events
-    onInstanceStateChanged?: null | ValueHostsManagerInstanceStateChangedHandler;
     onValidationStateChanged?: null | ValidationStateChangedHandler;
     onValueChanged?: null | ValueChangedHandler;
     onTextValueChanged?: null | TextValueChangedHandler;
-    onValueHostInstanceStateChanged?: null | ValueHostInstanceStateChangedHandler;
-    onValueHostValidationStateChanged?: null | ValueHostValidationStateChangedHandler;
     onConfigChanged?: null: ValueHostsManagerConfigChangedHandler;
     notifyValidationStateChangedDelay?: number;
     
-    // preserve stateful data during a round trip to the server
-    savedInstanceState?: null | ValueHostsManagerInstanceState;
-    savedValueHostInstanceStates?: null | ValueHostInstanceState[];
+    behaviors: Behaviors;   // adjust the behaviors of this instance
+    capturedState?: string; // preserve stateful data during a round trip to the server
 }
 ```
 - `complete()` - Call upon completion of your work to retrieve the `ValueHostsManagerConfig object tree`. Then pass it to the constructor of `ValueHostsManager`.
 ### ValueHosts
-- `field()` – Adds or modifies an [FieldValueHost](Jivs_API.md#valuehosts) configuration. You can chain validator functions like requireText() and regExp() to it. See [Configuring ValueHosts](Jivs_API.md#configuring-valuehosts).
+- `field()` – Adds or modifies an `FieldValueHost` configuration. You can chain validator functions like `requireText()` and `regExp()` to it. See [Configuring ValueHosts](./API/ValueHosts/Configuring_ValueHosts.md#configuring-fieldvaluehost).
     ```ts
     builder.field('Field1', LookupKey.Number, { label: 'Label'});
     builder.field('Field2', LookupKey.Date).requireText();  // attaches a validator
     ```
-- `static()` – Adds or modifies a [StaticValueHost](Jivs_API.md#valuehosts) configuration. See [Configuring ValueHosts](Jivs_API.md#configuring-valuehosts).
+- `static()` – Adds or modifies a `StaticValueHost` configuration. See [Configuring ValueHosts](./API/ValueHosts/Configuring_ValueHosts.md#configuring-staticvaluehost).
     ```ts
     builder.static('Field1', 10);   // Field1 = 10
     ```
-- `calc()` – Adds or modifies a [CalcValueHost](Jivs_API.md#valuehosts) configuration. See [Configuring ValueHosts](#configuring-valuehosts).
+- `calc()` – Adds or modifies a `CalcValueHost` configuration. See [Configuring ValueHosts](./API/ValueHosts/Configuring_ValueHosts.md#configuration-calcvaluehost).
     ```ts
     builder.calc('Field1', LookupKey.Integer, (callingValueHost)=> calculation code);
     ```
-- `whenToEnable` - Establishes the condition that must be met for the ValueHost to be enabled. When disabled, its validators do nothing.
+- `whenToEnable` - Establishes the `Condition` that must be met for the `ValueHost` to be enabled. When disabled, its validators do nothing.
     ```ts
+    // use the EqualToCondition to compare to the literal 'YES'
     builder.whenToEnable('Field1', (whenBuilder)=>
-        whenBuilder.fieldName('Field2').equalToValue('YES'));
-    builder.whenToEnable('Field1', (whenBuilder)=>
-        whenBuilder.conditionConfig(existingConditionConfig));
-    builder.whenToEnable('Field1', handler).any validator can be chained
+        whenBuilder.fieldValue('Field2').equalTo('YES'));    
     ```
 ### Callbacks    
-- `onInstanceStateChanged` and `onValueHostInstanceStateChanged` must be setup if you maintain the states. They supply a copy of the states for you to save.
 - `onValueChanged` notifies you when a `ValueHost` had its value changed. On a FieldValueHost, this is the native value, not the text value.
 - `onTextValueChanged` notifies you when an `FieldValueHost` had its text value changed.
 - `onValidationStateChanged` and `onValueHostValidationStateChanged` notifies you after a `validate function` completes, providing the results.
 - `onConfigChanged` lets you capture the configuration for caching it to use in a later creation of ValueHostsManager.
 ### State
-- `savedInstanceState` and `savedValueHostInstanceStates` – `ValueHostsManager` knows how to offload its stateful data to the application. If you want to retain state, you’ll capture the latest states using the `onInstanceStateChanged` and `onValueHostInstanceStateChanged` events, and pass the values back into these two Config properties when you recreate it.
+- `capturedState` - The string returned by `ValueHostsManager.captureState()`. Use this when the page is regenerated by the server or the `ValueHostsManager` instance is replaced. See [Server generated pages](./Learning_Jivs/Server_Pages/Home.md).
 
 
 ### Chaining Validators using the Builder API
@@ -369,11 +368,11 @@ builder.field('StartDate').regExp(expression, ignoreCase, errorMessage, summaryM
 // or
 builder.field('StartDate').regExp(expression, ignoreCase, {validator parameters});
 ```
-Error messages can be kept separately in the global configuration by using [TextLocalizerService](Jivs_API.md#localizing-strings-textlocalizerservice). When done this way, omit the errorMessage and summaryMessage, or use them to override the global configuration.
+Error messages can be kept separately in the global configuration by using [TextLocalizerService](./API/JivsServices/TextLocalizerService.md). When done this way, omit the errorMessage and summaryMessage, or use them to override the global configuration.
 ```ts
 builder.field('StartDate').requireText();
 ```
-For details on all validators using the Builder API, see [All condition configurations](Conditions.md).
+For details on all validators using the Builder API, see [All condition configurations](./API/Conditions/Conditions_Included_with_Jivs.md).
 
 ## The Form Configuration Adapter
 The **Form Configuration Adapter** (`FormConfigAdapter class`) is used within `IAdaptModelRulesToForm.adaptToForm()`. It targets adapting
@@ -472,7 +471,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).and(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         + `or()` - combine a condition with an existing validator's condition using an OR operator.
             ```ts
@@ -480,7 +479,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).or(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         + `whenToEnable() `- provide a condition that determines when the validator is enabled.
             ```ts
@@ -488,7 +487,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
             builder.field('Field1').requireText();
             // adapt
             adapter.modify('Field1').validator(ConditionType.RequireText).whenToEnable(
-                (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+                (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
             ```
         > While `and()` and `whenToEnable()` logically appear the same, `and()` evaluates as NoMatch
         and `whenToEnable()` evaluates as Undetermined if your condition evaluates as NoMatch.
@@ -502,7 +501,7 @@ that includes label, group, enabling tools, parsers, formatters, and more.
     + `whenToEnable()` - Establishes the condition that must be met for the ValueHost to be enabled. When disabled, its validators do nothing.
         ```ts
         adapter.modify('Field1').whenToEnable(
-            (childBuilder)=> childBuilder.fieldValue('Field2').equalToValue(true));
+            (childBuilder)=> childBuilder.fieldValue('Field2').equalTo(true));
     + `refineDataType()` - Updates the data type. The new data type must be able to fallback to 
         the original data type as specified in the `LookupFallbackService` of `JivsServices`.
         ```ts

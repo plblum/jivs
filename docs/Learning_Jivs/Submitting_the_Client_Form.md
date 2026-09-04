@@ -46,7 +46,7 @@ if (validationState.doNotSave) {
 }
 ```
 
-`validate()` runs the validation needed for submission. `ValueHostsManager` distributes the results to the UI through the `onValidationStateChanged` callback. See [Using the ValueHostsManager within the Client](Using_the_ValueHostsManager_within_the_Client.md) for details.
+`validate()` runs the validation needed for submission. `ValueHostsManager` distributes the results to the UI through the `onValidationStateChanged` callback. See [Using the ValueHostsManager within the Client](./Using_the_ValueHostsManager_within_the_Client.md) for details.
 
 If `doNotSave` is `true`, submission stops here.
 
@@ -77,7 +77,7 @@ Now `ModelWriter` knows that the `FirstName` ValueHost should be written to `per
 Individual values can also be retrieved directly when needed:
 
 ```ts
-person.firstName = vhm.vh('FirstName').getValue();
+person.firstName = vhm.vh.field('FirstName').getValue();
 ```
 
 At this point the Model contains the Native Values established while the user edited the form.
@@ -375,8 +375,8 @@ Returning `true` means validation issues were found and handled, so submission p
 The server does not need to understand Jivs. The client-side adapter translates the server's validation contract into the `IssueFound` information Jivs needs.
 
 ---
-Next, we'll look at [Client Presentation of Jivs Validation](./Client_Presentation_of_Jivs_Validation.md)
+Next, we'll look at [Client Presentation of Jivs Validation](./Presentation/Home.md)
 
 Or start on the server with [how Jivs participates in validation on the server](./Understanding_Server_Side_Validation.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

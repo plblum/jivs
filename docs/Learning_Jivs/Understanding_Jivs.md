@@ -50,4 +50,4 @@ flowchart LR
 
 Now let's [create a ValueHostsManager](Intro_to_Creating_a_ValueHostsManager.md).
 
-Return to [Learning Jivs TOC](./Learning_Jivs_Home.md).
+Return to [Learning Jivs TOC](./Home.md).

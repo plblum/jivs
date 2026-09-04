@@ -48,11 +48,10 @@ function setup():
         valueAdapterService: IValueAdapterService
     }
 {
-    let services = createJivsServicesForTesting({ logger: 'capturing'});
+    let services = createJivsServicesForTesting({ loggerLevel: LoggingLevel.Debug });
     // will already have default valueAdapterService and valueAdapterService. So the caller should 
     // use the right one for the test.
-    let logger = services.loggerService as CapturingLogger;
-    logger.minLevel = LoggingLevel.Debug;
+    let logger = services.loggerService;
 
     return { services, logger, valueAdapterService: services.valueAdapterService as IValueAdapterService };
 }
