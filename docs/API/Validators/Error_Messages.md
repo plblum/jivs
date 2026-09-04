@@ -35,6 +35,11 @@ Jivs has a lot of depth in its error message support.
 ## Using the TextLocalizerService
 The `TextLocalizerService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [TextLocalizerService](../JivsServices/TextLocalizerService.md).
 
+It provides:
+- a reusable library of default strings, avoiding the need to configure the same messages on every `Validator`.
+- localized versions of those strings
+- localized versions of label names and data type names used in {Label}, {SecondLabel}, and {DataType} tokens found in error messages.
+
 Configure your error messages within your `createJivsServices()` function.
 
 ```ts
@@ -46,35 +51,14 @@ tls.registerErrorMessage(ConditionType.RequireText, null, {
 tls.registerSummaryMessage(ConditionType.RequireText, null, {
     '*': '{Label} requires a value.'
 });    
-
-// providing messages influenced by the FieldValueHost's dataType property
-service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-    '*': 'Invalid value. Enter a date.',
-    'en-US': 'Invalid value. Enter a date in this format: MM/DD/YYYY',
-    'en-GB': 'Invalid value. Enter a date in this format: DD/MM/YYYY'
-});
-service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date,  {
-    '*': '{Label} has an invalid value. Enter a date.',
-    'en-US': '{Label} has an invalid value. Enter a date in this format: MM/DD/YYYY',
-    'en-GB': '{Label} has an invalid value. Enter a date in this format: DD/MM/YYYY'
-});        
-
-// When you supply your own errorCode. In this case, errorCode='SameNameWarning'
-tls.registerErrorMessage('SameNameWarning', null, {
-    '*': 'Are you sure that your first and last names are the same?'
-});
-tls.registerSummaryMessage('SameNameWarning', null, {
-    '*': 'In {Label}, are you sure that your first and last names are the same?'
-});    
 ```
-Here's the Builder API using those delegated error messages.
-```ts
-builder.field('FirstName', LookupKey.String, { label: 'First name' } )
-    .requireText() // Looked up in TextLocalizerService using ConditionType.RequireText
-    .notEqualTo('LastName', null, null, {
-        errorCode: 'SameNameWarning', // Looked up in TextLocalizerService
-        severity: 'Warning'   
-    });
-builder.field('LastName', LookupKey.String, { label: 'Last name' }).requireText();
-builder.field('BirthDate', LookupKey.Date); // DataTypeCheckCondition is automatically used
-```
+See [TextLocalizerService](../JivsServices/TextLocalizerService.md) for much more.
+
+
+## API References
+- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+
+---
+Go to [Validators Home](./Home.md)
+
+Go to [API Home](../Home.md)

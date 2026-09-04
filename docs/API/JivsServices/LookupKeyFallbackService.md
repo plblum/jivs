@@ -1,7 +1,7 @@
-Use `LookupKeyFallbackService` when you introduce a new Lookup Key. It creates a relationship between your Lookup Key and another that is the base data type it is built around.
+Use `LookupKeyFallbackService` when you introduce a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys). It creates a relationship between your Lookup Key and another that is the base data type it is built around.
 
-For example, LookupKey.Integer uses a number as the base data type.
-So it has a relationship with LookupKey.Number.
+For example, `LookupKey.Integer` uses a number as the base data type.
+So it has a relationship with `LookupKey.Number`.
 
 `DataTypeFormatterService` and `DataTypeParserService` consume this as they try to find the best fitting formatter or parser. If you use a Lookup Key to get a parser, formatter, and several other use cases, when
 there is no support for that Lookup Key, it will fall back through Lookup Keys until it finds what it needs.
@@ -42,6 +42,9 @@ export function createLookupKeyFallbackService(): ILookupKeyFallbackService
     return service;
 }
 ```
+## API References
+- [LookupKeyFallbackService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_Types_ILookupKeyFallbackService.LookupKeyFallbackService.html)
+
 ---
 Go to [JivsServices Home](./Home.md)
 

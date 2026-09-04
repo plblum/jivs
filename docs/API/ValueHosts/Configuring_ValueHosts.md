@@ -22,7 +22,7 @@ See [ValueHost Rules](../ValueHost_Rules/Home.md) to learn more. Here we'll focu
 For an all-encompassing overview of configuration, use [ValueHostsManager Configuration Guide](../../ValueHostsManager_Configuration_Guide.md).
 
 ## Configuring FieldValueHost
-Use the `field()` method on the [Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `FieldValueHost`.
+Use the `field()` method on the [Builder](../../ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `FieldValueHost`.
 
 `field(valueHostName, dataType?, *parameters object*?): IValidatorBuilder`
 
@@ -59,7 +59,7 @@ builder.field('fieldname', LookupKey.Integer, {
 All parameters and arguments are [discussed below](#configuration-parameters-of-all-valuehosts).
 
 ## Configuring StaticValueHost
-Use the `static()` method on the [Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `StaticValueHost`.
+Use the `static()` method on the [Builder](../../ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `StaticValueHost`.
 
 `static(valueHostName, dataType?, *parameters object*?): ValueHostsManagerConfigBuilder`
 
@@ -86,7 +86,7 @@ builder.static('fieldname');
 All parameters and arguments are [discussed below](#configuration-parameters-of-all-valuehosts).
 
 ## Configuration CalcValueHost
-Use the `calc()` method on the [Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `CalcValueHost`.
+Use the `calc()` method on the [Builder](../../ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class) to add a `CalcValueHost`.
 
 Most of the work involves your calculation function, which has this declaration:
 ```ts
@@ -112,12 +112,12 @@ Here are the arguments and parameters for all `ValueHosts` described above.
 - `name` – The `ValueHost` name. Required. See [Naming each ValueHost](./Home.md#naming-each-valuehost).
 - `dataType` – The data type. Use either the `LookupKey` enumerated type or a string with your own data type. See [Data Types and Companion Tools](../Data_Type_Support/Home.md).
 - `label` – The text to show in the {Label} and {SecondLabel} tokens of an error message.
-- `labell10n` – Localization key to get the label from the [TextLocalizerService](#localizing-strings-textlocalizerservice).
+- `labell10n` – Localization key to get the label from the [TextLocalizerService](../JivsServices/TextLocalizerService.md).
 - `initialValue` – An initial native value for the `ValueHost`. If not assigned, it is initially undefined.
-- `initialEnabled` – `ValueHosts` have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the `ValidationStatus` is `Disabled`. Use `initialEnabled=false` to configure the `ValueHost` as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](#disabling-a-valuehost) for more.
-- `enablerConfig` – Use `builder.enabler('valueHostName', (builder)=> builder.condition(parameters))` to set it up. Don't directly modify this property. See [Disabling a ValueHost](#disabling-a-valuehost) for more.
+- `initialEnabled` – `ValueHosts` have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the `ValidationStatus` is `Disabled`. Use `initialEnabled=false` to configure the `ValueHost` as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.
+- `enablerConfig` – Use `builder.enabler('valueHostName', (builder)=> builder.condition(parameters))` to set it up. Don't directly modify this property. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.
 
-- `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](#using-calcvaluehost).
+- `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](./Using_CalcValueHost.md).
 ### Configuration parameters specific to FieldValueHost
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to `validate()` that share the group. The name matching is case insensitive.
 - `parserLookupKey` – When you have [configured parsing](../Data_Type_Support/DataTypeParsers_Service.md) for `FieldValueHosts`, this overrides the default `DataTypeParser` which is determined by the `dataType` property. Specify a Lookup Key to match one that you have registered with the `DataTypeParserService`.
@@ -162,6 +162,16 @@ Here are the arguments and parameters for all `ValueHosts` described above.
 - `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](../ModelReader_and_ModelWriter/Home.md).
 - `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](../ModelReader_and_ModelWriter/Home.md).
 ---
+
+## API References
+- [ValueHostBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_AbstractClasses_ValueHostBase.ValueHostBase.html)
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [StaticValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_StaticValueHost.StaticValueHost.html)
+- [CalcValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_CalcValueHost.CalcValueHost.html)
+- [ValueHostRulesBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_ValueHostRules_ConcreteClasses.ValueHostRulesBase.html)
+- [ValueHostsManagerConfigBuilder class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_Builders_ConcreteClasses.ValueHostsManagerConfigBuilder.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+
 Go to [ValueHost Home](./Home.md)
 
 Go to [API Home](../Home.md)

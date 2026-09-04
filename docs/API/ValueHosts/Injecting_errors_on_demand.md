@@ -20,6 +20,11 @@ vhm.getFieldValueHost('field1').clearInjectedError();
 ```
 
 See [Injecting errors on demand](../Validators/Injecting_errors_on_demand.md) for more.
+
+## API References
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [InjectedError type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatorsValueHostBase.InjectedError.html)
+
 ---
 Go to [ValueHost Home](./Home.md)
 

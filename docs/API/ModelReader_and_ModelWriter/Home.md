@@ -2,14 +2,14 @@
 `ModelReader` and `ModelWriter` classes transfer data between an external source and `ValueHostsManager`.
 That external source is often your own model object. However, you may have a dictionary or string values from an HTTP Form that are the source. They use `DictionaryReader` and `FormReader` respectively.
 
-When initializing the ValueHostsManager, source values are copied to the `ValueHosts`, ready for change and validation. 
-```
+When initializing the `ValueHostsManager`, source values are copied to the `ValueHosts`, ready for change and validation. 
+```text
 source → ValueHost
 ```
 This is the role of `ModelReader`, `DictionaryReader`, and `FormReader`.
 
 When you want to retrieve that data, `ValueHosts` have them already in their native form. You have the option to copy its values to the model's properties.
-```
+```text
 ValueHost → model property
 ```
 This is the role of `ModelWriter`.
@@ -51,7 +51,7 @@ writer.writeToModel(); // your model is updated
 saveMyModel(model); // your code
 ```
 
-If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [ValueHost Formatting](#decisions-around-jivs-built-in-formatting).
+If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [Decisions around Formatting](../ValueHosts/Getting_and_Setting_Values.md#decisions-around-jivs-built-in-formatting).
 ```ts
 config.onTextValueChanged = myFunctionToUpdateInputs;
 let vhm = new ValueHostsManager(config);
@@ -65,8 +65,8 @@ let vhm = new ValueHostsManager(config);
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeToProperty('property1', vhm.getFieldValueHost('field1'));
-    writer.writeToProperty('property2', vhm.getFieldValueHost('field2'));
+    writer.writeToProperty('property1', vhm.vh.field('field1'));
+    writer.writeToProperty('property2', vhm.vh.field('field2'));
     ```
 ## Available operations on ModelWriter
 - `writeToModel()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
@@ -75,8 +75,8 @@ let vhm = new ValueHostsManager(config);
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeToProperty(vhm.getFieldValueHost('field1'), 'property1');
-    writer.writeToProperty(vhm.getFieldValueHost('field2'), 'property2');
+    writer.writeToProperty(vhm.vh.field('field1'), 'property1');
+    writer.writeToProperty(vhm.vh.field('field2'), 'property2');
     ```
 ## Getting the form data into FormReader
 `FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each `FieldValueHost.setTextValue()`, instead of `setValue`. It uses a parser to convert the text value into the native value.
@@ -222,5 +222,12 @@ Register in the service:
 ```ts
 jivsServices.valueAdapterService.registerThenFunction('year2000', replaceWithYear2000);
 ```
+## API References
+- [ModelReaderWriterBase](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_AbstractClasses.ModelReaderWriterBase.html)
+- [ModelReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelReader.html)
+- [DictionaryReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.DictionaryReader.html)
+- [FormReader](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.FormReader.html)
+- [ModelWriter](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelWriter.html)
+- [ValueAdapterRulesService](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ValueAdapterService.ValueAdapterService.html)
 ---
 Go to [API Home](../Home.md)

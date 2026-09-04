@@ -92,7 +92,7 @@ interface IssueFound {
     doNotSave?: boolean;
 }
 ```
-- `errorMessage` - The error message, with all tokens and localization already applied. See [Error Messages](./Configuration.md#error-messages) for extensive details on setting these up.
+- `errorMessage` - The error message, with all tokens and localization already applied. See [Error Messages](../Validators/Error_Messages.md) for extensive details on setting these up.
     > When building an HTML-based UI, always follow these prerequisites: [Jivs Presentation Prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md).
 - `summaryMessage` - A companion error message that is ideal for the Validation Summary element. 
   If null or undefined, use `errorMessage` as no `summaryMessage` was supplied.
@@ -105,8 +105,16 @@ interface IssueFound {
 - `errorCode` - Identifies the issue type so the consumer can align it with a specific validator or business rule.
     It is essential when using the `TextLocalizerService`.
     Its value is initially the Condition's ConditionType. You can override it using the Validator's `errorCode` configuration property
-    If supplied through `ValueHostsManager.addExternalIssueFound()`, it can be null/undefined and the system will generate one. In doing so, the developer opts out of validator alignment. See [Using the errorCode](./Configuration.md#using-the-errorcode) for more.
+    If supplied through `ValueHostsManager.addExternalIssueFound()`, it can be null/undefined and the system will generate one. In doing so, the developer opts out of validator alignment. See [Using the errorCode](../Validators/ErrorCodes.md) for more.
 ---
+
+## API Reference
+- [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)
+- [ValueHostValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatableValueHostBase.ValueHostValidationState.html)
+- [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+
 Go to [Validators Home](./Home.md)
 
 Go to [API Home](../Home.md)

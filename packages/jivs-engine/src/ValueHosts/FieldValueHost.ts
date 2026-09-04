@@ -177,24 +177,24 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      * parsing fails.
      *
      * @param textValue - The text value to store exactly as supplied.
-     * @param options -
-     * duringEdit - Set to true for an intermediate edit activity rather than a completed change.
-     *   For example, on the client side this may be used for an HTMLInputElement.oninput event,
-     *   where the user is still editing. In this mode, only validators intended for in-progress
-     *   edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
-     *   and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
-     *   ICondition.evaluate().
-     * validate - Invoke validation after setting the text value.
-     * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     * disableParser - When true, do not use the DataTypeParser to resolve the typed value
-     *   from the text value.
-     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
-     *      an error. Assign this object to contain the error message and other info.
-     *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
-     *      use the errorCode value of 'InjectedError' to localize the error message. 
-     *      You can also provide a summaryMessage for use in a summary of validation errors.
-     * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     * @param options
+     *  - duringEdit - Set to true for an intermediate edit activity rather than a completed change.
+     *    For example, on the client side this may be used for an HTMLInputElement.oninput event,
+     *    where the user is still editing. In this mode, only validators intended for in-progress
+     *    edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
+     *    and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
+     *    ICondition.evaluate().
+     *  - validate - Invoke validation after setting the text value.
+     *  - reset - Clear validation state, unless validate = true, and set IsChanged to false.
+     *  - disableParser - When true, do not use the DataTypeParser to resolve the typed value
+     *    from the text value.
+     *  - injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
+     *       an error. Assign this object to contain the error message and other info.
+     *       Internally Jivs will provide a Validator with the error message to report the error.
+     *       If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *       use the errorCode value of 'InjectedError' to localize the error message. 
+     *       You can also provide a summaryMessage for use in a summary of validation errors.
+     *  - skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     public setTextValue(textValue: string | undefined, options?: TOptions): void {
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        

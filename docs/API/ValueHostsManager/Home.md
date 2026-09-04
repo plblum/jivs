@@ -48,7 +48,7 @@ class ValueHostsManager {
 }
 ```
 ### Unclassified members
-- `services` - Exposes the `JivsServices` object.
+- `services` - Exposes the `JivsServices` object. See [JivsServices](../JivsServices/Home.md).
 - `behaviors` - Behavioral settings for how `ValueHostsManager` should operate. Supplied by either the `ValueHostsManagerConfig.behaviors` or `Builder.behaviors` property. They can be changed once the `ValueHostsManager` is created using this property.
     Here are its options with their default values:
     - `activeCultureID` - the current Culture (ISO language/region) code used for localization. Default is from `CultureService.defaultCultureId`.
@@ -104,7 +104,7 @@ See [Naming ValueHosts](../ValueHosts/Naming_ValueHosts.md) to understand the pa
     }    
     ```
 ## Validation Activities
-See [Validation](../Validators/Home.md) for details.
+See [Validators](../Validators/Home.md) for details.
 - `validate(options)` - Runs validation against the `ValueHosts`. See [Invoking Validation](../Validators/Invoking_Validation.md). It returns the [`ValidationState object`](../Validators/Validation_State.md).
 - `clearValidation(options)` - Resets the `FieldValueHosts` to their `NotAttempted` status, as if the 
     user has not yet interacted with the form.
@@ -252,6 +252,13 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
     ```ts
     config.notifyValidationStateChangedDelay = 500;
     ```    
+## API References
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+- [ValueHostsManagerConfigBuilder class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_Builders_ConcreteClasses.ValueHostsManagerConfigBuilder.html)
+- [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)
+- [ValueHostValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatableValueHostBase.ValueHostValidationState.html)
+- [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
+- [JivsServices](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_JivsServices.JivsServices.html)
 
 ---
 Go to [API Home](../Home.md)

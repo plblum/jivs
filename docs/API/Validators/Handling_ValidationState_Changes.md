@@ -159,6 +159,13 @@ All of these actions can change the validation state whether on `ValueHostsManag
 - `clearExternalIssuesFound()`
 - using any of these with the `{ validate: true }` option as a parameter: `setValue()`, `setValues()`, `setTextValue()`, `setValueToUndefined()`.
 - An asynchronous Condition just finished
+
+## API Reference
+- [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)
+- [ValueHostValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatableValueHostBase.ValueHostValidationState.html)
+- [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+
 ---
 Go to [Validators Home](./Home.md)
 

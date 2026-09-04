@@ -14,6 +14,15 @@ Start with a `ValueHostsManager` instance. It should already be configured with 
 |`vhm.getFieldByElementIdentifier('element identifier')`|`FieldValueHost` by matching its `elementIdentifier` configuration property|Returns null|
 |`vhm.getFieldByPropertyName('property name')`|`FieldValueHost` by matching its `propertyName` configuration property|Returns null|
 ---
+## API References
+- [ValueHostBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_AbstractClasses_ValueHostBase.ValueHostBase.html)
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [StaticValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_StaticValueHost.StaticValueHost.html)
+- [CalcValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_CalcValueHost.CalcValueHost.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+
+
+
 Go to [ValueHost Home](./Home.md)
 
 Go to [API Home](../Home.md)

@@ -63,7 +63,7 @@ export class PersonFormRules extends ValueHostRulesBase {
 You can see that both Model and Form representations are identical aside from the class name.
 ### Short intro to methods on Builder
 The builder's class has a rich API called **Builder API**. Learn about it here:
-[Builder](ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
+[Builder](../../ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 The `ValueHostsManagerConfigBuilder` has these features:
 - `builder.field(valueHostName, parameters)` adds n `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
@@ -99,7 +99,7 @@ class PersonEditFormRules
 ## Short intro to methods on Adapter
 The adapter's class, `FormConfigAdapter`, inherits from the `Builder`, and introduces methods to carefully adapt your form's requirements without breaking the business logic rules.
 Learn about it here: 
-[Adapter](ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
+[Adapter](../../ValueHostsManager_Configuration_Guide.md#the-form-configuration-adapter)
 
 The `Adapter` has these features:
 - Declare a subset of model fields you are editing
@@ -143,5 +143,14 @@ interface ValueHostRulesOptions {
 to determine how to transition from the base rules to the form-specific rules.
 When true or undefined, delete any error messages supplied by business logic for which
 you have a replacement in `TextLocalizationService`.
+
+## API Reference
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+- [ValueHostRulesBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_ValueHostRules_ConcreteClasses.ValueHostRulesBase.html)
+- [IAdaptModelRulesToForm interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-builder_ValueHostRules_Types.IAdaptModelRulesToForm.html)
+- [ValueHostsManagerConfigBuilder class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_Builders_ConcreteClasses.ValueHostsManagerConfigBuilder.html)
+- [FormConfigAdapter class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_Builders_ConcreteClasses.FormConfigAdapter.html)
+
+
 ---
 Go to [API Home](../Home.md)

@@ -31,7 +31,7 @@ Use these functions on `ValueHostsManager` to get a `FieldValueHost`:
 |vhm.getFieldByPropertyName(name)|property name|Returns null|
 |vhm.getFieldByElementIdentifier(name)|element identifier|Returns null|
 
-See [Getting ValueHosts](Home.md#getting-a-valuehost) for getting any type of `ValueHost`.
+See [Getting ValueHosts](./Getting_a_ValueHost.md) for getting any type of `ValueHost`.
 
 See [Using the Element Identifier](../../Learning_Jivs/Server_Pages/Home.md#using-the-element-identifier) for more.
 
@@ -70,6 +70,14 @@ const firstNameElement = document.querySelector(
     '[data-role="editor"]'
 );
 ```
+## API References
+- [ValueHostBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_AbstractClasses_ValueHostBase.ValueHostBase.html)
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [StaticValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_StaticValueHost.StaticValueHost.html)
+- [CalcValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_CalcValueHost.CalcValueHost.html)
+- [ValueHostsManagerConfigBuilder class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_Builders_ConcreteClasses.ValueHostsManagerConfigBuilder.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
+
 ---
 Go to [ValueHost Home](./Home.md)
 

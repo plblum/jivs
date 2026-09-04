@@ -72,7 +72,7 @@ These properties are all related to validation:
 - `duringEdit` - described above
 - `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. It defaults to false.
 - `injectedError` - When you handle parsing, your parser may report an error that you want to display.
-  Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](./Injecting_errors_on_demand.md).
+    Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](./Injecting_errors_on_demand.md).
 
 ### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on `ValueHostsManager`.
@@ -95,16 +95,23 @@ interface ValidateOptions {
 These properties are all related to `ValueHostsManager` validation:
 - `group` - Group validation is a tool to group validatable `ValueHosts` with a specific submit command when validating. If used, it needs a name assigned here and on `ValueHosts` that it targets. See their `ValueHostConfig.group` property. The name matching is case insensitive.
 
-  Use when there is more than one group of validatable `ValueHosts` to be validated together.
-  
-  For example, the `ValueHostsManager` handles two forms at once. Give the `ValueHostConfig.group` a name for each form. Then make their submit command
-  pass in the same group name.
+    Use when there is more than one group of validatable `ValueHosts` to be validated together.
+
+    For example, the `ValueHostsManager` handles two forms at once. Give the `ValueHostConfig.group` a name for each form. Then make their submit command
+    pass in the same group name.
   
 - `preliminary` - Set to true when running a validation prior to a submit activity.
-Typically used just after loading the form to report any errors already present.
-When set, the `RequireTextCondition` is not checked as the user doesn't need
-the noise complaining about missing input when they haven't had a chance to address it.
+    Typically used just after loading the form to report any errors already present.
+    When set, the `RequireTextCondition` is not checked as the user doesn't need
+    the noise complaining about missing input when they haven't had a chance to address it.
 - `skipCallback` - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
+
+## API Reference
+- [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
+- [SetValueOptions type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValueHost.SetValueOptions.html)
+- [FieldValueHostSetValueOptions type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_FieldValueHost.FieldValueHostSetValueOptions.html)
+- [ValidateOptions type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidateOptions.html)
+- [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
 ---
 Go to [Validators Home](./Home.md)
 

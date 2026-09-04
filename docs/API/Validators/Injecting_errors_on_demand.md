@@ -81,6 +81,10 @@ tls.registerSummaryMessage('MyParserErrorCode', null, {
     '*': '{Label} has this invalid input.'
 });    
 ```
+
+## API Reference
+- [InjectedError type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatorsValueHostBase.InjectedError.html)
+- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
 ---
 Go to [Validators Home](./Home.md)
 
