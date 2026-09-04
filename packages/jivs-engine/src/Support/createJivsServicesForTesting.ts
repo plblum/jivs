@@ -89,7 +89,7 @@ import { registerTestingOnlyConditions } from './conditionsForTesting';
  * Every app should have a function like this to create the JivsServices object.
  * They normally have one that is edited. This one is for testing and has fixed objects.
  * - It has options to determine what those objects are.
- * - By default, it uses the ConsoleLoggerService with LoggingLevel.Error.
+ * - By default, it uses the CapturingLogger with LoggingLevel.Error.
  * - By default, it uses the culture 'en' and registers a few cultures with fallbacks.
  * - By default, it always adds the Conditions exclusively designed for testing in the conditionsForTesting.ts file.
  * - By default, it also adds DataTypeCheckCondition and RequireTextCondition to the ConditionFactory.
@@ -100,19 +100,15 @@ import { registerTestingOnlyConditions } from './conditionsForTesting';
  * @param options 
  * @returns 
  */
-export function createJivsServicesForTesting(options?: CvstOptions): IJivsServices {
+export function createJivsServicesForTesting(options?: TestingJivsServicesOptions): TestingJivsServices {
     if (!options) options = {};
 
 
-    const vs = new JivsServices(options.defaultCultureId ?? 'en');
+    const vs = new TestingJivsServices(options.defaultCultureId ?? 'en');
 
     const consoleLogger = new ConsoleLoggerService(options.loggerLevel ?? LoggingLevel.Error);
-    if (options.logger === 'capturing') {
-        const capturingLogger = new CapturingLogger(options.loggerLevel ?? LoggingLevel.Error, consoleLogger);
-        vs.loggerService = capturingLogger;
-    }
-    else
-        vs.loggerService = consoleLogger;
+    const capturingLogger = new CapturingLogger(options.loggerLevel ?? LoggingLevel.Error, consoleLogger);
+    vs.loggerService = capturingLogger;
 
     if (options.cultures)
         options.cultures.forEach((culture) => { vs.cultureService.register(culture); });
@@ -174,10 +170,10 @@ export function createJivsServicesForTesting(options?: CvstOptions): IJivsServic
 /**
  * Guides the creation of the JivsServices object.
  */
-export interface CvstOptions {
+export interface TestingJivsServicesOptions {
     defaultCultureId?: string;   // defaults to en
     cultures?: Array<CultureIdWithFallback>;     // defaults en, en-US, es, es-MX, fr with some fallbacks
-    logger?: 'console' | 'capturing';    // defaults to console. When capturing, it also logs to console.
+//    logger?: 'console' | 'capturing';    // defaults to console. When capturing, it also logs to console.
     loggerLevel?: LoggingLevel; // defaults to Error
     registerConditions?: 'minimal' | 'all' | 'none'; // defaults to minimal which gives only RequireText and DataTypeCheck. When all, all built-in are supplied
     registerTestingConditions?: boolean; // defaults to true
@@ -356,4 +352,20 @@ export function registerDataTypeParsers(dtps: IDataTypeParserService): void {
             thousandsSeparator: ',',
             negativeSymbol: '-'
         }));
+}
+
+export class TestingJivsServices extends JivsServices
+{
+    constructor(defaultCultureId: string = 'en')
+    {
+        super(defaultCultureId);
+    }    
+    override get loggerService(): CapturingLogger
+    {
+        return super.loggerService as CapturingLogger;
+    }
+    override set loggerService(value: CapturingLogger)
+    {
+        super.loggerService = value;
+    }
 }

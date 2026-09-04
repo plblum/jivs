@@ -10,7 +10,7 @@ import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces
 import { ValidatorConfig } from "@plblum/jivs-engine/build/Interfaces/Validator";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
+import { TestingJivsServicesOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 
 import {
     MockAnalyzer, checkLookupKeyResults, checkLookupKeyResultsForNoService,
@@ -117,7 +117,7 @@ describe('ConfigAnalysisBase class', () => {
             };
         });
     }
-    function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: CvstOptions): {
+    function setupForTheseTests(expectedDataTypes: Array<string | null>, serviceOptions?: TestingJivsServicesOptions): {
         testItem: Publicify_ConfigAnalysisBase,
         services: IJivsServices,
         helper: AnalysisResultsHelper<IJivsServices>,

@@ -1,162 +1,63 @@
 # Logging
-Like a typical service, Jivs has the ability to log what happens while it executes. It has a built-in logger class that writes to the console object.
+Like a typical service, Jivs has the ability to log what happens while it executes. It has rich communication with its logs, supported by log levels of Debug, Info, Warn, and Error.
 
-The logger is configured within the `JivsServices object`, as it is a service.
-1. It is setup in the [`createJivsServices() function`](#configuring-jivsservices).
+There are two use cases, each supported by a different logger:
+- Runtime, using `ConsoleLoggerService`. This logger writes to the Console. It is setup in the `createJivsServices()` function, where you also supply its minimum logging level.
     ```ts
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other
     // and pass it as the second parameter of ConsoleLoggerService.
-    vs.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
+    services.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
     ```
-2. You can modify it as needed just by getting the services object and using its `loggerService property`.
-
+- Testing, using `CapturingLogger`. This logger captures each log entry and provides an API to check for those entries as part of confirming your test worked correctly.
     ```ts
-    services.loggerService.minLevel = LoggingLevel.Debug;
+    import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+    let services = new JivsServices();
+    services.loggerService = new CapturingLogger(LoggingLevel.Error);
+    // or combined with console output:
+    services.loggerService = new CapturingLogger(LoggingLevel.Error, new ConsoleLoggerService(LoggingLevel.Error));
     ```
-There are several actions you might want to take when using logging described in upcoming sections.
-- Set the minimum logging level
-- Varying the minLevel based on what is being logged
-- Change to another `LoggerService` object
- 
-## Set the minimum logging level
-Jivs has logging levels of Debug, Info, Warn, and Error. The logging object has a `minLevel property` which defaults to Error, which means omit the rest. You can set and change the minLevel as shown above.
+    We provide the `createJivsServicesForTesting.ts` file with its `createJivsServicesForTesting()` function for testing. It also sets up CapturingLogger + console output.
+    ```ts
+    import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+    let services = createJivsServicesForTesting();
+    services.loggerService = new CapturingLogger(LoggingLevel.Error);
+    // or combined with console output:
+    services.loggerService = new CapturingLogger(LoggingLevel.Error, new ConsoleLoggerService(LoggingLevel.Error));
+    ```
 
-The `LoggingLevel` enum:
+## CapturingLogger class
+`CapturingLogger` is a LoggerService that captures log entries and provides functions to query the results. It targets testing code.
 ```ts
-export enum LoggingLevel
-{
-    Debug = 0,
-    Info = 2,
-    Warn = 3,
-    Error = 4
-}
+import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+let services = new JivsServices();
+services.loggerService = new CapturingLogger(LoggingLevel.Error);
+let logger = services.loggerService as CapturingLogger;
+// use logger methods.
 ```
-### Logging content example using Debug level
-This jest unit test shows the logging for just calling ValueHost.setValues("", "", {validate:true}) with Debug level. 
-```ts
-test('setValue with validate=true, onValueHostValidationStateChanged called', () => {
-    let onValidateResult: ValueHostValidationState | null = null;
-    let config: ValueHostsManagerConfig = {
-        services: createJivsServices(),
-        valueHostConfigs: [],
-        onValueHostValidationStateChanged: (vh, vr) => {
-            onValidateResult = vr;
-        }        
-    };
-    config.services.loggingService = new ConsoleLoggingService(LoggingLevel.Debug);
-    let builder = new ValueHostsManagerConfigBuilder(config);    
-    let builder = createBuilder({
-        onValueHostValidationStateChanged: (vh, vr) => {
-            onValidateResult = vr;
-        }
-    });
-    builder.field('Field1').requireText('error');
-    let vhm = new ValueHostsManager(builder);
-    let vh = vhm.vh.field('Field1');
-    vh.setValues('', '', { validate: true });   // empty is invalid
-
-    expect(onValidateResult).toEqual(<ValueHostValidationState>{
-        isValid: false,
-        issuesFound: [{
-            errorCode: ConditionType.RequireText,
-            valueHostName: 'Field1',
-            severity: ValidationSeverity.Severe,
-            errorMessage: 'error',
-            summaryMessage: 'error'
-        } ],
-        doNotSave: true,
-        asyncProcessing: false,
-        status: ValidationStatus.Invalid,
-        corrected: false
-    });
-});        
-```
-You are looking at the output in VSCode's Terminal. Jivs has called the console class's functions with the logged object. Each entry starts with the console's function, which in this case is either debug or log  (which is used for Info level). If there were warnings, you would see them as console.warn and errors as console.error.
-```text
-console.debug
-  {
-  message: 'addValueHost(Field1)',
-  feature: 'Manager',
-  type: 'ValueHostsManager'
-  }
-console.debug
-  {
-  message: 'setValues("", "")',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-console.debug
-  {
-  message: 'Validating ValueHost "Field1"',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-console.debug
-  {
-  message: 'Starting Validation for errorcode "RequireText"',
-  feature: 'Validator',
-  type: 'Validator',
-  identity: [ 'Field1', 'RequireText' ]
-  }
-console.log
-  {
-  message: 'Condition RequireText evaluated as NoMatch',
-  category: 'Result',
-  feature: 'Validator',
-  type: 'Validator',
-  identity: [ 'Field1', 'RequireText' ]
-  }
-console.log
-  {
-  message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
-  category: 'Result',
-  feature: 'Validator',
-  type: 'Validator',
-  identity: [ 'Field1', 'RequireText' ]
-  }
-console.log
-  {
-  message: 'onValueHostValidationStateChanged',
-  feature: 'Manager',
-  type: 'ValueHostsManager'
-  }
-console.log
-  {
-  message: 'onValueHostValidationStateChanged',
-  feature: 'Manager',
-  type: 'ValueHostsManager'
-  }
-console.log
-  {
-  message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
-  category: 'Result',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-console.debug
-  {
-  message: 'notifyOtherValueHostsOfValueChange on Field1',
-  feature: 'Manager',
-  type: 'ValueHostsManager'
-  }
-```
-
+- `entryCount` - Count of entries captured
+- `containsLog()` - Returns true if it finds an log entry matching all supplied criteria.
+    ```ts
+    containsLog(messageSegment: RegExp | string | null, 
+        logLevel?: LoggingLevel | null, 
+        category?: string | null, 
+        more?: FindMoreCapturedLogDetails): boolean {}
+    ```
+- `findMessage()` - Returns the Log entry matching all supplied criteria.
+    ```ts
+    findMessage(messageSegment: RegExp | string | null, 
+        logLevel?: LoggingLevel | null, 
+        category?: string | null, 
+        more?: FindMoreCapturedLogDetails): CapturedLogDetails | null
+    ```
 ## Varying the minLevel based on what is being logged
 If you want to use the Debug or Info levels, expect to get a lot of content (example below). Often you are trying to diagnose a problem through the logs. Jivs lets you selectively log everything that meets a specific criteria, even though its below the minLevel.
-
-> If you use a custom logger, it must have been subclassed from LoggerServiceBase to get this feature.
-
-> If possible, use this technique in tests, not in your regular code, because while active, a logger's "lazy" execution feature is disabled and that impacts performance.
 
 1. Set the initial minLevel to Debug.
 2. Run your code.
 3. Review the log to identify characteristics you want to keep.
-4. Create one or more `OverrideMinLevelWhenRule objects` with those characteristics. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
-5. Call the `LoggerService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/classes/Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html#overrideMinLevelWhen)
+4. Create one or more `OverrideMinLevelWhenRule objects` with those characteristics. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
+5. Call the `LoggerService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
 6. Restore the minLevel to your normal setting.
 
 ### Logging content example with overrideMinLevelWhen
@@ -175,7 +76,7 @@ category: 'Result'
 This jest unit test shows the logging for just calling ValueHost.setValues("", "", {validate:true}) with Debug level. 
 ```ts
 ...
-    let logger = new ConsoleLoggingService(LoggingLevel.Error);	// was Debug
+    let logger = new CapturingLogger(LoggingLevel.Error);	// was Debug
     config.services.loggingService = logger;
     logger.overrideMinLevelWhen({
         feature: 'ValueHost',
@@ -186,60 +87,10 @@ This jest unit test shows the logging for just calling ValueHost.setValues("", "
     });
 ... 
 ```
-Again, you are looking at the output in VSCode's Terminal. Compare the output to the earlier example:
-```text
-console.debug
-  {
-  message: 'setValues("", "")',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-console.debug
-  {
-  message: 'Validating ValueHost "Field1"',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-console.log
-  {
-  message: 'Condition RequireText evaluated as NoMatch',
-  category: 'Result',
-  feature: 'Validator',
-  type: 'Validator',
-  identity: [ 'Field1', 'RequireText' ]
-  }
-console.log
-  {
-  message: 'Validation errorcode "RequireText" found this issue: {"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}',
-  category: 'Result',
-  feature: 'Validator',
-  type: 'Validator',
-  identity: [ 'Field1', 'RequireText' ]
-  }
-console.log
-  {
-  message: 'Validation result: Invalid Issues found:[{"valueHostName":"Field1","errorCode":"RequireText","severity":2,"errorMessage":"error","summaryMessage":"error"}]',
-  category: 'Result',
-  feature: 'ValueHost',
-  type: 'FieldValueHost',
-  identity: 'Field1'
-  }
-
-```
-## Change to another LoggerService object
-You can replace the `ConsoleLoggerService` with your preferred logging library, either by implementing the `ILoggerService` interface or subclassing from the feature-rich `LoggerServiceBase`.
-
-- [ILoggerService documentation](http://jivs.peterblum.com/typedoc/interfaces/Services_Types_ILoggerService.ILoggerService.html)
-- [LoggerServiceBase documentation](http://jivs.peterblum.com/typedoc/classes/Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html)
-
-You can also chain loggers, so several can receive the log content. Do that in its constructor:
-```ts
-let chainedLogger = new ConsoleLoggerService(LoggingLevel.Error)
-vs.loggerService = new MyLoggerService(LoggingLevel.Error, chainedLogger);
-```
-> Note that a chained logger will act as if it has LoggingLevel.Debug, knowing that the top-level logging service will only call it if its own minLevel is met.
+## API References
+- [LoggerServiceBase class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html)
+- [ConsoleLoggerService class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_ConcreteClasses_LoggerService.ConsoleLoggerService.html)
+- [CapturingLogger class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Support_CapturingLogger.CapturingLogger.html)
 ---
 Go to [JivsServices Home](./Home.md)
 

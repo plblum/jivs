@@ -4,25 +4,41 @@ import { FieldValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/Field
 import { IJivsServices, ServiceName } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { CultureService } from "@plblum/jivs-engine/build/Services/CultureService";
-import { createJivsServicesForTesting, CvstOptions } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
+import { createJivsServicesForTesting, TestingJivsServicesOptions } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";
 
-import { SampleValues } from "../../src/SampleValues";
 import { AnalysisResultsHelper } from "../../src/Analyzers/AnalysisResultsHelper";
+import { SampleValues } from "../../src/SampleValues";
+import
+    {
+        IConditionConfigAnalyzer,
+        ILookupKeyAnalyzer,
+        IValidatorConfigAnalyzer, IValueHostConfigAnalyzer
+    } from "../../src/Types/Analyzers";
 import { AnalysisArgs, ConfigAnalysisOptions } from "../../src/Types/ConfigAnalysis";
-import {
-    IConditionConfigAnalyzer, IValidatorConfigAnalyzer, IValueHostConfigAnalyzer,
-    ILookupKeyAnalyzer
-} from "../../src/Types/Analyzers";
-import {
-    IConfigAnalysisResults, CAFeature, ServiceWithLookupKeyCAResultBase,
-    IssueForCAResultBase, ValueHostConfigCAResult, PropertyCAResult, ErrorCAResult,
-    CAIssueSeverity, LookupKeyCAResult, MultiClassRetrieval, ParsersByCultureCAResult,
-    LocalizedPropertyCAResult, CultureSpecificClassRetrieval, ConditionConfigCAResult,
-    ValidatorConfigCAResult, IdentifierServiceCAResult, ComparerServiceCAResult,
-    ConverterServiceCAResult, FormatterServiceCAResult, FormattersByCultureCAResult,
-    ParserServiceCAResult, ParserFoundCAResult
-} from "../../src/Types/ConfigAnalysisResults";
+import
+    {
+        CAFeature,
+        CAIssueSeverity,
+        ComparerServiceCAResult,
+        ConditionConfigCAResult,
+        ConverterServiceCAResult,
+        CultureSpecificClassRetrieval,
+        ErrorCAResult,
+        FormattersByCultureCAResult,
+        FormatterServiceCAResult,
+        IConfigAnalysisResults,
+        IdentifierServiceCAResult,
+        IssueForCAResultBase,
+        LocalizedPropertyCAResult,
+        LookupKeyCAResult, MultiClassRetrieval,
+        ParserFoundCAResult,
+        ParsersByCultureCAResult,
+        ParserServiceCAResult,
+        PropertyCAResult,
+        ServiceWithLookupKeyCAResultBase,
+        ValidatorConfigCAResult,
+        ValueHostConfigCAResult
+    } from "../../src/Types/ConfigAnalysisResults";
 
 new BuildersFactoryInstaller();
 /**
@@ -31,7 +47,7 @@ new BuildersFactoryInstaller();
  *  When cultures=[], it starts without cultures, expecting the caller to add them
  * @returns 
  */
-export function createServices(options?: CvstOptions): IJivsServices {
+export function createServices(options?: TestingJivsServicesOptions): IJivsServices {
     if (!options)
         options = {};
     if (!options.cultures)

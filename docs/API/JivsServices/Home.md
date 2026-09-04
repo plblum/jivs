@@ -59,7 +59,7 @@ interface IJivsServices {
     setService(serviceName, service): void;
 }
 ```
-> JivsServices employs lazy loading for many of its members.
+> `JivsServices` employs lazy loading for many of its members.
 ### Services that you often have to setup
 - `cultureService` - Identifies the ISO language-region names that your app supports. See [CultureService](./CultureServices.md).
 - `textLocalizerService` - Supports localized strings for error messages, labels, and more. See [TextLocalizerService](./TextLocalizerService.md).

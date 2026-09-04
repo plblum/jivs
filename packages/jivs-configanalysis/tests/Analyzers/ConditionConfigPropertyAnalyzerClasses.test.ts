@@ -10,7 +10,7 @@ import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/Condition
 import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithChildrenBase';
 import { ConditionWithOneChildBaseConfig } from '@plblum/jivs-engine/build/Conditions/ConditionWithOneChildBase';
 import { OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
-import { CvstOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
+import { TestingJivsServicesOptions } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { AnalysisResultsHelper } from '../../src/Analyzers/AnalysisResultsHelper';
 import { ConditionConfigAnalyzer } from '../../src/Analyzers/ConditionConfigAnalyzer';
@@ -19,7 +19,7 @@ import { DataTypeConverterLookupKeyAnalyzer } from '../../src/Analyzers/DataType
 import { ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { createServices, setupHelper, checkPropertyCAResultsFromArray } from '../TestSupport/support';
 
-function createServicesForTheseTests(options?: CvstOptions): IJivsServices {
+function createServicesForTheseTests(options?: TestingJivsServicesOptions): IJivsServices {
     if (!options) options = {};
     if (!options.registerDataTypeConverters) options.registerDataTypeConverters = false;
     let services = createServices(options);
