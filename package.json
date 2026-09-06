@@ -1,5 +1,5 @@
 {
-  "name": "@plblum/jivs",
+  "name": "@plblum/jivs-repository",
   "type": "module",
   "description": "JavaScript Input Validation Service. Provides the tools for input validation in a user interface or model.",
   "keywords": [
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/plblum/jivs/issues"
   },
-  "private": "false",
+  "private": true,
   "workspaces": [
     "packages/*",
     "starter_code/*"

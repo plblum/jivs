@@ -21,8 +21,6 @@ export class HtmlMessageTokenResolverService
 
     /**
      * Finalizes one message-token replacement as safe HTML.
-     *
-     * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
      */
     protected override finalizeReplacement(
         replacement: string,
