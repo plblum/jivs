@@ -1,6 +1,11 @@
 # @plblum/jivs-builder: Build your configurations
 
-jivs-builder module is a normal part of the Jivs ecosystem and should be installed when gathering the jivs-suite.
+Most applications should start with [`@plblum/jivs`](https://www.npmjs.com/package/@plblum/jivs),
+which installs the Builder API along with the Jivs engine. This README covers
+the Builder package for focused use.
+
+jivs-builder is a normal part of the Jivs ecosystem and is included when
+installing the umbrella package.
 
 ```bash
 npm i @plblum/jivs-builder

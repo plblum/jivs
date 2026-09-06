@@ -231,16 +231,22 @@ I continue to look at UI frameworks that include input validation tools, and am 
 # Installing Jivs
 
 ## Get the npm packages
-Jivs is available as npm packages. It has a number of libraries.
+Jivs is available as npm packages. For a standard application, install the
+umbrella package and the development-only configuration analysis tool.
 
-Jivs-engine is the core and is needed by all other libraries. [Jivs-engine npm package](https://www.npmjs.com/package/@plblum/jivs-engine).
+```text
+npm install @plblum/jivs
+npm install --save-dev @plblum/jivs-configanalysis
 ```
-npm install --save @plblum/jivs-engine
-```
+
+`@plblum/jivs` installs the Jivs engine and Builder API. ConfigAnalysis helps
+identify configuration problems during development.
+
 ## Add create_JivsServices.ts to your codebase
 **For each application**, copy the `create_JivsServices.ts` starter file into your project.
 
-  Get the file here: [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
+Get the file from `node_modules/@plblum/jivs/starter_code/create_JivsServices.ts`
+or from the [starter file on GitHub](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts).
 
 > The documentation will frequently refer to `create_JivsServices.ts file`. That will always mean your copy of this file in your project.
 
@@ -259,6 +265,9 @@ const vhm = new ValueHostsManager(config);
 ```
 Initially, you can leave its configuration unchanged. Customize the file
 later as described in the documentation.
+
+See the [detailed installation guide](./docs/Installing_Jivs.md) for more
+information.
 
 
 # Digging in
