@@ -37,7 +37,7 @@ export interface IJivsServices extends IServices {
 
 
     /**
-     * Service to get the ILogger instance that replaces
+     * Service to get the ILoggerService instance that replaces
      * tokens in messages.
      * Defaults to using the global defaultLoggerService
      */

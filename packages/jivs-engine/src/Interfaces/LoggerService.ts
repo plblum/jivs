@@ -1,7 +1,7 @@
 /**
  * Provide a logging service for this library to report into.
  * It provides one such logger class, ConsoleLoggerService, which works with the JavaScript console object.
- * Use your own logger by implementating the ILogger interface.
+ * Use your own logger by implementating the ILoggerService interface.
  * Assign your class to {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices | JivsServices }
  * @module jivs-engine/Services/Types/ILoggerService
  */
@@ -20,7 +20,7 @@ export interface ILoggerService extends IService
     minLevel: LoggingLevel;
 
     /**
-     * Reference to another ILogger implementation
+     * Reference to another ILoggerService implementation
      * that gets called after the console's logging.
      * Optional.
      * Will only be called if this logger instance has level >= minLevel

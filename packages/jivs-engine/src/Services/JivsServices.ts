@@ -78,7 +78,7 @@ export class JivsServices extends Services implements IJivsServices
     }
 
     /**
-     * Service to get the ILogger instance that replaces
+     * Service to get the ILoggerService instance that replaces
      * tokens in messages.
      * Defaults to using ConsoleLoggerService.
      */
@@ -355,8 +355,7 @@ export class JivsServices extends Services implements IJivsServices
     // //#endregion BuildersFactory       
 
     /**
-     * Service to get the ICachingService instance that 
-     * determines how to merge ValueHost configurations from business logic and UI.
+     * Service for caching data.
      */
     public get cachingService(): ICachingService {
         let service = this.getService<ICachingService>(ServiceName.cache);

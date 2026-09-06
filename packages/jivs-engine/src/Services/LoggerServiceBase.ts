@@ -46,7 +46,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
     private _showStack: boolean = false;
 
     /**
-     * Reference to another ILogger implementation
+     * Reference to another ILoggerService implementation
      * that gets called after the console's logging.
      * Optional.
      * Will only be called if this logger instance has level >= minLevel
