@@ -27,19 +27,7 @@ Add `novalidate` to the form so native browser validation does not compete with 
 
 - [Disable Native Browser Validation](Jivs_Presentation_Prerequisites.md#disable-native-browser-validation)
 
-### 3. Protect Error Messages from XSS
-
-Replace the default `messageTokenResolverService` before creating the `ValueHostsManager`:
-
-```ts
-services.messageTokenResolverService =
-    new HtmlMessageTokenResolverService();
-```
-
-- [Protect Error Messages from XSS](Jivs_Presentation_Prerequisites.md#protect-error-messages-from-xss)
-- [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-issuefound-objects)
-
-### 4. Tag Each Editor
+### 3. Tag Each Editor
 
 Add the field identifier, editor role, and default editor presentation:
 
@@ -56,7 +44,7 @@ The `data-field` value must match the field's Jivs element identifier. Configure
 - [Connect the FieldValueHost to the Field Identifier](The_Jivs_SimpleDom_Approach.md#connect-the-fieldvaluehost-to-the-field-identifier) for the Jivs SimpleDom convention
 - [Finding the UI Element for a FieldValueHost](../Using_the_ValueHostsManager_within_the_Client.md#finding-the-ui-element-for-a-fieldvaluehost) for the underlying Jivs connection
 
-### 5. Tag Each Label You Want Styled
+### 4. Tag Each Label You Want Styled
 
 Labels are optional validation consumers. To have a label respond when its field is invalid, add:
 
@@ -73,7 +61,7 @@ Labels are optional validation consumers. To have a label respond when its field
 - [Field Markup](The_Jivs_SimpleDom_Approach.md#field-markup) for the Jivs SimpleDom syntax
 - [Presentation for a Label](Field_Presentation_of_Jivs_Validation.md#presentation-for-a-label)
 
-### 6. Add a Field Error Display
+### 5. Add a Field Error Display
 
 Add the default inline Field Error Display for each field:
 
@@ -90,7 +78,7 @@ Add the default inline Field Error Display for each field:
 - [Generate Error Messages](From_Jivs_Validation_State_to_Client_Presentation.md#generating-error-messages-from-issuefound-objects)
 - [Field Error Display Accessibility](Accessible_Client_Validation_UI.md#field-error-display-accessibility)
 
-### 7. Add a Required Indicator If Desired
+### 6. Add a Required Indicator If Desired
 
 A Required Indicator does not need a Presentation name:
 
@@ -108,7 +96,7 @@ The supplied initialization code reads `FieldValueHost.required` to determine wh
 - [Initialize Required Indicators](Field_Presentation_of_Jivs_Validation.md#initialize-required-indicators)
 - [Required Indicator Accessibility](Accessible_Client_Validation_UI.md#required-indicator-accessibility)
 
-### 8. Add a Validation Summary If Desired
+### 7. Add a Validation Summary If Desired
 
 Place the Validation Summary within the form:
 
@@ -123,7 +111,7 @@ Place the Validation Summary within the form:
 - [Presentation for a Validation Summary](Form_Presentation_of_Jivs_Validation.md#presentation-for-a-validation-summary)
 - [Validation Summary Accessibility](Accessible_Client_Validation_UI.md#validation-summary-accessibility)
 
-### 9. Tag the Submit Button If Desired
+### 8. Tag the Submit Button If Desired
 
 To have form validation control the Submit button, add:
 
@@ -141,7 +129,7 @@ To have form validation control the Submit button, add:
 - [Submit / Save Control Accessibility](Accessible_Client_Validation_UI.md#submit-save-control-accessibility)
 - [Submitting the Client Form](../Submitting_the_Client_Form.md)
 
-### 10. Wire Field and Form Validation
+### 9. Wire Field and Form Validation
 
 Use the supplied Dispatcher Functions as the `ValueHostsManager` callbacks:
 
@@ -158,7 +146,7 @@ config.onValidationStateChanged =
 - [The Field Dispatcher Function](Field_Presentation_of_Jivs_Validation.md#the-field-dispatcher-function)
 - [The Form Dispatcher Function](Form_Presentation_of_Jivs_Validation.md#the-form-dispatcher-function)
 
-### 11. Initialize the Presentation
+### 10. Initialize the Presentation
 
 After the `ValueHostsManager` has been created and the form's HTML is available, attach the selected Presentation Functions and initialize the Required Indicators:
 

@@ -230,25 +230,36 @@ I continue to look at UI frameworks that include input validation tools, and am 
 
 # Installing Jivs
 
+## Get the npm packages
 Jivs is available as npm packages. It has a number of libraries.
 
 Jivs-engine is the core and is needed by all other libraries. [Jivs-engine npm package](https://www.npmjs.com/package/@plblum/jivs-engine).
 ```
 npm install --save @plblum/jivs-engine
 ```
-[Jivs source code](https://github.com/plblum/jivs) is open source on GitHub.
+## Add create_JivsServices.ts to your codebase
+**For each application**, copy the `create_JivsServices.ts` starter file into your project.
 
-**For each application**, go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+  Get the file here: [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
 
-Add the contents of the `create_services.ts` file to your project. It results in several new functions starting with this one.
+> The documentation will frequently refer to `create_JivsServices.ts file`. That will always mean your copy of this file in your project.
+
+### Intro to the createJivsServices() function
+
+The `create_JivsServices.ts` file defines the `createJivsServices()` function.
+It creates and configures the [`JivsServices`](./docs/API/JivsServices/Home.md)
+object, which is Jivs's dependency-injection and service-configuration point.
+
+You will use this pattern as you work with Jivs:
 ```ts
-export function createJivsServices(... parameters ...): IJivsServices {
-…
-}
-// plus numerous other functions
+const services = createJivsServices('en-US');
+const rules = new YourRules(services);
+const config = rules.configure();
+const vhm = new ValueHostsManager(config);
 ```
-Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-For more, see [JivsServices](./docs/API/JivsServices/Home.md).
+Initially, you can leave its configuration unchanged. Customize the file
+later as described in the documentation.
+
 
 # Digging in
 We have a massive documentation library. Start here:

@@ -4,7 +4,7 @@
  * 
  * There are many configuration choices involved. Its best to have
  * a function that creates JivsServices with its configuration together.
- * Copy the /starter_code/create_services.ts file into your app.
+ * Copy the /starter_code/create_JivsServices.ts file into your app.
  * It contains such a function, createJivsServices().
  * Edit that file to adjust your configuration.
  * 
@@ -52,7 +52,7 @@ import { ObjectFinderService } from './ObjectFinderService';
  * 
  * There are many configuration choices involved. Its best to have
  * a function that creates JivsServices with its configuration together.
- * Copy the /starter_code/create_services.ts file into your app.
+ * Copy the /starter_code/create_JivsServices.ts file into your app.
  * It contains such a function, createJivsServices().
  * Edit that file to adjust your configuration.
  * 

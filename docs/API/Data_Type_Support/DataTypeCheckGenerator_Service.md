@@ -17,7 +17,7 @@ Use these resources to help when implementing a `DataTypeCheckGenerator`:
 
 ## Registering a DataTypeCheckGenerator with its service
 The `AutGenerateDataTypeCheckService` where you register `DataTypeCheckGenerators`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeCheckGenerators()` function of your `create_JivsServices.ts` file.
 ```ts
 services.dataTypeCheckGeneratorService.register(new MyDataTypeCheckGenerator());
 ```

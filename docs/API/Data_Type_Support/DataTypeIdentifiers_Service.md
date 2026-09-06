@@ -10,7 +10,7 @@ Use these resources to help when implementing a `DataTypeIdentifier`:
 
 ## Registering a DataTypeIdentifier
 The `DataTypeIdentifierService` where you register `DataTypeIdentifiers`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeIdentifiers()` function of your `create_JivsServices.ts` file.
 ```ts
 services.dataTypeIdentifierService.register(new MyDataTypeIdentifier());
 ```

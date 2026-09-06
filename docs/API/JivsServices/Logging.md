@@ -2,7 +2,7 @@
 Like a typical service, Jivs has the ability to log what happens while it executes. It has rich communication with its logs, supported by log levels of Debug, Info, Warn, and Error.
 
 There are two use cases, each supported by a different logger:
-- Runtime, using `ConsoleLoggerService`. This logger writes to the Console. It is setup in the `createJivsServices()` function, where you also supply its minimum logging level.
+- Runtime, using `ConsoleLoggerService`. This logger writes to the Console. It is setup in the `createJivsServices()` function of your `create_JivsServices.ts` file, where you also supply its minimum logging level.
     ```ts
     // --- Logger Service -----------------------------------    
     // If you want both the ConsoleLoggerService and another, create the other

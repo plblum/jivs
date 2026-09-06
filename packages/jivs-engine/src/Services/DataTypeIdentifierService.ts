@@ -32,7 +32,7 @@ implements IDataTypeIdentifierService
         this.register(new StringDataTypeIdentifier());
         this.register(new BooleanDataTypeIdentifier());
         this.register(new DateDataTypeIdentifier());             
-        // any other predefined are found in create_services so users can opt out
+        // any other predefined are found in create_JivsServices.ts so users can opt out
     }
     protected indexOfExisting(item: IDataTypeIdentifier): number {
         const itemDTK = item.dataTypeLookupKey.toLowerCase();

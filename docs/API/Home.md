@@ -86,7 +86,7 @@ flowchart LR
     SERVICES --> MORE["Many more services and factories"]
 ```
 
-[`JivsServices`](./JivsServices/Home.md) is where much of customization occurs. Usually you'll edit your `createJivsServices()` function (lifted from [create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)) to register these classes with their factories:
+[`JivsServices`](./JivsServices/Home.md) is where much of customization occurs. Usually you'll edit your `create_JivsServices.ts` file to register these classes with their factories:
 - [`DataTypeParser`](./Data_Type_Support/DataTypeParsers_Service.md) – `FieldValueHosts` use these to convert the text value (from an editor) into a native value.
 - [`DataTypeFormatter`](./Data_Type_Support/DataTypeFormatters_Service.md) – Two use cases:
     + `FieldValueHost` can convert the native value into its text value when using `ValueHost.setValue()`.

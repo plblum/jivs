@@ -40,7 +40,7 @@ It provides:
 - localized versions of those strings
 - localized versions of label names and data type names used in {Label}, {SecondLabel}, and {DataType} tokens found in error messages.
 
-Configure your error messages within your `createJivsServices()` function.
+Configure your error messages within your in the `createTextLocalizerService()` function of your `create_JivsServices.ts` file.
 
 ```ts
 let tls = vhm.services.textLocalizerService;    

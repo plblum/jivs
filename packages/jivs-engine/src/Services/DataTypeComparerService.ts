@@ -34,7 +34,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
     protected preRegister(): void
     {
         this.register(new BooleanDataTypeComparer());        
-       // any other predefined are found in create_services so users can opt out
+       // any other predefined are found in create_JivsServices.ts so users can opt out
     }
     protected indexOfExisting(item: IDataTypeComparer): number {
         return -1;  // register does not replace

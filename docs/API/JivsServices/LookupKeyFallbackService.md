@@ -26,13 +26,8 @@ lkfs.register(LookupKey.Lowercase, LookupKey.String);
 lkfs.register(LookupKey.CaseInsensitive, LookupKey.String);
 ```
 ## Updating the service
-Within the `createJivsServices()` function, edit the `createLookupKeyFallbackService()` function.
+Edit the `createLookupKeyFallbackService()` function of your `create_JivsServices.ts` file.
 ```ts
-export function createJivsServices(defaultCultureId: string): JivsServices {
-    let vs = new JivsServices(defaultCultureId);
-    
-    createLookupKeyFallbackService(); 
-}
 export function createLookupKeyFallbackService(): ILookupKeyFallbackService
 {
     let service = new LookupKeyFallbackService();

@@ -127,7 +127,7 @@ For more, see [Error messages](../Validators/Error_Messages.md).
 
 ## Supplied DataTypeFormatters
 
-The supplied `createJivsServices()` function registers these `DataTypeFormatters`. Each is selected through its [Lookup Key](./Home.md#lookup-keys).
+These `DataTypeFormatters` are preregistered in the `registerDataTypeFormatters()` function of your `create_JivsServices.ts` file. Each is selected through its [Lookup Key](./Home.md#lookup-keys).
 
 | Lookup Key | Class | Native type | text value |
 |---|---|---|---|
@@ -157,7 +157,7 @@ Localized output is determined by:
 - the cultures registered with Jivs’ `CultureService`
 - the active culture at the time the value is formatted
 
-Register cultures and configure the supplied formatters within `createJivsServices()`.
+Customize the localization supplied formatters within `registerDataTypeFormatters()`.
 
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
@@ -169,7 +169,7 @@ Use these resources to help when implementing a `DataTypeFormatter`:
 
 ## Registering a DataTypeFormatter
 The `DataTypeFormatterService` where you register `DataTypeFormatters`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeFormatters()` function of your `create_JivsServices.ts` file.
 ```ts
 services.dataTypeFormatterService.register(new MyDataTypeFormatter());
 ```

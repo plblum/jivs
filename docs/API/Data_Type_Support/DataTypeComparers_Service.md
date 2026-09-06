@@ -17,7 +17,7 @@ Use these resources to help when implementing a `DataTypeComparer`:
 
 ## Registering a DataTypeComparer with its service
 The `DataTypeComparerService` where you register `DataTypeComparers`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeComparers()` function of your `create_JivsServices.ts` file
 ```ts
 services.dataTypeComparerService.register(new MyDataTypeComparer());
 ```

@@ -12,11 +12,11 @@ let vhm = new ValueHostsManager(config);
 As a result, it is essential that you have a `createJivsServices()` function, and gone through it to ensure it configures dependency injection according to your needs. 
 
 ## Configuring JivsServices
-Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
 
-Add the contents of `create_services.ts` to your project. It results in several new functions starting with this one.
+Add the contents of `create_JivsServices.ts` to your project. It results in several new functions starting with this one.
 ```ts
-export function createJivsServices(... parameters ...): JivsServices {
+export function createJivsServices(... parameters ...): IJivsServices {
 …
 }
 // also many register() functions plus registerCultures() and createTextLocalizerService

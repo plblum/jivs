@@ -65,7 +65,7 @@ The error message itself may need to be replaced by something more suitable to t
 
 
 ## Supplied DataTypeParsers
-The supplied `createJivsServices()` function registers these `DataTypeParsers`. Each is selected through its [Lookup Key](./Home.md#lookup-keys).
+These DataTypeParsers are preregistered within the `registerDataTypeParsers()` function of your `create_JivsServices.ts` file. Each is selected through its [Lookup Key](./Home.md#lookup-keys).
 
 |Lookup Key|Class|Result type|Error code|Comments|
 |----------|-----|-----------|---------|-------|
@@ -79,11 +79,9 @@ The supplied `createJivsServices()` function registers these `DataTypeParsers`. 
 |Date|`ShortDatePatternParser`|Date object|'ParserError', 'InvalidDate'|Short Date pattern. Localized|
 
 Localization is supplied through:
-- Due to lack of parsing support in [JavaScript's Intl namespace](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl), Jivs has a simplistic system. This particularly limits the Date parsers that are included. Customize its culture specific options in `createJivsServices()`.
+- Due to lack of parsing support in [JavaScript's Intl namespace](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl), Jivs has a simplistic system. This particularly limits the Date parsers that are included. Customize its culture specific options in `registerDataTypeParsers()`.
 - the cultures registered with Jivs’ `CultureService`
 - the active culture at the time the value is parsed
-
-Register cultures and configure the supplied parsers within `createJivsServices()`.
 
 There are far better parsers, especially in the date and time space. Wrap your favorite in a class that implements `IDataTypeParser` and register it instead of Jivs' own.
 
@@ -109,7 +107,7 @@ interface CleanUpStringParserOptions extends DataTypeParserOptions<string>
 }
 ```
 
-If they are a match to your needs, add an entry in `createJivsServices()` to register the `CleanUpStringParser` with options and a custom Lookup Key into the `DataTypeParsersService`.
+If they are a match to your needs, add an entry in `registerDataTypeParsers()` of your `create_JivsServices.ts` file to register the `CleanUpStringParser` with options and a custom Lookup Key into the `DataTypeParsersService`.
 
 ```ts
 export function registerDataTypeParsers(dtps: DataTypeParserService): void {
@@ -138,7 +136,7 @@ Use these resources to help when implementing a `DataTypeParser`:
 
 ## Registering a DataTypeParser
 The `DataTypeParserService` where you register `DataTypeParsers`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeParsers()` function of your `create_JivsServices.ts` file.
 ```ts
 services.dataTypeParserService.register(new MyDataTypeParser());
 ```

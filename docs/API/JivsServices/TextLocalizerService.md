@@ -35,7 +35,7 @@ This allows the application to:
 - localize those strings for the active culture
 - provide more specific guidance for individual data types
 
-The supplied `createJivsServices()` function registers strings for `Validators` within `createTextLocalizerService()`. Review and expand these registrations to support the `Validators`, data types, and cultures used by your application.
+Use the `createTextLocalizerService()` function of your `create_JivsServices.ts` file to review and expand these registrations to support the `Validators`, data types, and cultures used by your application.
 
 Use `registerErrorMessage()` and `registerSummaryMessage()` to register the two forms of an error message:
 
@@ -193,7 +193,7 @@ service.registerDataTypeLabel(LookupKey.Integer, {
 });
 ```
 
-The supplied `create_services.ts` file registers labels for several standard Lookup Keys. Add registrations for other Lookup Keys used by your application.
+The supplied `create_JivsServices.ts` file registers labels for several standard Lookup Keys. Add registrations for other Lookup Keys used by your application.
 
 ```ts
 textLocalizerService.registerDataTypeLabel(dataTypeLookupKey, cultureToText);
@@ -242,7 +242,7 @@ service.registerSummaryMessage(DatePatternParserBase.invalidDateErrorCode, Looku
 });
 ```
 
-The supplied `create_services.ts` file includes registrations for the standard parser error codes. Add registrations when introducing custom parsers, error codes, or Lookup Keys.
+The supplied `create_JivsServices.ts` file includes registrations for the standard parser error codes. Add registrations when introducing custom parsers, error codes, or Lookup Keys.
 
 ## API References
 - [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)

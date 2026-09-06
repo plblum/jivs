@@ -43,7 +43,7 @@ import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/Dat
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
-import { JivsServices } from '@plblum/jivs-engine/build/Services/JivsServices';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { createMinimalJivsServices } from './support';
 
 // Our model
@@ -84,7 +84,7 @@ export function differenceBetweenDates(callingValueHost: ICalcValueHost, findVal
 // with the exception of default error messages.
 // Here we show how to prepare it from scratch configured
 // for this example.
-export function createJivsServices(cultureID: string): JivsServices {
+export function createJivsServices(cultureID: string): IJivsServices {
     new BuildersFactoryInstaller();
     let services = createMinimalJivsServices(cultureID);
     // We are expecting to use Data Types: Date, Integer, String. 

@@ -7,7 +7,7 @@ We also provide you with several tools found in the Jivs-engine [Support folder]
 
 We recommend you use the following:
 - Log with our `CapturingLogger` so you can see entries your class submits. See [CapturingLogger](../API//JivsServices/Logging.md#capturinglogger-class).
-- Generate `JivsServices` with a much more simplistic profile than found in your runtime createJivsServices() code. Use [the createJivsServicesForTesting() function](https://github.com/plblum/jivs/blob/main/packages/jivs-engine/src/Support/createJivsServicesForTesting.ts)
+- Generate `JivsServices` with a much more simplistic profile than found in your runtime `createJivsServices()` code. Use [the createJivsServicesForTesting() function](https://github.com/plblum/jivs/blob/main/packages/jivs-engine/src/Support/createJivsServicesForTesting.ts)
 
 ```ts
 import { createJivsServicesForTesting } from "@plblum/jivs-engine/build/Support/createJivsServicesForTesting";

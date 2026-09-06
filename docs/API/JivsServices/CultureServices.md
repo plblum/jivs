@@ -5,15 +5,9 @@ Actual localization rules are found within the parsers and formatters, but they 
 
 As a result, you must ensure `CultureService` is correctly configured with suitable ISO language-region names.
 
-Within the `createJivsServices()` function, you will see an initial setup like this:
+Within the `registerCultures()` function of your `create_JivsServices.ts` file, you will see an initial setup like this:
 
 ```ts
-export function createJivsServices(defaultCultureId: string): JivsServices {
-    let vs = new JivsServices(defaultCultureId);
-    
-    // --- CultureServices ----------------------------
-    registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
-}
 export function registerCultures(cs: ICultureService): void
 {
    let cultures: Array<CultureIdWithFallback> = [
