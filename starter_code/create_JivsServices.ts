@@ -162,78 +162,78 @@ new BuildersFactoryInstaller();  // install the buildersFactory service property
  */
 export function createJivsServices(defaultCultureId: string,
     usage: 'client' | 'server' | 'all' = 'client'): IJivsServices {
-    let vs = new JivsServices(defaultCultureId);
+    let services = new JivsServices(defaultCultureId);
 
     // --- LoggingService -----------------------------------    
     // If you want both the ConsoleLoggingService and another, create the other
     // and pass it as the second parameter of ConsoleLoggingService.
-    vs.loggingService = new ConsoleLoggingService(LoggingLevel.Error);
+    services.loggingService = new ConsoleLoggingService(LoggingLevel.Error);
     
     // --- CultureServices ----------------------------
-    registerCultures(vs.cultureService);    // define cultures that you support and their fallbacks
+    registerCultures(services.cultureService);    // define cultures that you support and their fallbacks
 
     // --- ErrorMessagesService
-    vs.errorMessagesService = createErrorMessagesService(usage);
+    services.errorMessagesService = createErrorMessagesService(usage);
     
     // --- ConditionFactory ---------------------------
-    vs.conditionFactory = createConditionFactory();
+    services.conditionFactory = createConditionFactory();
 
     // --- DataTypeParserService -------------------------------------
     // Plenty to configure here. See function below.
     let dtps = new DataTypeParserService();
-    vs.dataTypeParserService = dtps;
+    services.dataTypeParserService = dtps;
     registerDataTypeParsers(dtps);
     
     // --- DataTypeFormatterService -------------------------------------
     // Plenty to configure here. See function below.
     let dtfs = new DataTypeFormatterService();
-    vs.dataTypeFormatterService = dtfs;
+    services.dataTypeFormatterService = dtfs;
     registerDataTypeFormatters(dtfs);
 
     // --- DataTypeConverterService -------------------------------------
     // Plenty to configure here. See function below.
     let dtcs = new DataTypeConverterService();
-    vs.dataTypeConverterService = dtcs;
+    services.dataTypeConverterService = dtcs;
     registerDataTypeConverters(dtcs);
     
     // --- DataTypeComparerService -------------------------------------
     // Plenty to configure here. See function below.
     let dtcmps = new DataTypeComparerService();
-    vs.dataTypeComparerService = dtcmps;
+    services.dataTypeComparerService = dtcmps;
     registerDataTypeComparers(dtcmps);    
 
     // --- DataTypeIdentifierService -------------------------------------
     // Plenty to configure here. See function below.
     let dtis = new DataTypeIdentifierService();
-    vs.dataTypeIdentifierService = dtis;
+    services.dataTypeIdentifierService = dtis;
     registerDataTypeIdentifiers(dtis);
 
     // --- DataTypeCheckGeneratorService -------------------------------------
     // Plenty to configure here. See function below.
-    let ag = new DataTypeCheckGeneratorService();
-    vs.dataTypeCheckGeneratorService = ag;
-    registerDataTypeCheckGenerators(ag);    
+    let dtcg = new DataTypeCheckGeneratorService();
+    services.dataTypeCheckGeneratorService = dtcg;
+    registerDataTypeCheckGenerators(dtcg);    
 
 
     // --- MessageTokenResolverService ----------------------
     // Generally you don't have to modify this.
-    vs.messageTokenResolverService = usage === 'server' ?
+    services.messageTokenResolverService = usage === 'server' ?
         new MessageTokenResolverService() :
         new HtmlMessageTokenResolverService();  // always use in HTML environments to prevent XSS
 
     // --- ConfigMergeServices for ValueHostConfig and ValidatorConfig -------
-    createConfigMergeServices(vs);
+    createConfigMergeServices(services);
 
     // --- LookupKeyFallbackService -------------------------
     // Modify this only when you introduce new lookup keys for data types
     // whose underlying data type is the same as an already known lookup key.
-    vs.lookupKeyFallbackService = createLookupKeyFallbackService();
+    services.lookupKeyFallbackService = createLookupKeyFallbackService();
 
 
     // --- ValueHostFactory ---------------------------
     let vhf = new ValueHostFactory();
     registerStandardValueHostGenerators(vhf);
-    vs.valueHostFactory = vhf;
+    services.valueHostFactory = vhf;
 
     // --- BuildersFactory -------------------------------------------
 /*  // Adding custom conditions to ValidatorBuilder and ConditionBuilder
@@ -246,7 +246,7 @@ export function createJivsServices(defaultCultureId: string,
     });
 */
 
-    return vs;
+    return services;
 
 
 
