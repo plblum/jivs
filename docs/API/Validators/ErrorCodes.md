@@ -25,8 +25,8 @@ Assign the `errorCode` property in these cases:
 - To provide multiple localized error messages for the same condition type.
 
 ## API References
-- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
-- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validation_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidatorConfig.html)
 - [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
 - [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 

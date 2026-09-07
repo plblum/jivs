@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc jivs-engine/Validator/ConcreteClasses!}
- * @module jivs-engine/Validator/Types
+ * {@inheritDoc jivs-engine/Validation/ConcreteClasses!}
+ * @module jivs-engine/Validation/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';

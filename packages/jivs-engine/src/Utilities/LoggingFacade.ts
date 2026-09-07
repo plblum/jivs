@@ -1,5 +1,5 @@
 /**
- * LoggerFacade provides a simplified API for logging messages and exceptions.
+ * LoggingFacade provides a simplified API for logging messages and exceptions.
  * It encapsulates the LoggingService object.
  * @module jivs-engine/Utilities
  */
@@ -16,7 +16,7 @@ import { SevereErrorBase } from './ErrorHandling';
  * passed to the LoggingService.
  * Generally this is a protected property of base classes, where the property name is logger.
  */
-export class LoggerFacade
+export class LoggingFacade
 {
     constructor(loggingService: ILoggingService | null, feature: string, type: object | Function | string,
         identity: string | Array<string> | null, rethrowSevereErrors: boolean = true)

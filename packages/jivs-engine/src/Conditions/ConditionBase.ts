@@ -14,7 +14,7 @@ import type { IJivsServices } from '../Interfaces/JivsServices';
 import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { ConditionType } from './ConditionTypes';
 
 /**
@@ -38,13 +38,13 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * @param services 
      * @returns 
      */
-    protected logger(services: IJivsServices): LoggerFacade
+    protected logger(services: IJivsServices): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(services.loggingService, 'Condition', this, this.conditionType);
+            this._logger = new LoggingFacade(services.loggingService, 'Condition', this, this.conditionType);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;
+    private _logger: LoggingFacade | null = null;
     
     /**
      * A unique identifier for the specific implementation, like "RequireText" or "Range".

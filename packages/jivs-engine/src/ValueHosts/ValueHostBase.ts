@@ -11,7 +11,7 @@ import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 
 /**
@@ -69,14 +69,14 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     /**
      * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggingService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 'ValueHost', this, this.getName(), false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggingFacade | null = null;    
 
 
     //#region IValueHost

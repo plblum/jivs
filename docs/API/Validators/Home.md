@@ -61,8 +61,8 @@ function formValidated(valueHostsManager: IValueHostsManager, validationState: V
 
 ```
 ## API References
-- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
-- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validation_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidatorConfig.html)
 - [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
 - [ConditionConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html)
 - [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)

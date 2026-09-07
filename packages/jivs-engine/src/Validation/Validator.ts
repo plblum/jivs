@@ -9,7 +9,7 @@
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to ValidatorsValueHostBases through their ValidatorsValueHostBaseConfig.
-  * @module jivs-engine/Validator/ConcreteClasses
+  * @module jivs-engine/Validation/ConcreteClasses
  */
 
 import { ConditionType } from '../Conditions/ConditionTypes';
@@ -31,7 +31,7 @@ import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostN
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { cleanString } from '../Utilities/Utilities';
 import { resolveErrorCode } from '../Utilities/Validation';
@@ -129,16 +129,16 @@ export class Validator implements IValidator {
     /**
      * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggingService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 'Validator', this,
                 [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)],
             false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggingFacade | null = null;    
     /**
      * The validator's issue identifier.
      * Uses ValidatorConfig.errorCode when assigned,
