@@ -316,7 +316,7 @@ export function checkLocalizedPropertyResult(pi: LocalizedPropertyCAResult,
             expect(ct.message).toBeUndefined();
     }
     else {
-        expect(ct.message).toContain('localization not declared in TextLocalizerService');
+        expect(ct.message).toContain('localization not declared in ErrorMessagesService');
         if (hasFallback) {
             expect(ct.severity).toBe(CAIssueSeverity.warning);
             expect(ct.message).toContain(`found in the ${propertyNamePrefix} property`);

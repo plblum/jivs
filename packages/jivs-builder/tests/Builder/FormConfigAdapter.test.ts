@@ -10,7 +10,7 @@ import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
+import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';
 import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
@@ -130,10 +130,10 @@ describe('constructor', () => {
 
 });
 describe('favorUIMessages', () => {
-    test('TextLocalizerService has no matches. Keep existing error messages', () => {
+    test('ErrorMessagesService has no matches. Keep existing error messages', () => {
         let formAdapter = setupPublicifyFormAdapter();
-        let tls = new TextLocalizerService();
-        formAdapter.services.textLocalizerService = tls;   // start fresh
+        let tls = new ErrorMessagesService();
+        formAdapter.services.errorMessagesService = tls;   // start fresh
         formAdapter.field('Field1').requireText(
             {
                 errorMessage: 'RequireMessage',
@@ -208,11 +208,11 @@ describe('favorUIMessages', () => {
         }
         ]);
     });
-    test('TextLocalizerService has matches. Null all 4 message properties on all matches', () => {
+    test('ErrorMessagesService has matches. Null all 4 message properties on all matches', () => {
         let formAdapter = setupPublicifyFormAdapter();
 
-        let tls = new TextLocalizerService();
-        formAdapter.services.textLocalizerService = tls;   // start fresh
+        let tls = new ErrorMessagesService();
+        formAdapter.services.errorMessagesService = tls;   // start fresh
         tls.registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'tls-required'
         });

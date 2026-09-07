@@ -34,7 +34,7 @@ export abstract class ValidatorConfigPropertyAnalyzerBase extends
  * errorMessage, summaryMessage, errorMessagel10n, summaryMessagel10n.
  * 
  * It checks the tokens within messages and then checks the localizations against
- * the TextLocalizerService and all cultures registered.
+ * the ErrorMessagesService and all cultures registered.
  */
 export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigPropertyAnalyzerBase {
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult, valueHostConfig: ValueHostConfig,
@@ -46,7 +46,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
     /**
      * Checks the tokens related to these properties: 
      * errorMessage, summaryMessage, errorMessagel10n, summaryMessagel10n.
-     * The l10n properties get their value from the TextLocalizerService first.
+     * The l10n properties get their value from the ErrorMessagesService first.
      * If a token is found, it is validated and the formatterKey
      * is added to the DataTypeFormatterLookupKeyAnalyzer.
      * If the token is not valid, an error is added to the validatorProperties array.
@@ -64,11 +64,11 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
 
         if (config.errorMessagel10n || config.summaryMessagel10n) {
             for (const cultureId of helper.results.cultureIds) {
-                let localized = helper.services.textLocalizerService.localize(
+                let localized = helper.services.errorMessagesService.localize(
                     cultureId, config.errorMessagel10n ?? null, null);
                 if (localized)
                     helper.checkMessageTokens(localized, config, vhc, 'errorMessagel10n', propResults);
-                localized = helper.services.textLocalizerService.localize(
+                localized = helper.services.errorMessagesService.localize(
                     cultureId, config.summaryMessagel10n ?? null, null);
                 if (localized)
                     helper.checkMessageTokens(localized, config, vhc, 'summaryMessagel10n', propResults);
@@ -80,7 +80,7 @@ export class AllMessagePropertiesConfigPropertyAnalyzer extends ValidatorConfigP
      * Reviews the error message localizations for a given ValidatorConfigCAResult object.
      * It checks the errorMessagel10n and summaryMessagel10n properties for localization on
      * all cultures, adding the results to the properties array in a LocalizedPropertyCAResult object.
-     * That result will host any errors found, such as lacking data in the TextLocalizerService.
+     * That result will host any errors found, such as lacking data in the ErrorMessagesService.
      * If the errorMessage or summaryMessage is a function, it is ignored.
      * @param vhcResults - The ValidatorConfigCAResult object containing the validator 
      * configuration and property results.

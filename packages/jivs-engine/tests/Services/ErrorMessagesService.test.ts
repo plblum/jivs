@@ -1,19 +1,19 @@
-import { LocalizedDetailsResult } from '../../src/Interfaces/TextLocalizerService';
-import { TextLocalizerService } from './../../src/Services/TextLocalizerService';
+import { LocalizedDetailsResult } from '../../src/Interfaces/ErrorMessagesService';
+import { ErrorMessagesService } from './../../src/Services/ErrorMessagesService';
 // localize(cultureIdToMatch: string, sourceText: string): string
-describe('TextLocalizerService.localize', () => {
+describe('ErrorMessagesService.localize', () => {
     test('No matching registrations, return the fallback text.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('fallback');     // only a key
     });
     test('No matching registrations, no key supplied returns fallback text', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         expect(testItem.localize('en', '', 'fallback')).toBe('fallback');
         expect(testItem.localize('en', null, 'fallback')).toBe('fallback');
     });
 
     test('en registered only. Stored value on en, fallback on anything else', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello'
         });
@@ -26,7 +26,7 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('en-GB', 'goodbye', 'GBfallback')).toBe('GBfallback');
     });
     test('en and es registered only. Stored value on en or es, fallback on anything else', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello',
             'es': 'es-Hello'
@@ -43,7 +43,7 @@ describe('TextLocalizerService.localize', () => {
     });    
     test('en-US, en-GB and en registered.', () =>
     {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en-US': 'en-US-Hello',
             'en-GB': 'en-GB-Hello',
@@ -65,7 +65,7 @@ describe('TextLocalizerService.localize', () => {
     });    
 
     test('Fallback uses * culture when supplied', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'fr': 'fr-Hello',
             '*': '*-Hello'
@@ -76,11 +76,11 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('fr-FR', 'hello', 'fallback')).toBe('fr-Hello');
     });        
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.register('hello', {
             'en': 'en-Hello-fallback'
@@ -88,11 +88,11 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('en-Hello');
     });
     test('With fallbackService setup, request a value that is not on the top level but in the fallbackService, and the value from fallbackService is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('yo', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.register('hello', {
             'en': 'en-Hello-fallbackService'
@@ -100,11 +100,11 @@ describe('TextLocalizerService.localize', () => {
         expect(testItem.localize('en', 'hello', 'fallback')).toBe('en-Hello-fallbackService');
     });    
     test('With fallbackService setup, request a value that is in neither service, and the value from the fallback parameter is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('yo', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.register('hello', {
             'en': 'en-Hello-fallback'
@@ -116,9 +116,9 @@ describe('TextLocalizerService.localize', () => {
     });    
 });
 // tests for localizeWithDetails are almost identical to localize but need to handle its specialized result
-describe('TextLocalizerService.localizeWithDetails', () => {
+describe('ErrorMessagesService.localizeWithDetails', () => {
     test('No matching registrations, return the fallback text.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let result = testItem.localizeWithDetails('en', 'hello', 'fallback');
         expect(result).toEqual(<LocalizedDetailsResult>{
             text: 'fallback',
@@ -127,7 +127,7 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });
     });
     test('No matching registrations, no key supplied returns fallback text', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let result1 = testItem.localizeWithDetails('en', '', 'fallback');
         expect(result1).toEqual(<LocalizedDetailsResult>{
             text: 'fallback',
@@ -143,7 +143,7 @@ describe('TextLocalizerService.localizeWithDetails', () => {
     });
 
     test('en registered only. Stored value on en, fallback on anything else', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello'
         });
@@ -183,7 +183,7 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });
     });
     test('Exact culture takes precedence over language and *', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en-US': 'en-US-Hello',
             'en': 'en-Hello',
@@ -210,7 +210,7 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });
     });
     test('en and es registered only. Stored value on en or es, fallback on anything else', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello',
             'es': 'es-Hello'
@@ -260,7 +260,7 @@ describe('TextLocalizerService.localizeWithDetails', () => {
 
     });
     test('Fallback uses * culture when supplied', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'fr': 'fr-Hello',
             '*': '*-Hello'
@@ -289,11 +289,11 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });
     });
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.register('hello', {
             'en': 'en-Hello-fallback'
@@ -308,11 +308,11 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });                
     });
     test('With fallbackService setup, request a value that is not on the top level but in the fallbackService, and the value from fallbackService is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('yo', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         testItem.register('hello', {
             'en': 'en-Hello-fallbackService'
@@ -327,11 +327,11 @@ describe('TextLocalizerService.localizeWithDetails', () => {
         });                
     });
     test('With fallbackService setup, request a value that is in neither service, and the value from the fallback parameter is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('yo', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         testItem.register('hello', {
             'en': 'en-Hello-fallback'
@@ -360,9 +360,9 @@ describe('TextLocalizerService.localizeWithDetails', () => {
 });
 
 describe('getErrorMessage', () => {
-    function createTextLocalizerService(): TextLocalizerService
+    function createErrorMessagesService(): ErrorMessagesService
     {
-        let tls = new TextLocalizerService();
+        let tls = new ErrorMessagesService();
         tls.registerErrorMessage('Code1', null, {
             '*': 'Code1-errormessage'
         });
@@ -373,18 +373,18 @@ describe('getErrorMessage', () => {
         return tls;
     }
     test('Requested value exists and is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getErrorMessage('en', 'Code1', null)).toBe('Code1-errormessage');
         expect(testItem.getErrorMessage('en', 'Code2', null)).toBe('en-Code2-errormessage');
         expect(testItem.getErrorMessage('fr', 'Code2', null)).toBe('Code2-errormessage');        
     });
     test('Requested value does not exist and null is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getErrorMessage('en', 'X1', null)).toBeNull();
     });    
     test('With fallbackService containing an override to Code1 and a new value, Code3, requested value exists and is returned. Requested value does not exist, returns null.', () => {
-        let testItem = new TextLocalizerService();
-        let fallbackService = createTextLocalizerService();
+        let testItem = new ErrorMessagesService();
+        let fallbackService = createErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.registerErrorMessage('Code1', null, {
             '*': 'Code1-errormessage-topLevel'
@@ -402,9 +402,9 @@ describe('getErrorMessage', () => {
     });    
 });
 describe('getSummaryMessage', () => {
-    function createTextLocalizerService(): TextLocalizerService
+    function createErrorMessagesService(): ErrorMessagesService
     {
-        let tls = new TextLocalizerService();
+        let tls = new ErrorMessagesService();
         tls.registerSummaryMessage('Code1', null, {
             '*': 'Code1-summarymessage'
         });
@@ -415,18 +415,18 @@ describe('getSummaryMessage', () => {
         return tls;
     }
     test('Requested value exists and is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getSummaryMessage('en', 'Code1', null)).toBe('Code1-summarymessage');
         expect(testItem.getSummaryMessage('en', 'Code2', null)).toBe('en-Code2-summarymessage');
         expect(testItem.getSummaryMessage('fr', 'Code2', null)).toBe('Code2-summarymessage');        
     });
     test('Requested value does not exist and null is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getSummaryMessage('en', 'X1', null)).toBeNull();
     });    
     test('With fallbackService containing an override to Code1 and a new value, Code3, requested value exists and is returned. Requested value does not exist, returns null.', () => {
-        let testItem = new TextLocalizerService();
-        let fallbackService = createTextLocalizerService();
+        let testItem = new ErrorMessagesService();
+        let fallbackService = createErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.registerSummaryMessage('Code1', null, {
             '*': 'Code1-summarymessage-topLevel'
@@ -444,9 +444,9 @@ describe('getSummaryMessage', () => {
     });    
 });
 describe('getDataTypeName', () => {
-    function createTextLocalizerService(): TextLocalizerService
+    function createErrorMessagesService(): ErrorMessagesService
     {
-        let tls = new TextLocalizerService();
+        let tls = new ErrorMessagesService();
         tls.registerDataTypeLabel('Code1', {
             '*': 'Code1-datatypename'
         });
@@ -457,23 +457,23 @@ describe('getDataTypeName', () => {
         return tls;
     }
     test('Requested value exists and is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getDataTypeLabel('en', 'Code1')).toBe('Code1-datatypename');
         expect(testItem.getDataTypeLabel('en', 'Code2')).toBe('en-Code2-datatypename');
         expect(testItem.getDataTypeLabel('fr', 'Code2')).toBe('Code2-datatypename');        
     });
     test('Requested value does not exist and original data type is returned', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getDataTypeLabel('en', 'X1')).toBe('X1');
         expect(testItem.getDataTypeLabel('fr', 'X1')).toBe('X1');
     });    
     test('Pass in null returns null', () => {
-        let testItem = createTextLocalizerService();
+        let testItem = createErrorMessagesService();
         expect(testItem.getDataTypeLabel('en', null!)).toBeNull();
     });        
     test('With fallbackService containing an override to Code1 and a new value, Code3, requested value exists and is returned. Requested value does not exist, returns null.', () => {
-        let testItem = new TextLocalizerService();
-        let fallbackService = createTextLocalizerService();
+        let testItem = new ErrorMessagesService();
+        let fallbackService = createErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.registerDataTypeLabel('Code1', {
             '*': 'Code1-datatypename-topLevel'
@@ -492,7 +492,7 @@ describe('getDataTypeName', () => {
 });
 describe('lazyLoad', () => {
    test('Call to register does not lazy load', () => {
-       let testItem = new TextLocalizerService();
+       let testItem = new ErrorMessagesService();
        let loaded = false;
        testItem.lazyLoad = (service) => {
            service.register('Code1', {
@@ -504,7 +504,7 @@ describe('lazyLoad', () => {
        expect(loaded).toBe(false);
    }); 
    test('Call to localize for already registered does not lazy load', () => {
-    let testItem = new TextLocalizerService();
+    let testItem = new ErrorMessagesService();
     let loaded = false;
     testItem.lazyLoad = (service) => {
         service.register('Code1', {
@@ -519,7 +519,7 @@ describe('lazyLoad', () => {
 
    });     
     test('Call to localize for unregistered does load but later localize does not load for unregistered', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let loaded = false;
         testItem.lazyLoad = (service) => {
             service.register('Code1', {
@@ -536,7 +536,7 @@ describe('lazyLoad', () => {
     });     
 
     test('registerErrorMessage does not lazyload, getErrorMessage to registered does not lazyload, getErrorMessage to unregister does lazyload, getErrorMessage after lazyload does not lazyload', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let loaded = false;
         testItem.lazyLoad = (service) => {
             service.registerErrorMessage('Code1', null, {
@@ -556,7 +556,7 @@ describe('lazyLoad', () => {
         expect(loaded).toBe(false);        
     });     
     test('registerSummaryMessage does not lazyload, getSummaryMessage to registered does not lazyload, getSummaryMessage to unregister does lazyload, getSummaryMessage after lazyload does not lazyload', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let loaded = false;
         testItem.lazyLoad = (service) => {
             service.registerSummaryMessage('Code1', null, {
@@ -576,7 +576,7 @@ describe('lazyLoad', () => {
         expect(loaded).toBe(false);        
     });     
     test('registerDataTypeLabel does not lazyload, getDataTypeLabel to registered does not lazyload, getDataTypeLabel to unregister does lazyload, getDataTypeLabel after lazyload does not lazyload', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         let loaded = false;
         testItem.lazyLoad = (service) => {
             service.registerDataTypeLabel('Code1', {
@@ -599,11 +599,11 @@ describe('lazyLoad', () => {
 
 describe('dispose', () => {
     test('With fallbackService setup, request a value that exists on the top level, and that value is returned.', () => {
-        let testItem = new TextLocalizerService();
+        let testItem = new ErrorMessagesService();
         testItem.register('hello', {
             'en': 'en-Hello'
         });
-        let fallbackService = new TextLocalizerService();
+        let fallbackService = new ErrorMessagesService();
         testItem.fallbackService = fallbackService;
         fallbackService.register('hello', {
             'en': 'en-Hello-fallback'

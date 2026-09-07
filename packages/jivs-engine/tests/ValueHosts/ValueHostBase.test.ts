@@ -14,7 +14,7 @@ import
 import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { TextLocalizerService } from "../../src/Services/TextLocalizerService";
+import { ErrorMessagesService } from "../../src/Services/ErrorMessagesService";
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
@@ -204,7 +204,7 @@ describe('constructor and resulting property values', () =>
         let setup = setupValueHost({
             labell10n: 'Label1-key'
         });
-        let tls = setup.services.textLocalizerService as TextLocalizerService;
+        let tls = setup.services.errorMessagesService as ErrorMessagesService;
         tls.register('Label1-key', {
             '*': '*-Label1'
         });
@@ -212,13 +212,13 @@ describe('constructor and resulting property values', () =>
 
         expect(testItem.getLabel()).toBe('*-Label1');
     });
-    test('constructor with Config.labell10n setup but not in the textlocalizer and no value in config.label. GetLabel results in empty string', () =>
+    test('constructor with Config.labell10n setup but not in the ErrorMessagesService and no value in config.label. GetLabel results in empty string', () =>
     {
         let setup = setupValueHost({
             labell10n: 'Label1-key',
             label: undefined
         });
-        let tls = setup.services.textLocalizerService as TextLocalizerService;
+        let tls = setup.services.errorMessagesService as ErrorMessagesService;
         tls.register('Different-key', {
             '*': '*-Label1'
         });
@@ -693,8 +693,8 @@ describe('getDataTypeLabel', () =>
         factory.register(new PublicifiedValueHostBaseGenerator());
         services.valueHostFactory = factory;
 
-        let tls = new TextLocalizerService();
-        services.textLocalizerService = tls; // ensures its inited as empty
+        let tls = new ErrorMessagesService();
+        services.errorMessagesService = tls; // ensures its inited as empty
         if (hasLocalization)
         {
             tls.registerDataTypeLabel(LookupKey.Number, {

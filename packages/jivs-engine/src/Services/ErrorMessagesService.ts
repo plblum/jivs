@@ -1,37 +1,35 @@
 /**
- * @module jivs-engine/Services/ConcreteClasses/TextLocalizerService
+ * @module jivs-engine/Services/ConcreteClasses/ErrorMessagesService
  */
-import { CultureToText, ITextLocalizerService, LocalizedDetailsResult } from '../Interfaces/TextLocalizerService';
-import { cultureLanguageCode } from '../Services/CultureService';
+import { CultureToText, IErrorMessagesService, LocalizedDetailsResult } from '../Interfaces/ErrorMessagesService';
+import { cultureLanguageCode } from './CultureService';
 import { ServiceBase } from './ServiceBase';
 import { assertValidFallbacks } from '../Interfaces/Services';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 
 /**
- * A service to offer text alternatives to the default text
- * based on cultureId.
+ * Supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
+ *    - It provides a reusable library of default strings, avoiding the need to configure 
+ *        the same messages on every `Validator`.
+ *    - It provides localized versions of those strings and of text used to replace tokens within them.
  * 
  * It supports having fallbacks, so the app can have a standard implementation
  * and another that introduces special cases.
  * 
  * To set that up:
  * ```ts
- * let vs = createJivsServices(); // provides the standard case in vs.textLocalizerService
- * let special = new TextLocalizerService();
- * special.fallbackService = vs.textLocalizerService;
- * vs.textLocalizerService = special;
+ * let vs = createJivsServices(); // provides the standard case in vs.errorMessagesService
+ * let special = new ErrorMessagesService();
+ * special.fallbackService = vs.errorMessagesService;
+ * vs.errorMessagesService = special;
  * ```
- * 
- * This implementation is independent of third party libraries
- * that you may be using. 
- * Thus, you may prefer to implement ITextLocalizerService yourself.
  * 
  * There are two text values associated with localization:
  * - A lookup key. A short code that maps to the actual string for each culture.
  * - Fallback text. The text supplied when the lookup key does not have
  *   anything to offer for the given culture.
  */
-export class TextLocalizerService extends ServiceBase implements ITextLocalizerService
+export class ErrorMessagesService extends ServiceBase implements IErrorMessagesService
 {
     /**
      * Participates in releasing memory.
@@ -51,16 +49,16 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * When assigned, a call to any function (except registration) will
      * first try itself, and if not found, try the fallback.
      */    
-    public get fallbackService(): ITextLocalizerService | null
+    public get fallbackService(): IErrorMessagesService | null
     {
         return this._fallbackService;
     }
-    public set fallbackService(service: ITextLocalizerService | null)
+    public set fallbackService(service: IErrorMessagesService | null)
     {
         assertValidFallbacks(service, this);
         this._fallbackService = service;
     }
-    private _fallbackService: ITextLocalizerService | null = null;
+    private _fallbackService: IErrorMessagesService | null = null;
 
     /**
      * Returns the localized version of the text for the given culture.
@@ -189,9 +187,9 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public getErrorMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, TextLocalizerService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, ErrorMessagesService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, TextLocalizerService.getErrorMessagel10nText(errorCode, null), null);
+            text = this.localize(cultureIdToMatch, ErrorMessagesService.getErrorMessagel10nText(errorCode, null), null);
         if (text === null && this.fallbackService !== null)
             return this.fallbackService.getErrorMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);        
         return text;
@@ -219,9 +217,9 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public getSummaryMessage(cultureIdToMatch: string, errorCode: string, dataTypeLookupKey: string | null): string | null
     {
-        let text = this.localize(cultureIdToMatch, TextLocalizerService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
+        let text = this.localize(cultureIdToMatch, ErrorMessagesService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), null);
         if (text === null && dataTypeLookupKey)
-            text = this.localize(cultureIdToMatch, TextLocalizerService.getSummaryMessagel10nText(errorCode, null), null);
+            text = this.localize(cultureIdToMatch, ErrorMessagesService.getSummaryMessagel10nText(errorCode, null), null);
         if (text === null && this.fallbackService !== null)
             return this.fallbackService.getSummaryMessage(cultureIdToMatch, errorCode, dataTypeLookupKey);                
         return text;
@@ -284,7 +282,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public registerErrorMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(TextLocalizerService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
+        this.register(ErrorMessagesService.getErrorMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }
     /**
      * Utility to add a summary error message for a validator
@@ -297,7 +295,7 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      */
     public registerSummaryMessage(errorCode: string, dataTypeLookupKey: string | null, cultureToText : CultureToText) : void
     {
-        this.register(TextLocalizerService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
+        this.register(ErrorMessagesService.getSummaryMessagel10nText(errorCode, dataTypeLookupKey), cultureToText);
     }    
 
     /**
@@ -339,12 +337,12 @@ export class TextLocalizerService extends ServiceBase implements ITextLocalizerS
      * Sets up a function to lazy load the configuration when the localize() function 
      * tries and fails to match a request.
      */
-    public set lazyLoad(fn: (service: TextLocalizerService) => void)
+    public set lazyLoad(fn: (service: ErrorMessagesService) => void)
     {
         this._lazyLoader = fn;
     }
 
-    private _lazyLoader: null | ((service: TextLocalizerService) => void) = null;
+    private _lazyLoader: null | ((service: ErrorMessagesService) => void) = null;
 
     /**
      * Runs the lazyload function if setup and returns true if run.

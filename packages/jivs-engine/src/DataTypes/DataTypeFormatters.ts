@@ -360,7 +360,7 @@ export class Percentage100Formatter extends NumberFormatterBase
  * that you want to use for true and false.
  * If not supplied, it defaults to "true" and "false".
  * To provide localization of "true" and "false", set up
- * JivsServices.TextLocalizerService with text keys, cultures and
+ * JivsServices.ErrorMessagesService with text keys, cultures and
  * translations. Then provide values for TrueLabel and FalseLabel
  * when registering this class in the dataTypeFormatterService.
  */
@@ -394,7 +394,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     /**
      * Text shown the user for a value of true.
     * To provide localization of "true" and "false", set up
-    * JivsServices.TextLocalizerService with text keys, cultures and
+    * JivsServices.ErrorMessagesService with text keys, cultures and
     * translations. Then provide values for TrueLabel and FalseLabel
     * when registering this class in the dataTypeFormatterService.
      */
@@ -406,8 +406,8 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 
     /**
      * Localization key for TrueLabel. Its value will be matched to an entry
-     * made to JivsServices.TextLocalizerService, specific to the active culture.
-     * If setup and no entry was found in TextLocalizerService,
+     * made to JivsServices.ErrorMessagesService, specific to the active culture.
+     * If setup and no entry was found in ErrorMessagesService,
      * the value from the TrueLabel property is used.
      */
 
@@ -419,7 +419,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
     /**
     * Text shown the user for a value of false
     * To provide localization of "true" and "false", set up
-    * JivsServices.TextLocalizerService with text keys, cultures and
+    * JivsServices.ErrorMessagesService with text keys, cultures and
     * translations. Then provide values for TrueLabel and FalseLabel
     * when registering this class in the dataTypeFormatterService.
       */
@@ -431,8 +431,8 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
 
     /**
      * Localization key for FalseLabel. Its value will be matched to an entry
-     * made to JivsServices.TextLocalizerService, specific to the active culture.
-     * If setup and no entry was found in TextLocalizerService,
+     * made to JivsServices.ErrorMessagesService, specific to the active culture.
+     * If setup and no entry was found in ErrorMessagesService,
      * the value from the FalseLabel property is used.
      */
 
@@ -458,7 +458,7 @@ export abstract class BooleanFormatterBase extends DataTypeFormatterBase
         let text = value ? this.trueLabel : this.falseLabel;
         const l10n = value ? this.trueLabell10n : this.falseLabell10n;
         if (this.hasServices) {
-            text = this.services.textLocalizerService.localize(
+            text = this.services.errorMessagesService.localize(
                 cultureId, l10n, text)!;
         }
         return { value: text };
@@ -477,7 +477,7 @@ export interface DefaultLabelsForBoolean
 /**
  * Supports LookupKey.Boolean, and provides 'true' and 'false' labels
  * for all cultures unless you provide alternatives into the constructor
- * or setup localization with the TextLocalizerService.
+ * or setup localization with the ErrorMessagesService.
  * It defaults to 'TRUE' as the localization key for true
  * and 'FALSE' as the localization key for false.
  * LookupKey: "Boolean" or whatever the user supplies.

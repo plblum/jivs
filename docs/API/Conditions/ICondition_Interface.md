@@ -8,9 +8,9 @@ interface ICondition {
 }
 ```
 As you can see, all require that you supply a **conditionType** value. That’s a unique name for you to specify.
-- `conditionType` contains a name that uniquely identifies your condition class within our `ConditionsFactory` and with error messages in the `TextLocalizerService`.
+- `conditionType` contains a name that uniquely identifies your condition class within our `ConditionsFactory` and with error messages in the `ErrorMessagesService`.
     - All built in `Conditions` have their names declared in the type `ConditionType`, such as `ConditionType.RequireText` and `ConditionType.EqualTo`.
-    - A `Validator` has an errorCode property which formally is used for looking up error messages in `TextLocalizerService`. When you don't assign it, it defaults to the `conditionType` property value.
+    - A `Validator` has an errorCode property which formally is used for looking up error messages in `ErrorMessagesService`. When you don't assign it, it defaults to the `conditionType` property value.
 - `evaluate()` entirely handles the validation rule, and returns one of these:
     - `Match` – Data conformed to the rule
     - `NoMatch` – Data violated the rule

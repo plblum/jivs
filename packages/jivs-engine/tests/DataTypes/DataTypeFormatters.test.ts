@@ -12,7 +12,7 @@ import {
 
 import { DataTypeResolution } from '../../src/Interfaces/DataTypes';
 import { MockJivsServices } from '../TestSupport/mocks';
-import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { DataTypeFormatterBase } from '../../src/DataTypes/DataTypeFormatterBase';
 
@@ -952,7 +952,7 @@ describe('BooleanFormatter', () => {
         expect(testItem.supports('anylookupkey', 'fr')).toBe(false);
     });
 
-    test('Without TextLocalizationService, true and false are "true" and "false"', () => {
+    test('Without ErrorMessagesService, true and false are "true" and "false"', () => {
         let testItem = new BooleanFormatter(LookupKey.Boolean);
         
         let dts = testItem.format(true, LookupKey.Boolean, 'en');
@@ -964,7 +964,7 @@ describe('BooleanFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('false');
     });
-    test('Without TextLocalizationService, true and false are values supplied in the constructor', () => {
+    test('Without ErrorMessagesService, true and false are values supplied in the constructor', () => {
         let testItem = new BooleanFormatter(LookupKey.Boolean, "T", "F");
         
         let dts = testItem.format(true, LookupKey.Boolean, 'en');
@@ -976,9 +976,9 @@ describe('BooleanFormatter', () => {
         expect(dts).not.toBeNull();
         expect(dts.value).toBe('F');
     });    
-    test('TextLocalizationService used for labels unless the culture is not setup', () => {
+    test('ErrorMessagesService used for labels unless the culture is not setup', () => {
         let services = new MockJivsServices(false, false);
-        let tlService = services.textLocalizerService as TextLocalizerService;
+        let tlService = services.errorMessagesService as ErrorMessagesService;
         tlService.register('TRUE', {
             'en': 'enTRUE',
             'es': 'esTRUE'

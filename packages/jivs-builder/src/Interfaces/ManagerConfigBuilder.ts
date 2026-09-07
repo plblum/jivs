@@ -108,7 +108,7 @@ export interface BuilderOverrideOptions
     /**
      * When true, use the favorUIMessages() function to delete
      * any error messages supplied by business logic for which
-     * you have a replacement in TextLocalizationService.
+     * you have a replacement in ErrorMessagesService.
      * If undefined, it defaults to true.
      */
     favorUIMessages?: boolean;

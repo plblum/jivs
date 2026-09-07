@@ -24,7 +24,7 @@ import { IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBa
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { CapturingLogger } from "../../src/Support/CapturingLogger";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
@@ -506,7 +506,7 @@ function setupForLocalization(activeCultureID: string): PublicifiedValidator {
         summaryMessage: 'SEM-fallback',
         summaryMessagel10n: 'SEM'
     }, activeCultureID);
-    let tlService = setup.services.textLocalizerService as TextLocalizerService;
+    let tlService = setup.services.errorMessagesService as ErrorMessagesService;
     tlService.register('EM', {
         'en': 'enErrorMessage',
         'es': 'esErrorMessage'
@@ -542,58 +542,58 @@ describe('Validator.getErrorMessageTemplate', () => {
         expect(setup.validator.exposeGetErrorMessageTemplate()).toBe(Validator.errorMessageMissing);
     });
 
-    test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
+    test('ErrorMessagesService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
-    test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
+    test('ErrorMessagesService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('enErrorMessage');
     });
 
-    test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
+    test('ErrorMessagesService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('esErrorMessage');
     });
 
-    test('TextLocalizationService not setup for fr language and active culture of fr uses errorMessage property', () => {
+    test('ErrorMessagesService not setup for fr language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr');
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
-    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses errorMessage property', () => {
+    test('ErrorMessagesService not setup for fr-FR language and active culture of fr uses errorMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('EM-fallback');
     });
 
-    test('TextLocalizationService.GetErrorMessage used because errorMessage is not supplied', () => {
+    test('ErrorMessagesService.GetErrorMessage used because errorMessage is not supplied', () => {
       
         let setup = setupWithField1AndField2({
             errorMessage: null,
             errorMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
+        (setup.services.errorMessagesService as ErrorMessagesService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });    
-    test('TextLocalizationService.GetErrorMessage is not used because errorMessage is supplied', () => {
+    test('ErrorMessagesService.GetErrorMessage is not used because errorMessage is supplied', () => {
       
         let setup = setupWithField1AndField2({
             errorMessage: 'supplied',
             errorMessagel10n: null,
         }, 'en');
 
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.RequireText, null, {
+        (setup.services.errorMessagesService as ErrorMessagesService).registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         let testItem = setup.validator;
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('supplied');
     });        
-    test('TextLocalizationService.GetErrorMessage together with both Condition Type and DataTypeLookupKey', () => {
+    test('ErrorMessagesService.GetErrorMessage together with both Condition Type and DataTypeLookupKey', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
@@ -602,7 +602,7 @@ describe('Validator.getErrorMessageTemplate', () => {
             errorMessage: null,
             errorMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
+        (setup.services.errorMessagesService as ErrorMessagesService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
@@ -610,7 +610,7 @@ describe('Validator.getErrorMessageTemplate', () => {
     
         expect(testItem.exposeGetErrorMessageTemplate()).toBe('Default Error Message');
     });        
-    test('TextLocalizationService.GetErrorMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
+    test('ErrorMessagesService.GetErrorMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
@@ -619,11 +619,11 @@ describe('Validator.getErrorMessageTemplate', () => {
             errorMessage: null,
             errorMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, null,
+        (setup.services.errorMessagesService as ErrorMessagesService).registerErrorMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
         });        
-        (setup.services.textLocalizerService as TextLocalizerService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
+        (setup.services.errorMessagesService as ErrorMessagesService).registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
         {
             '*': 'Default Error Message-String'
         });
@@ -675,57 +675,57 @@ describe('Validator.GetSummaryMessageTemplate', () => {
         expect(setup.validator.exposeGetSummaryMessageTemplate()).toBe('Local');
     });
 
-    test('TextLocalizationService used for labels with existing en language and active culture of en', () => {
+    test('ErrorMessagesService used for labels with existing en language and active culture of en', () => {
         let testItem = setupForLocalization('en');
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
-    test('TextLocalizationService used for labels with existing en language and active culture of en-US', () => {
+    test('ErrorMessagesService used for labels with existing en language and active culture of en-US', () => {
         let testItem = setupForLocalization('en-US');
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('enSummaryMessage');
     });
 
-    test('TextLocalizationService used for labels with existing es language and active culture of es-SP', () => {
+    test('ErrorMessagesService used for labels with existing es language and active culture of es-SP', () => {
         let testItem = setupForLocalization('es-SP');
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('esSummaryMessage');
     });
 
-    test('TextLocalizationService not setup for fr language and active culture of fr uses summaryMessage property', () => {
+    test('ErrorMessagesService not setup for fr language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr');
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
-    test('TextLocalizationService not setup for fr-FR language and active culture of fr uses summaryMessage property', () => {
+    test('ErrorMessagesService not setup for fr-FR language and active culture of fr uses summaryMessage property', () => {
         let testItem = setupForLocalization('fr-FR');
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('SEM-fallback');
     });
-    test('TextLocalizationService.GetSummaryMessage used because summaryMessage is not supplied', () => {
+    test('ErrorMessagesService.GetSummaryMessage used because summaryMessage is not supplied', () => {
       
         let setup = setupWithField1AndField2({
             summaryMessage: null,
             summaryMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
+        (setup.services.errorMessagesService as ErrorMessagesService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });    
-    test('TextLocalizationService.GetSummaryMessage is not used because summaryMessage is supplied', () => {
+    test('ErrorMessagesService.GetSummaryMessage is not used because summaryMessage is supplied', () => {
       
         let setup = setupWithField1AndField2({
             summaryMessage: 'supplied',
             summaryMessagel10n: null,
         }, 'en');
 
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.RequireText, null, {
+        (setup.services.errorMessagesService as ErrorMessagesService).registerSummaryMessage(ConditionType.RequireText, null, {
             '*': 'Default Error Message'
         });
         let testItem = setup.validator;
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('supplied');
     });        
-    test('TextLocalizationService.GetSummaryMessage together with both Condition Type and DataTypeLookupKey', () => {
+    test('ErrorMessagesService.GetSummaryMessage together with both Condition Type and DataTypeLookupKey', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
@@ -734,7 +734,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
             summaryMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
+        (setup.services.errorMessagesService as ErrorMessagesService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.String, // LookupKey must conform to ValueHost.dataType
         {
             '*': 'Default Error Message'
         });
@@ -742,7 +742,7 @@ describe('Validator.GetSummaryMessageTemplate', () => {
     
         expect(testItem.exposeGetSummaryMessageTemplate()).toBe('Default Error Message');
     });        
-    test('TextLocalizationService.GetSummaryMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
+    test('ErrorMessagesService.GetSummaryMessage where DataTypeLookupKey does not match and ConditionType alone works', () => {
       
         let setup = setupWithField1AndField2({
             conditionConfig: {
@@ -751,11 +751,11 @@ describe('Validator.GetSummaryMessageTemplate', () => {
             summaryMessage: null,
             summaryMessagel10n: null,
         }, 'en');
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, null,
+        (setup.services.errorMessagesService as ErrorMessagesService).registerSummaryMessage(ConditionType.DataTypeCheck, null,
         {
             '*': 'Default Error Message'
         });        
-        (setup.services.textLocalizerService as TextLocalizerService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
+        (setup.services.errorMessagesService as ErrorMessagesService).registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Date, // LookupKey of VH is LookupKey.String
         {
             '*': 'Default Error Message-String'
         });

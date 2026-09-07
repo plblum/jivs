@@ -44,7 +44,7 @@ import { createJivsServicesForTesting } from '../../src/Support/createJivsServic
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
-import { TextLocalizerService } from '../../src/Services/TextLocalizerService';
+import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { restoreCapturedState } from '../TestSupport/utilities';
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
@@ -1449,16 +1449,16 @@ describe('injectedErrors', () =>
             expect(state.injectedError).toBeDefined();  // prove it is still there after validate() is called
         });
 
-        // setup TextLocalizerService to have supporting error message but not summary for the injected error, and ensure that the l10n messages are used in the IssuesFound
+        // setup ErrorMessagesService to have supporting error message but not summary for the injected error, and ensure that the l10n messages are used in the IssuesFound
         test('InjectedError present with localized error message and summary setup uses those localized versions when summary is unassigned', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
-            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
-            textLocalizerService.registerErrorMessage(errorCode, null, {
+            let errorMessagesService = setup.services.errorMessagesService as ErrorMessagesService;
+            errorMessagesService.registerErrorMessage(errorCode, null, {
                 "*": 'Localized Error Message',
             });
-            textLocalizerService.registerSummaryMessage(errorCode, null, {
+            errorMessagesService.registerSummaryMessage(errorCode, null, {
                 "*": 'Localized Summary Message',
             });
             setup.valueHost.setInjectedError({
@@ -1484,17 +1484,17 @@ describe('injectedErrors', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
-            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
-            textLocalizerService.registerErrorMessage(errorCode, null, {
+            let errorMessagesService = setup.services.errorMessagesService as ErrorMessagesService;
+            errorMessagesService.registerErrorMessage(errorCode, null, {
                 "*": 'Localized Error Message',
             });
-            textLocalizerService.registerSummaryMessage(errorCode, null, {
+            errorMessagesService.registerSummaryMessage(errorCode, null, {
                 "*": 'Localized Summary Message',
             });
             setup.valueHost.setInjectedError({
                 errorMessage: 'ERROR',
                 summaryMessage: 'SUMMARY',
-                summaryMessagel10n: TextLocalizerService.getSummaryMessagel10nText(errorCode, null),
+                summaryMessagel10n: ErrorMessagesService.getSummaryMessagel10nText(errorCode, null),
             });
             let vr = setup.valueHost.validate();
             expect(vr).toBeDefined();
@@ -1516,11 +1516,11 @@ describe('injectedErrors', () =>
         {
             let setup = setupValidatorsValueHostBaseForValidate(null, null);
             let errorCode = InjectedErrorValidatorErrorCode;
-            let textLocalizerService = setup.services.textLocalizerService as TextLocalizerService;
-            textLocalizerService.registerErrorMessage(errorCode, null, {
+            let errorMessagesService = setup.services.errorMessagesService as ErrorMessagesService;
+            errorMessagesService.registerErrorMessage(errorCode, null, {
                 "*": 'Localized Error Message',
             });
-            textLocalizerService.registerSummaryMessage(errorCode, null, {
+            errorMessagesService.registerSummaryMessage(errorCode, null, {
                 "*": 'Localized Summary Message',
             });
             setup.valueHost.setInjectedError({

@@ -95,7 +95,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
      *      an error. Assign this object to contain the error message and other info.
      *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
      *      use the errorCode value of 'InjectedError' to localize the error message. 
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
@@ -122,7 +122,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      *    *  injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
      *          an error. Assign this object to contain the error message and other info.
      *          Internally Jivs will provide a Validator with the error message to report the error.
-     *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *          If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
      *          use the errorCode value of 'InjectedError' to localize the error message. 
      *          You can also provide a summaryMessage for use in a summary of validation errors.
      */

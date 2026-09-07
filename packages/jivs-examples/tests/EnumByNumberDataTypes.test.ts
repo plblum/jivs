@@ -5,14 +5,14 @@ import {
     PhoneTypeLookupKey, PhoneTypeEnumValues
 } from '../src/EnumByNumberDataTypes';
 import { createMinimalJivsServices } from "../src/support";
-import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
+import { ErrorMessagesService } from "@plblum/jivs-engine/build/Services/ErrorMessagesService";
 
 function addLocalizedTextForCulture(services: IJivsServices): void
 {
     // let cis = services.cultureService;
     // cis.register({ cultureId: 'en-US', fallbackCultureId: 'en' });
 
-    let tls = services.textLocalizerService as TextLocalizerService;
+    let tls = services.errorMessagesService as ErrorMessagesService;
     
     tls.register(PhoneTypeEnumValues[0].textl10n!, {
         '*': '0_*',

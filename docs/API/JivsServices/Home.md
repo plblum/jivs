@@ -19,7 +19,7 @@ Add the contents of `create_JivsServices.ts` to your project. It results in seve
 export function createJivsServices(... parameters ...): IJivsServices {
 …
 }
-// also many register() functions plus registerCultures() and createTextLocalizerService
+// also many register() functions plus registerCultures() and createErrorMessagesService
 ```
 Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
 
@@ -29,7 +29,7 @@ JivsServices implements this interface:
 interface IJivsServices {
 // These services often have settings changes
     cultureService: ICultureService;
-    textLocalizerService: ITextLocalizerService;
+    errorMessagesService: IErrorMessagesService;
     loggerService: ILoggerService;
     lookupKeyFallbackService: ILookupKeyFallbackService;
     valueAdapterService: IValueAdapterService;
@@ -62,7 +62,7 @@ interface IJivsServices {
 > `JivsServices` employs lazy loading for many of its members.
 ### Services that you often have to setup
 - `cultureService` - Identifies the ISO language-region names that your app supports. See [CultureService](./CultureServices.md).
-- `textLocalizerService` - Supports localized strings for error messages, labels, and more. See [TextLocalizerService](./TextLocalizerService.md).
+- `errorMessagesService` - Supports localized strings for error messages, labels, and more. See [ErrorMessagesService](./ErrorMessagesService.md).
 - `loggerService` - Our default logger is often replaced within unit tests to use our [`CapturingLogger`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Support/CapturingLogger.ts). Its minLevel is often adjusted to one of these values: Debug, Info, Warn, Error, both in unit tests and `createJivsServices()` function. See [Logging](./Logging.md)
 - `lookupKeyFallbackService` - When you create a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), update this to give it a fallback Lookup Key that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
 - `valueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../ModelReader_and_ModelWriter/Home.md#value-adapter-rules).
@@ -86,7 +86,7 @@ Use the source code and TypeDoc output to better understand these services and f
 - [Sources](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Services)
 - [JivsServices class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_JivsServices.JivsServices.html)
 - [CultureService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_CultureService.CultureService.html)
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 - [LoggerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_LoggerService.ConsoleLoggerService.html)
 - [LookupKeyFallbackService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_LookupKeyFallbackService.LookupKeyFallbackService.html)
 - [ValueAdapterService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ValueAdapterService.ValueAdapterService.html)

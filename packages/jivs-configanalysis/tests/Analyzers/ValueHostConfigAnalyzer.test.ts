@@ -464,7 +464,7 @@ describe('ValueHostConfigAnalyzer', () => {
                 name: ' whitespace ',   // ValueHostNamePropertyAnalyzer
                 dataType: ' Number  ', // DataTypePropertyAnalyzer
                 label: '{Token:bad',    // LabelPropertiesAnalyzer syntax error
-                labell10n: 'Test',  // LabelPropertiesAnalyzer missing from TextLocalizerService
+                labell10n: 'Test',  // LabelPropertiesAnalyzer missing from ErrorMessagesService
                 parserLookupKey: 'Unknown',  // ParserLookupKeyPropertyAnalyzer no matching parser
                 validatorConfigs: [],    // not worried about this because it does not have a property analyzer
                 calcFn: 'Not a function'    // CalcFnPropertyAnalyzer syntax error

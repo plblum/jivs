@@ -806,11 +806,11 @@ describe('Demonstrate the results from various use cases', () => {
         }
         */
     });
-    // Using TextLocalizerService for a validator error message has no error when correctly setup
+    // Using ErrorMessagesService for a validator error message has no error when correctly setup
     // The report shows the validatorConfig.errorMessagel10n property and its
     // available text for each culture.
     // We'll support 'en' and 'es' for this test.
-    class DateOnlyForTextLocalizerValueHostRules extends ValueHostRulesBase {
+  class DateOnlyForErrorMessagesServiceValueHostRules extends ValueHostRulesBase {
         constructor(services: IJivsServices) {
             super(services);
         }
@@ -818,8 +818,8 @@ describe('Demonstrate the results from various use cases', () => {
             builder.field('Field1', 'Date').requireText({ errorMessagel10n: 'RequiredEM' });
         }
     }
-    test('TextLocalizerService is used for a validator error message', () => {
-        // uses DateOnlyForTextLocalizerValueHostRules
+    test('ErrorMessagesService is used for a validator error message', () => {
+        // uses DateOnlyForErrorMessagesServiceValueHostRules
 
         // Setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors
@@ -830,14 +830,14 @@ describe('Demonstrate the results from various use cases', () => {
             ConditionType.RequireText,
             (config) => new RequireTextCondition(config));
 
-        services.textLocalizerService.register('RequiredEM',
+        services.errorMessagesService.register('RequiredEM',
             {
                 en: 'This field is required.',
                 es: 'Este campo es obligatorio.'
             });
 
         // Create the configuration
-        let rules = new DateOnlyForTextLocalizerValueHostRules(services);
+        let rules = new DateOnlyForErrorMessagesServiceValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration
@@ -878,10 +878,10 @@ describe('Demonstrate the results from various use cases', () => {
         */
     });
 
-    // Now we'll see an localization error when the text is not found in the TextLocalizerService
+    // Now we'll see an localization error when the text is not found in the ErrorMessagesService
     // We want text for both 'en' and 'es' but only have 'en' registered.    
-    test('TextLocalizerService is used for a validator error message, but missing a culture', () => {
-        // Uses DateOnlyForTextLocalizerValueHostRules
+    test('ErrorMessagesService is used for a validator error message, but missing a culture', () => {
+        // Uses DateOnlyForErrorMessagesServiceValueHostRules
 
         // Setup Services
         let services = createBasicServices();    // start with no populated services. That should create errors
@@ -892,20 +892,20 @@ describe('Demonstrate the results from various use cases', () => {
             ConditionType.RequireText,
             (config) => new RequireTextCondition(config));
 
-        services.textLocalizerService.register('RequiredEM',
+        services.errorMessagesService.register('RequiredEM',
             {
                 en: 'This field is required.',
             });
 
         // Create the configuration
-        let rules = new DateOnlyForTextLocalizerValueHostRules(services);
+        let rules = new DateOnlyForErrorMessagesServiceValueHostRules(services);
         let config = rules.configure();
 
         // Analyze the configuration
         let configAnalysisService = installConfigAnalysisService(services);
         let explorer = configAnalysisService.analyze(config, {});
 
-        // this will throw an error because 'es' is not registered in the TextLocalizerService
+        // this will throw an error because 'es' is not registered in the ErrorMessagesService
         // explorer.reportToConsole({ features: [CAFeature.l10nProperty] }, false, false, 2);
         expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow();
 
@@ -929,7 +929,7 @@ describe('Demonstrate the results from various use cases', () => {
                                 "severity": "info"
                             },
                             "es": {
-                                "message": "errorMessage localization not declared in TextLocalizerService for culture \"es\". No text will be used because the errorMessage property is unassigned.",
+                                "message": "errorMessage localization not declared in ErrorMessagesService for culture \"es\". No text will be used because the errorMessage property is unassigned.",
                                 "severity": "error"
                             }
                         }

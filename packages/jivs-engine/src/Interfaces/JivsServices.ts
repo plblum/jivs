@@ -18,7 +18,7 @@ import { IValueHostFactory } from './ValueHostFactory';
 import { IServices } from './Services';
 import { ILoggerService } from './LoggerService';
 import { ICultureService } from './CultureService';
-import { ITextLocalizerService } from './TextLocalizerService';
+import { IErrorMessagesService } from './ErrorMessagesService';
 import { ILookupKeyFallbackService } from './LookupKeyFallbackService';
 import { IDataTypeConverterService } from './DataTypeConverterService';
 import { IDataTypeIdentifierService } from './DataTypeIdentifierService';
@@ -94,11 +94,12 @@ export interface IJivsServices extends IServices {
 
 
     /**
-     * Service to text localization specific, effectively mapping
-     * a text key to a language specific version of that text.
-     * Error messages and IDataTypeFormatters use this.
+     * Supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
+     *    - It provides a reusable library of default strings, avoiding the need to configure 
+     *        the same messages on every `Validator`.
+     *    - It provides localized versions of those strings and of text used to replace tokens within them.
      */
-    textLocalizerService: ITextLocalizerService;
+    errorMessagesService: IErrorMessagesService;
 
     /**
      * Service for creating a relationship between a lookup key and another
@@ -209,9 +210,9 @@ export enum ServiceName {
      */
     lookupKeyFallback = 'LookupKeyFallback',
     /**
-     * ITextLocalizerService
+     * IErrorMessagesService
      */
-    textLocalizer = 'TextLocalizer',
+    errorMessages = 'ErrorMessages',
      /**
      * IMessageTokenResolver
      */

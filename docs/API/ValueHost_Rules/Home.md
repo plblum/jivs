@@ -142,7 +142,7 @@ interface ValueHostRulesOptions {
 - `favorUIMessages` - Used together with the `IAdaptModelRulesToForm.adaptToForm()` function
 to determine how to transition from the base rules to the form-specific rules.
 When true or undefined, delete any error messages supplied by business logic for which
-you have a replacement in `TextLocalizationService`.
+you have a replacement in `ErrorMessagesService`.
 
 ## API Reference
 - [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)

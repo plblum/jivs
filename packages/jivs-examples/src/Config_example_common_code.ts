@@ -42,7 +42,7 @@ import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
-import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
+import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { createMinimalJivsServices } from './support';
 
@@ -125,19 +125,19 @@ export function createJivsServices(cultureID: string): IJivsServices {
     // These will override any passed through the ValueHostsManagerConfig as the supplied messages are assumed to
     // come from business logic, not the UI layer.
     // In this case, our error message for LessThan will be a custom one, so we will set it later.
-    let textLocalizationService = services.textLocalizerService as TextLocalizerService;
-    textLocalizationService.registerErrorMessage(ConditionType.LessThan, null, {
+    let errorMessagesService = services.errorMessagesService as ErrorMessagesService;
+    errorMessagesService.registerErrorMessage(ConditionType.LessThan, null, {
         '*': '{Label} must be less than to {SecondLabel}.'
     });
 
-    textLocalizationService.registerErrorMessage(ConditionType.LessThanOrEqual, null, {
+    errorMessagesService.registerErrorMessage(ConditionType.LessThanOrEqual, null, {
         '*': '{Label} must be less than or equal to {SecondLabel}.'
     });
 
-    textLocalizationService.registerErrorMessage('NumOfDays', null, {
+    errorMessagesService.registerErrorMessage('NumOfDays', null, {
         '*': 'Less than {compareTo} days apart'
     });
-    textLocalizationService.registerSummaryMessage('NumOfDays', null, {
+    errorMessagesService.registerSummaryMessage('NumOfDays', null, {
         '*': 'The dates must be less than {compareTo} days apart'
     });
 

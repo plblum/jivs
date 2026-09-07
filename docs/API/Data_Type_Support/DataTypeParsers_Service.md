@@ -2,7 +2,7 @@
 
 A `DataTypeParser` converts a text value into a native value. It is used when `FieldValueHost.setTextValue()` receives text from an editor, HTML form, or another string-based source.
 
-Parsers should be forgiving of minor variations in valid input. When text cannot be converted, the `DataTypeParser` returns an error instead of throwing an exception. Jivs incorporates that error into the `FieldValueHost` validation state so it can appear in Field Error Display and Validation Summary widgets. Its message can also be localized through the `TextLocalizerService` (see below).
+Parsers should be forgiving of minor variations in valid input. When text cannot be converted, the `DataTypeParser` returns an error instead of throwing an exception. Jivs incorporates that error into the `FieldValueHost` validation state so it can appear in Field Error Display and Validation Summary widgets. Its message can also be localized through the `ErrorMessagesService` (see below).
 
 ## Parser etiquette 
 The supplied parsers focus on establishing a valid native value rather than enforcing every restriction associated with a field. Add `Validators` to impose additional limits after parsing. This allows each `Validator` to provide an error message specific to the rule it enforces.
@@ -61,7 +61,7 @@ Each `DataTypeParser` can run into parsing errors, where the text is not a match
 
 `setTextValue()` knows to convert the error info into a Validator so it will appear in both the Field Error Display and Validation Summary widgets.
 
-The error message itself may need to be replaced by something more suitable to the UI. Their error info includes an error code, which is used to align it with text you have registered in the `TextLocalizerService`. See [Localizing DataTypeParser Error Messages](../JivsServices/TextLocalizerService.md#localizing-datatypeparser-error-messages).
+The error message itself may need to be replaced by something more suitable to the UI. Their error info includes an error code, which is used to align it with text you have registered in the `ErrorMessagesService`. See [Localizing DataTypeParser Error Messages](../JivsServices/ErrorMessagesService.md#localizing-datatypeparser-error-messages).
 
 
 ## Supplied DataTypeParsers

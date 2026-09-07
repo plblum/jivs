@@ -39,7 +39,7 @@ through a report.
   - Required properties have values.
   
 - Identifies each Lookup Key in use, along with the services that are needed by your ValueHostConfigs.
-- For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
+- For properties that support localization, it shows all cultural localizations of the text registered with the ErrorMessagesService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
 ## Adding to app

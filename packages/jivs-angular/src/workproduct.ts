@@ -3266,7 +3266,7 @@ export class AriaAttributeManager extends ElementAttributeManager {
                 return; // Do nothing if role description is undefined
             }
 
-            const localizedRoleDescription = this._fivaseForm.valueHostsManager.services.textLocalizerService.localize(
+            const localizedRoleDescription = this._fivaseForm.valueHostsManager.services.errorMessagesService.localize(
                 this._fivaseForm.valueHostsManager.behaviors.activeCultureId!,
                 roleDescriptionConfig.l10nKey,
                 roleDescriptionConfig.text

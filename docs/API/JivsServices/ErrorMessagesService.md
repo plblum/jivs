@@ -1,6 +1,6 @@
-# TextLocalizerService
+# ErrorMessagesService
 
-`TextLocalizerService` supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
+`ErrorMessagesService` supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
 
 - It provides a reusable library of default strings, avoiding the need to configure the same messages on every `Validator`.
 - It provides localized versions of those strings and of text used to replace tokens within them.
@@ -27,7 +27,7 @@ The service can also localize text supplied by other parts of Jivs:
 
 ## Working with ValidatorConfig.errorMessage and summaryMessage properties
 
-When a Validator does not supply `errorMessage` or `summaryMessage`, Jivs can retrieve those strings from `TextLocalizerService`.
+When a Validator does not supply `errorMessage` or `summaryMessage`, Jivs can retrieve those strings from `ErrorMessagesService`.
 
 This allows the application to:
 
@@ -35,7 +35,7 @@ This allows the application to:
 - localize those strings for the active culture
 - provide more specific guidance for individual data types
 
-Use the `createTextLocalizerService()` function of your `create_JivsServices.ts` file to review and expand these registrations to support the `Validators`, data types, and cultures used by your application.
+Use the `createErrorMessagesService()` function of your `create_JivsServices.ts` file to review and expand these registrations to support the `Validators`, data types, and cultures used by your application.
 
 Use `registerErrorMessage()` and `registerSummaryMessage()` to register the two forms of an error message:
 
@@ -135,7 +135,7 @@ builder.field('FirstName', LookupKey.String, {
 });
 ```
 
-Register the localized strings for that key within `createTextLocalizerService()`:
+Register the localized strings for that key within `createErrorMessagesService()`:
 
 ```ts
 service.register('FirstName', {
@@ -150,7 +150,7 @@ When resolving `{Label}` or `{SecondLabel}`, Jivs uses `labell10n` to request th
 Register application-defined Localization Keys with:
 
 ```ts
-textLocalizerService.register(localizationKey, cultureToText);
+errorMessagesService.register(localizationKey, cultureToText);
 ```
 
 - `localizationKey` matches the value assigned to `labell10n`.
@@ -183,7 +183,7 @@ Configure the `ValueHost's` data type as usual:
 builder.field('Age', LookupKey.Integer);
 ```
 
-Then register the localized text for that Lookup Key within `createTextLocalizerService()`:
+Then register the localized text for that Lookup Key within `createErrorMessagesService()`:
 
 ```ts
 service.registerDataTypeLabel(LookupKey.Integer, {
@@ -196,7 +196,7 @@ service.registerDataTypeLabel(LookupKey.Integer, {
 The supplied `create_JivsServices.ts` file registers labels for several standard Lookup Keys. Add registrations for other Lookup Keys used by your application.
 
 ```ts
-textLocalizerService.registerDataTypeLabel(dataTypeLookupKey, cultureToText);
+errorMessagesService.registerDataTypeLabel(dataTypeLookupKey, cultureToText);
 ```
 
 - `dataTypeLookupKey` identifies the data type associated with the text.
@@ -208,7 +208,7 @@ If no registered text matches the active culture or its fallbacks, Jivs uses the
 
 ## Localizing DataTypeParser Error Messages
 
-When a `DataTypeParser` cannot convert a text value, it returns error information that includes an error code and a Lookup Key. Jivs uses those values to request an `errorMessage` and `summaryMessage` from `TextLocalizerService`.
+When a `DataTypeParser` cannot convert a text value, it returns error information that includes an error code and a Lookup Key. Jivs uses those values to request an `errorMessage` and `summaryMessage` from `ErrorMessagesService`.
 
 Most supplied parsers report `DataTypeParserBase.ParserErrorCode`. Registering strings for individual data types allows the same parser error code to provide more useful guidance:
 
@@ -245,7 +245,7 @@ service.registerSummaryMessage(DatePatternParserBase.invalidDateErrorCode, Looku
 The supplied `create_JivsServices.ts` file includes registrations for the standard parser error codes. Add registrations when introducing custom parsers, error codes, or Lookup Keys.
 
 ## API References
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 
 ---
 Go to [JivsServices Home](./Home.md)

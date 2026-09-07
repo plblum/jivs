@@ -105,7 +105,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
         const label = (this.config.label ?? '') as string;
         const labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
-            return this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
+            return this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
         return label;
     }
 
@@ -134,7 +134,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     *    * injectedError - If you handle parsing before calling setValue(), your parser may have returned
     *          an error. Assign this object to contain the error message and other info.
     *          Internally Jivs will provide a Validator with the error message to report the error.
-    *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+    *          If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
     *          use the errorCode value of 'InjectedError' to localize the error message. 
     *          You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
@@ -193,7 +193,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
      * injectedError - If you handle parsing before calling setValueToUndefined(), your parser may have returned
      *      an error. Assign this object to contain the error message and other info.
      *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
      *      use the errorCode value of 'InjectedError' to localize the error message. 
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      */
@@ -233,7 +233,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
         }
-        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
+        return dt ? (this.services.errorMessagesService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
     }
 
     /**

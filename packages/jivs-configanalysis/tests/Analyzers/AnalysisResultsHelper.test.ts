@@ -646,21 +646,21 @@ describe('AnalysisResultsHelper', () => {
     describe('checkLocalization', () => {
         function setupServices(): IJivsServices {
             let services = createJivsServicesForTesting();
-            services.textLocalizerService.register('l10nKeyAllCultures',
+            services.errorMessagesService.register('l10nKeyAllCultures',
                 {
                     en: 'This is a test message',
                     fr: 'Ceci est un message de test',
                     es: 'Este es un mensaje de prueba'
                 });
-            services.textLocalizerService.register('l10nKey_en',
+            services.errorMessagesService.register('l10nKey_en',
                 { en: 'This is a test message' });
-            services.textLocalizerService.register('l10nKey_frAndDefault',
+            services.errorMessagesService.register('l10nKey_frAndDefault',
                 {
                     '*': 'This is the default test message',
                     fr: 'Ceci est un message de test',
                 });
 
-            services.textLocalizerService.register('l10nKeyAllCulturesAndDefault',
+            services.errorMessagesService.register('l10nKeyAllCulturesAndDefault',
                 {
                     '*': 'This is the default test message',
                     en: 'This is a test message',
@@ -675,7 +675,7 @@ describe('AnalysisResultsHelper', () => {
             return services;
         }
 
-        test('3 cultures, all with messages in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures to their text', () => {
+        test('3 cultures, all with messages in ErrorMessagesService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures to their text', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
@@ -695,7 +695,7 @@ describe('AnalysisResultsHelper', () => {
         });        
         // same 3 cultures, but using l10nKey_en. Still get 3 entries 
         // in cultureText but missing cultures get a warning severity with error message containing "localization not declared"
-        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
+        test('3 cultures, only "en" has text in ErrorMessagesService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
@@ -714,7 +714,7 @@ describe('AnalysisResultsHelper', () => {
                 undefined, true);
         });
         // same as above but fallback parameter is null, meaning missing cultures get an error severity with a message containing "Not text will be used"
-        test('3 cultures, only "en" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are error messages', () => {
+        test('3 cultures, only "en" has text in ErrorMessagesService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are error messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];
@@ -735,7 +735,7 @@ describe('AnalysisResultsHelper', () => {
 
         // using l10nKey_frAndDefault, all 3 cultures get a message, but en and es show the '*' culture text
         
-        test('3 cultures, only "fr" has text in TextLocalizerService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
+        test('3 cultures, only "fr" has text in ErrorMessagesService creates 1 LocalizedPropertyCAResult with its CultureText property containing an object mapping all 3 cultures but the two without entries are warning messages', () => {
             let services = setupServices();
             let testItem = new Publicify_AnalysisResultsHelper(createAnalysisArgs(services, [], {}));
             let propertyCAResults: Array<PropertyCAResult | ErrorCAResult> = [];

@@ -4098,10 +4098,10 @@ describe('ConfigAnalysisResultExplorer class', () => {
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
 
         });        
-        // FieldValueHost with a RequireTextValidator, using TextLocalizerService to get
+        // FieldValueHost with a RequireTextValidator, using ErrorMessagesService to get
         // errorMessagel10n value for 'en' and 'es', but only 'en' is registered.
         // Should report error for 'es' not found.
-        test('Build an FieldValueHost with a RequireTextValidator, using TextLocalizerService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
+        test('Build an FieldValueHost with a RequireTextValidator, using ErrorMessagesService to get errorMessagel10n value for "en" and "es", but only "en" is registered. Error thrown', () => {
             let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
             services.dataTypeParserService = new DataTypeParserService();
@@ -4111,7 +4111,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             services.conditionFactory.register<RequireTextConditionConfig>(
                 ConditionType.RequireText, (config)=> new RequireTextCondition(config));
             
-            services.textLocalizerService.register('RequireEM', {
+            services.errorMessagesService.register('RequireEM', {
                 'en': 'This is required'
             });
 
@@ -4124,7 +4124,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             explorer.reportToConsole({ severities: [CAIssueSeverity.error, null], features: [CAFeature.l10nProperty], skipChildrenIfParentMismatch: false }, false, true, 2);
             expect(() => explorer.throwOnErrors(false, new JsonConsoleConfigAnalysisOutputter())).toThrow(CodingError);
         });
-        // same but both 'en' and 'es' are entries in TextLocalizerService.
+        // same but both 'en' and 'es' are entries in ErrorMessagesService.
         // Should not throw
         test('Build an FieldValueHost with a RequireTextValidator, with errorMessagel10n setup for two cultures. No error thrown', () => {
             let services = new JivsServices();
@@ -4136,7 +4136,7 @@ describe('ConfigAnalysisResultExplorer class', () => {
             services.conditionFactory.register<RequireTextConditionConfig>(
                 ConditionType.RequireText, (config)=> new RequireTextCondition(config));
             
-            services.textLocalizerService.register('RequireEM', {
+            services.errorMessagesService.register('RequireEM', {
                 'en': 'This is required',
                 'es': 'Esto es necesario'
             });

@@ -80,7 +80,7 @@ flowchart LR
     SERVICES --> CONVERTER["DataTypeConverter Factory"]
     SERVICES --> CONDITIONS["Conditions Factory"]
     SERVICES --> CULTURE["CultureService"]
-    SERVICES --> ERRORMESSAGES["TextLocalizerService"]
+    SERVICES --> ERRORMESSAGES["ErrorMessagesService"]
     SERVICES --> LOOKUP["LookupKeyFallBackService"]
     SERVICES --> CHECK["DataTypeCheckGenerator Factory"]
     SERVICES --> MORE["Many more services and factories"]
@@ -94,7 +94,7 @@ flowchart LR
 - [`DataTypeConverter`](./Data_Type_Support/DataTypeConverters_Service.md) – For converting values between types, such as a Date object to a number of seconds.
 - [`Conditions`](./Conditions/Creating_Your_Own.md)
 - [`CultureService`](./JivsServices/CultureServices.md) - Identifies the Cultures used by your app through ISO language/region codes.
-- [`TextLocalizerService`](./JivsServices/TextLocalizerService.md) - Supports validation error messages through a library of defaults and language localization.
+- [`ErrorMessagesService`](./JivsServices/ErrorMessagesService.md) - Supports validation error messages through a library of defaults and language localization.
 - [`LookupKeyFallbacksService`](./JivsServices/LookupKeyFallbackService.md) - Provides fallbacks for Lookup Keys so that if they cannot be matched to a parser, formatter, converter, etc, another Lookup Key will be used.
 - [`DataTypeCheckGenerator`](./Data_Type_Support/DataTypeCheckGenerator_Service.md) - Ensures the automatic generation of a "Data Type Check" validator on each `FieldValueHost` based on its data type.
 

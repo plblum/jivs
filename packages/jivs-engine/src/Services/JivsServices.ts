@@ -32,8 +32,8 @@ import { ConsoleLoggerService } from './ConsoleLoggerService';
 import { Services } from './Services';
 import { ICultureService } from '../Interfaces/CultureService';
 import { CultureService } from './CultureService';
-import { ITextLocalizerService } from '../Interfaces/TextLocalizerService';
-import { TextLocalizerService } from './TextLocalizerService';
+import { IErrorMessagesService } from '../Interfaces/ErrorMessagesService';
+import { ErrorMessagesService } from './ErrorMessagesService';
 import { ILookupKeyFallbackService } from '../Interfaces/LookupKeyFallbackService';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';
 import { IDataTypeConverterService } from '../Interfaces/DataTypeConverterService';
@@ -228,26 +228,23 @@ export class JivsServices extends Services implements IJivsServices
     }    
     
     /**
-     * Service to text localization specific, effectively mapping
-     * a text key to a language specific version of that text.
-     * Error messages and IDataTypeFormatters use this.
-     * Defaults to using TextLocalizerServices class.
-     * If you use a third party localization system, you may prefer
-     * to use that here. Implement ITextLocalizerService around
-     * that third party library.
+     * Service that supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
+     *    - It provides a reusable library of default strings, avoiding the need to configure 
+     *        the same messages on every `Validator`.
+     *    - It provides localized versions of those strings and of text used to replace tokens within them.
      */
-    public get textLocalizerService(): ITextLocalizerService
+    public get errorMessagesService(): IErrorMessagesService
     {
-        let service = this.getService<ITextLocalizerService>(ServiceName.textLocalizer);
+        let service = this.getService<IErrorMessagesService>(ServiceName.errorMessages);
         if (!service) {
-            service = new TextLocalizerService();
-            this.setService(ServiceName.textLocalizer, service);
+            service = new ErrorMessagesService();
+            this.setService(ServiceName.errorMessages, service);
         }
         return service;
     }
-    public set textLocalizerService(service: ITextLocalizerService)
+    public set errorMessagesService(service: IErrorMessagesService)
     {
-        this.setService(ServiceName.textLocalizer, service);
+        this.setService(ServiceName.errorMessages, service);
     }
 
     //#region ValueHostFactory
