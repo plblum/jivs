@@ -8,8 +8,8 @@ import { IValueHostsManager, ValueHostsManagerConfig } from './../../src/Interfa
 import { createJivsServicesForTesting } from './../../src/Support/createJivsServicesForTesting';
 import { ModelReader } from './../../src/ModelReaderWriter/ModelReader_classes';
 import { ModelWriter } from './../../src/ModelReaderWriter/ModelWriter_classes';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
+import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 // Tests that use ModelReader and ModelWriter.
 // Model->ModelReader->ValueHostsManager->set new values->ModelWriter->Model
 
@@ -37,11 +37,11 @@ describe('ModelReader and ModelWriter round trip tests', () =>
             vhBirthDate: IFieldValueHost,
             vhIsActive: IFieldValueHost,
             vhScore: IFieldValueHost,
-            logger: CapturingLogger;
+            logger: TestingLoggingService;
         }
     {
         let services = createJivsServicesForTesting({ loggerLevel: LoggingLevel.Debug });
-        let logger = services.loggerService;
+        let logger = services.loggingService;
         // provide a default for birthDate being undefined.
         services.valueAdapterService.registerThenFunction('twoThousand', (value: any) => { return { value: new Date('2000-01-01') }; });
         let valueHostsManagerConfig: ValueHostsManagerConfig = {

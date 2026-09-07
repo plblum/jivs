@@ -9,7 +9,7 @@ import { IJivsServices } from '../Interfaces/JivsServices';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { valueForLog } from '../Utilities/Utilities';
 
 

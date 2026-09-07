@@ -10,7 +10,7 @@ import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
 import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { IValidatableValueHost, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
@@ -33,7 +33,7 @@ import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType,
     IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType,
@@ -378,7 +378,7 @@ function testValidateFunctionHasResult(validatorConfigs: Array<Partial<Validator
     validationGroupForValidateFn?: string | undefined): ITestSetupConfigWithMocks {
 
     let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState, validationGroupForValueHost);
-    setup.services.loggerService.minLevel = LoggingLevel.Debug;
+    setup.services.loggingService.minLevel = LoggingLevel.Debug;
 
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
@@ -404,7 +404,7 @@ function testValidateFunctionIsNull(validatorConfigs: Array<Partial<ValidatorCon
     validationGroupForValidateFn?: string | undefined): ITestSetupConfigWithMocks {
 
     let setup = setupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState, validationGroupForValueHost);
-    setup.services.loggerService.minLevel = LoggingLevel.Debug;
+    setup.services.loggingService.minLevel = LoggingLevel.Debug;
     let vrDetails: ValueHostValidateResult | null = null;
     expect(() => vrDetails = setup.valueHost.validate({ group: validationGroupForValidateFn })).not.toThrow();
     expect(vrDetails).toBeNull();
@@ -509,7 +509,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         ];
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
-        let logger = setup.services.loggerService as CapturingLogger;        
+        let logger = setup.services.loggingService as TestingLoggingService;        
         let vrDetails: ValueHostValidateResult | null = null;
         expect(() => vrDetails = setup.valueHost.validate()).toThrow('Always Throws');
         expect(logger.findMessage('Always Throws', LoggingLevel.Error)).toBeTruthy();
@@ -752,7 +752,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         }
         else
             setup = testValidateFunctionIsNull(ivConfigs, state, valueHostGroup, validateGroup);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         if (expectedResult === null) {
             expect(logger.findMessage('Group names do not match', LoggingLevel.Info)).toBeTruthy();
         }
@@ -848,7 +848,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         ];
 
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, {});
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost.validate();
         expect(logger.findMessage('Validating ValueHost "Field1"', LoggingLevel.Debug)).toBeTruthy();
@@ -863,7 +863,7 @@ describe('ValidatorsValueHostBase.validate', () => {
         ];
         let state: Partial<ValidatorsValueHostBaseInstanceState> = { enabled: false };
         let setup = testValidateFunctionIsNull(ivConfigs, state, undefined, undefined);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ValueHost "Field1" is disabled', LoggingLevel.Debug)).toBeTruthy();
     });    
 });
@@ -1058,7 +1058,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         setup.valueHost.addExternalIssueFound({
             errorMessage: 'ERROR',
         }, true);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('IssueFound applied on disabled ValueHost', LoggingLevel.Warn)).toBeTruthy();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
         let issuesFound = setup.valueHost.getIssuesFound();
@@ -1810,7 +1810,7 @@ describe('validate handles exception from custom Validator class', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
         setup.services.validatorFactory = new TestValidatorFactory();
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Info;
         expect(() => setup.valueHost.validate()).not.toThrow();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
@@ -1838,7 +1838,7 @@ function testValidateFunctionWithPromise(
     let services = new JivsServices('en');
     supportTestValueHostInServices(services);
     services.conditionFactory = new ConditionFactory();
-    services.loggerService = new CapturingLogger();
+    services.loggingService = new TestingLoggingService();
     registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
     services.dataTypeComparerService = new DataTypeComparerService();
     services.dataTypeConverterService = new DataTypeConverterService();
@@ -2246,7 +2246,7 @@ describe('validate with async Conditions', () => {
                 statecounter++;
                 if (statecounter === 1)
                 {
-                    let logger = setup.services.loggerService as CapturingLogger;
+                    let logger = setup.services.loggingService as TestingLoggingService;
                     expect(logger.findMessage('REJECTED ERROR')).toBeTruthy();
                     done();
                 }

@@ -2,37 +2,37 @@
 Like a typical service, Jivs has the ability to log what happens while it executes. It has rich communication with its logs, supported by log levels of Debug, Info, Warn, and Error.
 
 There are two use cases, each supported by a different logger:
-- Runtime, using `ConsoleLoggerService`. This logger writes to the Console. It is setup in the `createJivsServices()` function of your `create_JivsServices.ts` file, where you also supply its minimum logging level.
+- Runtime, using `ConsoleLoggingService`. This logger writes to the Console. It is setup in the `createJivsServices()` function of your `create_JivsServices.ts` file, where you also supply its minimum logging level.
     ```ts
-    // --- Logger Service -----------------------------------    
-    // If you want both the ConsoleLoggerService and another, create the other
-    // and pass it as the second parameter of ConsoleLoggerService.
-    services.loggerService = new ConsoleLoggerService(LoggingLevel.Error);
+    // --- Logging Service -----------------------------------    
+    // If you want both the ConsoleLoggingService and another, create the other
+    // and pass it as the second parameter of ConsoleLoggingService.
+    services.loggingService = new ConsoleLoggingService(LoggingLevel.Error);
     ```
-- Testing, using `CapturingLogger`. This logger captures each log entry and provides an API to check for those entries as part of confirming your test worked correctly.
+- Testing, using `TestingLoggingService`. This logger captures each log entry and provides an API to check for those entries as part of confirming your test worked correctly.
     ```ts
-    import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+    import { TestingLoggingService } from "@plblum/jivs-engine/build/Support/TestingLoggingService";
     let services = new JivsServices();
-    services.loggerService = new CapturingLogger(LoggingLevel.Error);
+    services.loggingService = new TestingLoggingService(LoggingLevel.Error);
     // or combined with console output:
-    services.loggerService = new CapturingLogger(LoggingLevel.Error, new ConsoleLoggerService(LoggingLevel.Error));
+    services.loggingService = new TestingLoggingService(LoggingLevel.Error, new ConsoleLoggingService(LoggingLevel.Error));
     ```
-    We provide the `createJivsServicesForTesting.ts` file with its `createJivsServicesForTesting()` function for testing. It also sets up CapturingLogger + console output.
+    We provide the `createJivsServicesForTesting.ts` file with its `createJivsServicesForTesting()` function for testing. It also sets up TestingLoggingService + console output.
     ```ts
-    import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+    import { TestingLoggingService } from "@plblum/jivs-engine/build/Support/TestingLoggingService";
     let services = createJivsServicesForTesting();
-    services.loggerService = new CapturingLogger(LoggingLevel.Error);
+    services.loggingService = new TestingLoggingService(LoggingLevel.Error);
     // or combined with console output:
-    services.loggerService = new CapturingLogger(LoggingLevel.Error, new ConsoleLoggerService(LoggingLevel.Error));
+    services.loggingService = new TestingLoggingService(LoggingLevel.Error, new ConsoleLoggingService(LoggingLevel.Error));
     ```
 
-## CapturingLogger class
-`CapturingLogger` is a LoggerService that captures log entries and provides functions to query the results. It targets testing code.
+## TestingLoggingService class
+`TestingLoggingService` is a LoggingService that captures log entries and provides functions to query the results. It targets testing code.
 ```ts
-import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+import { TestingLoggingService } from "@plblum/jivs-engine/build/Support/TestingLoggingService";
 let services = new JivsServices();
-services.loggerService = new CapturingLogger(LoggingLevel.Error);
-let logger = services.loggerService as CapturingLogger;
+services.loggingService = new TestingLoggingService(LoggingLevel.Error);
+let logger = services.loggingService as TestingLoggingService;
 // use logger methods.
 ```
 - `entryCount` - Count of entries captured
@@ -56,8 +56,8 @@ If you want to use the Debug or Info levels, expect to get a lot of content (exa
 1. Set the initial minLevel to Debug.
 2. Run your code.
 3. Review the log to identify characteristics you want to keep.
-4. Create one or more `OverrideMinLevelWhenRule objects` with those characteristics. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
-5. Call the `LoggerService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggerServiceBase.OverrideMinLevelWhenRule.html)
+4. Create one or more `OverrideMinLevelWhenRule objects` with those characteristics. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggingServiceBase.OverrideMinLevelWhenRule.html)
+5. Call the `LoggingService.overrideMinLevelWhen function` with each. [Documentation](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Services_AbstractClasses_LoggingServiceBase.OverrideMinLevelWhenRule.html)
 6. Restore the minLevel to your normal setting.
 
 ### Logging content example with overrideMinLevelWhen
@@ -76,7 +76,7 @@ category: 'Result'
 This jest unit test shows the logging for just calling ValueHost.setValues("", "", {validate:true}) with Debug level. 
 ```ts
 ...
-    let logger = new CapturingLogger(LoggingLevel.Error);	// was Debug
+    let logger = new TestingLoggingService(LoggingLevel.Error);	// was Debug
     config.services.loggingService = logger;
     logger.overrideMinLevelWhen({
         feature: 'ValueHost',
@@ -88,9 +88,9 @@ This jest unit test shows the logging for just calling ValueHost.setValues("", "
 ... 
 ```
 ## API References
-- [LoggerServiceBase class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_AbstractClasses_LoggerServiceBase.LoggerServiceBase.html)
-- [ConsoleLoggerService class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_ConcreteClasses_LoggerService.ConsoleLoggerService.html)
-- [CapturingLogger class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Support_CapturingLogger.CapturingLogger.html)
+- [LoggingServiceBase class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_AbstractClasses_LoggingServiceBase.LoggingServiceBase.html)
+- [ConsoleLoggingService class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Services_ConcreteClasses_LoggingService.ConsoleLoggingService.html)
+- [TestingLoggingService class](http://jivs.peterblum.com/typedoc/classes/jivs-engine_Support_TestingLoggingService.TestingLoggingService.html)
 ---
 Go to [JivsServices Home](./Home.md)
 

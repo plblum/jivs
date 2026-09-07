@@ -25,10 +25,10 @@ import { IValidatorConfigMergeService, IValueHostConfigMergeService } from '../I
 import { ValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from '../Interfaces/CachingService';
 import { CachingService } from './CachingService';
-import type { ILoggerService } from '../Interfaces/LoggerService';
+import type { ILoggingService } from '../Interfaces/LoggingService';
 import { IValueHostFactory } from '../Interfaces/ValueHostFactory';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
-import { ConsoleLoggerService } from './ConsoleLoggerService';
+import { ConsoleLoggingService } from './ConsoleLoggingService';
 import { Services } from './Services';
 import { ICultureService } from '../Interfaces/CultureService';
 import { CultureService } from './CultureService';
@@ -78,20 +78,20 @@ export class JivsServices extends Services implements IJivsServices
     }
 
     /**
-     * Service to get the ILoggerService instance that replaces
+     * Service to get the ILoggingService instance that replaces
      * tokens in messages.
-     * Defaults to using ConsoleLoggerService.
+     * Defaults to using ConsoleLoggingService.
      */
-    public get loggerService(): ILoggerService {
-        let service = this.getService<ILoggerService>(ServiceName.logger);
+    public get loggingService(): ILoggingService {
+        let service = this.getService<ILoggingService>(ServiceName.logging);
         if (!service) {
-            service = new ConsoleLoggerService();
-            this.setService(ServiceName.logger, service);
+            service = new ConsoleLoggingService();
+            this.setService(ServiceName.logging, service);
         }
         return service;
     }
-    public set loggerService(service: ILoggerService) {
-        this.setService(ServiceName.logger, service);
+    public set loggingService(service: ILoggingService) {
+        this.setService(ServiceName.logging, service);
     }
 
 

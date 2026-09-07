@@ -192,7 +192,7 @@ describe('AnalysisResultsHelper', () => {
             // no matching service name throws CodingError
             test('should throw error when the service name is not registered', () => {
                 let testItem = setupForTheseTests();
-                expect(() => testItem.registerServiceLookupKey('testKey', ServiceName.logger, { name: 'testValueHost' })).toThrow('No analyzer found');
+                expect(() => testItem.registerServiceLookupKey('testKey', ServiceName.logging, { name: 'testValueHost' })).toThrow('No analyzer found');
             });
             // add both formatter and converter with the same lookup key creates two entries
             test('should add two services to the same lookup key into LookupKeyCAResult.services array', () => {

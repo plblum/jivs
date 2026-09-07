@@ -30,7 +30,7 @@ import
     {
         LogDetails, LoggingCategory, LoggingLevel,
         logGatheringErrorHandler, logGatheringHandler
-    } from "../../src/Interfaces/LoggerService";
+    } from "../../src/Interfaces/LoggingService";
 import { IDataTypeIdentifier } from './../../src/Interfaces/DataTypeIdentifier';
 
 import { ConditionBase, ErrorResponseCondition } from '../../src/Conditions/ConditionBase';
@@ -46,10 +46,10 @@ import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
-import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { ConsoleLoggingService } from '../../src/Services/ConsoleLoggingService';
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from '../../src/Services/DataTypeIdentifierService';
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import
     {
         AlwaysMatchesConditionType,
@@ -70,9 +70,9 @@ function setupServicesAndVM(): {
     vhm: MockValueHostsManager
 } {
     let services = new MockJivsServices(false, false);
-    let logger = services.loggerService as CapturingLogger;
+    let logger = services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Debug;
-    logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, undefined, true);
+    logger.chainedLogger = new ConsoleLoggingService(LoggingLevel.Debug, undefined, true);
     let vhm = new MockValueHostsManager(services);
 
     return { services, vhm };
@@ -169,7 +169,7 @@ describe('ConditionBase class', () => {
             conditionType: 'UNKNOWN'
         };
         expect(() => setup.testItem.publicify_generateCondition(config, setup.services)).toThrow(/ConditionType not registered/);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error)).toBeTruthy();
     });
     test('generateCondition when known condition throws minor Error during construction returns an ErrorResponseCondition', () => {
@@ -248,7 +248,7 @@ describe('ConditionBase class', () => {
             expect(result.failed).toBeTruthy();
             expect(result.value).toBeUndefined();
             expect(result.lookupKey).toBeUndefined();
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Value cannot be converted', LoggingLevel.Warn);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.message).toContain(LookupKey.Date);
@@ -279,7 +279,7 @@ describe('ConditionBase class', () => {
         test('logInvalidPropertyData logs level=error message', () => {
             let setup = setupTest();
             setup.testItem.publicify_logInvalidPropertyData('Property1', 'Error Message', setup.services, LoggingLevel.Error);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Property1', LoggingLevel.Error, LoggingCategory.Configuration);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.message).toContain('Error Message');
@@ -290,7 +290,7 @@ describe('ConditionBase class', () => {
         test('logInvalidPropertyData logs level=warn message', () => {
             let setup = setupTest();
             setup.testItem.publicify_logInvalidPropertyData('Property1', 'Warn Message', setup.services, LoggingLevel.Warn);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Property1', LoggingLevel.Warn, LoggingCategory.Configuration);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.message).toContain('Warn Message');
@@ -304,7 +304,7 @@ describe('ConditionBase class', () => {
         test('logTypeMismatch logs error message', () => {
             let setup = setupTest();
             setup.testItem.publicify_logTypeMismatch(setup.services, 'Property1', 'Property2', 10, '10');
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Type Mismatch', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.message).toContain('Property1');
@@ -329,7 +329,7 @@ describe('ConditionBase class', () => {
                 }
                 return logDetails;
             });
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Test Message', LoggingLevel.Debug, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails?.feature).toBe('Condition');
@@ -345,7 +345,7 @@ describe('ConditionBase class', () => {
             let setup = setupTest();
             setup.testItem.publicify_logQuick(setup.services, LoggingLevel.Debug,
                 () => 'Quick Message');
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Quick Message', LoggingLevel.Debug);
             expect(logDetails).toBeTruthy();
             expect(logDetails?.feature).toBe('Condition');
@@ -358,7 +358,7 @@ describe('ConditionBase class', () => {
         test('logError with non-severe error class logs error message but does not throw', () => {
             let setup = setupTest();
             setup.testItem.publicify_logError(setup.services, new Error('Test Error'));
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Test Error', LoggingLevel.Error, LoggingCategory.Exception);
             expect(logDetails).toBeTruthy();
             expect(logDetails?.feature).toBe('Condition');
@@ -368,7 +368,7 @@ describe('ConditionBase class', () => {
         test('logError with severe error class logs error message and throws', () => {
             let setup = setupTest();
             expect(() => setup.testItem.publicify_logError(setup.services, new CodingError('Test Error'))).toThrow(CodingError);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Test Error', LoggingLevel.Error, LoggingCategory.Exception);
             expect(logDetails).toBeTruthy();
             expect(logDetails?.feature).toBe('Condition');
@@ -444,7 +444,7 @@ describe('OneValueConditionBase class', () => {
                 valueHostName: 'PropertyNotRegistered'
             };
             let testItem = new Publicify_OneValueConditionBase(config);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             expect(() => testItem.publicify_ensurePrimaryValueHost(setup.vh, setup.vhm)).toThrow(/valueHostName/);
             expect(logger.findMessage('is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
         });
@@ -458,7 +458,7 @@ describe('OneValueConditionBase class', () => {
             };
             let testItem = new Publicify_OneValueConditionBase(config);
             expect(() => testItem.publicify_ensurePrimaryValueHost(null, setup.vhm)).toThrow(/Missing value/);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             expect(logger.findMessage('Missing value', LoggingLevel.Error, LoggingCategory.Exception)).toBeTruthy();
 
         });
@@ -584,7 +584,7 @@ describe('class DataTypeCheckCondition', () => {
         };
         let testItem = new DataTypeCheckCondition(config);
         expect(() => testItem.evaluate(setup.vh, setup.vhm)).toThrow(/is unknown/);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('is unknown', LoggingLevel.Error)).toBeTruthy();
 
     });    
@@ -600,7 +600,7 @@ describe('class DataTypeCheckCondition', () => {
         };
         let testItem = new DataTypeCheckCondition(config);
         expect(() => testItem.evaluate(vh2, setup.vhm)).toThrow(/Invalid ValueHost used/);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Invalid ValueHost used', LoggingLevel.Error)).toBeTruthy();
 
     });        
@@ -1325,7 +1325,7 @@ describe('class RangeCondition', () => {
             minimum: 'C',
             maximum: 'G'
         };
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         let testItem = new RangeCondition(config);
         vh.setValue(null);
         expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
@@ -1353,7 +1353,7 @@ describe('class RangeCondition', () => {
         let testItem = new RangeCondition(config);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         let logDetails = logger.findMessage('Type mismatch. Value cannot be compared to Minimum', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
         expect(logDetails).toBeTruthy();
         expect(logDetails!.data).toEqual({
@@ -1376,7 +1376,7 @@ describe('class RangeCondition', () => {
         let testItem = new RangeCondition(config);
         vh.setValue(100);
         expect(testItem.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.Undetermined);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         let logDetails = logger.findMessage('Type mismatch. Value cannot be compared to Maximum', LoggingLevel.Warn, LoggingCategory.TypeMismatch);
         expect(logDetails).toBeTruthy();
         expect(logDetails!.data).toEqual({
@@ -2103,7 +2103,7 @@ describe('class AllMatchCondition', () => {
         let testItem = new AllMatchCondition(config);
 
         expect(()=> testItem.evaluate(vh, vhm)).toThrow(CodingError);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('With 1 child whose evaluate() function returns a Promise throws', () => {
@@ -2522,7 +2522,7 @@ describe('class AnyMatchCondition', () => {
         let testItem = new AnyMatchCondition(config);
 
         expect(()=> testItem.evaluate(vh, vhm)).toThrow(CodingError);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('category is Children', () => {
@@ -2896,7 +2896,7 @@ describe('class NotNullCondition', () => {
         let testItem = new NotNullCondition(config);
         vh.setValue('');
         expect(() => testItem.evaluate(null, vhm)).toThrow(/is unknown/);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('is unknown', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy(); 
     });
     test('category is Require', () => {

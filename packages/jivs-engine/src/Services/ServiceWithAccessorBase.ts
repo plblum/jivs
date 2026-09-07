@@ -61,12 +61,12 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     }    
  
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
     protected get logger(): LoggerFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.hasServices() ? this.services.loggerService : null,
+            this._logger = new LoggerFacade(this.hasServices() ? this.services.loggingService : null,
                 'service', this, null, true);
         return this._logger;
     }

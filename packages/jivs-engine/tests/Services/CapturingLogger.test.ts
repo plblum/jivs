@@ -1,12 +1,12 @@
 /*
- * CapturingLogger is part of the testing side of the JIVS engine. 
+ * TestingLoggingService is part of the testing side of the JIVS engine. 
  * It still needs its own unit tests, implemented here.
 */
 
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
+import { CapturedLogDetails, TestingLoggingService } from "../../src/Support/TestingLoggingService";
 
-class TestCapturingLogger extends CapturingLogger {
+class TestTestingLoggingService extends TestingLoggingService {
     public getCapturedLogs(): Array<any> {
         return this.captured;
     }
@@ -15,11 +15,11 @@ class TestCapturingLogger extends CapturingLogger {
     }
 }
 
-describe('CapturingLogger', () => {
-    let logger: TestCapturingLogger;
+describe('TestingLoggingService', () => {
+    let logger: TestTestingLoggingService;
 
     beforeEach(() => {
-        logger = new TestCapturingLogger();
+        logger = new TestTestingLoggingService();
     });
 
     describe('findMessage', () => {

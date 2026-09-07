@@ -21,11 +21,11 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
+import { TestingLoggingService } from '@plblum/jivs-engine/build/Support/TestingLoggingService';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
@@ -68,7 +68,7 @@ let services: IJivsServices;
 beforeAll(() => {
     new BuildersFactoryInstaller();  // this will install buildersFactory on JivsServices.prototype
     services = createJivsServicesForTesting();
-    services.loggerService = new CapturingLogger(LoggingLevel.Debug, services.loggerService);
+    services.loggingService = new TestingLoggingService(LoggingLevel.Debug, services.loggingService);
 });
 
 describe('ValidatorBuilder', () => {
@@ -216,7 +216,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).not.toThrow();
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).toThrow('ValueHost name "Field1" with errorCode RequireText already defined.');
             // check logs for the same error
-            let logService = services.loggerService as CapturingLogger;
+            let logService = services.loggingService as TestingLoggingService;
             expect(logService.findMessage('ValueHost name "Field1" with errorCode RequireText already defined.')).toBeTruthy();
         
         });
@@ -232,7 +232,7 @@ describe('ValidatorBuilder', () => {
             };
             expect(() => testItem.publicify_finish(null, 'Error', 'Summary',
                 validatorConfig as FluentValidatorConfig)).toThrow(/conditionConfig or a conditionCreator/);
-            let logService = services.loggerService as CapturingLogger;
+            let logService = services.loggingService as TestingLoggingService;
             expect(logService.findMessage('conditionConfig or a conditionCreator')).toBeTruthy();
             
         });

@@ -12,13 +12,13 @@ import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { assertValidFallbacks } from "../../src/Interfaces/Services";
 
 import { ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
-import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { ConsoleLoggingService } from "../../src/Services/ConsoleLoggingService";
 import { ErrorMessagesService } from "../../src/Services/ErrorMessagesService";
 import { DataTypeComparerService } from "../../src/Services/DataTypeComparerService";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { IServiceWithFallback, IServicesAccessor, toIServiceWithFallback, toIServicesAccessor } from "../../src/Interfaces/Services";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { CultureService } from "../../src/Services/CultureService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
 import { ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
@@ -38,7 +38,7 @@ describe('constructor and initial properties, many taken from ValGlobals', () =>
         expect(() => x = testItem.dataTypeConverterService).toThrow(/dataTypeConverterService/);
         expect(() => x = testItem.dataTypeIdentifierService).toThrow(/dataTypeIdentifierService/);
        
-        expect(testItem.loggerService).toBeInstanceOf(ConsoleLoggerService);
+        expect(testItem.loggingService).toBeInstanceOf(ConsoleLoggingService);
         expect(testItem.valueHostFactory).toBeInstanceOf(ValueHostFactory);
 
         expect(testItem.errorMessagesService).toBeInstanceOf(ErrorMessagesService);
@@ -112,11 +112,11 @@ describe('Replace factories and services', () => {
         expect(testItem.valueHostConfigMergeService).toBe(replacement);
     });
 
-    test('Replace loggerService', () => {
-        let replacement = new CapturingLogger();
+    test('Replace loggingService', () => {
+        let replacement = new TestingLoggingService();
         let testItem = new JivsServices();
-        testItem.loggerService = replacement;
-        expect(testItem.loggerService).toBe(replacement);
+        testItem.loggingService = replacement;
+        expect(testItem.loggingService).toBe(replacement);
     });    
     test('Replace valueHostFactory', () => {
         let replacement = new ValueHostFactory();
@@ -386,7 +386,7 @@ describe('dispose', () => {
         testItem.dataTypeComparerService = new DataTypeComparerService();
         testItem.dataTypeConverterService = new DataTypeConverterService();
         testItem.dataTypeIdentifierService = new DataTypeIdentifierService();
-        testItem.loggerService = new ConsoleLoggerService();
+        testItem.loggingService = new ConsoleLoggingService();
         testItem.lookupKeyFallbackService = new LookupKeyFallbackService();
         testItem.valueHostConfigMergeService = new ValueHostConfigMergeService();
         testItem.errorMessagesService = new ErrorMessagesService();
@@ -413,7 +413,7 @@ describe('dispose', () => {
         expect(() => testItem.valueHostConfigMergeService).toThrow(TypeError);     
         expect(() => testItem.dataTypeConverterService).toThrow(TypeError);
         expect(() => testItem.dataTypeIdentifierService).toThrow(TypeError);
-        expect(() => testItem.loggerService).toThrow(TypeError);
+        expect(() => testItem.loggingService).toThrow(TypeError);
         expect(() => testItem.lookupKeyFallbackService).toThrow(TypeError);
         expect(() => testItem.valueHostFactory).toThrow(TypeError);
         expect(() => testItem.cachingService).toThrow(TypeError);

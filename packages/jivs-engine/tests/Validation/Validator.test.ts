@@ -16,7 +16,7 @@ import { type ICondition, ConditionCategory, ConditionEvaluateResult } from '../
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { type TokenLabelAndValue, IMessageTokenSource, toIMessageTokenSource } from "../../src/Interfaces/MessageTokenSource";
 import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { IValidator, ValidatorConfig, ValidatorValidateResult } from '../../src/Interfaces/Validator';
@@ -25,7 +25,7 @@ import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
 import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
@@ -321,7 +321,7 @@ describe('Validator.enabler', () => {
 
         expect(() => setup.validator.exposeEnabler()).toThrow(/ConditionType/);
 
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });
     test('Attempt to create WhenCondition child condition with invalid type logs, throws, and replaces the condition with ErrorResponseCondition', () => {
@@ -342,7 +342,7 @@ describe('Validator.enabler', () => {
         let enabler: ICondition | null = null;
         expect(() => enabler = setup.validator.exposeEnabler()).not.toThrow();
         expect(enabler).toBeNull(); // because of the error
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('UnknownType', LoggingLevel.Error, null)).toBeTruthy();
     });    
 
@@ -770,7 +770,7 @@ describe('Validator.validate', () => {
 
     test('No issue found. Returns ConditionEvaluateResult.Match', () => {
         let setup = setupWithField1AndField2();
-        setup.services.loggerService.minLevel = LoggingLevel.Info;
+        setup.services.loggingService.minLevel = LoggingLevel.Info;
         setup.valueHost1.setValue('valid');
 
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -780,14 +780,14 @@ describe('Validator.validate', () => {
         vrResult = vrResult as unknown as ValidatorValidateResult;
         expect(vrResult!.issueFound).toBeNull();
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Match', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
     function testSeverity(severity: ValidationSeverity): void {
         let setup = setupWithField1AndField2({
             severity: severity
         });
-        setup.services.loggerService.minLevel = LoggingLevel.Info;
+        setup.services.loggingService.minLevel = LoggingLevel.Info;
         setup.valueHost1.setValue('');   // will be invalid
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({})).not.toThrow();
@@ -798,7 +798,7 @@ describe('Validator.validate', () => {
         expect(vrResult!.issueFound!.errorCode).toBe(ConditionType.RequireText);
         expect(vrResult!.issueFound!.severity).toBe(severity);
         expect(vrResult!.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('NoMatch', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();     
         expect(logger.findMessage('Validation errorcode "RequireText"', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();                
     }
@@ -843,7 +843,7 @@ describe('Validator.validate', () => {
     function testConditionHasIssueButDisabledReturnsNull(configChanges: Partial<ValidatorConfig>,
         loggedMessage: string, loggingLevel: LoggingLevel): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result        
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValueToUndefined();   // for use by Enabler to be invalid
@@ -896,7 +896,7 @@ describe('Validator.validate', () => {
         logLevel: LoggingLevel | null,
         issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
         setup.valueHost1.setValue('');   // will be invalid
         setup.valueHost2.setValue('ABC');   // for use by Enabler to enable the condition
@@ -963,7 +963,7 @@ describe('Validator.validate', () => {
         textValue: string, 
         loggedMessage: string, logLevel: LoggingLevel, issueExpected: boolean = true): void {
         let setup = setupWithField1AndField2(configChanges);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;  // to confirm logged condition result
         setup.valueHost1.setTextValue(textValue);   // for RequireTextCondition.evaluateDuringEdit
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
@@ -989,7 +989,7 @@ describe('Validator.validate', () => {
             conditionConfig: { conditionType: ThrowsExceptionConditionType }
         });
 
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Info;  // to confirm logged condition result
         let vrResult: ValidatorValidateResult | Promise<ValidatorValidateResult> | null = null;
         expect(() => vrResult = setup.validator.validate({})).not.toThrow();
@@ -1084,14 +1084,14 @@ describe('Validator.validate', () => {
             }
             catch (e) {
                 expect(e).toBe('ERROR');
-                let logger = setup.services.loggerService as CapturingLogger;
+                let logger = setup.services.loggingService as TestingLoggingService;
                 expect(logger.findMessage('ERROR', LoggingLevel.Error, null)).toBeTruthy();
 
             }
     });
     test('With loggingLevel=Debug, expect validate() to log Starting Validation for error code [errorCode]', () => {
         let setup = setupWithField1AndField2();
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         setup.valueHost1.setValue('valid');
 

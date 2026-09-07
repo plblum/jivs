@@ -5,7 +5,7 @@
  */
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IModelWriter } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { FieldValueHost } from '../ValueHosts/FieldValueHost';

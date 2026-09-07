@@ -1,15 +1,15 @@
 /**
- * @inheritdoc jivs-engine/Support/CapturingLogger!CapturingLogger
- * @module jivs-engine/Support/CapturingLogger
+ * @inheritdoc jivs-engine/Support/TestingLoggingService!TestingLoggingService
+ * @module jivs-engine/Support/TestingLoggingService
  */
 
-import { LoggingLevel, LogDetails, LogOptions } from '../Interfaces/LoggerService';
-import { LoggerServiceBase } from '../Services/LoggerServiceBase';
+import { LoggingLevel, LogDetails, LogOptions } from '../Interfaces/LoggingService';
+import { LoggingServiceBase } from '../Services/LoggingServiceBase';
 import { valueForLog } from '../Utilities/Utilities';
 
 
 /**
- * CapturingLogger targets testing jivs. 
+ * TestingLoggingService targets testing jivs. 
  * It captures all qualifying logged objects and makes them available for unit tests to evaluate.
  * 
  * Use either its containsLog() or findMessage() methods to search for a log that matches the criteria.
@@ -17,11 +17,11 @@ import { valueForLog } from '../Utilities/Utilities';
  * It respects the minLevel set in the constructor and supports
  * the overrideMinLevelWhen() overrides.
  * 
- * It is often used together with ConsoleLoggerService to capture logs.
- * Just pass the ConsoleLoggerService into the constructor.
+ * It is often used together with ConsoleLoggingService to capture logs.
+ * Just pass the ConsoleLoggingService into the constructor.
  */
 
-export class CapturingLogger extends LoggerServiceBase
+export class TestingLoggingService extends LoggingServiceBase
 {
     
     public captured: Array<CapturedLogDetails> = [];
@@ -193,7 +193,7 @@ export interface CapturedLogDetails extends LogDetails
 }
 
 /**
- * More searching options for CapturingLogger.findMessage
+ * More searching options for TestingLoggingService.findMessage
  */
 export interface FindMoreCapturedLogDetails
 {

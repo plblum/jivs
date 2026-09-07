@@ -3,13 +3,13 @@ import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
 import { FieldValueHostConfig, IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager, ValueHostsManagerConfig } from '../../src/Interfaces/ValueHostsManager';
 import { FormReader, FormReaderOptions, ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
 import { ModelReaderOptions } from '../../src/Interfaces/ModelReaderAndWriter';
@@ -79,14 +79,14 @@ class PublicifyModelReader extends ModelReader<object>
 function setup(model: object, propertyName: string,
     whenRule: string, thenRule: string, options?: ModelReaderOptions):
     {
-        services: IJivsServices, logger: CapturingLogger,
+        services: IJivsServices, logger: TestingLoggingService,
         reader: PublicifyModelReader,
         valueHostsManager: IValueHostsManager,
         valueHost: IFieldValueHost
     }
 {
     let services = new MockJivsServices(false, false);
-    let logger = services.loggerService as CapturingLogger;
+    let logger = services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Debug;
     services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
     let valueHostsManager = new MockValueHostsManager(services);
@@ -371,7 +371,7 @@ describe('ModelReader', () =>
             let onValueChangedCounter = 0;
             let services = new MockJivsServices(false, true);
             services.valueAdapterService = new ValueAdapterService();
-            let logger = services.loggerService as CapturingLogger;
+            let logger = services.loggingService as TestingLoggingService;
             logger.minLevel = LoggingLevel.Debug;
             let config: ValueHostsManagerConfig = {
                 services: services,
@@ -523,7 +523,7 @@ describe('ModelReader', () =>
             // using matching name and propertyname, Field1, Field2, etc.
             let services = new MockJivsServices(false, false);
             services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
-            let logger = services.loggerService as CapturingLogger;
+            let logger = services.loggingService as TestingLoggingService;
             logger.minLevel = LoggingLevel.Debug;
             let valueHostsManager = new MockValueHostsManager(services);
             let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'undefined', 'unassigned', 1);
@@ -581,7 +581,7 @@ describe('ModelReader', () =>
             let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
             let valueHost2 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 2);
             let valueHost3 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 3);
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             logger.minLevel = LoggingLevel.Debug;
             let model = {};
             (model as any)[valueHost1.getName()] = 'value1';
@@ -620,7 +620,7 @@ describe('ModelReader', () =>
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBe(10); // static valueHost should not be changed by ModelReader
             // make sure there is no log message indicating that the static valueHost was processed
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
         // same using CalcValueHost
@@ -647,7 +647,7 @@ describe('ModelReader', () =>
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBe(20);
             // make sure there is no log message indicating that the calc valueHost was processed
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
     });

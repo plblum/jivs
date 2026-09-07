@@ -45,8 +45,8 @@ import {
     addTestValidatableValueHostGeneratorToServices,
     createValidatableValueHostBaseConfig
 } from '../TestSupport/TestValidatableValueHost';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
+import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { ValueHostAccessor } from '../../src/ValueHosts/ValueHostAccessor';
 import { IValueHostResolver, toIValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
 import { IDisposable } from '../../src/Interfaces/General_Purpose';
@@ -4078,7 +4078,7 @@ describe('addExternalIssueFound()', () => {
         expect(modelHost.lastAddExternalIssueFoundCall.issueFound).toBe(issue);
         expect(issue.valueHostName).toBe(ModelValidatorsValueHostName);
         expect(setup.valueHostsManager.createModelValidatorsValueHostCallCount).toBe(1);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('is disabled. Rerouting error', LoggingLevel.Warn, null)).toBeTruthy();
 
     });
@@ -4100,7 +4100,7 @@ describe('addExternalIssueFound()', () => {
         expect(modelHost.lastAddExternalIssueFoundCall.issueFound).toBe(issue);
         expect(issue.valueHostName).toBe(ModelValidatorsValueHostName);
         expect(setup.valueHostsManager.createModelValidatorsValueHostCallCount).toBe(1);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Could not find ValueHost', LoggingLevel.Warn, null)).toBeTruthy();
 
     });

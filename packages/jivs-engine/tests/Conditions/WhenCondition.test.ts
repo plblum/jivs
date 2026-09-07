@@ -4,8 +4,8 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import {
     registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, EvaluatesAsPromiseConditionType,
     resultTypeToConditionType, makeDisposable,
@@ -24,7 +24,7 @@ describe('WhenCondition', () => {
 
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug
         let vhm = new MockValueHostsManager(services);
         let vh = vhm.addMockFieldValueHost(
@@ -76,14 +76,14 @@ describe('WhenCondition', () => {
         let testItem = new WhenCondition(config);
         
         expect(()=> testItem.evaluate(null, vhm)).toThrow(CodingError);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });
     test('with null childconfig but valid enabler that returns Match, logs error and evaluate returns undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let vhm = new MockValueHostsManager(services);
         let vh = vhm.addMockFieldValueHost(
@@ -104,7 +104,7 @@ describe('WhenCondition', () => {
     test('with invalid whenToEnableConfig, logs error and evaluate returns undetermined', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let vhm = new MockValueHostsManager(services);
         let vh = vhm.addMockFieldValueHost(
@@ -125,7 +125,7 @@ describe('WhenCondition', () => {
     test('with null whenToEnableConfig, logs error and throws', () => {
         let services = new MockJivsServices(false, true);
         registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let vhm = new MockValueHostsManager(services);
         let vh = vhm.addMockFieldValueHost(

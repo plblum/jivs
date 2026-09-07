@@ -3,7 +3,7 @@
  * @module jivs-engine/ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';

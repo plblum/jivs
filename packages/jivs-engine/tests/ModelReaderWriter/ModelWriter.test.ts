@@ -3,14 +3,14 @@ import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
 import { ModelWriter } from '../../src/ModelReaderWriter/ModelWriter_classes';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
 
@@ -66,14 +66,14 @@ class PublicifyModelWriter extends ModelWriter<object>
 function setup(model: object, propertyName: string,
     whenRule: string, thenRule: string):
     {
-        services: IJivsServices, logger: CapturingLogger,
+        services: IJivsServices, logger: TestingLoggingService,
         writer: PublicifyModelWriter,
         valueHostsManager: IValueHostsManager,
         valueHost: IFieldValueHost;
     }
 {
     let services = new MockJivsServices(false, false);
-    let logger = services.loggerService as CapturingLogger;
+    let logger = services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Debug;
     services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
     services.valueAdapterService.services = services;
@@ -413,7 +413,7 @@ describe('ModelWriter', () =>
             let services = new MockJivsServices(false, false);
             services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             services.valueAdapterService.services = services;
-            let logger = services.loggerService as CapturingLogger;
+            let logger = services.loggingService as TestingLoggingService;
             logger.minLevel = LoggingLevel.Debug;
             let valueHostsManager = new MockValueHostsManager(services);
             let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'undefined', 'unassigned', 1);
@@ -487,7 +487,7 @@ describe('ModelWriter', () =>
             let valueHost1 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 1);
             let valueHost2 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 2);
             let valueHost3 = createFieldValueHostWithRule(valueHostsManager, 'zero', 'null', 3);
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             logger.minLevel = LoggingLevel.Debug;
             let propName1 = valueHost1.getPropertyName();
             let propName2 = valueHost2.getPropertyName();
@@ -539,7 +539,7 @@ describe('ModelWriter', () =>
             
             // static valueHost should not be changed by ModelWriter
             // make sure there is no log message indicating that the static valueHost was processed
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to model property '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
         // same using CalcValueHost
@@ -571,7 +571,7 @@ describe('ModelWriter', () =>
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
             expect((model as any)[propName3]).toBe(100);    // not changed to 20 like the calc valueHost would have done if it was processed by ModelWriter
-            let logger = valueHostsManager.services.loggerService as CapturingLogger;
+            let logger = valueHostsManager.services.loggingService as TestingLoggingService;
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to model property '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
 
         });

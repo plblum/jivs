@@ -10,7 +10,7 @@ import
         ValueAdapterWhenFunction,
         IValueAdapterService
     } from '../Interfaces/ValueAdapterService';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { assertFunction, assertNotNull } from '../Utilities/ErrorHandling';
 import { deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';

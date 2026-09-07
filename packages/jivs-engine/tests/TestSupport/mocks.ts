@@ -14,7 +14,7 @@ import
         IFieldValueHost, TextValueChangedHandler
     } from "../../src/Interfaces/FieldValueHost";
 import { type IJivsServices } from "../../src/Interfaces/JivsServices";
-import { LoggingLevel, type ILoggerService } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel, type ILoggingService } from "../../src/Interfaces/LoggingService";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { IErrorMessagesService } from "../../src/Interfaces/ErrorMessagesService";
 import { ValueHostValidationState, ValueHostValidationStateChangedHandler } from "../../src/Interfaces/ValidatableValueHostBase";
@@ -50,7 +50,7 @@ import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterSe
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { ErrorMessagesService } from "../../src/Services/ErrorMessagesService";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
 import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
 import { ValidatorFactory } from "../../src/Validation/Validator";
@@ -71,7 +71,7 @@ import { IValueAdapterService, ValueAdapterRule } from '../../src/Interfaces/Val
 import { IValueHostFactory } from "../../src/Interfaces/ValueHostFactory";
 import { CachingService } from "../../src/Services/CachingService";
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from "../../src/Services/ConfigMergeService";
-import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { ConsoleLoggingService } from "../../src/Services/ConsoleLoggingService";
 import { CultureService } from "../../src/Services/CultureService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 import { LookupKeyFallbackService } from "../../src/Services/LookupKeyFallbackService";
@@ -326,7 +326,7 @@ export class MockFieldValueHost extends MockValueHost
 }
 
 /**
- * Flexible Mock JivsServices with CapturingLogger.
+ * Flexible Mock JivsServices with TestingLoggingService.
  * Optionally populated with standard Conditions and data types.
  */
 export class MockJivsServices implements IJivsServices
@@ -335,8 +335,8 @@ export class MockJivsServices implements IJivsServices
      * 
      * @param registerStandardConditions 
      * @param registerStandardDataTypes 
-     * @param powerLogging - When true, the CapturingLogger will log at the Debug level
-     * and will chain to the ConsoleLoggerService.
+     * @param powerLogging - When true, the TestingLoggingService will log at the Debug level
+     * and will chain to the ConsoleLoggingService.
      * @param powerLoggingTypeFilter - If not null, only logs with this type will be logged.
      */
     constructor(registerStandardConditions: boolean,
@@ -371,11 +371,11 @@ export class MockJivsServices implements IJivsServices
         this.valueAdapterService = new ValueAdapterService();
         this.objectFinderService = new ObjectFinderService();
 
-        let logger = new CapturingLogger();
-        this.loggerService = logger;
+        let logger = new TestingLoggingService();
+        this.loggingService = logger;
         if (powerLogging) {
             logger.minLevel = LoggingLevel.Debug;
-            logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, null, true);
+            logger.chainedLogger = new ConsoleLoggingService(LoggingLevel.Debug, null, true);
             if (powerLoggingTypeFilter) {
                 logger.overrideMinLevelWhen({
                     type: powerLoggingTypeFilter
@@ -547,13 +547,13 @@ export class MockJivsServices implements IJivsServices
     }    
     private _validatorConfigMergeService!: IValidatorConfigMergeService;    
 
-    public get loggerService(): ILoggerService {
-        return this._loggerService;
+    public get loggingService(): ILoggingService {
+        return this._loggingService;
     }
-    public set loggerService(service: ILoggerService) {
-        this._loggerService = service;
+    public set loggingService(service: ILoggingService) {
+        this._loggingService = service;
     }
-    private _loggerService!: ILoggerService;
+    private _loggingService!: ILoggingService;
 
     public get valueHostFactory(): IValueHostFactory
     {

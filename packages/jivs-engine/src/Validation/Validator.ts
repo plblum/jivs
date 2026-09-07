@@ -22,7 +22,7 @@ import
     } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import type { IJivsServices } from '../Interfaces/JivsServices';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
 import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
@@ -127,12 +127,12 @@ export class Validator implements IValidator {
     }    
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
     protected get logger(): LoggerFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggerFacade(this.services.loggingService,
                 'Validator', this,
                 [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)],
             false);

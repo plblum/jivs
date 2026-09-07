@@ -5,10 +5,10 @@ import { valueHost } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ICalcValueHost } from '@plblum/jivs-engine/build/Interfaces/CalcValueHost';
 import { SimpleValueType } from '@plblum/jivs-engine/build/Interfaces/DataTypeConverterService';
-import { LogDetails, LogOptions, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { LoggerServiceBase } from '@plblum/jivs-engine/build/Services/LoggerServiceBase';
+import { LoggingServiceBase } from '@plblum/jivs-engine/build/Services/LoggingServiceBase';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 
 import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
@@ -168,9 +168,9 @@ export function example_throwOnErrors_And_Write_To_Log(): IValueHostsManager
 
     const includeCompleteResults = false;
     const formatter: IConfigAnalysisOutputFormatter | null = null;    // null will use new JsonConfigAnalysisOutputFormatter()
-    let loggerService = new MockWriteLog();
+    let loggingService = new MockWriteLog();
     explorer.throwOnErrors(includeCompleteResults,
-        new LoggerConfigAnalysisOutputter(formatter, loggerService));
+        new LoggerConfigAnalysisOutputter(formatter, loggingService));
     
     // errors are in the thrown Errors object message, and showing on the log
 
@@ -257,7 +257,7 @@ export function example_hasErrors_report_to_log(): IValueHostsManager
 
 
 
-class MockWriteLog extends LoggerServiceBase
+class MockWriteLog extends LoggingServiceBase
 {
     protected writeLog(level: LoggingLevel, logDetails: LogDetails): void
     {

@@ -5,9 +5,9 @@ import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondit
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { CodingError } from "../../src/Utilities/ErrorHandling";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../../src/Support/conditionsForTesting";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
@@ -81,7 +81,7 @@ describe('NotCondition', () => {
         let testItem = new NotCondition(config);
         
         expect(()=> testItem.evaluate(null, vhm)).toThrow(CodingError);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
 
     });
@@ -100,7 +100,7 @@ describe('NotCondition', () => {
         let testItem = new NotCondition(config);
         
         expect(()=> testItem.evaluate(null, vhm)).toThrow(CodingError);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null)).toBeTruthy();
 
     });    

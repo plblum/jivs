@@ -1,11 +1,11 @@
-import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
 import { createMockValueHostsManagerForMessageTokenResolver } from "../TestSupport/mocks";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { IFieldValueHost } from "../../src/Interfaces/FieldValueHost";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IMessageTokenSource, TokenLabelAndValue } from "../../src/Interfaces/MessageTokenSource";
-import { CapturedLogDetails, CapturingLogger } from "../../src/Support/CapturingLogger";
+import { CapturedLogDetails, TestingLoggingService } from "../../src/Support/TestingLoggingService";
 
 
 // resolveTokens(message: string, valueHostsManager: IValueHostsManager, ...hosts: Array<IMessageTokenSource>): string
@@ -169,7 +169,7 @@ describe('resolveTokens', () => {
     });       
     test('Message with {token:formatter} where formatter does not support value is not replaced and gets logged', () => {
         let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
-        let logger = vhm.services.loggerService as CapturingLogger;
+        let logger = vhm.services.loggingService as TestingLoggingService;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -190,7 +190,7 @@ describe('resolveTokens', () => {
     test('Message with {token:formatter} where the value cannot be resolved and is not replaced and gets logged', () => {
         let vhm = createMockValueHostsManagerForMessageTokenResolver(true);
         vhm.services.cultureService.register({ cultureId: 'de-DE' });
-        let logger = vhm.services.loggerService as CapturingLogger;
+        let logger = vhm.services.loggingService as TestingLoggingService;
         let messageTokeSource: IMessageTokenSource = {
             getValuesForTokens: function (valueHost : IFieldValueHost, vhm: IValueHostResolver): Array<TokenLabelAndValue>
             {
@@ -222,7 +222,7 @@ describe('resolveTokens', () => {
         let testItem = new MessageTokenResolverService();
         testItem.services = vhm.services;
         expect(() => testItem.resolveTokens('{token:INVALID}', null!, vhm, messageTokeSource)).toThrow(/No DataTypeFormatter for LookupKey/);
-        let logger = vhm.services.loggerService as CapturingLogger;
+        let logger = vhm.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('No DataTypeFormatter for LookupKey', null, null, {
             type: MessageTokenResolverService
         })).toEqual(

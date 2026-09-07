@@ -201,7 +201,7 @@ export interface IConfigAnalysisResultsExplorer {
      * @param outputter - The outputter to use to format and output the report. 
      * For JSON, use JsonConfigAnalysisOutputter or call reportIntoJson() instead.
      * For console output, use ConsoleConfigAnalysisOutputter or call reportToConsole() instead.
-     * For ILoggerService, use LoggerServiceConfigAnalysisOutputter.
+     * For ILoggingService, use LoggingServiceConfigAnalysisOutputter.
      * @returns The formatted results of the report.
      */
     report(valueHostCriteria: IConfigAnalysisSearchCriteria | boolean | null, lookupKeyCriteria: IConfigAnalysisSearchCriteria | boolean | null,
@@ -387,7 +387,7 @@ export interface ICASearcher {
  * and output them. Suggested implementations:
  * - To console as the object itself
  * - To console as a JSON string
- * - To the ILoggerService as a JSON string
+ * - To the ILoggingService as a JSON string
  * These can build a well formatted string, such as a full HTML page to appear as a report.
  */
 export interface IConfigAnalysisOutputter {

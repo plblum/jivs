@@ -2,7 +2,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionConfig } from "../../src/Interfaces/Conditions";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import type { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { logGatheringErrorHandler, logGatheringHandler, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { logGatheringErrorHandler, logGatheringHandler, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { StaticValueHostConfig } from "../../src/Interfaces/StaticValueHost";
 import
     {
@@ -15,7 +15,7 @@ import { IValueHostGenerator, ValueHostType } from "../../src/Interfaces/ValueHo
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig, ValueHostsManagerInstanceState } from "../../src/Interfaces/ValueHostsManager";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { ErrorMessagesService } from "../../src/Services/ErrorMessagesService";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
@@ -508,10 +508,10 @@ describe('setValue', () =>
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setValue(finalValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () =>
@@ -519,12 +519,12 @@ describe('setValue', () =>
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
         testItem.setValue(finalValue);
         expect(testItem.getValue()).toBe(initialValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
@@ -533,12 +533,12 @@ describe('setValue', () =>
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValueHost({}, initialValue);
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
         testItem.setValue(finalValue, { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
@@ -795,11 +795,11 @@ describe('isEnabled and related enabled', () =>
     ):
             {
                 vh: PublicifiedValueHostBase,
-                logger: CapturingLogger;
+                logger: TestingLoggingService;
             }
     {
         let services = new MockJivsServices(true, false);
-        services.loggerService.minLevel = LoggingLevel.Debug;
+        services.loggingService.minLevel = LoggingLevel.Debug;
         let vhm = new MockValueHostsManager(services);
         let vhConfig: ValueHostConfig = {
             name: 'Field1',
@@ -820,7 +820,7 @@ describe('isEnabled and related enabled', () =>
 
         return {
             vh: new PublicifiedValueHostBase(vhm, vhConfig, state),
-            logger: services.loggerService as CapturingLogger
+            logger: services.loggingService as TestingLoggingService
         };
     }
     function setupTestItemWithBuilder(
@@ -829,12 +829,12 @@ describe('isEnabled and related enabled', () =>
     ):
             {
                 vh: PublicifiedValueHostBase,
-                logger: CapturingLogger,
+                logger: TestingLoggingService,
                 vhm: ValueHostsManager<ValueHostsManagerInstanceState>;
             }
     {
         let services = new MockJivsServices(true, false);
-        services.loggerService.minLevel = LoggingLevel.Debug;
+        services.loggingService.minLevel = LoggingLevel.Debug;
 
         let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
         vmConfig.valueHostConfigs.push(<StaticValueHostConfig> {
@@ -878,7 +878,7 @@ describe('isEnabled and related enabled', () =>
         return {
             vhm: vhm,
             vh: vhm.getValueHost('Field1') as PublicifiedValueHostBase,
-            logger: services.loggerService as CapturingLogger
+            logger: services.loggingService as TestingLoggingService
         };
     }
 
@@ -1047,7 +1047,7 @@ describe('isEnabled and related enabled', () =>
             let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
-            let logger = setup.logger as CapturingLogger;
+            let logger = setup.logger as TestingLoggingService;
             expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });
@@ -1056,7 +1056,7 @@ describe('isEnabled and related enabled', () =>
             let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
-            let logger = setup.logger as CapturingLogger;
+            let logger = setup.logger as TestingLoggingService;
             expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });
@@ -1116,7 +1116,7 @@ describe('isEnabled and related enabled', () =>
             let setup = setupTestItem(undefined, undefined, { conditionType: ThrowsExceptionConditionType });
 
             expect(() => setup.vh.isEnabled()).toThrow(/Always Throws/);
-            let logger = setup.logger as CapturingLogger;
+            let logger = setup.logger as TestingLoggingService;
             expect(logger.findMessage('Always Throws', LoggingLevel.Error, null)).toBeTruthy();
 
         });
@@ -1125,7 +1125,7 @@ describe('isEnabled and related enabled', () =>
             let setup = setupTestItem(undefined, undefined, { conditionType: 'UNKNOWN' });
 
             expect(() => setup.vh.isEnabled()).toThrow(/not registered/);
-            let logger = setup.logger as CapturingLogger;
+            let logger = setup.logger as TestingLoggingService;
             expect(logger.findMessage('not registered', LoggingLevel.Error, null)).toBeTruthy();
 
         });
@@ -1139,7 +1139,7 @@ describe('logging functions', () =>
         let originalSetup = setupValueHost();
         let services = originalSetup.services;
         let logger = new TestLogCallsLoggingService(LoggingLevel.Debug);
-        services.loggerService = logger;
+        services.loggingService = logger;
         return { valueHost: originalSetup.valueHost, services: services, logger: logger };
     }
     describe('logError', () =>

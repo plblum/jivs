@@ -7,7 +7,7 @@ import { IValueHost, SetValueOptions, ValueHostConfig, toIValueHost } from '../I
 import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { CodingError } from '../Utilities/ErrorHandling';
 import { SimpleValueType } from '../Interfaces/DataTypeConverterService';
 import { LookupKey } from '../DataTypes/LookupKeys';

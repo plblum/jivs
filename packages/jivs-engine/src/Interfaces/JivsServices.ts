@@ -16,7 +16,7 @@ import { ICachingService } from './CachingService';
 
 import { IValueHostFactory } from './ValueHostFactory';
 import { IServices } from './Services';
-import { ILoggerService } from './LoggerService';
+import { ILoggingService } from './LoggingService';
 import { ICultureService } from './CultureService';
 import { IErrorMessagesService } from './ErrorMessagesService';
 import { ILookupKeyFallbackService } from './LookupKeyFallbackService';
@@ -37,11 +37,11 @@ export interface IJivsServices extends IServices {
 
 
     /**
-     * Service to get the ILoggerService instance that replaces
+     * Service to get the ILoggingService instance that replaces
      * tokens in messages.
-     * Defaults to using the global defaultLoggerService
+     * Defaults to using the global defaultLoggingService
      */
-    loggerService: ILoggerService;    
+    loggingService: ILoggingService;    
 
 
     /**
@@ -197,9 +197,9 @@ export enum ServiceName {
      */
     culture = 'Culture',
     /**
-     * ILoggerService
+     * ILoggingService
      */    
-    logger = 'Logger',
+    logging = 'Logging',
     /**
      * IConditionsFactory
      */    

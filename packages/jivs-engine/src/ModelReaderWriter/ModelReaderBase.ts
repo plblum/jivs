@@ -5,7 +5,7 @@
 
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost, FieldValueHostSetValueOptions } from '../Interfaces/FieldValueHost';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IModelReader, ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';

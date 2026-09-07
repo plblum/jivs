@@ -1,18 +1,18 @@
 /**
  * Provide a logging service for this library to report into.
- * It provides one such logger class, ConsoleLoggerService, which works with the JavaScript console object.
- * Use your own logger by implementating the ILoggerService interface.
+ * It provides one such logger class, ConsoleLoggingService, which works with the JavaScript console object.
+ * Use your own logger by implementating the ILoggingService interface.
  * Assign your class to {@link jivs-engine/Services/ConcreteClasses/JivsServices!JivsServices | JivsServices }
- * @module jivs-engine/Services/Types/ILoggerService
+ * @module jivs-engine/Services/Types/ILoggingService
  */
 
 import { IService } from './Services';
 
 /**
  * Provide a logging service for this system to report into.
- * Attach an instance to JivsServices.loggerService.
+ * Attach an instance to JivsServices.loggingService.
  */
-export interface ILoggerService extends IService
+export interface ILoggingService extends IService
 {
 /**
  * Control which levels are output.
@@ -20,7 +20,7 @@ export interface ILoggerService extends IService
     minLevel: LoggingLevel;
 
     /**
-     * Reference to another ILoggerService implementation
+     * Reference to another ILoggingService implementation
      * that gets called after the console's logging.
      * Optional.
      * Will only be called if this logger instance has level >= minLevel
@@ -29,7 +29,7 @@ export interface ILoggerService extends IService
      * However, you can set the minLevel on chainedLogger after this
      * assignment to control what it outputs.
      */
-    chainedLogger: ILoggerService | null;
+    chainedLogger: ILoggingService | null;
 
     /**
      * Create a new log entry if the level is at or above the minimum level.
@@ -51,14 +51,14 @@ export interface ILoggerService extends IService
 }
 /**
  * Used by the log function that all details through the LogDetails object that is supplied
- * by this function. Its options object is only supplied if the LoggerService supports it.
+ * by this function. Its options object is only supplied if the LoggingService supports it.
  * 
  */
 export type logGatheringHandler = (options?: LogOptions) => LogDetails;
 
 /**
  * Used by the log function that takes an error to gather the value used in the logDetails.data property.
- * Its options object is only supplied if the LoggerService supports it.
+ * Its options object is only supplied if the LoggingService supports it.
  */
 export type logGatheringErrorHandler = (options?: LogOptions) => LogErrorDetails;
 
@@ -114,13 +114,13 @@ export interface LogErrorDetails extends LogDetailsBase {
 
 
 /**
- * The logger service will ask for specific info it supports with this as the argument
+ * The LoggingService will ask for specific info it supports with this as the argument
  * to the logGatheringHandler. It can be omitted if you don't support any of its options.
  */
 export interface LogOptions {
     /**
      * The logger wants to capture names and values of any data that you wish to share.
-     * This is used by loggers used for diagnostics, such as the DiagnosticLoggerService.
+     * This is used by loggers used for diagnostics, such as the TestingLoggingService.
      * That data will enable the logger to take further actions.
      * When true, the LogDetails.data property should be assigned to an object with name/value pairs.
      * Those entries should be published and be consistent throughout the system.

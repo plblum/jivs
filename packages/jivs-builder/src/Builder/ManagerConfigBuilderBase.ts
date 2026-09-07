@@ -12,7 +12,7 @@ import {
     FluentAnyValueHostParameters, FluentStaticParameters
 } from '../Interfaces/ValueHostConfigBuilders';
 
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
@@ -154,7 +154,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     //#region logging
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
     protected get logger(): LoggerFacade
     {
@@ -507,7 +507,7 @@ export class BuilderState<T extends ValueHostsManagerConfig>
 {
     constructor(baseConfig: T) {
         this.baseConfig = baseConfig;
-        this.logger = new LoggerFacade(baseConfig.services.loggerService,
+        this.logger = new LoggerFacade(baseConfig.services.loggingService,
             'ConfigBuilder', this, null, false);
         this.overriddenValueHostConfigs = [];
     }

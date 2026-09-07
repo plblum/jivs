@@ -5,7 +5,7 @@
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import type { IValueHostsManager, StateContainer } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
@@ -67,12 +67,12 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     }
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
     protected get logger(): LoggerFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggerFacade(this.services.loggingService,
                 'ValueHost', this, this.getName(), false);
         return this._logger;
     }

@@ -15,7 +15,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, FieldValueHostSetValueOptions, toIFieldValueHostCallbacks } from '../Interfaces/FieldValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggingService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
