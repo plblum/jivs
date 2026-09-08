@@ -12,6 +12,7 @@ import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { LogDetails, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { valueForLog } from '../Utilities/Utilities';
+import { RegExpDataTypeCheckGenerator } from '../DataTypes/DataTypeCheckGenerators';
 
 /**
  * A service that supports automatic generation of 
@@ -101,5 +102,47 @@ export class DataTypeCheckGeneratorService extends DataTypeServiceBase<IDataType
             result = this.find(dataTypeLookupKey);
         return result;        
     }
-
+    /**
+     * Registers a lookup key with the corresponding data used to create an IDataTypeCheckGenerator.
+     * This allows the service to automatically generate data type check conditions for the specified lookup key.
+     * 
+     * This is a great way to quickly add your own enumerated types and strings with strong pattern
+     * types (like Email). The result is that types you introduce automatically get a validator
+     * performing a data type check like this:
+     * ```ts
+     * const emailLookupKey = 'Email';
+     * dataTypeCheckGeneratorService.registerLookupKey(emailLookupKey, /^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+     * ```
+     * Now use the Builder:
+     * ```ts
+     * builder.field('emailAddress', emailLookupKey); // this now has a RegExpCondition auto-assigned
+     * ```
+     * 
+     * @param lookupKey The data type lookup key to register the generator for. Usually you have created 
+     * a Lookup Key for your own type, like 'Email' or 'MyEnumType'.
+     * @param data - Behavior depends on the input:
+     *  - regexp - uses a RegExpCondition internally. If you intend to exactly match the entire string,
+     *    always enclose the pattern in ^ and $ to match the entire string.
+     *    If you prefer case insensitive matching, include the 'i' flag in the RegExp.
+     *  - array of strings - Perform a case sensitive match against each string until one matches.
+     *    Internally uses a RegExpCondition.
+     */
+    public registerLookupKey(lookupKey: string, data: RegExp | Array<string>): void
+    {
+        assertNotNull(lookupKey, 'lookupKey');
+        assertNotNull(data, 'data');
+        if (data instanceof RegExp)
+        {
+            this.register(new RegExpDataTypeCheckGenerator(lookupKey, data));
+        }
+        else if (Array.isArray(data))
+        {
+            this.register(new RegExpDataTypeCheckGenerator(lookupKey, data));
+        }
+        else
+        {
+            // planning to support array of number but don't have that condition defined
+            throw new Error('Unsupported data type for registerLookupKey');
+        }
+    }
 }

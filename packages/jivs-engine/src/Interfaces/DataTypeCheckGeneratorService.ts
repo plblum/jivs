@@ -61,6 +61,20 @@ export interface IDataTypeCheckGeneratorService extends
      * @returns 
      */
     find(dataTypeLookupKey: string): IDataTypeCheckGenerator | null; 
+
+    /**
+     * Registers a lookup key with the corresponding data used to create an IDataTypeCheckGenerator.
+     * This allows the service to automatically generate data type check conditions for the specified lookup key.
+     * 
+     * @param lookupKey The data type lookup key to register the generator for.
+     * @param data - Behavior depends on the input:
+     *  - regexp - uses a RegExpCondition internally. If you intend to exactly match the entire string,
+     *    always enclose the pattern in ^ and $ to match the entire string.
+     *    If you prefer case insensitive matching, include the 'i' flag in the RegExp.
+     *  - array of strings - Perform a case sensitive match against each string until one matches.
+     *    Internally uses a RegExpCondition.
+     */
+    registerLookupKey(lookupKey: string, data: RegExp|Array<string>): void;
 }
 
 

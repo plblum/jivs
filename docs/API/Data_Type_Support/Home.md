@@ -54,6 +54,7 @@ Here are some use cases for creating your own Lookup Key:
 - Enumerated types, where the user sees text but the value is stored as a number. Check out [jivs-examples/src/EnumByNumberDataTypes.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EnumByNumberDataTypes.ts).
     + Parsing, from string to number
     + Formatting, from number to string in an error message
+    + Auto generating data type check validators
 - String values that have a strong pattern, like a phone number. Check out [jivs-examples/src/EmailAddressDataType.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/EmailAddressDataType.ts).
     + Parsing, to clean up the user's input into the text that you want to store
     + Formatting, to format the text you have stored
@@ -67,5 +68,6 @@ Here are some use cases for creating your own Lookup Key:
     + Comparing, to compare two instances of the same class
     + Formatting, to show the current value in an error message
     + Parsing, to convert user input into your class.
+    + Auto generating data type check validators
 ---
 Go to [API Home](../Home.md)
