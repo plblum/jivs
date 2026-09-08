@@ -86,20 +86,36 @@ When you have a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), you 
     services.dataTypeCheckGeneratorService.registerLookupKey('PhoneType', ['Landline', 'Mobile', 'Satellite']);
     ```
     This results in your Lookup Key auto generating two `Validators` based on `DataTypeCheckCondition` and `RegExpCondition` using an expression built from your array.
-4. Implement a class that extends `IDataTypeCheckGenerator` and use the `register()` function.
+4. For one or more Conditions, use the `registerLookupKey()` function together with your Lookup Key 
+    and array of `ConditionConfig` objects.
+
+    This requires you to work with the raw `ConditionConfig` objects. Each `Condition` class has one and it's actually what the Builder creates.
+
     ```ts
-    export const EmailAddressLookupKey = 'EmailAddress';
-    export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerator
+    let intConfig = <IntegerConditionConfig>{
+        conditionType: ConditionType.Integer
+        // don't need valueHostName because that is assigned at runtime
+    };
+    let posConfig = <PositiveConditionConfig>{
+        conditionType: ConditionType.Positive
+    };
+    services.dataTypeCheckGeneratorService.registerLookupKey('PosInteger',
+        [intConfig, posConfig]);
+    ```
+
+5. Implement a class that extends `DataTypeCheckGeneratorBase` and use the `register()` function.
+    ```ts
+    export const ShortStringLookupKey = 'ShortString';
+    export class ShortStringDataTypeCheckGenerator extends DataTypeCheckGeneratorBase
     {
-        public supportsValue(dataTypeLookupKey: string): boolean {
-            return dataTypeLookupKey.toLowerCase() === EmailAddressLookupKey.toLowerCase();
-        }
-        public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
-            let config: RegExpConditionConfig = {
-                conditionType: ConditionType.RegExp,    // the ConditionFactory depends on this
+
+        public addConditions(conditions: Array<ConditionConfig>,
+            valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
+            let config: StringLengthConditionConfig = {
+                conditionType: ConditionType.StringLength,    // the ConditionFactory depends on this
                 valueHostName: valueHost.getName(),
                 category: ConditionCategory.DataTypeCheck,  // intentionally using DataTypeCheck
-                expression: /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i
+                maximum: 255
             };
             return [
                 conditionFactory.create(config)
@@ -108,11 +124,12 @@ When you have a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), you 
     }
     ```
     ```ts
-    services.dataTypeCheckGeneratorService.register(new EmailAddressDataTypeCheckGenerator());
+    services.dataTypeCheckGeneratorService.register(new ShortStringDataTypeCheckGenerator());
     ```    
 
 ## API References
 - [DataTypeCheckGeneratorService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeCheckGeneratorService.DataTypeCheckGeneratorService.html)
+- [ConditionConfig interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html)
 - [IDataTypeCheckGenerator interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeCheckGenerator.IDataTypeCheckGenerator.html)
 - [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)
 

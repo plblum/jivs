@@ -7,12 +7,12 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 import { ConditionConfig, ICondition } from '../Interfaces/Conditions';
 import { IDataTypeCheckGenerator } from '../Interfaces/DataTypeCheckGenerator';
 import { IDataTypeCheckGeneratorService } from '../Interfaces/DataTypeCheckGeneratorService';
-import { assertNotNull } from '../Utilities/ErrorHandling';
+import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { LogDetails, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { valueForLog } from '../Utilities/Utilities';
-import { RegExpDataTypeCheckGenerator } from '../DataTypes/DataTypeCheckGenerators';
+import { ListOfConditionsDataTypeCheckGenerator, RegExpDataTypeCheckGenerator } from '../DataTypes/DataTypeCheckGenerators';
 
 /**
  * A service that supports automatic generation of 
@@ -126,23 +126,37 @@ export class DataTypeCheckGeneratorService extends DataTypeServiceBase<IDataType
      *    If you prefer case insensitive matching, include the 'i' flag in the RegExp.
      *  - array of strings - Perform a case sensitive match against each string until one matches.
      *    Internally uses a RegExpCondition.
+     *  - array of ConditionConfigs (each must have conditionType property assigned) creates
+     *    all of those conditions plus DataTypeCheckCondition.
+     * @param addDataTypeCheckCondition - Whether to add a DataTypeCheckCondition along 
+     * with the generated conditions. Defaults to true.
      */
-    public registerLookupKey(lookupKey: string, data: RegExp | Array<string>): void
+    public registerLookupKey(lookupKey: string, data: RegExp | Array<string> | Array<ConditionConfig>,
+        addDataTypeCheckCondition: boolean = true
+    ): void
     {
         assertNotNull(lookupKey, 'lookupKey');
         assertNotNull(data, 'data');
         if (data instanceof RegExp)
         {
-            this.register(new RegExpDataTypeCheckGenerator(lookupKey, data));
+            this.register(new RegExpDataTypeCheckGenerator(lookupKey, data, addDataTypeCheckCondition));
+            return;
         }
         else if (Array.isArray(data))
         {
-            this.register(new RegExpDataTypeCheckGenerator(lookupKey, data));
+            if (typeof data[0] === 'string')
+            {
+                this.register(new RegExpDataTypeCheckGenerator(lookupKey, data as Array<string>, addDataTypeCheckCondition));
+                return;
+            }
+            else if (typeof data[0] === 'object' && 'conditionType' in data[0])
+            {
+                this.register(new ListOfConditionsDataTypeCheckGenerator(lookupKey, data as Array<ConditionConfig>, addDataTypeCheckCondition));
+                return;
+            }
+
         }
-        else
-        {
-            // planning to support array of number but don't have that condition defined
-            throw new Error('Unsupported data type for registerLookupKey');
-        }
+
+        throw new CodingError('Unsupported data type for registerLookupKey');
     }
 }

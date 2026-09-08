@@ -3,7 +3,7 @@
  * @module jivs-engine/Services/Types/IDataTypeCheckGeneratorService
  */
 
-import { ICondition } from './Conditions';
+import { ConditionConfig, ICondition } from './Conditions';
 import { IDataTypeCheckGenerator } from './DataTypeCheckGenerator';
 import { IDataTypeService } from './DataTypes';
 import { IFieldValueHost } from './FieldValueHost';
@@ -73,8 +73,12 @@ export interface IDataTypeCheckGeneratorService extends
      *    If you prefer case insensitive matching, include the 'i' flag in the RegExp.
      *  - array of strings - Perform a case sensitive match against each string until one matches.
      *    Internally uses a RegExpCondition.
+     *  - array of ConditionConfigs (each must have conditionType property assigned) creates
+     *    all of those conditions plus DataTypeCheckCondition.
      */
-    registerLookupKey(lookupKey: string, data: RegExp|Array<string>): void;
+    registerLookupKey(lookupKey: string, data: RegExp | Array<string> | Array<ConditionConfig>,
+        addDataTypeCheckCondition: boolean
+    ): void;
 }
 
 

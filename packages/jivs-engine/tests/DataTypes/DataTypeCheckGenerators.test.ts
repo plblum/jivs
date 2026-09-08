@@ -1,11 +1,13 @@
 import {
     IntegerDataTypeCheckGenerator,
+    ListOfConditionsDataTypeCheckGenerator,
     RegExpDataTypeCheckGenerator
 } from './../../src/DataTypes/DataTypeCheckGenerators';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { MockValueHostsManager, MockJivsServices } from '../TestSupport/mocks';
-import { ConditionEvaluateResult, ICondition } from '../../src/Interfaces/Conditions';
-import { DataTypeCheckCondition, IntegerCondition, RegExpCondition } from '../../src/Conditions/ConcreteConditions';
+import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from '../../src/Interfaces/Conditions';
+import { DataTypeCheckCondition, DataTypeCheckConditionConfig, IntegerCondition, RangeCondition, RangeConditionConfig, RegExpCondition } from '../../src/Conditions/ConcreteConditions';
+import { ConditionType } from '../../src/Conditions/ConditionTypes';
 
 
 describe('DataTypeCheckGenerator concrete classes', () => {
@@ -40,6 +42,25 @@ describe('DataTypeCheckGenerator concrete classes', () => {
             let names2 = new Set<string>();
             ic.gatherValueHostNames(names2, vhm);
             expect(names2.has('Field1')).toBe(true);            
+        });
+        // alternative lookup key and addDataTypeCheckCondition = false
+        test('alternative lookup key', () => {
+            let testItem = new IntegerDataTypeCheckGenerator('TEST');
+            expect(testItem.supportsValue('TEST')).toBe(true);
+            expect(testItem.supportsValue(LookupKey.Integer)).toBe(false);
+            expect(testItem.supportsValue(LookupKey.Number)).toBe(false);
+        });
+        // create using addDataTypeCheckCondition = false omits the DataTypecheckCondition
+        test('create using addDataTypeCheckCondition = false omits the DataTypecheckCondition', () => {
+            let services = new MockJivsServices(true, true);
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', LookupKey.Integer, 'Field 1');
+            let testItem = new IntegerDataTypeCheckGenerator('TEST', false);
+            let results: Array<ICondition> = [];
+
+            expect(() => results = testItem.createConditions(vh, 'TEST', services.conditionFactory)).not.toThrow();
+            expect(results.length).toBe(1);
+            expect(results[0]).toBeInstanceOf(IntegerCondition);
         });
     });
     describe('RegExpDataTypeCheckGenerator', () =>
@@ -132,6 +153,106 @@ describe('DataTypeCheckGenerator concrete classes', () => {
             expect(condition.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
             vh.setValue('ABC');
             expect(condition.evaluate(vh, vhm)).toBe(ConditionEvaluateResult.NoMatch);
+        });
+
+        // createConditions with addDataTypeCheckCondition = false and regex
+        test('createConditions with addDataTypeCheckCondition = false and regex', () => {
+            let services = new MockJivsServices(true, true);
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', 'TEST', 'Field 1');
+            let testItem = new RegExpDataTypeCheckGenerator('TEST', /abc/, false);
+            let results: Array<ICondition> = [];
+
+            expect(() => results = testItem.createConditions(vh, 'TEST', services.conditionFactory)).not.toThrow();
+            expect(results.length).toBe(1);
+            expect(results[0].constructor.name).toBe('RegExpCondition');
+        });
+    });
+    describe('ListOfConditionsDataTypeCheckGenerator', () =>
+    {
+        class Publicify_ListOfConditionsDataTypeCheckGenerator extends ListOfConditionsDataTypeCheckGenerator
+        {
+            
+            public get publicify_conditionConfigs(): Array<ConditionConfig>
+            {
+                return super.conditionConfigs;
+            }
+        }
+        test('constructor with valid parameters', () =>
+        {
+            let services = new MockJivsServices(true, true);
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', 'TEST', 'Field 1');
+            let conditionConfigs: Array<ConditionConfig> = [
+                {
+                    conditionType: ConditionType.RegExp,
+                    valueHostName: vh.getName()
+                } as DataTypeCheckConditionConfig
+            ];
+            let testItem = new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', conditionConfigs);
+            expect(testItem.publicify_conditionConfigs).toBe(conditionConfigs);
+            expect(testItem.publicify_conditionConfigs[0].category).toBe(ConditionCategory.DataTypeCheck);
+        });
+        test('constructor with null for array', () =>
+        {
+            expect(() => new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', null!)).toThrow();
+        });
+        test('constructor with empty array', () =>
+        {
+            expect(() => new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', [])).toThrow();
+        });
+        test('supportsValue is true for the supplied lookup key only', () =>
+        {
+            let testItem = new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', [
+                {
+                    conditionType: ConditionType.RegExp,
+                    valueHostName: 'Field1'
+                } as DataTypeCheckConditionConfig
+            ]);
+            expect(testItem.supportsValue('TEST')).toBe(true);
+            expect(testItem.supportsValue(LookupKey.Integer)).toBe(false);
+            expect(testItem.supportsValue(LookupKey.Number)).toBe(false);
+        });
+        test('createConditions with 1 condition creates that and DataTypeCheckCondition', () =>
+        {
+            let services = new MockJivsServices(true, true);
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', 'TEST', 'Field 1');
+            let conditionConfigs: Array<ConditionConfig> = [
+                <RangeConditionConfig> {
+                    conditionType: ConditionType.Range,
+                    minimum: 0,
+                    maximum: 100
+                }
+            ];
+            let testItem = new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', conditionConfigs);
+            let results: Array<ICondition> = [];
+            expect(() => results = testItem.createConditions(vh, 'TEST', services.conditionFactory)).not.toThrow();
+            expect(results.length).toBe(2);
+            expect(results[0]).toBeInstanceOf(DataTypeCheckCondition);
+            expect(results[1]).toBeInstanceOf(RangeCondition);
+            expect(testItem.publicify_conditionConfigs[0].category).toBe(ConditionCategory.DataTypeCheck);
+        });
+        // when addDataTypeCheckCondition = false
+        test('createConditions with addDataTypeCheckCondition = false', () =>
+        {
+            let services = new MockJivsServices(true, true);
+            let vhm = new MockValueHostsManager(services);
+            let vh = vhm.addMockFieldValueHost('Field1', 'TEST', 'Field 1');
+            let conditionConfigs: Array<ConditionConfig> = [
+                <RangeConditionConfig> {
+                    conditionType: ConditionType.Range,
+                    valueHostName: vh.getName(),
+                    minimum: 0,
+                    maximum: 100
+                }
+            ];
+            let testItem = new Publicify_ListOfConditionsDataTypeCheckGenerator('TEST', conditionConfigs, false);
+            let results: Array<ICondition> = [];
+            expect(() => results = testItem.createConditions(vh, 'TEST', services.conditionFactory)).not.toThrow();
+            expect(results.length).toBe(1);
+            expect(results[0]).toBeInstanceOf(RangeCondition);
+            expect(testItem.publicify_conditionConfigs[0].category).toBe(ConditionCategory.DataTypeCheck);
         });
     });
 });

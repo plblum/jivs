@@ -58,26 +58,6 @@ export class EmailAddressCondition extends RegExpCondition
     }
 }
 
-// The IDataTypeCheckGenerator implementation that will be used by
-// the DataTypeCheckGeneratorService to connect the DataTypeCheckValidator
-// to the EmailAddressCondition when the dataType property is 'EmailAddress'
-// It must still be registered in the JivsServices.dataTypeCheckGeneratorService.
-export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerator
-{
-    public supportsValue(dataTypeLookupKey: string): boolean {
-        return dataTypeLookupKey.toLowerCase() === EmailAddressLookupKey.toLowerCase();
-    }
-    public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
-        let config: EmailAddressConditionConfig = {
-            conditionType: EmailAddressConditionType,
-            valueHostName: valueHost.getName(),
-            category: ConditionCategory.DataTypeCheck
-        };
-        return [
-            new EmailAddressCondition(config)   // or use the conditionFactory, so long as your condition is registered
-        ];
-    }
-}
 
 
 //#region Builder syntax
@@ -146,9 +126,12 @@ export function registerEmailAddress(services: IJivsServices): void
     // or move just this line into registerDataTypeCheckGenerators() function     
     cf.register<RegExpConditionConfig>(EmailAddressConditionType, (config) => new EmailAddressCondition(config)); 
 
-    let ag = services.dataTypeCheckGeneratorService as DataTypeCheckGeneratorService;
-    // or move just this line into registerConditions() function 
-    ag.register(new EmailAddressDataTypeCheckGenerator());
+    let ag = services.dataTypeCheckGeneratorService; 
+    ag.registerLookupKey(EmailAddressLookupKey, [
+        <EmailAddressConditionConfig> {
+            conditionType: EmailAddressConditionType
+        }
+    ]);
 
     // Adding custom conditions to ValidatorBuilder and ConditionBuilder
     let ff = services.buildersFactory;

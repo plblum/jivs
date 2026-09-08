@@ -134,7 +134,8 @@ new BuildersFactoryInstaller();  // install the buildersFactory service property
  *      that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
  * - `ValueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value 
  *      between the external system and the ValueHost.
- * 
+ * - `DataTypeCheckGeneratorService`: Register your own Lookup Keys to have auto generated Data Type Check Validators.
+
  * ## Factories where its common to register objects
  * - `ConditionFactory` - Register your own `Condition` classes.
  * - `DataTypeParserService`: Register your own `DataTypeParsers`.
@@ -142,7 +143,6 @@ new BuildersFactoryInstaller();  // install the buildersFactory service property
  * - `DataTypeConverterService` - Register your own `DataTypeConverters`.
  * 
  * ## Less commonly modified factories
- * - `DataTypeCheckGeneratorService`: Register your own `DataTypeCheckGenerators`.
  * - `DataTypeIdentifierService`: Register your own DataTypeIdentifiers.
  * - `DataTypeComparerService`: Register your own DataTypeComparers.
  * 
@@ -202,17 +202,17 @@ export function createJivsServices(defaultCultureId: string,
     services.dataTypeComparerService = dtcmps;
     registerDataTypeComparers(dtcmps);    
 
+    // --- DataTypeCheckGeneratorService -------------------------------------
+    // Plenty to configure here. See function below.
+    let dtcg = new DataTypeCheckGeneratorService();
+    services.dataTypeCheckGeneratorService = dtcg;
+    registerDataTypeCheckGenerators(dtcg);
+
     // --- DataTypeIdentifierService -------------------------------------
     // Plenty to configure here. See function below.
     let dtis = new DataTypeIdentifierService();
     services.dataTypeIdentifierService = dtis;
     registerDataTypeIdentifiers(dtis);
-
-    // --- DataTypeCheckGeneratorService -------------------------------------
-    // Plenty to configure here. See function below.
-    let dtcg = new DataTypeCheckGeneratorService();
-    services.dataTypeCheckGeneratorService = dtcg;
-    registerDataTypeCheckGenerators(dtcg);    
 
 
     // --- MessageTokenResolverService ----------------------
@@ -815,23 +815,20 @@ export function createJivsServices(defaultCultureId: string,
     }
 
     /**
-     * Automatically generate Data Type Check conditions - conditions that
-     * determine if the text value can be safely transferred into the native value.
-     * The system using Jivs has the responsibility to make that transfer,
-     * often using conversion code, and let Jivs know by passing both
-     * Text value and resulting Native value through an FieldValueHost.setValues() function.
-     * When the transfer fails, still call setValues() passing 'undefined' for the native value.
+     * Automatically generate the conditions for Data Type Check Validators.
      * 
-     * By default, all data types use the DataTypeCheckCondition, which simply
+     * By default, all data types will create a validator using the DataTypeCheckCondition, which simply
      * reports an error when the native value is undefined.
      * 
-     * Suppose you have a string as a native value. Your transfer code may elect to
-     * convert the string without taking any action beyond trimming spaces. 
-     * In this case, you may want to create a regular expression to parse the text value
-     * and see if the content conforms to the rules.
+     * As you create Lookup Keys, consider registering them with the 
+     * DataTypeCheckGeneratorService when the DataTypeCheckCondition 
+     * alone will not cover your requirements.
      * 
-     * See \examples\EmailAddressDataType.ts for example.
-     * -> Use classes that implement IDataTypeCheckGenerator in register()
+     * Typical use cases:
+     * - The native value is a string with a strong pattern. 
+     * - The native value is a string that has a fixed list of possible values, such as an Enumerated Type. 
+     * - Need additional conditions to provide additional limits on the native value,
+     *   such as a string length limit.
      * @param ag 
      */
     function registerDataTypeCheckGenerators(ag: DataTypeCheckGeneratorService): void
@@ -839,10 +836,32 @@ export function createJivsServices(defaultCultureId: string,
         ag.lazyLoad = (service) =>
         {
 
-            // See \examples\EmailAddressDataType.ts for example.
-            //    ag.register(new EmailAddressDataTypeCheckConverter());
-
             ag.register(new IntegerDataTypeCheckGenerator());
+/* Example: Email using a regular expression
+            ag.registerLookupKey('Email', 
+                /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i);
+*/
+/* Example: Enumerated Type with string values
+            ag.dataTypeCheckGeneratorService.registerLookupKey('PhoneType', 
+                ['Landline', 'Mobile', 'Satellite']);
+*/
+/* Example: Positive Number:
+            ag.dataTypeCheckGeneratorService.registerLookupKey('PosNum', 
+                <PositiveConditionConfig>{
+                    conditionType: ConditionType.Positive
+                }     
+            ); 
+*/
+/* Example: Positive Integer:
+            ag.dataTypeCheckGeneratorService.registerLookupKey('PosNum', 
+                <IntegerConditionConfig> {
+                    conditionType: ConditionType.Integer
+                },
+                <PositiveConditionConfig>{
+                    conditionType: ConditionType.Positive
+                }     
+            ); 
+*/            
         };
     }
 

@@ -33,7 +33,9 @@ Our preconfigured `IntegerDataTypeCheckGenerator` ensures that `LookupKey.Intege
 
 ### registerLookupKey
 ```ts
-registerLookupKey(lookupKey: string, data: RegExp | Array<string>): void;
+registerLookupKey(lookupKey: string, data: RegExp | Array<string>,
+    addDataTypeCheckCondition: boolean = true
+): void;
 ```
 Use `registerLookupKey()` for these _use cases_:
 - The native value is a string with a strong pattern. Supply a regular expression for that pattern in the _data_ parameter.
@@ -41,27 +43,38 @@ Use `registerLookupKey()` for these _use cases_:
     services.dataTypeCheckGeneratorService.registerLookupKey('Email', 
         /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i);
     ```
-- The native value is a string that has a fixed list of possible values, such as an Enumerated Type. Supply an array of those strings to the `data` parameter. This will use a case sensitive match.
+- The native value is a string that has a fixed list of possible values, such as an Enumerated Type. Supply an array of those strings to the _data_ parameter. This will use a case sensitive match.
     ```ts
     services.dataTypeCheckGeneratorService.registerLookupKey('PhoneType', 
         ['Landline', 'Mobile', 'Satellite']);
     ```
+- The native value needs additional validators to validate its the Lookup Key. We supply each of those Conditions using their ConditionConfig objects as an array to the _data_ p    
+    ```ts
+    let intConfig = <IntegerConditionConfig>{
+        conditionType: ConditionType.Integer
+        // don't need valueHostName because that is assigned at runtime
+    };
+    let posConfig = <PositiveConditionConfig>{
+        conditionType: ConditionType.Positive
+    };
+    services.dataTypeCheckGeneratorService.registerLookupKey('PosInteger',
+        [intConfig, posConfig]);
+    ```
 ### Add your own DataTypeCheckGenerator
-For cases not covered by registerLookupKey, you will implement a class that extends `IDataTypeCheckGenerator` and call `register()`.
+For cases not covered by `registerLookupKey()`, you will implement a class that extends `IDataTypeCheckGenerator` and call `register()`.
 
 ```ts
-export const EmailAddressLookupKey = 'EmailAddress';
-export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerator
+export const ShortStringLookupKey = 'ShortString';
+export class ShortStringDataTypeCheckGenerator extends DataTypeCheckGeneratorBase
 {
-    public supportsValue(dataTypeLookupKey: string): boolean {
-        return dataTypeLookupKey.toLowerCase() === EmailAddressLookupKey.toLowerCase();
-    }
-    public createConditions(valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
-        let config: RegExpConditionConfig = {
-            conditionType: ConditionType.RegExp,    // the ConditionFactory depends on this
+
+    public addConditions(conditions: Array<ConditionConfig>,
+        valueHost: IFieldValueHost, dataTypeLookupKey: string, conditionFactory: IConditionFactory): Array<ICondition> {
+        let config: StringLengthConditionConfig = {
+            conditionType: ConditionType.StringLength,    // the ConditionFactory depends on this
             valueHostName: valueHost.getName(),
             category: ConditionCategory.DataTypeCheck,  // intentionally using DataTypeCheck
-            expression: /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i
+            maximum: 255
         };
         return [
             conditionFactory.create(config)
@@ -70,13 +83,14 @@ export class EmailAddressDataTypeCheckGenerator implements IDataTypeCheckGenerat
 }
 ```
 ```ts
-services.dataTypeCheckGeneratorService.register(new EmailAddressDataTypeCheckGenerator());
+services.dataTypeCheckGeneratorService.register(new ShortStringDataTypeCheckGenerator());
 ```    
 
 ## API References
 - [IDataTypeCheckGenerator interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_DataTypes_Types_IDataTypeCheckGenerator.IDataTypeCheckGenerator.html)
 - [IntegerDataTypeCheckGenerator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_DataTypes_ConcreteClasses_DataTypeCheckGenerators.IntegerDataTypeCheckGenerator.html)
 - [DataTypeCheckGeneratorService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_DataTypeCheckGeneratorService.DataTypeCheckGeneratorService.html)
+- [ConditionConfig interface](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html)
 
 
 ---
