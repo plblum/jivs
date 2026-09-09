@@ -34,7 +34,7 @@ export interface IValidatorsValueHost<TOptions extends ValidatorsValueHostSetVal
     /**
      * Attaches the InjectedError to this ValidatorsValueHostBase. It will be used to create a Validator
      * to report the error. If you supply an errorCode, it will be used to localize the error message.
-     * If not supplied, know that TextLocalizerService will use the errorCode value of 'InjectedError'
+     * If not supplied, know that ErrorMessagesService will use the errorCode value of 'InjectedError'
      * to localize the error message. You can also provide a summaryMessage for use in a summary of validation errors.
      * 
      * Alternatively use the options.injectedError property when calling setTextValue() or setValues() 
@@ -120,7 +120,7 @@ export interface ValidatorsValueHostSetValueOptions extends ValidatableValueHost
      * Create this object with at least one of the properties. It will be used to create an IssueFound object
      * even though no condition is setup. The object supplies localization keys
      * so you can set up the error message and summary message for the current culture
-     * in the TextLocalizerService. The errorCode is used to identify the error in the consuming system.
+     * in the ErrorMessagesService. The errorCode is used to identify the error in the consuming system.
      */
     injectedError?: InjectedError;
 }
@@ -180,10 +180,10 @@ export interface InjectedError
      */
     errorMessage: string | null;
     /**
-     * Set with TextLocalizerService.getErrorMessagel10nText to use
-     * a localization setup with TextLocalizerService.registerErrorMessage.
+     * Set with ErrorMessagesService.getErrorMessagel10nText to use
+     * a localization setup with ErrorMessagesService.registerErrorMessage.
      * Its actual format is "EM-" + errorCode + (dataTypeLookupKey ? "-" + dataTypeLookupKey : "")
-     * If you setup text with TextLocalizerService.register(), this value should be set to the same value.
+     * If you setup text with ErrorMessagesService.register(), this value should be set to the same value.
      */
     errorMessagel10n?: string;
     /**
@@ -192,15 +192,15 @@ export interface InjectedError
      */
     summaryMessage?: string;
     /**
-     * Set with TextLocalizerService.getSummaryMessagel10nText to use
-     * a localization setup with TextLocalizerService.registerSummaryMessage.
+     * Set with ErrorMessagesService.getSummaryMessagel10nText to use
+     * a localization setup with ErrorMessagesService.registerSummaryMessage.
      * Its actual format is "SEM-" + errorCode + (dataTypeLookupKey ? "-" + dataTypeLookupKey : "")
-     * If you setup text with TextLocalizerService.register(), this value should be set to the same value.
+     * If you setup text with ErrorMessagesService.register(), this value should be set to the same value.
      */
     summaryMessagel10n?: string;
     /**
      * When unassigned, the error code uses the InjectedErrorValidatorErrorCode constant ('InjectedError').
-     * Its value is used with localization lookups in TextLocalizerService.getErrorMessagel10nText and TextLocalizerService.getSummaryMessagel10nText.
+     * Its value is used with localization lookups in ErrorMessagesService.getErrorMessagel10nText and ErrorMessagesService.getSummaryMessagel10nText.
      */
     errorCode?: string;
 }

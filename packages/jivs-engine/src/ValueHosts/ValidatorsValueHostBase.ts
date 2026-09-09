@@ -3,7 +3,7 @@
  * @module jivs-engine/ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
@@ -20,7 +20,7 @@ import { ValidatableValueHostBase, ValidatableValueHostBaseGenerator } from './V
 import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
-import { TextLocalizerService } from '../Services/TextLocalizerService';
+import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -97,7 +97,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     /**
      * Attaches the InjectedError to this ValidatorsValueHostBase. It will be used to create a Validator
      * to report the error. If you supply an errorCode, it will be used to localize the error message.
-     * If not supplied, know that TextLocalizerService will use the errorCode value of 'InjectedError'
+     * If not supplied, know that ErrorMessagesService will use the errorCode value of 'InjectedError'
      * to localize the error message. You can also provide a summaryMessage for use in a summary of validation errors.
      * 
      * Alternatively use the options.injectedError property when calling setTextValue() or setValues() 
@@ -398,9 +398,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             conditionConfig: null,
             errorCode: errorCode, // may be null
             errorMessage: injectedError.errorMessage,
-            errorMessagel10n: injectedError.errorMessagel10n ?? TextLocalizerService.getErrorMessagel10nText(errorCode, null),
+            errorMessagel10n: injectedError.errorMessagel10n ?? ErrorMessagesService.getErrorMessagel10nText(errorCode, null),
             summaryMessage: injectedError.summaryMessage,
-            summaryMessagel10n: injectedError.summaryMessagel10n ?? TextLocalizerService.getSummaryMessagel10nText(errorCode, null),
+            summaryMessagel10n: injectedError.summaryMessagel10n ?? ErrorMessagesService.getSummaryMessagel10nText(errorCode, null),
             // always severe since its blocking. It stops further processing of validators, and the user must fix it before continuing.
             severity: ValidationSeverity.Severe
         };

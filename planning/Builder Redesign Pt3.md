@@ -25,7 +25,7 @@ declare module "./../Builder/Fluent"
          * The error message "template" that will appear on screen when the condition is NoMatch.
          * It can use tokens, which are resolved with current data at the time of validation.
          * If null, it will expect to be setup by one of several other sources including
-         * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+         * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
          * @param validatorParameters
          * Additional ways to customize the Validator, including localized error messages,
          * severity, and the enabler.

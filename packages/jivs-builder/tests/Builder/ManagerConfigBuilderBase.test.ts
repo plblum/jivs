@@ -2,12 +2,12 @@ import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryIn
 import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
-import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggerService";
+import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggingService";
 import { IValueHostsManager, ValueHostsManagerConfig, createBehaviors } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { ValueHostConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHost";
 import { ValueHostType } from "@plblum/jivs-engine/build/Interfaces/ValueHostFactory";
-import { CapturingLogger } from "@plblum/jivs-engine/build/Support/CapturingLogger";
+import { TestingLoggingService } from "@plblum/jivs-engine/build/Support/TestingLoggingService";
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { CodingError } from "@plblum/jivs-engine/build/Utilities/ErrorHandling";
 import { ManagerConfigBuilderBase } from "../../src/Builder/ManagerConfigBuilderBase";
@@ -22,7 +22,7 @@ function createVMConfig(): ValueHostsManagerConfig {
         services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
-    vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Debug, vmConfig.services.loggerService);
+    vmConfig.services.loggingService = new TestingLoggingService(LoggingLevel.Debug, vmConfig.services.loggingService);
     return vmConfig;
 }
 
@@ -565,7 +565,7 @@ describe('whenToEnable', ()=> {
     // existing valueHostName returns the StartConditionWithOneChildBuilder
     test('With a known valueHostName, returns the same instance', () => {
         let vmConfig = createVMConfig();
-        let logger = vmConfig.services.loggerService as CapturingLogger;
+        let logger = vmConfig.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let builder = new TestValueHostsManagerConfigBuilderBase(vmConfig);
         builder.field('Field1');
@@ -665,8 +665,8 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
         let result2 = builder.publicify_getExistingValueHostConfig('Field2', true);
         expect(result2).toBeTruthy();
         expect(result2!.name).toEqual('Field2');
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field2" is not defined')).toBeFalsy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field2" is not defined')).toBeFalsy();
 
     });
     // not found and throwWhenNotFound = true, throws
@@ -677,8 +677,8 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
         builder.field('Field2');
         builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
         expect(() => builder.publicify_getExistingValueHostConfig('Field3', true)).toThrow(/not defined/);
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
 
     }); 
     // not found and throwWhenNotFound = false, returns null
@@ -690,8 +690,8 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
         builder.publicify_addOverride();    // required to find the valueHostConfig in the overriddenValueHostConfigs array
         let result = builder.publicify_getExistingValueHostConfig('Field3', false);
         expect(result).toBeNull();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field3" is not defined')).toBeTruthy();
 
     });
     // when addOverride is not used and throwWhenNotFound = true, throws because the valueHostConfig is not in the overriddenValueHostConfigs array
@@ -701,8 +701,8 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
         builder.field('Field1');
         builder.field('Field2');
         expect(() => builder.publicify_getExistingValueHostConfig('Field1', true)).toThrow(/not defined/);
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
 
     });
     // when addOverride is not used and throwWhenNotFound = false, returns null because the valueHostConfig is not in the overriddenValueHostConfigs array
@@ -713,8 +713,8 @@ describe('getExistingValueHostConfig() using publicify_getExistingValueHostConfi
         builder.field('Field2');
         let result = builder.publicify_getExistingValueHostConfig('Field1', false);
         expect(result).toBeNull();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field1" is not defined')).toBeTruthy();
 
     });
 });

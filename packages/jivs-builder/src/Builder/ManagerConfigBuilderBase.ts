@@ -12,13 +12,13 @@ import {
     FluentAnyValueHostParameters, FluentStaticParameters
 } from '../Interfaces/ValueHostConfigBuilders';
 
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { toIServices, toIServicesAccessor } from '@plblum/jivs-engine/build/Interfaces/Services';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ValidatorsValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { LoggerFacade } from '@plblum/jivs-engine/build/Utilities/LoggerFacade';
+import { LoggingFacade } from '@plblum/jivs-engine/build/Utilities/LoggingFacade';
 import { deepClone, isPlainObject } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { IStartConditionWithOneChildBuilder } from '../Interfaces/ChildBuilders';
 import { IManagerConfigBuilder } from '../Interfaces/ManagerConfigBuilder';
@@ -154,9 +154,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
     //#region logging
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         return this.state?.logger ?? undefined;
     }
@@ -507,12 +507,12 @@ export class BuilderState<T extends ValueHostsManagerConfig>
 {
     constructor(baseConfig: T) {
         this.baseConfig = baseConfig;
-        this.logger = new LoggerFacade(baseConfig.services.loggerService,
+        this.logger = new LoggingFacade(baseConfig.services.loggingService,
             'ConfigBuilder', this, null, false);
         this.overriddenValueHostConfigs = [];
     }
 
-    public logger: LoggerFacade;
+    public logger: LoggingFacade;
     public baseConfig: T;
     public overriddenValueHostConfigs!: Array<Array<ValueHostConfig>>;
     

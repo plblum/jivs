@@ -89,7 +89,7 @@ import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Condi
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValidatableValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
@@ -144,7 +144,7 @@ export class FormConfigAdapter
      * @param state 
      * @param options - When options.favorUIMessages is not false, 
      * it will run favorUIMessages() to remove any error messages supplied by business logic,
-     * so long as they are covered in TextLocalizationServices.
+     * so long as they are covered in ErrorMessagesServices.
      */
     constructor(state: BuilderState<ValueHostsManagerConfig>, options?: BuilderOverrideOptions) {
         super(state);
@@ -160,23 +160,23 @@ export class FormConfigAdapter
      * 
      * The UI layer can override them in several ways:
      * 1. Use this FormConfigAdapter.modify().validator() to change the error messages.
-     * 2. By using those registered with TextLocalizationService.
+     * 2. By using those registered with ErrorMessagesService.
      *    To use them, there should not be any error message already
      *    supplied to the validator and business layer messages get in the way.
      * 
      * This function should be called prior to creating ValueHostsManager
      * to remove all error messages supplied by business logic,
-     * so long as they are covered in TextLocalizationServices.
-     * Be sure that TextLocalizationServices is setup as desired
+     * so long as they are covered in ErrorMessagesServices.
+     * Be sure that ErrorMessagesServices is setup as desired
      * before calling this.
      */
     protected favorUIMessages(): void {
-        const tls = this.services.textLocalizerService;
+        const tls = this.services.errorMessagesService;
         // goes through all validators, but only on the baseConfig which is setup by business logic.
         // For any with an error message, see if it exists
-        // in TextLocalizationService as "*". If so, clear
+        // in ErrorMessagesService as "*". If so, clear
         // errorMessage, errorMessagel10n, summaryMessage, summaryMessagel10n
-        // This allows TextLocalizationService to supply messages.
+        // This allows ErrorMessagesService to supply messages.
         for (let i = 0; i < this.baseConfig.valueHostConfigs.length; i++) {
             const vhConfig = this.baseConfig.valueHostConfigs[i] as FieldValueHostConfig;
             if (vhConfig.validatorConfigs)

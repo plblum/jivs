@@ -24,7 +24,7 @@ import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/Dat
 import { IntegerConverter, UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { NumberFormatter, StringFormatter, DateFormatter } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
@@ -96,7 +96,7 @@ function createJivsServicesForThisExample(): IJivsServices {
 
     // This might be the only line you'd customize in your version of createJivsServices()
     // as it relates to this example.
-    services.loggerService.minLevel = LoggingLevel.Debug;
+    services.loggingService.minLevel = LoggingLevel.Debug;
     return services;
 }
 

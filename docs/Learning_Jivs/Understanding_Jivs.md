@@ -24,12 +24,13 @@ flowchart LR
 
 ## The Core Jivs Concepts
 
-Four names appear throughout Jivs and are worth learning early:
+These names appear throughout Jivs and are worth learning early:
 
 1. **ValueHost** — represents a value that participates in the validation system. It has a unique name that you'll use to look it up, and a data type that dictates some of its behavior.
 2. **FieldValueHost** — a ValueHost designed for values associated with fields, including Text Values and Native Values. There are other ValueHosts for calculated and static values, both of which can be used by validators but are not editable model fields.
 3. **ValueHostsManager** — coordinates a collection of ValueHosts and provides the application-level view of their validation state. Think of this as the actual Value Manager described earlier.
 4. **JivsServices** — the required services object used by Jivs for dependency injection and customization. Among its many tools, it has the validation rules, parsers, and formatters.
+5. **Lookup Keys** — Strings that name each data type, like "Number", "Date", and "TimeOfDay". Data types are vital to validating data. They are used to resolve many things: parsers, formatters, converters, etc. You can add your own and configure them in JivsServices.
 
 ```mermaid
 flowchart LR

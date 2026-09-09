@@ -265,8 +265,8 @@ describe('DataTypePropertyAnalyzer class', () => {
 });
 describe('LabelPropertiesAnalyzer class', () => {
 
-    // labell10n not declared in TextLocalizerService is a configIssue
-    test('no match in TextLocalizerService, has both label and label10n, 1 culture results in LocalizedResultProperty with 1 culture containing warning about using fallback.', () => {
+    // labell10n not declared in ErrorMessagesService is a configIssue
+    test('no match in ErrorMessagesService, has both label and label10n, 1 culture results in LocalizedResultProperty with 1 culture containing warning about using fallback.', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -286,7 +286,7 @@ describe('LabelPropertiesAnalyzer class', () => {
         checkLocalizedPropertyResult(pi, 'label', 1, 'en', 'en', undefined, true);
     });
     // same with 3 cultures, all reporting the same severity/message
-    test('no match in TextLocalizerService, has both label and label10n, 3 culture results in LocalizedResultProperty with 3 cultures each containing warning about using fallback.', () => {
+    test('no match in ErrorMessagesService, has both label and label10n, 3 culture results in LocalizedResultProperty with 3 cultures each containing warning about using fallback.', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -307,7 +307,7 @@ describe('LabelPropertiesAnalyzer class', () => {
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, true);
     });
     // same but label is null, so the error message is different
-    test('no match in TextLocalizerService, has label10n but label=null (so no fallback), 1 culture results in LocalizedResultProperty with 1 culture containing warning about \"No text will be used\".', () => {
+    test('no match in ErrorMessagesService, has label10n but label=null (so no fallback), 1 culture results in LocalizedResultProperty with 1 culture containing warning about \"No text will be used\".', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -328,7 +328,7 @@ describe('LabelPropertiesAnalyzer class', () => {
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, false);
     });
     // same but label is empty string, which is considered a legal result
-    test('no match in TextLocalizerService, has label10n and label="", 1 culture results in LocalizedResultProperty with 1 culture containing warning about \"No text will be used\".', () => {
+    test('no match in ErrorMessagesService, has label10n and label="", 1 culture results in LocalizedResultProperty with 1 culture containing warning about \"No text will be used\".', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -348,8 +348,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', undefined, true);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', undefined, true);
     });
-    // TextLocalizerService has unique matching text for each of the 3 cultures will result in the CultureInfo.text property used and containing the value from the TextLocalizerService
-    test('match in TextLocalizerService, has both label and label10n, 3 culture results in LocalizedResultProperty with 3 cultures each containing the text from the TextLocalizerService.', () => {
+    // ErrorMessagesService has unique matching text for each of the 3 cultures will result in the CultureInfo.text property used and containing the value from the ErrorMessagesService
+    test('match in ErrorMessagesService, has both label and label10n, 3 culture results in LocalizedResultProperty with 3 cultures each containing the text from the ErrorMessagesService.', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -359,7 +359,7 @@ describe('LabelPropertiesAnalyzer class', () => {
         };
 
         let services = createServices({ cultures: [{ cultureId: 'en' }, { cultureId: 'es' }, { cultureId: 'fr'}] });
-        services.textLocalizerService.register('testLabelL10n',
+        services.errorMessagesService.register('testLabelL10n',
             {
                 'en': 'testLabelL10n-en',
                 'es': 'testLabelL10n-es',
@@ -375,8 +375,8 @@ describe('LabelPropertiesAnalyzer class', () => {
         checkLocalizedPropertyResult(pi, 'label', 3, 'es', 'es', 'testLabelL10n-es', undefined);
         checkLocalizedPropertyResult(pi, 'label', 3, 'fr', 'fr', 'testLabelL10n-fr', undefined);
     });
-    // using these cultures: 'en-US', 'en' where 'en' is also a fallback. TextLocalizerService has matching text.
-    test('match in TextLocalizerService only to the fallback culture "en", has both label and label10n, 2 culture results in LocalizedResultProperty with 2 cultures each containing the text from the TextLocalizerService.', () => {
+    // using these cultures: 'en-US', 'en' where 'en' is also a fallback. ErrorMessagesService has matching text.
+    test('match in ErrorMessagesService only to the fallback culture "en", has both label and label10n, 2 culture results in LocalizedResultProperty with 2 cultures each containing the text from the ErrorMessagesService.', () => {
         const testValueHostConfig: ValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'testValueHost',
@@ -386,7 +386,7 @@ describe('LabelPropertiesAnalyzer class', () => {
         };
 
         let services = createServices({ cultures: []});
-        services.textLocalizerService.register('testLabelL10n',
+        services.errorMessagesService.register('testLabelL10n',
             {
                 'en': 'testLabelL10n-en',
             });

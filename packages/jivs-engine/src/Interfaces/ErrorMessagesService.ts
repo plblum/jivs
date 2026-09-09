@@ -1,26 +1,22 @@
 /**
- * @inheritDoc ITextLocalizerService
- * @module jivs-engine/Services/Types/ITextLocalizerService
+ * @inheritDoc IErrorMessagesService
+ * @module jivs-engine/Services/Types/IErrorMessagesService
  */
 
 import { IServiceWithFallback } from './Services';
 
 /**
- * A service to offer text alternatives to the default text
- * based on cultureId.
+ * Supports the `errorMessage` and `summaryMessage` properties of `Validators` in two ways:
+ *    - It provides a reusable library of default strings, avoiding the need to configure 
+ *        the same messages on every `Validator`.
+ *    - It provides localized versions of those strings and of text used to replace tokens within them.
  * 
- * It supports having fallbacks, so the app can have a standard implementation
- * and another that introduces special cases.
- * 
- * To set that up:
- * ```ts
- * let vs = createJivsServices(); // provides the standard case in vs.textLocalizerService
- * let special = new TextLocalizerService();
- * special.fallbackService = vs.textLocalizerService;
- * vs.textLocalizerService = special;
- * ```
+ * There are two text values associated with localization:
+ * - A lookup key. A short code that maps to the actual string for each culture.
+ * - Fallback text. The text supplied when the lookup key does not have
+ *   anything to offer for the given culture.
  */
-export interface ITextLocalizerService extends IServiceWithFallback<ITextLocalizerService>
+export interface IErrorMessagesService extends IServiceWithFallback<IErrorMessagesService>
 {
     /**
      * Returns the localized version of the text for the given culture.

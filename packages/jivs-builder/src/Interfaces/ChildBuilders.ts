@@ -167,7 +167,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
      * Additional ways to customize the Validator, including localized error messages,
      * severity, and the enabler.
@@ -196,7 +196,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
       * The error message "template" that will appear on screen when the condition is NoMatch.
       * It can use tokens, which are resolved with current data at the time of validation.
       * If null, it will expect to be setup by one of several other sources including
-      * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+      * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
       * @param summaryMessage - optional summary message.
 
       * Additional ways to customize the Validator, including localized error messages,
@@ -233,7 +233,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 
      * Additional ways to customize the Validator, including localized error messages,
@@ -266,7 +266,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 
      * Additional ways to customize the Validator, including localized error messages,
@@ -295,7 +295,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 
      * Additional ways to customize the Validator, including localized error messages,
@@ -332,7 +332,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 
      * Additional ways to customize the Validator, including localized error messages,
@@ -367,7 +367,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -411,7 +411,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -455,7 +455,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -499,7 +499,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
@@ -542,7 +542,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -586,7 +586,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
      * @returns The current instance of ValidatorBuilder for method chaining.
      */    
@@ -627,7 +627,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -671,7 +671,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -710,7 +710,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -749,7 +749,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -789,7 +789,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -849,7 +849,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -908,7 +908,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -959,7 +959,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.
@@ -1018,7 +1018,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * @param errorMessage - The error message "template" that will appear on screen when the condition is NoMatch.
      * It can use tokens, which are resolved with current data at the time of validation.
      * If null, it will expect to be setup by one of several other sources including
-     * localization (validatorParameters.errorMessagel10n) and the TextLocalizationService.
+     * localization (validatorParameters.errorMessagel10n) and the ErrorMessagesService.
      * @param summaryMessage - optional summary message.
 - Optional validator configuration parameters.
      * @returns The current instance of ValidatorBuilder for method chaining.

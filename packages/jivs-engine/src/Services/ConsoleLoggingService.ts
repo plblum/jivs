@@ -1,20 +1,20 @@
 /**
- * Concrete implemenation of ILogger that provides logging to the Console.
- * @module jivs-engine/Services/ConcreteClasses/LoggerService
+ * Concrete implemenation of ILoggingService that provides logging to the Console.
+ * @module jivs-engine/Services/ConcreteClasses/ConsoleLoggingService
  */
-import { ILoggerService, LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggerService';
-import { LoggerServiceBase } from './LoggerServiceBase';
+import { ILoggingService, LogDetails, LogOptions, LoggingLevel } from '../Interfaces/LoggingService';
+import { LoggingServiceBase } from './LoggingServiceBase';
 
 
 /**
- * Concrete implemenation of ILogger that provides logging to the Console. This is the default logger.
+ * Concrete implemenation of ILoggingService that provides logging to the Console. This is the default logger.
  * If you want to log both to the console and another system, create both loggers,
  * passing the other into this constructor.
  */
-export class ConsoleLoggerService extends LoggerServiceBase
+export class ConsoleLoggingService extends LoggingServiceBase
 {
     constructor(minLevel: LoggingLevel = LoggingLevel.Warn,
-        chainedLogger?: ILoggerService | null,
+        chainedLogger?: ILoggingService | null,
         includeData: boolean = false) {
         super(minLevel, chainedLogger);
         this._includeData = includeData;

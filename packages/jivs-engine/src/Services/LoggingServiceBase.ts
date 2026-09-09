@@ -1,23 +1,23 @@
 /**
- * Base class for Logger services. This class is abstract and should be extended to provide a concrete implementation.
- * @module jivs-engine/Services/AbstractClasses/LoggerServiceBase
+ * Base class for LoggingServices. This class is abstract and should be extended to provide a concrete implementation.
+ * @module jivs-engine/Services/AbstractClasses/LoggingServiceBase
  */
 import { deepEquals, valueForLog } from '../Utilities/Utilities';
-import { ILoggerService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggerService';
+import { ILoggingService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../Interfaces/LoggingService';
 import { ServiceBase } from './ServiceBase';
 
 
 /**
- * Base class for Logger services. This class is abstract and should be extended to provide a concrete implementation.
+ * Base class for LoggingServices. This class is abstract and should be extended to provide a concrete implementation.
  */
-export abstract class LoggerServiceBase extends ServiceBase implements ILoggerService {
+export abstract class LoggingServiceBase extends ServiceBase implements ILoggingService {
     /**
      * Constructor
      * @param minLevel - defaults to Warn
-     * @param chainedLogger - Reference to another ILoggerService implementation
+     * @param chainedLogger - Reference to another ILoggingService implementation
        that gets called after the console's logging.
      */
-    constructor(minLevel: LoggingLevel = LoggingLevel.Warn, chainedLogger?: ILoggerService | null) {
+    constructor(minLevel: LoggingLevel = LoggingLevel.Warn, chainedLogger?: ILoggingService | null) {
         super();
         this._minLevel = minLevel;
         this._chainedLogger = chainedLogger ?? null;
@@ -46,7 +46,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
     private _showStack: boolean = false;
 
     /**
-     * Reference to another ILogger implementation
+     * Reference to another ILoggingService implementation
      * that gets called after the console's logging.
      * Optional.
      * Will only be called if this logger instance has level >= minLevel
@@ -55,10 +55,10 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
      * However, you can set the minLevel on chainedLogger after this
      * assignment to control what it outputs.
      */
-    public get chainedLogger(): ILoggerService | null {
+    public get chainedLogger(): ILoggingService | null {
         return this._chainedLogger;
     }
-    public set chainedLogger(logger: ILoggerService | null) {
+    public set chainedLogger(logger: ILoggingService | null) {
         this._chainedLogger = logger;
         // set the minLevel to Debug because the current
         // instance determines if log requests are run
@@ -66,7 +66,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
         if (logger)
             logger.minLevel = LoggingLevel.Debug;
     }
-    private _chainedLogger: ILoggerService | null;
+    private _chainedLogger: ILoggingService | null;
 
     /**
      * User supplied overrides for the minLevel rule.
@@ -232,7 +232,7 @@ export abstract class LoggerServiceBase extends ServiceBase implements ILoggerSe
 }
 
 /**
-* Add these to LoggerServiceBase with overrideMinLevelWhen() 
+* Add these to LoggingServiceBase with overrideMinLevelWhen() 
 * to override the minLevel rule, and include
 * a log entry based on a variety of characteristics.
 * Each instance must match all properties that are assigned.

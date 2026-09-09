@@ -36,9 +36,9 @@ range(minimum, maximum,
 ```
 ## Validation Parameters object
 - `errorMessage` – The error message intended to be show in an Error Display widget specific to one field. There are many features here, including that you don't need to assign it if you setup defaults. See [Error messages](./Error_Messages.md).
-- `errorMessagel10n` – Localization key for the error message. Most of the time, it is based on the `errorCode` or `ConditionType`, and this can be left unassigned. See [Error Message Localization](../JivsServices/TextLocalizerService.md#working-with-validatorconfigerrormessage-and-summarymessage-properties)
+- `errorMessagel10n` – Localization key for the error message. Most of the time, it is based on the `errorCode` or `ConditionType`, and this can be left unassigned. See [Error Message Localization](../JivsServices/ErrorMessagesService.md#working-with-validatorconfigerrormessage-and-summarymessage-properties)
 - `summaryMessage` – Same idea as errorMessage except to be shown in a Validation Summary widget. It's normal to include the field label in this message, using the {Label} token: “{Label} requires a value”. It too can be omitted if you setup defaults. See [Error messages](./Error_Messages.md).
-- `summaryMessagel10n` – Localization key for the summary message. Most of the time, it is based on the `errorCode` or `ConditionType`, and this can be left unassigned. See [Error Message Localization](../JivsServices/TextLocalizerService.md#working-with-validatorconfigerrormessage-and-summarymessage-properties)
+- `summaryMessagel10n` – Localization key for the summary message. Most of the time, it is based on the `errorCode` or `ConditionType`, and this can be left unassigned. See [Error Message Localization](../JivsServices/ErrorMessagesService.md#working-with-validatorconfigerrormessage-and-summarymessage-properties)
 - `severity` – Controls some validation behaviors with these three values.
   - `Error` – Error but continue evaluating the remaining validation rules. This is the default when `severity` is omitted.
   - `Severe` – Error and do not evaluate any more validation rules for this `ValueHost` until the error is fixed.
@@ -61,8 +61,8 @@ builder.field('LastName', LookupKey.String, { label: 'Last name' })
    .requireText('This field requires a value', '{Label} requires a value.');
 ```
 ## API References
-- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
-- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validation_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidatorConfig.html)
 
 
 ---

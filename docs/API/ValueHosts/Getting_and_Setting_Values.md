@@ -293,7 +293,7 @@ document.getElementById('birthDate').attachEventListener('onchange', (event)=> {
     if (errorMessage)
         parserError = {
             errorMessage: errorMessage,
-            errorCode: 'MyParserError'  // useful to let TextLocalizerService replace the message
+            errorCode: 'MyParserError'  // useful to let ErrorMessagesService replace the message
         };
     vhm.getFieldValueHost('BirthDate').setValues(nativeValue, textValue,
         {

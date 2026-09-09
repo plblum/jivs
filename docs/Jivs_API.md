@@ -1564,7 +1564,7 @@ The `JivsServices class` supports the operations of Validation with services and
 `JivsServices` is where we register new `Conditions` and classes to help work with all of the data types you might have in your Model. None of those classes are prepopulated (so that you are not stuck with classes that you won't use). So let’s get them setup.
 
 ### Configuring JivsServices
-Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
 
 Add the contents of this file to your project. It results in several new functions starting with this one.
 ```ts

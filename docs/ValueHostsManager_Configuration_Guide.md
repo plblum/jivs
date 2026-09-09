@@ -368,7 +368,7 @@ builder.field('StartDate').regExp(expression, ignoreCase, errorMessage, summaryM
 // or
 builder.field('StartDate').regExp(expression, ignoreCase, {validator parameters});
 ```
-Error messages can be kept separately in the global configuration by using [TextLocalizerService](./API/JivsServices/TextLocalizerService.md). When done this way, omit the errorMessage and summaryMessage, or use them to override the global configuration.
+Error messages can be kept separately in the global configuration by using [ErrorMessagesService](./API/JivsServices/ErrorMessagesService.md). When done this way, omit the errorMessage and summaryMessage, or use them to override the global configuration.
 ```ts
 builder.field('StartDate').requireText();
 ```

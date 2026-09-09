@@ -42,7 +42,7 @@ export interface ValueHostRulesOptions {
      * Used together with the IAdaptModelRulesToForm.adaptToForm() function
      * to determine how to transition from the base rules to the form-specific rules.
      * When true or undefined, delete any error messages supplied by business logic for which
-     * you have a replacement in TextLocalizationService.
+     * you have a replacement in ErrorMessagesService.
      * If undefined, it defaults to true.
      */
     favorUIMessages?: boolean;

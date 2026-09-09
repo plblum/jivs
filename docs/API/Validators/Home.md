@@ -12,6 +12,7 @@ There are several aspects to validation:
     - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
     - [`ValueHostValidationState object`](./Validation_State.md#valuehostvalidationstate) from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
     - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both ValidationState and `ValueHostValidationState`.
+- [Data Type Check Validators](./DataTypeCheck_validators.md) categorizes validators required to confirm the native value matches the Lookup Key. It provides a way to automatically have them generated, avoiding setup.
 - [Injecting errors on demand](./Injecting_errors_on_demand.md), where you receive an error outside of normal scope such as a parser failure.
 
 For example:
@@ -61,8 +62,8 @@ function formValidated(valueHostsManager: IValueHostsManager, validationState: V
 
 ```
 ## API References
-- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
-- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validation_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidatorConfig.html)
 - [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
 - [ConditionConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Conditions_Types.ConditionConfig.html)
 - [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)

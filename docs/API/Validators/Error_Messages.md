@@ -29,21 +29,21 @@ Jivs has a lot of depth in its error message support.
   
     `The Event Date must be between Jan 1, 2025 and Mar 30, 2025. You entered Jun 6, 2025.`
   
-- You can setup default error message templates also with the [TextLocalizerService](#using-the-textlocalizerservice).
-- Error messages are localizable with the [TextLocalizerService](#using-the-textlocalizerservice).
+- You can setup default error message templates also with the [ErrorMessagesService](#using-the-errormessageservice).
+- Error messages are localizable with the [ErrorMessagesService](#using-the-errormessageservice).
 
-## Using the TextLocalizerService
-The `TextLocalizerService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [TextLocalizerService](../JivsServices/TextLocalizerService.md).
+## Using the ErrorMessagesService
+The `ErrorMessagesService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [ErrorMessagesService](../JivsServices/ErrorMessagesService.md).
 
 It provides:
 - a reusable library of default strings, avoiding the need to configure the same messages on every `Validator`.
 - localized versions of those strings
 - localized versions of label names and data type names used in {Label}, {SecondLabel}, and {DataType} tokens found in error messages.
 
-Configure your error messages within your `createJivsServices()` function.
+Configure your error messages within your in the `createErrorMessagesService()` function of your `create_JivsServices.ts` file.
 
 ```ts
-let tls = vhm.services.textLocalizerService;    
+let tls = vhm.services.errorMessagesService;    
 // defaults for RequireTextConditions
 tls.registerErrorMessage(ConditionType.RequireText, null, {
     '*': 'This field requires a value.'
@@ -52,11 +52,11 @@ tls.registerSummaryMessage(ConditionType.RequireText, null, {
     '*': '{Label} requires a value.'
 });    
 ```
-See [TextLocalizerService](../JivsServices/TextLocalizerService.md) for much more.
+See [ErrorMessagesService](../JivsServices/ErrorMessagesService.md) for much more.
 
 
 ## API References
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 
 ---
 Go to [Validators Home](./Home.md)

@@ -1,4 +1,4 @@
-import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../../src/Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from '../../src/Interfaces/LoggingService';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { ServiceWithAccessorBase } from '../../src/Services/ServiceWithAccessorBase';
@@ -10,7 +10,7 @@ function createServices(): { logger: TestLogCallsLoggingService, services: IJivs
 }
 function setupTestLogCallsLogger(services: IJivsServices, level: LoggingLevel): TestLogCallsLoggingService {
     let logger = new TestLogCallsLoggingService();
-    services.loggerService = logger;
+    services.loggingService = logger;
     return logger;
 }
 class Publicify_ServiceWithAccessorBase extends ServiceWithAccessorBase {

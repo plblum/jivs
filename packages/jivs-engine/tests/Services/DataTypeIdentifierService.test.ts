@@ -1,9 +1,9 @@
 import { BooleanDataTypeIdentifier, DateDataTypeIdentifier, NumberDataTypeIdentifier, StringDataTypeIdentifier } from "../../src/DataTypes/DataTypeIdentifiers";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { MockJivsServices } from "../TestSupport/mocks";
 
 class TestDataType { }
@@ -70,7 +70,7 @@ describe('DataTypeIdentifierService.identify', () => {
         let testItem = new DataTypeIdentifierService();
         let services = new MockJivsServices(false, false);
         testItem.services = services;
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         testItem.register(new TestIdentifier());

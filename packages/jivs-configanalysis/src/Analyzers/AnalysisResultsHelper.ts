@@ -315,12 +315,12 @@ export class AnalysisResultsHelper<TServices extends IJivsServices>
 
     /**
      * Using the two properties for localization, check if the localization property (l10n) 
-     * is declared in the TextLocalizerService for all cultures. 
+     * is declared in the ErrorMessagesService for all cultures. 
      * If so, show the localized text specific to each culture. 
      * If not, show a warning when the fallback text is used and an error when there is nothing to use.
      * @param propertyNamePrefix - The prefix of the property name. This is the property
      * that does not end in "l10n".
-     * @param l10nKey - The value from the l10n property used in the TextLocalizerService to lookup the localized text.
+     * @param l10nKey - The value from the l10n property used in the ErrorMessagesService to lookup the localized text.
      * @param fallbackText - The value from the property that does not end in "l10n".
      * @param properties - Adds a LocalizedPropertyIssue to this array so long as 
      * l10nKey is supplied.
@@ -341,9 +341,9 @@ export class AnalysisResultsHelper<TServices extends IJivsServices>
                 const cultureResult: LocalizedTextResult = { };
                 info.cultureText[cultureId] = cultureResult;
 
-                const msg = `${propertyNamePrefix} localization not declared in TextLocalizerService for culture "${cultureId}".`;
+                const msg = `${propertyNamePrefix} localization not declared in ErrorMessagesService for culture "${cultureId}".`;
              
-                const details = this.services.textLocalizerService.localizeWithDetails(cultureId, l10nKey, fallbackText ?? null);
+                const details = this.services.errorMessagesService.localizeWithDetails(cultureId, l10nKey, fallbackText ?? null);
                 switch (details.result) {
                     case 'localized':
                         cultureResult.text = details.text;

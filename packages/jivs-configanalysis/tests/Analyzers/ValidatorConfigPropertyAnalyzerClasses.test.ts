@@ -195,11 +195,11 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
         describe('tokens in errorMessage110n', () => {
 
             // these will have only one culture, 'en', as we've tested culture support elsewhere
-            // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
+            // ErrorMessagesService will have supporting messages reflecting the number of and type of tokens desired.
             // errorMessagel10n is a string with no tokens
             test('should not add any lookupKeyResults when errorMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
@@ -214,7 +214,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // demonstrates that this code doesn't look at errorMessage
             test('should not add any lookupKeyResults when errorMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { errorMessage: 'Some other text', errorMessagel10n: 'l10nKey' });
@@ -237,7 +237,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             test('should add a lookupKeyResults when errorMessagel10n is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Number}' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
@@ -256,7 +256,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
                 let services = createServicesForTheseTests();
 
                 let helper = setupHelperForTheseTests(services);
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Custom}' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
@@ -273,7 +273,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
                 let helper = setupHelperForTheseTests(services);
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Bad' });
 
                 let results = executeFunction(services, { errorMessagel10n: 'l10nKey' });
@@ -292,11 +292,11 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
         describe('tokens in summaryMessagel10n', () => {
 
             // these will have only one culture, 'en', as we've tested culture support elsewhere
-            // TextLocalizerService will have supporting messages reflecting the number of and type of tokens desired.
+            // ErrorMessagesService will have supporting messages reflecting the number of and type of tokens desired.
             // summaryMessagel10n is a string with no tokens
             test('should not add any lookupKeyResults when summaryMessagel10n is a string with no tokens.', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
@@ -309,7 +309,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // demonstrates that this code doesn't look at errorMessage
             test('should not add any lookupKeyResults when summaryMessagel10n is a string with no tokens and errorMessage is a string with tokens', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: 'This is a test message' });
 
                 let results = executeFunction(services, { summaryMessage: 'Some other text', summaryMessagel10n: 'l10nKey' });
@@ -330,7 +330,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             test('should add a lookupKeyResults when summaryMessagel10n is a string with a single token', () => {
                 let services = createServicesForTheseTests();
                 services.dataTypeFormatterService.register(new NumberFormatter(null));
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Number}' });
  
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
@@ -347,7 +347,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             // with custom token without a compatible Formatter
             test('token has a custom lookup key that has no compatible Formatter reports Not found error', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Custom}' });
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
@@ -363,7 +363,7 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
             });
             test('invalid token results in adding to ValidatorConfigCAResult.properties', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('l10nKey',
+                services.errorMessagesService.register('l10nKey',
                     { en: '{Token:Bad' });
 
                 let results = executeFunction(services, { summaryMessagel10n: 'l10nKey' });
@@ -378,18 +378,18 @@ describe('AllMessagePropertiesConfigPropertyAnalyzer class', () => {
         describe('localization results in LocalizedPropertyCAResult objects', () => {
             // these use helper.checkLocalization to check LocalizedPropertyCAResult objects.
             // It uses multiple cultures.
-            // It has TextLocalizerService with supporting messages reflecting the
+            // It has ErrorMessagesService with supporting messages reflecting the
             // messages for multiple cultures.
             // NOTE: We have tested the underlying checkLocalization function elsewhere
-            test('3 cultures, all with messages in TextLocalizerService creates 2 LocalizedPropertyResults for errormessage and summarymessage', () => {
+            test('3 cultures, all with messages in ErrorMessagesService creates 2 LocalizedPropertyResults for errormessage and summarymessage', () => {
                 let services = createServicesForTheseTests();
-                services.textLocalizerService.register('eml10nKey',
+                services.errorMessagesService.register('eml10nKey',
                     {
                         en: 'This is a test message',
                         fr: 'Ceci est un message de test',
                         es: 'Este es un mensaje de prueba'
                     });
-                services.textLocalizerService.register('seml10nKey',
+                services.errorMessagesService.register('seml10nKey',
                     {
                         en: 'SEM This is a test message',
                         fr: 'SEM Ceci est un message de test',

@@ -5,7 +5,7 @@
 
 import { CleanedObjectConfigAnalysisOutputFormatter, JsonConfigAnalysisOutputFormatter } from '../Formatters/ConfigAnalysisOutputFormatterClasses';
 
-import { ILoggerService, LogDetails, LoggingCategory, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { ILoggingService, LogDetails, LoggingCategory, LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, ConfigAnalysisOutputReportData } from '../../Types/Explorer';
 
@@ -14,7 +14,7 @@ import { IConfigAnalysisOutputter, IConfigAnalysisOutputFormatter, ConfigAnalysi
  * and output them. Suggested implementations:
  * - To console as the object itself
  * - To console as a JSON string
- * - To the ILoggerService as a JSON string
+ * - To the ILoggingService as a JSON string
  * These can build a well formatted string, such as a full HTML page to appear as a report.
  */
 export abstract class ConfigAnalysisOutputterBase implements IConfigAnalysisOutputter
@@ -111,26 +111,26 @@ export class JsonConsoleConfigAnalysisOutputter extends ConsoleConfigAnalysisOut
 }
 
 /**
- * This class works with a string, delivering it to the ILoggerService object 
+ * This class works with a string, delivering it to the ILoggingService object 
  * supplied in the constructor.
  * It allows for rich delivery of the content through whatever implementation
- * of ILoggerService is provided.
+ * of ILoggingService is provided.
  */
 export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
 {
-    constructor(formatter: IConfigAnalysisOutputFormatter | null, loggerService: ILoggerService) {
+    constructor(formatter: IConfigAnalysisOutputFormatter | null, loggingService: ILoggingService) {
         super(formatter);
-        assertNotNull(loggerService, 'loggerService');
-        this._loggerService = loggerService;
+        assertNotNull(loggingService, 'loggingService');
+        this._loggingService = loggingService;
     }
-    protected get loggerService(): ILoggerService {
-        return this._loggerService;
+    protected get loggingService(): ILoggingService {
+        return this._loggingService;
     }
-    private readonly _loggerService: ILoggerService;
+    private readonly _loggingService: ILoggingService;
 
     /**
      * The formatted string is wrapped in the LogDetails object
-     * which is supported by the ILoggerService object.
+     * which is supported by the ILoggingService object.
      * @param reportData - The data to be formatted.
      */
     protected override format(reportData: ConfigAnalysisOutputReportData) : LogDetails {
@@ -148,19 +148,19 @@ export class LoggerConfigAnalysisOutputter extends ConfigAnalysisOutputterBase
     }
 
     /**
-     * Logs to the ILoggerService object as an Info level object.
-     * It will be logged even if the ILoggerService object has a higher MinLevel set.
+     * Logs to the ILoggingService object as an Info level object.
+     * It will be logged even if the ILoggingService object has a higher MinLevel set.
      * @param content 
      */
     protected output(content: LogDetails): void {
-        const savedLevel = this.loggerService.minLevel;
+        const savedLevel = this.loggingService.minLevel;
         try {
-            this.loggerService.minLevel = LoggingLevel.Info;
-            this.loggerService.log(LoggingLevel.Info, (options) => content);
+            this.loggingService.minLevel = LoggingLevel.Info;
+            this.loggingService.log(LoggingLevel.Info, (options) => content);
         }
         finally
         {
-            this.loggerService.minLevel = savedLevel;
+            this.loggingService.minLevel = savedLevel;
         }
     }    
 }

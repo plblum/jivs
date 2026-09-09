@@ -6,7 +6,7 @@
 import { IDataTypeParserService } from '../Interfaces/DataTypeParserService';
 import { IDataTypeParser } from '../Interfaces/DataTypeParsers';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { CodingError, assertNotEmptyString, ensureError } from '../Utilities/ErrorHandling';
 import { valueForLog } from '../Utilities/Utilities';
 import { DataTypeServiceBase } from './DataTypeServiceBase';

@@ -1,24 +1,24 @@
 import { jest } from '@jest/globals';
-import { LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
+import { ConsoleLoggingService } from "../../src/Services/ConsoleLoggingService";
 
-describe('ConsoleLoggerService constructor and supporting properties', () => {
+describe('ConsoleLoggingService constructor and supporting properties', () => {
     test('Default parameters', () => {
-        let testItem = new ConsoleLoggerService();
+        let testItem = new ConsoleLoggingService();
         expect(testItem.minLevel).toBe(LoggingLevel.Warn);
         expect(testItem.chainedLogger).toBeNull();
         expect(testItem.showStack).toBe(false);
-        expect(testItem.serviceName).toBe('ConsoleLoggerService');
+        expect(testItem.serviceName).toBe('ConsoleLoggingService');
         expect(testItem.includeData).toBe(false);
     });
 
     test('change includeData', () => {
-        let testItem = new ConsoleLoggerService();
+        let testItem = new ConsoleLoggingService();
         testItem.includeData = true;
         expect(testItem.includeData).toBe(true);
     });
     test('change showStack', () => {
-        let testItem = new ConsoleLoggerService();
+        let testItem = new ConsoleLoggingService();
         testItem.showStack = true;
         expect(testItem.showStack).toBe(true);
     });
@@ -26,7 +26,7 @@ describe('ConsoleLoggerService constructor and supporting properties', () => {
 });
 // log(message: string, level: LoggingLevel, category?: string, source?: string): void;
 
-describe('ConsoleLoggerService.log', () => {
+describe('ConsoleLoggingService.log', () => {
     function messageOnly(options?: LogOptions): LogDetails {
         return {
             message: 'Message'
@@ -34,28 +34,28 @@ describe('ConsoleLoggerService.log', () => {
     }   
     test('Debug', () => {
         const logSpy = jest.spyOn(console, 'debug');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Debug, messageOnly)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({ message: 'Message' });
         logSpy.mockReset();
     });
     test('Info', () => {
         const logSpy = jest.spyOn(console, 'log');  // not console.info
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Info, messageOnly)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({ message: 'Message' });
         logSpy.mockReset();
     });    
     test('Warn', () => {
         const logSpy = jest.spyOn(console, 'warn');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Warn, messageOnly)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({ message: 'Message' });
         logSpy.mockReset();
     });    
     test('Error', () => {
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, messageOnly)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({ message: 'Message' });
         logSpy.mockReset();
@@ -71,7 +71,7 @@ describe('ConsoleLoggerService.log', () => {
             };
         }           
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({
             message: 'Message',
@@ -97,7 +97,7 @@ describe('ConsoleLoggerService.log', () => {
 
         }
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({
             message: 'Message',
@@ -123,7 +123,7 @@ describe('ConsoleLoggerService.log', () => {
             return details;
         }           
         let logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Debug);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Debug);
         testItem.includeData = true;
         expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
         expect(resultIncludeDataFromHandler).toBe(true);
@@ -145,7 +145,7 @@ describe('logError()', () => {
         }           
         let error = new Error('Message');
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Error);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({
             message: 'Message',
@@ -163,7 +163,7 @@ describe('logError()', () => {
         }
         let error = new Error('Message');
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Error);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({
             message: 'Message',
@@ -188,7 +188,7 @@ describe('logError()', () => {
         }
         let error = new Error('Message');
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Error);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith({
             message: 'Message',
@@ -206,7 +206,7 @@ describe('logError()', () => {
         }           
         let error = new Error('Message');
         const logSpy = jest.spyOn(console, 'error');
-        let testItem = new ConsoleLoggerService(LoggingLevel.Error);
+        let testItem = new ConsoleLoggingService(LoggingLevel.Error);
         testItem.showStack = true;
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(logSpy).toHaveBeenCalledWith(expect.objectContaining({

@@ -6,7 +6,7 @@
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IDataTypeFormatter } from '../Interfaces/DataTypeFormatters';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { DataTypeServiceBase } from './DataTypeServiceBase';
 import { LookupKeyFallbackService } from './LookupKeyFallbackService';

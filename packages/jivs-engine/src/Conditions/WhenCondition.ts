@@ -9,7 +9,7 @@ import { ValueHostName } from '../DataTypes/BasicTypes';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { ConditionBase, ErrorResponseCondition } from './ConditionBase';
 import { ConditionType } from './ConditionTypes';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 
 /**
  * Configuration for WhenCondition

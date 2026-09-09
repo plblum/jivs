@@ -1,34 +1,34 @@
 /**
- * LoggerFacade provides a simplified API for logging messages and exceptions.
- * It encapsulates the LoggerService object.
+ * LoggingFacade provides a simplified API for logging messages and exceptions.
+ * It encapsulates the LoggingService object.
  * @module jivs-engine/Utilities
  */
 
 import {
-    ILoggerService, LogDetails, LogOptions, LoggingLevel,
+    ILoggingService, LogDetails, LogOptions, LoggingLevel,
     logGatheringErrorHandler, logGatheringHandler
-} from '../Interfaces/LoggerService';
+} from '../Interfaces/LoggingService';
 import { SevereErrorBase } from './ErrorHandling';
 
 /**
- * Used by many classes to log different types of messages to the LoggerService.
+ * Used by many classes to log different types of messages to the LoggingService.
  * Its API avoids some of the configuration details that are usually parameters
- * passed to the LoggerService.
+ * passed to the LoggingService.
  * Generally this is a protected property of base classes, where the property name is logger.
  */
-export class LoggerFacade
+export class LoggingFacade
 {
-    constructor(loggerService: ILoggerService | null, feature: string, type: object | Function | string,
+    constructor(loggingService: ILoggingService | null, feature: string, type: object | Function | string,
         identity: string | Array<string> | null, rethrowSevereErrors: boolean = true)
     {
-        this._loggerService = loggerService;
+        this._loggingService = loggingService;
         this._feature = feature;
         this._type = type;
         this._identity = identity;
         this._rethrowSevereErrors = rethrowSevereErrors;
     }
-    private readonly _loggerService: ILoggerService | null;
-    protected get loggerService(): ILoggerService | null { return this._loggerService; }
+    private readonly _loggingService: ILoggingService | null;
+    protected get loggingService(): ILoggingService | null { return this._loggingService; }
     private readonly _feature: string;
     protected get feature(): string { return this._feature; }
     private readonly _type: object | Function | string;
@@ -43,7 +43,7 @@ export class LoggerFacade
      * here.
      */
     public log(level: LoggingLevel, gatherFn: logGatheringHandler): void {
-        this.loggerService?.log(level, (options?: LogOptions) => {
+        this.loggingService?.log(level, (options?: LogOptions) => {
             const details = gatherFn(options);
             details.feature = this.feature;
             details.type = this.type;
@@ -74,7 +74,7 @@ export class LoggerFacade
      */
     public error(error: Error, gatherFn?: logGatheringErrorHandler): void
     {
-        this.loggerService?.logError(error, (options?: LogOptions) => {
+        this.loggingService?.logError(error, (options?: LogOptions) => {
             const details = gatherFn ? gatherFn(options) : {} as LogDetails;
             details.feature = this.feature;
             details.type = this.type;

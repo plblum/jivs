@@ -1,16 +1,16 @@
-import { CapturingLogger } from './../../src/Support/CapturingLogger';
+import { TestingLoggingService } from './../../src/Support/TestingLoggingService';
 import { DataTypeIdentifierService } from './../../src/Services/DataTypeIdentifierService';
 import { DateTimeConverter, LocalDateOnlyConverter, UTCDateOnlyConverter } from "../../src/DataTypes/DataTypeConverters";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { JivsServices } from "../../src/Services/JivsServices";
 import { IDataTypeIdentifier } from '../../src/Interfaces/DataTypeIdentifier';
-import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { MockJivsServices } from '../TestSupport/mocks';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { ConversionResult, SimpleValueType } from '../../src/Interfaces/DataTypeConverterService';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { ConsoleLoggingService } from '../../src/Services/ConsoleLoggingService';
 
 
 const testNumberLookupKey = 'TestNumber';
@@ -296,7 +296,7 @@ function resultValueReturned(testItem: DataTypeConverterService,
     expect(result.error).toBeFalsy();
     expect(result.earlierResult).toBeFalsy(); // in convert, it is undefined. in convertUntilResult, it is null
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     expect(logger.findMessage('Using ' + converterName, LoggingLevel.Debug)).toBeTruthy();
 
     let msg = expected === null ? 'Converted to null' : `Converted to type "${resultLookupKey}"`;
@@ -327,7 +327,7 @@ function resultValueReturnedWithEarlierResults(testItem: DataTypeConverterServic
     }
 
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     for (let i = 0; i < earlierResults.length; i++) {
         expect(logger.findMessage('Using ' + earlierResults[i].converter, LoggingLevel.Debug)).toBeTruthy();
     }
@@ -347,7 +347,7 @@ function resultNoConverterFound(testItem: DataTypeConverterService,
     expect(result.earlierResult).toBeUndefined();
     expect(result.resolvedValue).toBeFalsy();
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     let logResult = logger.findMessage(`Need a DataTypeConverter to convert`, LoggingLevel.Warn, LoggingCategory.Result);
     expect(logResult).toBeTruthy();
     expect(logResult!.message).toContain(`into "${resultLookupKey}"`);
@@ -366,7 +366,7 @@ function resultConverterFailed(testItem: DataTypeConverterService,
     expect(result.error).toBeFalsy();
     expect(result.earlierResult).toBeFalsy(); // in convert, it is undefined. in convertUntilResult, it is null
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     let logResult = logger.findMessage(`Converter "${converterName}" failed to convert the value to "${resultLookupKey}"`, LoggingLevel.Warn, LoggingCategory.Result);
     expect(logResult).toBeTruthy();
     expect(logResult?.data).toEqual(result);
@@ -392,7 +392,7 @@ function resultConverterFailedWithEarlierResults(testItem: DataTypeConverterServ
         expect(earlierResultsActual[i]).toEqual(expect.objectContaining(earlierResults[i]));
     }
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     let logResult = logger.findMessage(`Converter "${last.converter}" failed to convert the value to "${resultLookupKey}"`, LoggingLevel.Warn, LoggingCategory.Result);
     expect(logResult).toBeTruthy();
     expect(logResult?.data).toEqual(result);
@@ -408,7 +408,7 @@ function resultErrorThrown(testItem: DataTypeConverterService,
     expect(result.earlierResult).toBeUndefined();
     expect(result.resolvedValue).toBeUndefined();
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     expect(logger.findMessage(`Using ${converterName}`, LoggingLevel.Debug)).toBeTruthy();
     let logResult = logger.findMessage(error.message, LoggingLevel.Error);
     expect(logResult).toBeTruthy();
@@ -424,7 +424,7 @@ function resultValueSuppliedWasNullOrUndefined(testItem: DataTypeConverterServic
     expect(result.earlierResult).toBeUndefined();
     expect(result.resolvedValue).toBe(true);
 
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     let logResult = logger.findMessage('Nothing to convert. The value is null or undefined.', LoggingLevel.Info, LoggingCategory.Result);
     expect(logResult).toBeTruthy();
     expect(logResult?.data).toEqual(result);
@@ -433,9 +433,9 @@ function resultValueSuppliedWasNullOrUndefined(testItem: DataTypeConverterServic
 function setupDTCS(): DataTypeConverterService {
     let testItem = new DataTypeConverterService();
     testItem.services = new MockJivsServices(false, false);
-    let logger = testItem.services.loggerService as CapturingLogger;
+    let logger = testItem.services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Debug;
-    logger.chainedLogger = new ConsoleLoggerService(logger.minLevel, undefined, true);
+    logger.chainedLogger = new ConsoleLoggingService(logger.minLevel, undefined, true);
     return testItem;
 }
 
@@ -532,7 +532,7 @@ describe('convert() function', () => {
     function testValueReturned(testItem: DataTypeConverterService,
         value: any, sourceLookupKey: string | null, resultLookupKey: string,
         expected: any, converterName: string) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         logger.clearAll();
         let result = testItem.convert(value, sourceLookupKey, resultLookupKey);
@@ -540,7 +540,7 @@ describe('convert() function', () => {
     }
     function testConverterNotFound(testItem: DataTypeConverterService,
         value: any, sourceLookupKey: string | null, resultLookupKey: string,) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         logger.clearAll();
         let result = testItem.convert(value, sourceLookupKey, resultLookupKey);
@@ -616,9 +616,9 @@ describe('convert() function', () => {
 
     test('Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
         let services = new JivsServices();
-        let logger = new CapturingLogger();
+        let logger = new TestingLoggingService();
         logger.minLevel = LoggingLevel.Debug;
-        services.loggerService = logger;
+        services.loggingService = logger;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
         testItem.register(new TestConverterThatThrows(new Error('test')));
@@ -630,9 +630,9 @@ describe('convert() function', () => {
 
     test('Converter that throws severe is handled by throwing and adding to the log.', () => {
         let services = new JivsServices();
-        let logger = new CapturingLogger();
+        let logger = new TestingLoggingService();
         logger.minLevel = LoggingLevel.Debug;
-        services.loggerService = logger;
+        services.loggingService = logger;
         let testItem = new DataTypeConverterService();
         services.dataTypeConverterService = testItem;
         testItem.register(new TestConverterThatThrows(new CodingError('test')));
@@ -659,7 +659,7 @@ describe('convert() function', () => {
         let result = testItem.convert(null, "", LookupKey.String);
         resultValueSuppliedWasNullOrUndefined(testItem, result, "", LookupKey.String);
 
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
         logger.clearAll();
         result = testItem.convert(undefined, "", LookupKey.String);
         resultValueSuppliedWasNullOrUndefined(testItem, result, "", LookupKey.String);
@@ -670,7 +670,7 @@ describe('convertUntilResult', () => {
     function testValueReturned(testItem: DataTypeConverterService,
         value: any, sourceLookupKey: string | null, resultLookupKey: string,
         expected: any, converterName: string) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
 
         logger.clearAll();
         let result = testItem.convertUntilResult(value, sourceLookupKey, resultLookupKey);
@@ -679,7 +679,7 @@ describe('convertUntilResult', () => {
     function testValueReturnedWithEarlierResults(testItem: DataTypeConverterService,
         value: any, sourceLookupKey: string | null, resultLookupKey: string,
         expected: any, earlierResults: Array<Partial<ConversionResult>>) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
 
         logger.clearAll();
         let result = testItem.convertUntilResult(value, sourceLookupKey, resultLookupKey);
@@ -687,7 +687,7 @@ describe('convertUntilResult', () => {
     }
     function testConverterNotFound(testItem: DataTypeConverterService,
         value: any, sourceLookupKey: string | null, resultLookupKey: string,) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
 
         logger.clearAll();
         let result = testItem.convertUntilResult(value, sourceLookupKey, resultLookupKey);
@@ -697,7 +697,7 @@ describe('convertUntilResult', () => {
         value: any, sourceLookupKey: string | null,
         resultLookupKey: string,
         converterName: string) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
 
         logger.clearAll();
         let result = testItem.convertUntilResult(value, sourceLookupKey, resultLookupKey);
@@ -707,7 +707,7 @@ describe('convertUntilResult', () => {
         value: any, sourceLookupKey: string | null,
         resultLookupKey: string,
         earlierResults: Array<Partial<ConversionResult>>) {
-        let logger = testItem.services.loggerService as CapturingLogger;
+        let logger = testItem.services.loggingService as TestingLoggingService;
 
         logger.clearAll();
         let result = testItem.convertUntilResult(value, sourceLookupKey, resultLookupKey);
@@ -817,9 +817,9 @@ describe('convertUntilResult', () => {
         test('Converter that throws non-severe is handled by returning undefined and adding to the log.', () => {
             let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
-            let logger = new CapturingLogger();
+            let logger = new TestingLoggingService();
             logger.minLevel = LoggingLevel.Debug;
-            services.loggerService = logger;
+            services.loggingService = logger;
             let testItem = new DataTypeConverterService();
             services.dataTypeConverterService = testItem;
             testItem.register(new TestConverterThatThrows(new Error('test')));
@@ -832,9 +832,9 @@ describe('convertUntilResult', () => {
         test('Converter that throws severe is handled by throwing and adding to the log.', () => {
             let services = new JivsServices();
             services.dataTypeIdentifierService = new DataTypeIdentifierService();
-            let logger = new CapturingLogger();
+            let logger = new TestingLoggingService();
             logger.minLevel = LoggingLevel.Debug;
-            services.loggerService = logger;
+            services.loggingService = logger;
             let testItem = new DataTypeConverterService();
             services.dataTypeConverterService = testItem;
             testItem.register(new TestConverterThatThrows(new CodingError('test')));
@@ -850,7 +850,7 @@ describe('convertUntilResult', () => {
             testItem.register(new TestLookupKeyConverter());
             let result = testItem.convertUntilResult(null, LookupKey.Number, LookupKey.Number);
             resultValueSuppliedWasNullOrUndefined(testItem, result, LookupKey.Number, LookupKey.Number);
-            let logger = testItem.services.loggerService as CapturingLogger;
+            let logger = testItem.services.loggingService as TestingLoggingService;
             logger.clearAll();
             result = testItem.convertUntilResult(null, null, LookupKey.Number);
             resultValueSuppliedWasNullOrUndefined(testItem, result, null, LookupKey.Number);
@@ -860,7 +860,7 @@ describe('convertUntilResult', () => {
             testItem.register(new TestLookupKeyConverter());
             let result = testItem.convertUntilResult(undefined, LookupKey.Number, LookupKey.Number);
             resultValueSuppliedWasNullOrUndefined(testItem, result, LookupKey.Number, LookupKey.Number);
-            let logger = testItem.services.loggerService as CapturingLogger;
+            let logger = testItem.services.loggingService as TestingLoggingService;
             logger.clearAll();
             result = testItem.convertUntilResult(undefined, null, LookupKey.Number);
             resultValueSuppliedWasNullOrUndefined(testItem, result, null, LookupKey.Number);
@@ -1228,7 +1228,7 @@ describe('convertUntilResult', () => {
                 dtis.register(new StringToSingleCharLookupKeyIdentifier('s'));
 
                 // consolelogger limited to type=DataTypeConverterService
-                let logger = testItem.services.loggerService.chainedLogger as ConsoleLoggerService;
+                let logger = testItem.services.loggingService.chainedLogger as ConsoleLoggingService;
                 logger.minLevel = LoggingLevel.Warn;
                 logger.overrideMinLevelWhen({
                     type: 'DataTypeConverterService'

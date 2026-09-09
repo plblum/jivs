@@ -70,7 +70,7 @@ export class EnumByNumberFormatter extends DataTypeFormatterBase
         {
             let valueInfo = this.enumValueInfos.find((item) => item.value === value);
             if (valueInfo) {
-                let localized = this.services.textLocalizerService.localize(cultureId, valueInfo.textl10n ?? null, valueInfo.text);
+                let localized = this.services.errorMessagesService.localize(cultureId, valueInfo.textl10n ?? null, valueInfo.text);
                 if (localized)
                     return { value: localized };
             }
@@ -197,10 +197,10 @@ export class EnumByNumberParser
                 this._cultureToEnumValuesMap.set(cultureId, localized); // even if empty so we know not to create it again
                 for (let checking of this.enumValueInfos)
                     if (checking.textl10n) {
-                        let l = this.services.textLocalizerService.localize(cultureId, checking.textl10n, checking.text);
+                        let l = this.services.errorMessagesService.localize(cultureId, checking.textl10n, checking.text);
                         if (l)
                             localized.push({ value: checking.value, text: this.options.caseInsensitive ? l.toLowerCase() : l });
-                        l = this.services.textLocalizerService.localize('*', checking.textl10n, checking.text);
+                        l = this.services.errorMessagesService.localize('*', checking.textl10n, checking.text);
                         if (l)
                             localized.push({ value: checking.value, text: this.options.caseInsensitive ? l.toLowerCase() : l });                        
                     }

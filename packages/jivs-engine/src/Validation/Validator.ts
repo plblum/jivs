@@ -9,7 +9,7 @@
  * - Rules to disable the validator: Enabler condition, Enabled property and several ValidateOptions.
  * - Resolves error message tokens
   * Attached to ValidatorsValueHostBases through their ValidatorsValueHostBaseConfig.
-  * @module jivs-engine/Validator/ConcreteClasses
+  * @module jivs-engine/Validation/ConcreteClasses
  */
 
 import { ConditionType } from '../Conditions/ConditionTypes';
@@ -22,7 +22,7 @@ import
     } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import type { IJivsServices } from '../Interfaces/JivsServices';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
 import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
@@ -31,7 +31,7 @@ import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostN
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
 import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
 import { cleanString } from '../Utilities/Utilities';
 import { resolveErrorCode } from '../Utilities/Validation';
@@ -127,18 +127,18 @@ export class Validator implements IValidator {
     }    
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 'Validator', this,
                 [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)],
             false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggingFacade | null = null;    
     /**
      * The validator's issue identifier.
      * Uses ValidatorConfig.errorCode when assigned,
@@ -259,9 +259,9 @@ export class Validator implements IValidator {
     /**
      * Resolves the errorMessage as a template - before it has its tokens processed.
      * It uses several sources to get the template. The first to have text is used.
-     * 1. Config.errorMessagel10n gets data from TextLocalizerService with Config.errorMessage as fallback
+     * 1. Config.errorMessagel10n gets data from ErrorMessagesService with Config.errorMessage as fallback
      * 2. Overridden Config.errorMessage or Config.errorMessage
-     * 3. TextLocalizerService.getErrorMessage
+     * 3. ErrorMessagesService.getErrorMessage
      * @returns Error message from errorMessage property with localization applied
      * if ErrorMessagel10n is setup.
      */
@@ -272,11 +272,11 @@ export class Validator implements IValidator {
         let msg = direct as string | null;
         const l10n = this.config.errorMessagel10n as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId,
                 l10n, msg);
         if (msg == null)  // null/undefined
-        {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getErrorMessage(this.services.cultureService.defaultCultureId,
+        {// fallback: see if ErrorMessagesService has an entry specific to the errorCode and DataTypeLookupKey.
+            msg = this.services.errorMessagesService.getErrorMessage(this.services.cultureService.defaultCultureId,
                 this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null) {
@@ -307,11 +307,11 @@ export class Validator implements IValidator {
         let msg = direct as string | null;
         const l10n = this.config.summaryMessagel10n as string | null;
         if (l10n)
-            msg = this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId,
                 l10n, msg ?? '');
         if (msg == null)  // null/undefined
-        {// fallback: see if TextLocalizerService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.textLocalizerService.getSummaryMessage(this.services.cultureService.defaultCultureId,
+        {// fallback: see if ErrorMessagesService has an entry specific to the errorCode and DataTypeLookupKey.
+            msg = this.services.errorMessagesService.getSummaryMessage(this.services.cultureService.defaultCultureId,
                 this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null)
@@ -592,7 +592,7 @@ export class Validator implements IValidator {
      * {Label} - the Config.label property verbatim
      * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
      * Plus any from the Condition in use.     
-     * {DataType} - the name of the data type. Uses values registered with TextLocalizerService and LookupKey enum's strings as a fallback.
+     * {DataType} - the name of the data type. Uses values registered with ErrorMessagesService and LookupKey enum's strings as a fallback.
      */
     public getValuesForTokens(valueHost: IValidatorsValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
         let tlv: Array<TokenLabelAndValue> = [
