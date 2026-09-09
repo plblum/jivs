@@ -77,7 +77,7 @@ export interface IDataTypeCheckGeneratorService extends
      *    all of those conditions plus DataTypeCheckCondition.
      */
     registerLookupKey(lookupKey: string, data: RegExp | Array<string> | Array<ConditionConfig>,
-        addDataTypeCheckCondition: boolean
+        addDataTypeCheckCondition?: boolean
     ): void;
 }
 
