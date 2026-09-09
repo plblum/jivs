@@ -33,6 +33,7 @@ interface IJivsServices {
     loggingService: ILoggingService;
     lookupKeyFallbackService: ILookupKeyFallbackService;
     valueAdapterService: IValueAdapterService;
+    dataTypeCheckGeneratorService: IDataTypeCheckGeneratorService;
 
 // these are all factories where you may register objects  
     conditionFactory: IConditionFactory;    
@@ -40,7 +41,6 @@ interface IJivsServices {
     dataTypeFormatterService: IDataTypeFormatterService;
     dataTypeConverterService: IDataTypeConverterService;
     // less frequently modified factories
-    dataTypeCheckGeneratorService: IDataTypeCheckGeneratorService;
     dataTypeIdentifierService: IDataTypeIdentifierService;
     dataTypeComparerService: IDataTypeComparerService;
     
