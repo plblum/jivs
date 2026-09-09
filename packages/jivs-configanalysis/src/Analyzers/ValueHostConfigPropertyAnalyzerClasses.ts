@@ -115,8 +115,8 @@ export class DataTypePropertyAnalyzer extends ValueHostConfigPropertyAnalyzerBas
  * Analyzer for the label and labell10n properties of a ValueHostConfig.
  * Both can be unassigned (null, undefined, empty string).
  * label can contain any text.
- * labell10n must be a valid lookup key into TextLocalizerService or an error is reported.
- * Results include a list of all cultures and the results of TextLocalizerService.
+ * labell10n must be a valid lookup key into ErrorMessagesService or an error is reported.
+ * Results include a list of all cultures and the results of ErrorMessagesService.
  */
 export class LabelPropertiesAnalyzer extends ValueHostConfigPropertyAnalyzerBase {
     public analyze(config: ValueHostConfig, results: ValueHostConfigCAResult, valueHostConfig: ValueHostConfig | null, helper: IAnalysisResultsHelper<any>): void {

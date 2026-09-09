@@ -3,7 +3,7 @@
   * @module jivs-engine/Services/ConcreteClasses/DataTypeConverterService
  */
 
-import { LoggingLevel, LoggingCategory, LogDetails } from '../Interfaces/LoggerService';
+import { LoggingLevel, LoggingCategory, LogDetails } from '../Interfaces/LoggingService';
 import { ConversionResult, IDataTypeConverterService } from '../Interfaces/DataTypeConverterService';
 import { IDataTypeConverter } from '../Interfaces/DataTypeConverters';
 import { DataTypeConverterServiceBase } from './DataTypeConverterServiceBase';

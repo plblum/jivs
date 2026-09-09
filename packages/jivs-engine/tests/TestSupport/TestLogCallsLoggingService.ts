@@ -1,10 +1,10 @@
-import { ILoggerService, LogDetails, LogErrorDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
+import { ILoggingService, LogDetails, LogErrorDetails, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggingService";
 import { valueForLog } from "../../src/Utilities/Utilities";
 
 // Designed to keep the last call for any ILoggingService calls
 // so we can see the inputs.
 
-export class TestLogCallsLoggingService implements ILoggerService {
+export class TestLogCallsLoggingService implements ILoggingService {
     constructor (minLevel: LoggingLevel = LoggingLevel.Debug) {
         this.minLevel = minLevel;
     }
@@ -12,7 +12,7 @@ export class TestLogCallsLoggingService implements ILoggerService {
     dispose(): void {
     }
     minLevel: LoggingLevel;
-    chainedLogger: ILoggerService | null = null;
+    chainedLogger: ILoggingService | null = null;
 
     lastLogDetails: LogDetails | LogErrorDetails | null = null;
 

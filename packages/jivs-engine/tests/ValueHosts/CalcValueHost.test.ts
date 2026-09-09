@@ -6,8 +6,8 @@ import { CalcValueHost, CalcValueHostGenerator, toICalcValueHost } from "../../s
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { LoggingLevel } from "../../src/Interfaces/LoggingService";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { ValidationStatus } from "../../src/Interfaces/Validation";
 import { SetValueOptions, ValidTypesForInstanceStateStorage } from "../../src/Interfaces/ValueHost";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
@@ -213,9 +213,9 @@ describe('getValue using the calcFn', () => {
     });     
     test('function is null returns undefined and logs', () => {
         let services = createJivsServicesForTesting();
-        let logger = new CapturingLogger();
+        let logger = new TestingLoggingService();
         logger.minLevel = LoggingLevel.Info;
-        services.loggerService = logger;        
+        services.loggingService = logger;        
         let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 
@@ -270,9 +270,9 @@ describe('getValue using the calcFn', () => {
 describe('setValue', () => {
     test('setValue only logs. Has no impact on calculation', () => {
         let services = createJivsServicesForTesting();
-        let logger = new CapturingLogger();
+        let logger = new TestingLoggingService();
         logger.minLevel = LoggingLevel.Info;
-        services.loggerService = logger;
+        services.loggingService = logger;
         let vhm = new ValueHostsManager({
             services: services,
             valueHostConfigs: [ 

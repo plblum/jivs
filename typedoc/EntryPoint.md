@@ -27,7 +27,7 @@ Jivs consists of several projects, most forming their own NPM package. Typically
 - [ModelReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelReader.html)
 - [ModelWriter class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelWriter.html)
 - [StaticValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_StaticValueHost.StaticValueHost.html)
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 - [ValidationState type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidationState.html)
 - [ValueHostRulesBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-builder_ValueHostRules_ConcreteClasses.ValueHostRulesBase.html)
 - [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)

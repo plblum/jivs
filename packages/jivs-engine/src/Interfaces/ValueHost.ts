@@ -71,7 +71,7 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
     *   * injectedError - If you handle parsing before calling setValue(), your parser may have returned
     *        an error. Assign this object to contain the error message and other info.
     *        Internally Jivs will provide a Validator with the error message to report the error.
-    *        If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+    *        If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
     *        use the errorCode value of 'InjectedError' to localize the error message. 
     *        You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
@@ -91,7 +91,7 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      *  * injectedError - If you handle parsing before calling setValueToUndefined(), your parser may have returned
      *       an error. Assign this object to contain the error message and other info.
      *       Internally Jivs will provide a Validator with the error message to report the error.
-     *       If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *       If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
      *       use the errorCode value of 'InjectedError' to localize the error message. 
      *       You can also provide a summaryMessage for use in a summary of validation errors.
      */
@@ -338,8 +338,8 @@ export interface ValueHostConfig {
 
     /**
      * Localization key for Label. Its value will be matched to an entry
-     * made to JivsServices.TextLocalizerService, specific to the active culture.
-     * If setup and no entry was found in TextLocalizerService,
+     * made to JivsServices.ErrorMessagesService, specific to the active culture.
+     * If setup and no entry was found in ErrorMessagesService,
      * the value from the errorMessage property is used.
      */
     labell10n?: string | null | undefined;

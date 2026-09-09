@@ -9,7 +9,7 @@ import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IJivsServices } from '../Interfaces/JivsServices';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import type { IValidatableValueHost, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type IssueFound, type ValidateOptions, ValidationState } from '../Interfaces/Validation';
@@ -30,7 +30,7 @@ import
     } from '../Interfaces/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { toICalcValueHost } from '../ValueHosts/CalcValueHost';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
@@ -188,15 +188,15 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         this._debounceVHValidated = null;
     }
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade {
+    protected get logger(): LoggingFacade {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 'Manager', this, null, false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;
+    private _logger: LoggingFacade | null = null;
 
     protected get config(): ValueHostsManagerConfig {
         return this._config;

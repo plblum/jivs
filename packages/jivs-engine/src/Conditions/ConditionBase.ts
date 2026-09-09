@@ -7,14 +7,14 @@
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionCategory, ConditionEvaluateResult, ICondition, type ConditionConfig, type IConditionCore } from '../Interfaces/Conditions';
 import { IDisposable, toIDisposable } from '../Interfaces/General_Purpose';
-import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggerService';
+import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import type { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import type { IGatherValueHostNames, IValueHost } from '../Interfaces/ValueHost';
 import { CodingError, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { ConditionType } from './ConditionTypes';
 
 /**
@@ -34,17 +34,17 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
     }
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      * @param services 
      * @returns 
      */
-    protected logger(services: IJivsServices): LoggerFacade
+    protected logger(services: IJivsServices): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(services.loggerService, 'Condition', this, this.conditionType);
+            this._logger = new LoggingFacade(services.loggingService, 'Condition', this, this.conditionType);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;
+    private _logger: LoggingFacade | null = null;
     
     /**
      * A unique identifier for the specific implementation, like "RequireText" or "Range".

@@ -52,18 +52,18 @@ firstNameFld.attachEventListener('onchange', (evt)=> {
 ```
 ## Localizing your injected error
 Setup all localization in the `createJivsService()` function, with code associated
-with `TextLocalizerService`. See [TextLocalizerService](../JivsServices/TextLocalizerService.md) for more.
+with `ErrorMessagesService`. See [ErrorMessagesService](../JivsServices/ErrorMessagesService.md) for more.
 
 Like with validator error messages, any value you directly supply can be overridden by 
-the `TextLocalizerService`. When you do not supply a value to `injectedError.errorMessagel10n`,
-it will internally get setup with the correct l10n key to match `TextLocalizerService.registerErrorMessage()`.
+the `ErrorMessagesService`. When you do not supply a value to `injectedError.errorMessagel10n`,
+it will internally get setup with the correct l10n key to match `ErrorMessagesService.registerErrorMessage()`.
 Same for `injectedError.summaryMessagel10n`. Simply by using `registerErrorMessage()`
 and `registerSummaryMessage()`, your original text is overridden.
 
 Here is an example to setup the messages when you don't supply the error code.
 ```ts
 import { InjectedErrorValidatorErrorCode } from "@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase";
-let tls = vhm.services.textLocalizerService;    
+let tls = vhm.services.errorMessagesService;    
 tls.registerErrorMessage(InjectedErrorValidatorErrorCode, null, {
         '*': 'Invalid input' 
     });
@@ -73,7 +73,7 @@ tls.registerSummaryMessage(InjectedErrorValidatorErrorCode, null, {
 ```
 Now using your own supplied errorcode (InjectedError.errorCode = 'MyParserErrorCode'):
 ```ts
-let tls = vhm.services.textLocalizerService;    
+let tls = vhm.services.errorMessagesService;    
 tls.registerErrorMessage('MyParserErrorCode', null, {
         '*': 'Invalid input' 
     });
@@ -84,7 +84,7 @@ tls.registerSummaryMessage('MyParserErrorCode', null, {
 
 ## API Reference
 - [InjectedError type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_ValueHosts_Types_ValidatorsValueHostBase.InjectedError.html)
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 ---
 Go to [Validators Home](./Home.md)
 

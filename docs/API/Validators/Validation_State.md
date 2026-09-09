@@ -103,7 +103,7 @@ interface IssueFound {
     - `Warning` - The issue isn't enough to block saving. Its informative. For example,
       "Person is under age 18. Please confirm with Parent."
 - `errorCode` - Identifies the issue type so the consumer can align it with a specific validator or business rule.
-    It is essential when using the `TextLocalizerService`.
+    It is essential when using the `ErrorMessagesService`.
     Its value is initially the Condition's ConditionType. You can override it using the Validator's `errorCode` configuration property
     If supplied through `ValueHostsManager.addExternalIssueFound()`, it can be null/undefined and the system will generate one. In doing so, the developer opts out of validator alignment. See [Using the errorCode](../Validators/ErrorCodes.md) for more.
 ---

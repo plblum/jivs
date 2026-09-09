@@ -1,4 +1,9 @@
 # @plblum/jivs-configanalysis: Testing your configurations
+
+Most applications should start with [`@plblum/jivs`](https://www.npmjs.com/package/@plblum/jivs).
+Install this package separately as a development tool for finding configuration
+problems early.
+
 `Jivs-ConfigAnalysis` is a tool to ensure that your configuration is as expected,
 even before you create a ValueHostsManager object from it.
 
@@ -98,7 +103,7 @@ The test calls `explorer.reportToConsole()`. It outputs json like this:
 ```
 # Installing Jivs-ConfigAnalysis
 ```
-npm install --save @plblum/jivs-configanalysis
+npm install --save-dev @plblum/jivs-configanalysis
 ```
 [Documentation](../../docs/Testing/Testing_Configurations.md)
 
@@ -115,5 +120,5 @@ npm install --save @plblum/jivs-configanalysis
   - Required properties have values.
   
 - Identifies each Lookup Key in use, along with the services that are needed by your ValueHostConfigs.
-- For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
+- For properties that support localization, it shows all cultural localizations of the text registered with the ErrorMessagesService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.

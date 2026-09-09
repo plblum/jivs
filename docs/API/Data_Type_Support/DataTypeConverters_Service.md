@@ -58,7 +58,7 @@ Jivs automatically selects a `DataTypeConverter` when needed. Just be sure the `
 |Number|Integer|IntegerConverter|Converts decimal number to whole number|
 |String|Number or Integer|NumericStringToNumberConverter|String to number|
 
-> These are preregistered in the `createJivsServices()` function.
+> These are preregistered in the `registerDataTypeConverters()` function of your `create_JivsServices.ts` file
 [See all Lookup Keys](http://jivs.peterblum.com/typedoc/enums/jivs-engine_DataTypes_Types_LookupKey.LookupKey.html).
 
 ## Creating your own DataTypeConverters
@@ -77,7 +77,7 @@ Use these resources to help when implementing a DataTypeConverter:
 
 ## Registering a DataTypeConverter
 The `DataTypeConverterService` where you register `DataTypeConverters`.
-Like all services, this is part of the `JivsService` and can be configured in your `createJivsServices()` function.
+Like all services, this is part of the `JivsService` and can be configured in the `registerDataTypeConverters()` function of your `create_JivsServices.ts` file
 ```ts
 services.dataTypeConverterService.register(new MyDataTypeConverter());
 ```

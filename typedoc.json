@@ -30,11 +30,10 @@
     "footerLastModified": true,      //typedoc-plugin-extras
     "mergeModulesRenameDefaults": false, // typedoc-plugin-merge-modules
     "mergeModulesMergeMode": "module",   // typedoc-plugin-merge-modules
-    "sortEntryPoints": false,
+    "sortEntryPoints": true,    // Prefer false, but it breaks child folders sorting!
     "sort": [
         "kind",
-        "instance-first",
-        "source-order"
+        "alphabetical"
     ],
     "highlightLanguages": ["ts", "js", "html", "css", "json", "bash", "xml", "yaml", "mermaid", "http"]
 }  

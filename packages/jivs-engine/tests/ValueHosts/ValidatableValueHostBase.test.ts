@@ -1,7 +1,7 @@
 import { IssueFound, ValidationStatus } from './../../src/Interfaces/Validation';
 import { IValidatableValueHostCallbacks, ValidatableValueHostBaseInstanceState, ValueHostValidationState, toIValidatableValueHostCallbacks } from './../../src/Interfaces/ValidatableValueHostBase';
 import { toIValidatableValueHost } from "../../src/ValueHosts/ValidatableValueHostBase";
-import { LoggingLevel } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { ValidatableValueHostBaseConfig, IValidatableValueHost } from "../../src/Interfaces/ValidatableValueHostBase";
@@ -15,7 +15,7 @@ import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
 import { StaticValueHost } from '../../src/ValueHosts/StaticValueHost';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { NeverMatchesConditionType, IsUndeterminedConditionType } from "../../src/Support/conditionsForTesting";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { TestValidatableValueHost, addTestValidatableValueHostGeneratorToServices, setupValidatableValueHostBase } from '../TestSupport/TestValidatableValueHost';
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { restoreCapturedState } from '../TestSupport/utilities';
@@ -150,7 +150,7 @@ describe('setValue', () => {
 
     test('SetValue called with duringEdit=true reports that it is not supported into the log', () => {
         let setup = setupValidatableValueHostBase();
-        let logger = setup.valueHostsManager.services.loggerService as CapturingLogger;
+        let logger = setup.valueHostsManager.services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let options: SetValueOptions = { duringEdit: true };
         expect(() => setup.valueHost.setValue(10, options)).not.toThrow();
@@ -161,22 +161,22 @@ describe('setValue', () => {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValidatableValueHostBase({},  { value: initialValue });
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setValue(finalValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('setValue\\(200\\)', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('isEnabled=false will not change the value.', () => {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValidatableValueHostBase({},  { value: initialValue });
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
         testItem.setValue(finalValue);
         expect(testItem.getValue()).toBe(initialValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeTruthy();
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeNull();
     });
@@ -184,12 +184,12 @@ describe('setValue', () => {
         const initialValue = 100;
         const finalValue = 200;
         let setup = setupValidatableValueHostBase({},  { value: initialValue });
-        setup.services.loggerService.minLevel = LoggingLevel.Debug;
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         let testItem = setup.valueHost;
         testItem.setEnabled(false);
         testItem.setValue(finalValue, { overrideDisabled: true });
         expect(testItem.getValue()).toBe(finalValue);
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('overrideDisabled', LoggingLevel.Info, null)).toBeTruthy();
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
@@ -903,7 +903,7 @@ describe('addExternalIssueFound', () => {
                 doNotSave: true
             });
 
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('IssueFound applied on disabled ValueHost', LoggingLevel.Warn, null)).toBeTruthy();
     });
     test('Error with determinedLocally=false defaults doNotSave=false', () => {
@@ -1416,7 +1416,7 @@ describe('getIssueFound only checking without calls to validate', () => {
         setup.valueHost.setEnabled(false);
         let issueFound = setup.valueHost.getIssueFound('Field1');
         expect(issueFound).toBeNull();
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();
@@ -1445,7 +1445,7 @@ describe('getIssueFound various', () => {
         let result = setup.valueHost.getIssueFound('VAL1');
 
         expect(result).toBeNull();
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
 
     });
@@ -1686,7 +1686,7 @@ describe('getIssuesFound without calling validate', () => {
         setup.valueHost.setEnabled(false);
         let issuesFound = setup.valueHost.getIssuesFound();
         expect(issuesFound).toBeNull();
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();

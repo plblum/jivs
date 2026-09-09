@@ -10,8 +10,8 @@ import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
-import { TextLocalizerService } from '@plblum/jivs-engine/build/Services/TextLocalizerService';
-import { CapturingLogger } from '@plblum/jivs-engine/build/Support/CapturingLogger';
+import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';
+import { TestingLoggingService } from '@plblum/jivs-engine/build/Support/TestingLoggingService';
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
 import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
@@ -19,7 +19,7 @@ import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
@@ -66,7 +66,7 @@ function createVMConfig(standardDataTypes?: boolean): ValueHostsManagerConfig {
         services: createJivsServicesForTesting(),
         valueHostConfigs: []
     };
-    vmConfig.services.loggerService = new CapturingLogger(LoggingLevel.Info, vmConfig.services.loggerService);
+    vmConfig.services.loggingService = new TestingLoggingService(LoggingLevel.Info, vmConfig.services.loggingService);
     return vmConfig;
 }
 
@@ -130,10 +130,10 @@ describe('constructor', () => {
 
 });
 describe('favorUIMessages', () => {
-    test('TextLocalizerService has no matches. Keep existing error messages', () => {
+    test('ErrorMessagesService has no matches. Keep existing error messages', () => {
         let formAdapter = setupPublicifyFormAdapter();
-        let tls = new TextLocalizerService();
-        formAdapter.services.textLocalizerService = tls;   // start fresh
+        let tls = new ErrorMessagesService();
+        formAdapter.services.errorMessagesService = tls;   // start fresh
         formAdapter.field('Field1').requireText(
             {
                 errorMessage: 'RequireMessage',
@@ -208,11 +208,11 @@ describe('favorUIMessages', () => {
         }
         ]);
     });
-    test('TextLocalizerService has matches. Null all 4 message properties on all matches', () => {
+    test('ErrorMessagesService has matches. Null all 4 message properties on all matches', () => {
         let formAdapter = setupPublicifyFormAdapter();
 
-        let tls = new TextLocalizerService();
-        formAdapter.services.textLocalizerService = tls;   // start fresh
+        let tls = new ErrorMessagesService();
+        formAdapter.services.errorMessagesService = tls;   // start fresh
         tls.registerErrorMessage(ConditionType.RequireText, null, {
             '*': 'tls-required'
         });
@@ -293,8 +293,8 @@ describe('useOnlyTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBe(false);
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('useOnlyTheseModelFields')).toBe(false);
     });
     // empty array means keep none
     test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with empty array. None are kept', () => {
@@ -314,8 +314,8 @@ describe('useOnlyTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBe(false);
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('useOnlyTheseModelFields')).toBe(false);
     });
     // unknown field name is ignored
     test('useOnlyTheseModelFields: Add 2 fields, then useOnlyTheseModelFields with 1 of the 2 and an unknown field. Only the one is kept', () => {
@@ -334,10 +334,10 @@ describe('useOnlyTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBe(false);
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('useOnlyTheseModelFields')).toBe(true);
-        expect(loggerService.containsLog('UnknownField')).toBe(true);
-        expect(loggerService.containsLog('Field1')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('useOnlyTheseModelFields')).toBe(true);
+        expect(loggingService.containsLog('UnknownField')).toBe(true);
+        expect(loggingService.containsLog('Field1')).toBe(false);
     });
 });
 describe('disableTheseModelFields', () => {
@@ -357,8 +357,8 @@ describe('disableTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBeUndefined();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('disableTheseModelFields')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('disableTheseModelFields')).toBe(false);
 
     });
     // empty array
@@ -378,8 +378,8 @@ describe('disableTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBeUndefined();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('disableTheseModelFields')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('disableTheseModelFields')).toBe(false);
     });
     // unknown field name is ignored
     test('disableTheseModelFields: Add 2 fields, then disableTheseModelFields with 1 of the 2 and an unknown field. Only the one is disabled', () => {
@@ -398,10 +398,10 @@ describe('disableTheseModelFields', () => {
         let field2Config = result.find((vhc) => vhc.name === 'Field2');
         expect(field2Config).not.toBeUndefined();
         expect(field2Config!.initialEnabled).toBeUndefined();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.containsLog('disableTheseModelFields')).toBe(true);
-        expect(loggerService.containsLog('UnknownField')).toBe(true);
-        expect(loggerService.containsLog('Field1')).toBe(false);
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.containsLog('disableTheseModelFields')).toBe(true);
+        expect(loggingService.containsLog('UnknownField')).toBe(true);
+        expect(loggingService.containsLog('Field1')).toBe(false);
     });
 });
 
@@ -465,8 +465,8 @@ describe('assignToGroup', () => {
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
         expect(vh1.group).toBeUndefined();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('not already registered')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('not already registered')).toBeTruthy();
     });
     // specified name is not a validatable ValueHost. Ignored and logged
     test('specified name is not a validatable ValueHost. Ignored and logged', () => {
@@ -483,8 +483,8 @@ describe('assignToGroup', () => {
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
         expect(vh1.group).toBeUndefined;
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('not a validatable ValueHost')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('not a validatable ValueHost')).toBeTruthy();
     });
     // empty array means no assignment, but no error
     test('empty array means no assignment, but no error', () => {
@@ -501,8 +501,8 @@ describe('assignToGroup', () => {
         let result = builder.snapshot().valueHostConfigs;
         let vh1 = result.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
         expect(vh1.group).toBeUndefined();
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('assignToGroup')).toBeFalsy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('assignToGroup')).toBeFalsy();
     });
     // existing group name is overwritten
     test('existing group name is overwritten', () => {
@@ -576,8 +576,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
         expect(existingConfig).toEqual(expectedValueHostConfig);
         // logger should have no warnings about skipped properties, because all properties in adjustments are in the safeReplacementProperties
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property')).toBeFalsy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property')).toBeFalsy();
     });
     // nothing in adjustments. No change to soruce
     test('nothing in adjustments. No change to source', () => {
@@ -606,8 +606,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
         expect(existingConfig).toEqual(expectedValueHostConfig);
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property')).toBeFalsy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property')).toBeFalsy();
     });
 
     test('adjustments has properties that are in doNotReplaceTheseProperties. Those will be ignored.', () => {
@@ -638,9 +638,9 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments as any);
         expect(existingConfig).toEqual(expectedValueHostConfig);
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property "dataType"')).toBeTruthy();
-        expect(loggerService.findMessage('Skipped property "validatorConfigs"')).toBeTruthy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property "dataType"')).toBeTruthy();
+        expect(loggingService.findMessage('Skipped property "validatorConfigs"')).toBeTruthy();
     });
     test('original has values matching those in adjustments. all of them covered. replacement supplies all properties in the safeReplacementProperties. All will be replaced with the new values.', () => {
         let formAdapter = setupPublicifyFormAdapter();
@@ -697,8 +697,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
         expect(existingConfig).toEqual(expectedValueHostConfig);
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property')).toBeFalsy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property')).toBeFalsy();
 
     });
     // adjustments contains a new property that is not in doNotReplaceTheseProperties. It will be added to the existing config
@@ -730,8 +730,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments as any);
         expect(existingConfig).toEqual(expectedValueHostConfig);
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property')).toBeFalsy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property')).toBeFalsy();
 
     });
 
@@ -752,8 +752,8 @@ describe('modify()', () => {
         expect(modifyBuilder).not.toBeNull();
         expect(modifyBuilder!.getConfig()).toEqual(expectedConfig);
     });
-    // valuehostname not defined, no second parameter. Throws error and records an entry in the loggerService
-    test('valuehostname not defined, no second parameter. Throws error and records an entry in the loggerService', () => {
+    // valuehostname not defined, no second parameter. Throws error and records an entry in the loggingService
+    test('valuehostname not defined, no second parameter. Throws error and records an entry in the loggingService', () => {
         let vmConfig = createVMConfig();
         let builder = createConfigBuilder(vmConfig);
         let formAdapter = new Publicify_FormConfigAdapter(
@@ -761,8 +761,8 @@ describe('modify()', () => {
         expect(() => {
             formAdapter.modify('Field2');
         }).toThrow('ValueHost name "Field2" is not defined');
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field2" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field2" is not defined')).toBeTruthy();
     });
     // valueHostName is valid, second parameter is null. Returns ModifyFieldBuilder with the existing config
     test('valueHostName is valid, second parameter is null. Returns ModifyFieldBuilder with the existing config', () => {
@@ -844,11 +844,11 @@ describe('modify()', () => {
         };
         expect(modifyBuilder).not.toBeNull();
         expect(modifyBuilder!.getConfig()).toEqual(expectedConfig);
-        let loggerService = formAdapter.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('Skipped property "dataType"')).toBeTruthy();
+        let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('Skipped property "dataType"')).toBeTruthy();
     });
 
-    test('valueHostName is invalid, second parameter is an empty object. Throws error and records an entry in the loggerService', () => {
+    test('valueHostName is invalid, second parameter is an empty object. Throws error and records an entry in the loggingService', () => {
         let vmConfig = createVMConfig();
         let builder = createConfigBuilder(vmConfig);
         let formAdapter = new Publicify_FormConfigAdapter(
@@ -856,8 +856,8 @@ describe('modify()', () => {
         expect(() => {
             formAdapter.modify('Field2', {});
         }).toThrow('ValueHost name "Field2" is not defined');
-        let loggerService = vmConfig.services.loggerService as CapturingLogger;
-        expect(loggerService.findMessage('ValueHost name "Field2" is not defined')).toBeTruthy();
+        let loggingService = vmConfig.services.loggingService as TestingLoggingService;
+        expect(loggingService.findMessage('ValueHost name "Field2" is not defined')).toBeTruthy();
     });
 
     test('valid valueHostName, second parameter is a label. Returns ModifyFieldBuilder with the existing config, plus the label property from the second parameter', () => {
@@ -990,9 +990,9 @@ describe('ModifyFieldBuilder class', () => {
                     conditionType: ConditionType.RequireText
                 }
             });
-            let loggerService = formAdapter.services.loggerService as CapturingLogger;
-            expect(loggerService.findMessage('Skipped property "conditionConfig"')).toBeTruthy();
-            expect(loggerService.findMessage('Skipped property "conditionCreator"')).toBeTruthy();
+            let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+            expect(loggingService.findMessage('Skipped property "conditionConfig"')).toBeTruthy();
+            expect(loggingService.findMessage('Skipped property "conditionCreator"')).toBeTruthy();
         });
         // 2 parameter, conditionType and error message
         test('two parameter overload with an existing conditionType, second parameter is an error message. Returns a ModifyValidatorBuilder correctly configured with the error message from the second parameter.', () => {
@@ -1129,8 +1129,8 @@ describe('ModifyFieldBuilder class', () => {
                 validatorConfigs: []
             });
         });
-        // valuehost is static, which does not support a validator. Throws error and records an entry in the loggerService
-        test('valuehost is static, which does not support a validator. Throws error and records an entry in the loggerService', () => {
+        // valuehost is static, which does not support a validator. Throws error and records an entry in the loggingService
+        test('valuehost is static, which does not support a validator. Throws error and records an entry in the loggingService', () => {
             let builder = createConfigBuilder(createVMConfig());
             builder.static('Static1');
             let formAdapter = new Publicify_FormConfigAdapter(
@@ -1139,8 +1139,8 @@ describe('ModifyFieldBuilder class', () => {
             expect(() => {
                 modifyBuilder.addValidator();
             }).toThrow('ValueHost type');
-            let loggerService = formAdapter.services.loggerService as CapturingLogger;
-            expect(loggerService.findMessage('does not support validators')).toBeTruthy();
+            let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+            expect(loggingService.findMessage('does not support validators')).toBeTruthy();
         });
         // add a validator after modify() and check results
         test('add a validator after modify() and check results', () => {
@@ -1237,9 +1237,9 @@ describe('ModifyFieldBuilder class', () => {
             expect(() => {
                 modifyBuilder.addValidator().requireText('errormessage1');
             }).toThrow(/with errorCode/);
-            let loggerService = formAdapter.services.loggerService as CapturingLogger;
-            loggerService.toConsole();
-            expect(loggerService.findMessage('with errorCode')).toBeTruthy();
+            let loggingService = formAdapter.services.loggingService as TestingLoggingService;
+            loggingService.toConsole();
+            expect(loggingService.findMessage('with errorCode')).toBeTruthy();
         });
         // same validator but supply {errorCode: 'ErrorCode1'} in the second parameter. It is added as a new validator, because the errorCode is different from the existing one
         test('same validator but supply {errorCode: "ErrorCode1"} in the second parameter. It is added as a new validator, because the errorCode is different from the existing one', () => {

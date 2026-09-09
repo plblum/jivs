@@ -1,5 +1,5 @@
 {
-  "name": "@plblum/jivs",
+  "name": "@plblum/jivs-repository",
   "type": "module",
   "description": "JavaScript Input Validation Service. Provides the tools for input validation in a user interface or model.",
   "keywords": [
@@ -17,17 +17,15 @@
   "bugs": {
     "url": "https://github.com/plblum/jivs/issues"
   },
-  "private": "false",
+  "private": true,
   "workspaces": [
     "packages/*",
     "starter_code/*"
   ],
-  "dependencies": {
-    "@plblum/jivs-builder": "^0.20.0",
-    "@plblum/jivs-configanalysis": "^0.20.0",
-    "@plblum/jivs-engine": "^0.20.0"
-  },
   "devDependencies": {
+    "@plblum/jivs-builder": "^0.22.1",
+    "@plblum/jivs-configanalysis": "^0.22.1",
+    "@plblum/jivs-engine": "^0.22.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@types/jest": "^30.0.0",
     "del": "^8.0.1",

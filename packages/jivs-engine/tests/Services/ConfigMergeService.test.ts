@@ -1,10 +1,10 @@
-import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { ConsoleLoggingService } from '../../src/Services/ConsoleLoggingService';
 import { ConditionConflictIdentifierHandler, PropertyConfigMergeServiceHandlerResult } from '../../src/Interfaces/ConfigMergeService';
 import { MergeIdentity, PropertyConflictRule } from '../../src/Interfaces/ConfigMergeService';
-import { LoggingLevel, logGatheringHandler } from '../../src/Interfaces/LoggerService';
+import { LoggingLevel, logGatheringHandler } from '../../src/Interfaces/LoggingService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { ConfigMergeServiceBase, ValidatorConfigMergeService, ValueHostConfigMergeService } from '../../src/Services/ConfigMergeService';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
@@ -16,16 +16,16 @@ import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 
-function createServices(): { logger: CapturingLogger, services: IJivsServices }
+function createServices(): { logger: TestingLoggingService, services: IJivsServices }
 {
     let services = createJivsServicesForTesting();    // has both resolvers created
     return { logger: setupLogger(services, LoggingLevel.Error), services: services };
 }
-function setupLogger(services: IJivsServices, level: LoggingLevel): CapturingLogger
+function setupLogger(services: IJivsServices, level: LoggingLevel): TestingLoggingService
 {
-    let logger = new CapturingLogger();
-    logger.chainedLogger = new ConsoleLoggerService();
-    services.loggerService = logger;
+    let logger = new TestingLoggingService();
+    logger.chainedLogger = new ConsoleLoggingService();
+    services.loggingService = logger;
     return logger;
 }
 describe('ConfigMergeServiceBase using a subclass to expose protected members', () => {
@@ -53,7 +53,7 @@ describe('ConfigMergeServiceBase using a subclass to expose protected members', 
 
 
     describe('constructor', () => {
-        test('create without exception and have assigned the logger to CapturingLogger ', () => {
+        test('create without exception and have assigned the logger to TestingLoggingService ', () => {
             let testItem: Publicify_ConfigMergeServiceBase;
             expect(() => testItem = new Publicify_ConfigMergeServiceBase()).not.toThrow();
         });

@@ -5,13 +5,13 @@
 import { ValueHostName as valueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import type { IValueHostsManager, StateContainer } from '../Interfaces/ValueHostsManager';
 import type { IJivsServices } from '../Interfaces/JivsServices';
 import { type IValueHost, type SetValueOptions, type ValueHostConfig, type ValueHostInstanceState, toIValueHostCallbacks, ValidTypesForInstanceStateStorage } from '../Interfaces/ValueHost';
 import { IValueHostGenerator } from '../Interfaces/ValueHostFactory';
 import { assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 
 /**
@@ -67,16 +67,16 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     }
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 'ValueHost', this, this.getName(), false);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggingFacade | null = null;    
 
 
     //#region IValueHost
@@ -105,7 +105,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
         const label = (this.config.label ?? '') as string;
         const labell10n: string | null = (this.config.labell10n ?? null) as string | null;
         if (labell10n)
-            return this.services.textLocalizerService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
+            return this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId, labell10n, label)!;
         return label;
     }
 
@@ -134,7 +134,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     *    * injectedError - If you handle parsing before calling setValue(), your parser may have returned
     *          an error. Assign this object to contain the error message and other info.
     *          Internally Jivs will provide a Validator with the error message to report the error.
-    *          If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+    *          If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
     *          use the errorCode value of 'InjectedError' to localize the error message. 
     *          You can also provide a summaryMessage for use in a summary of validation errors.
     *    * SkipValueChangedCallback - Skips the automatic callback setup with the 
@@ -193,7 +193,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
      * injectedError - If you handle parsing before calling setValueToUndefined(), your parser may have returned
      *      an error. Assign this object to contain the error message and other info.
      *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that TextLocalizerService will
+     *      If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
      *      use the errorCode value of 'InjectedError' to localize the error message. 
      *      You can also provide a summaryMessage for use in a summary of validation errors.
      */
@@ -233,7 +233,7 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
                 dt = this.services.dataTypeIdentifierService.identify(value);
             }
         }
-        return dt ? (this.services.textLocalizerService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
+        return dt ? (this.services.errorMessagesService.getDataTypeLabel(this.services.cultureService.defaultCultureId, dt)!) : '';
     }
 
     /**

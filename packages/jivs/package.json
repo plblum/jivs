@@ -1,0 +1,27 @@
+{
+  "name": "@plblum/jivs",
+  "type": "module",
+  "version": "0.22.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
+  "description": "The standard Jivs package for applications using JavaScript Input Validation Service.",
+  "displayName": "Jivs",
+  "license": "MIT",
+  "files": [
+    "README.md",
+    "starter_code/"
+  ],
+  "scripts": {
+    "prepack": "node scripts/copy-starter-file.mjs",
+    "postpack": "node scripts/remove-starter-file.mjs"
+  },
+  "dependencies": {
+    "@plblum/jivs-builder": "^0.22.1",
+    "@plblum/jivs-engine": "^0.22.1"
+  }
+}

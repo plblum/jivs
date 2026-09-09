@@ -662,7 +662,7 @@ It only:
 * checks whether `analyze` exists as a function
 * calls `analyze(builder, params.options.configAnalysisOptions)`
 * Provides the services object to allow analyze to access many other services,
-including the loggerService through which it may generate a report.
+including the loggingService through which it may generate a report.
 
 ### 12.4 What the config-analysis module owns
 

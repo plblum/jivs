@@ -1,5 +1,6 @@
 # Jivs Documentation Library
 
+- [Installing Jivs](./Installing_Jivs.md)
 - [Learning Jivs](./Learning_Jivs/Home.md)
 - [Terminology](./Terminology.md)
 - [ValueHostsManager Configuration Guide](./ValueHostsManager_Configuration_Guide.md)

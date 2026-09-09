@@ -3,11 +3,11 @@ import { CurrencyParser, NumberParser } from "../../src/DataTypes/DataTypeParser
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
-import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggingService";
 import { DataTypeParserService } from "../../src/Services/DataTypeParserService";
 
 import { MockJivsServices } from "../TestSupport/mocks";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { JivsServices } from "../../src/Services/JivsServices";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
@@ -73,7 +73,7 @@ describe('DataTypeParserService.parse', () => {
         let services = new MockJivsServices(false, true);
         let testItem = services.dataTypeParserService;
 
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
@@ -82,7 +82,7 @@ describe('DataTypeParserService.parse', () => {
 
     test('Parameters find a parser with same lookup key and culture plus logs', () => {
         let services = new MockJivsServices(false, true);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeParserService as DataTypeParserService;
@@ -109,7 +109,7 @@ describe('DataTypeParserService.parse', () => {
         }
         let services = new MockJivsServices(false, true, 'en');
         populateServicesWithManyCultures(services, false);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeParserService as DataTypeParserService;
@@ -136,7 +136,7 @@ describe('DataTypeParserService.parse', () => {
         }
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, false);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeParserService as DataTypeParserService;
         testItem.register(new ParserThrowsString());
@@ -158,7 +158,7 @@ describe('DataTypeParserService.parse', () => {
         let testItem = services.dataTypeParserService;
         testItem.register(new TestParser('TEST', ['en'], { value: 'abc'}));
 
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'huh', 'en')).toThrow(/No DataTypeParser/);
@@ -169,7 +169,7 @@ describe('DataTypeParserService.parse', () => {
         let testItem = services.dataTypeParserService;
         testItem.register(new TestParser('TEST', ['en'], { value: 'abc'}));
 
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.parse('', 'TEST', 'en-GB')).toThrow(/No DataTypeParser/);
@@ -191,8 +191,8 @@ describe('parse() using lookupKeyFallbackService', () => {
 
     test('Integer datatype uses NumberParser', () => {
         let services = createJivsServices();
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number
@@ -208,8 +208,8 @@ describe('parse() using lookupKeyFallbackService', () => {
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', LookupKey.Currency);
         lkfb.register('CUSTOMB', 'CUSTOMA');        
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number
@@ -226,8 +226,8 @@ describe('parse() using lookupKeyFallbackService', () => {
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', 'CUSTOMB');
         lkfb.register('CUSTOMB', 'CUSTOMA');        
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number

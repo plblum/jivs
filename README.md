@@ -6,30 +6,27 @@ avoids the hassle of breaking changes later. --- Peter Blum*
 
 ## What is Jivs?
 <details open>
-Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with <dfn title="Validating user input or externally supplied data to prevent saving invalid data">input validation</dfn> in the UI and/or the Model?
+Jivs — JavaScript Input Validation Service — is a suite of libraries that help answer this question: how do I deal with input validation in the UI and/or the Model?
 
-**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the <dfn title="A single condition that evaluates the incoming data and determines if it is valid or not.">validation rules</dfn> are considered the domain of the business logic, and for projects that use strong OOP patterns like separation of concerns and dependency injection.
+**Jivs offers a focused approach to input validation, respecting the boundaries between your business logic and user interface.** It’s ideal for projects where the validation rules are considered the domain of the business logic, and for projects that use strong OOP patterns like separation of concerns and dependency injection.
 
-With Jivs, the UI knows almost nothing about what needs to be validated. A form just posts input values into Jivs and asks for the validation results. It gets back the Validation State, such as
-"Valid", "Invalid", or even "Undetermined", and any issues found.
-
-The UI uses that information to change the visuals, like showing the error messages, and blocking data submission if necessary.
+With Jivs, the UI knows almost nothing about what needs to be validated. A form just posts its values into Jivs and asks for the validation results. The form uses that information to change the visuals, like showing the error messages, and blocking data submission if necessary.
 
 <img src="http://jivs.peterblum.com/images/jivs-high-level-diagram.svg"></img>
 
-- **Business logic can dictate validation rules**: Validation rules are often defined in the business logic. Jivs allows the business logic team to deliver those rules, ensuring that validation logic is directly aligned with the business requirements and evolves alongside the application’s core functionality.
+- **Jivs supports two approaches to input validation**
+    - **Business logic-driven validation**: Rules belong to the business logic for a model
+    - **Form-specific validation**: Rules are defined specifically for a form
 
-- **UI developers can make the adjustments they need**: Jivs gives UI developers the flexibility to tailor the user experience while maintaining the integrity of the validation rules. They can customize error messages, apply localization, and disable unnecessary validators, ensuring that they can achieve their goals. They can also incorporate UI-specific validators, such as for a string parsing error. 
+- **Adapts the form to work with business logic-driven validation**: The form can change UI specifics like error messages without breaking the underlying validation rules.
 
-- **For forms that are not business logic-driven**: Whether or not business logic drives validation, Jivs keeps validation rules separate from the form. It provides flexibility for apps without business logic-driven validation and for forms that don’t require it, ensuring consistency and maintainability.
+- **Built with modern OOP patterns**: Jivs is built on solid object-oriented programming (OOP) principles, such as Single Responsibility Objects, Services, Factories, and Dependency Injection.
 
-- **Service-oriented architecture**: At the heart of Jivs is *Jivs-Engine*, with a service-oriented architecture built in TypeScript, so it works within browsers and Node.js. Jivs-Engine is designed to have an ecosystem of libraries that tackle UI frameworks, support models, and use various third-party libraries.
+- **Emphasis on tests**: Separating validation rules from the UI makes them easier to unit test. Jivs itself has nearly 100% test coverage, with meaningful tests.
 
-- **Built with modern OOP patterns**: Jivs is built on solid object-oriented programming (OOP) principles, such as Single Responsibility Objects, Services, Factories, and Dependency Injection. Many components within Jivs are replaceable, allowing you to use your preferred third-party libraries for tasks like formatting, localization, and logging. These patterns have also helped us build out our own unit tests, achieving almost 100% code coverage with meaningful tests.
+- **Built from experience**: Jivs is the result of over 20 years of experience in building input validation software, addressing many nuances not found in most validation libraries but that cover real-world issues faced by developers.
 
-- **Built from experience**: Jivs is the result of over 20 years of experience in building input validation software, addressing many nuances not found in most validation software but that solve real-world issues faced by developers. This depth of experience is embedded throughout the toolset. Take a look at the features to see how Jivs goes beyond the basics, offering a comprehensive solution to real-world validation challenges.
-
-- **Open source and MIT License**: [https://github.com/plblum/jivs](https://github.com/plblum/jivs)
+- **Open source and MIT licensed**: <a href="https://github.com/plblum/jivs" target="_blank">https://github.com/plblum/jivs</a>
 </details>
 
 ## When to use Jivs?
@@ -230,25 +227,45 @@ I continue to look at UI frameworks that include input validation tools, and am 
 
 # Installing Jivs
 
-Jivs is available as npm packages. It has a number of libraries.
+## Get the npm packages
+Jivs is available as npm packages. For a standard application, install the
+umbrella package and the development-only configuration analysis tool.
 
-Jivs-engine is the core and is needed by all other libraries. [Jivs-engine npm package](https://www.npmjs.com/package/@plblum/jivs-engine).
+```text
+npm install @plblum/jivs
+npm install --save-dev @plblum/jivs-configanalysis
 ```
-npm install --save @plblum/jivs-engine
-```
-[Jivs source code](https://github.com/plblum/jivs) is open source on GitHub.
 
-**For each application**, go to [https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_services.ts)
+`@plblum/jivs` installs the Jivs engine and Builder API. ConfigAnalysis helps
+identify configuration problems during development.
 
-Add the contents of the `create_services.ts` file to your project. It results in several new functions starting with this one.
+## Add create_JivsServices.ts to your codebase
+**For each application**, copy the `create_JivsServices.ts` starter file into your project.
+
+Get the file from `node_modules/@plblum/jivs/starter_code/create_JivsServices.ts`
+or from the [starter file on GitHub](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts).
+
+> The documentation will frequently refer to `create_JivsServices.ts file`. That will always mean your copy of this file in your project.
+
+### Intro to the createJivsServices() function
+
+The `create_JivsServices.ts` file defines the `createJivsServices()` function.
+It creates and configures the [`JivsServices`](./docs/API/JivsServices/Home.md)
+object, which is Jivs's dependency-injection and service-configuration point.
+
+You will use this pattern as you work with Jivs:
 ```ts
-export function createJivsServices(... parameters ...): IJivsServices {
-…
-}
-// plus numerous other functions
+const services = createJivsServices('en-US');
+const rules = new YourRules(services);
+const config = rules.configure();
+const vhm = new ValueHostsManager(config);
 ```
-Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
-For more, see [JivsServices](./docs/API/JivsServices/Home.md).
+Initially, you can leave its configuration unchanged. Customize the file
+later as described in the documentation.
+
+See the [detailed installation guide](./docs/Installing_Jivs.md) for more
+information.
+
 
 # Digging in
 We have a massive documentation library. Start here:

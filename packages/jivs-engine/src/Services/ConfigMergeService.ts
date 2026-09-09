@@ -14,7 +14,7 @@ import {
 } from '../Interfaces/ConfigMergeService';
 import { deepClone, deepEquals } from '../Utilities/Utilities';
 import { ServiceWithAccessorBase } from './ServiceWithAccessorBase';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 
 /**
  * The ValueHostsManagerConfig file may be populated in 2 phases:

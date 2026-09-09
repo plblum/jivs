@@ -2,10 +2,10 @@
  *  @module jivs-builder/Builders/AbstractClasses
  */
 
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { LoggerFacade } from '@plblum/jivs-engine/build/Utilities/LoggerFacade';
+import { LoggingFacade } from '@plblum/jivs-engine/build/Utilities/LoggingFacade';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost, SetConfigOptions } from '../Interfaces/ChildBuilders';
 
 /**
@@ -107,13 +107,13 @@ export abstract class BuilderConfigHostBase<TConfig extends object,
             throw message;
         }
     }
-    protected get logger(): LoggerFacade {
+    protected get logger(): LoggingFacade {
         if (!this._logger) {
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggingFacade(this.services.loggingService,
             'ConfigBuilder', this, null, false);
         }
         return this._logger;
     }
-    private _logger?: LoggerFacade;
+    private _logger?: LoggingFacade;
 
 }

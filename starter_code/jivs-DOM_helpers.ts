@@ -35,12 +35,11 @@
  * of validation issues in the DOM. It is described in the learning guide 
  * [Jivs Presentation Learning Guide](docs/Learning_Jivs/Home.md)
  ------------------------------------------------------------------------------------------ */
-import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { type IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { type IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ModelWriter } from '@plblum/jivs-engine/build/ModelReaderWriter/ModelWriter_classes';
-import { type TokenLabelAndValue } from '@plblum/jivs-engine/build/Interfaces/MessageTokenSource';
-import { MessageTokenResolverService } from '@plblum/jivs-engine/build/Services/MessageTokenResolverService';
+import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
 
 /**
  * Retrieves the HTML element associated with the given FieldValueHost and optional pattern.
@@ -241,64 +240,6 @@ export function jivsAttachedToEvents(
 }
 //#endregion
 //#region handling error messages
-/**
- * Encodes text for safe insertion into generated HTML.
- *
- * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
- */
-export function encodeHtml(
-    value: string
-): string
-{
-    const entities: Record<string, string> = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-    };
-
-    return value.replace(
-        /[&<>"']/g,
-        character => entities[character]
-    );
-}
-
-/**
- * Encodes message-token replacements and preserves their token metadata.
- *
- * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
- */
-export class HtmlMessageTokenResolverService
-    extends MessageTokenResolverService
-{
-
-    /**
-     * Finalizes one message-token replacement as safe HTML.
-     *
-     * @see [Protect Error Messages from XSS](docs/Learning_Jivs/Home.md#protect-error-messages-from-xss)
-     */
-    protected override finalizeReplacement(
-        replacement: string,
-        tav: TokenLabelAndValue
-    ): string
-    {
-        const encodedValue =
-            encodeHtml(replacement);
-
-        const purposeClass =
-            tav.purpose
-                ? ` ${ tav.purpose }`
-                : '';
-
-        return (
-            `<span class="token${ purposeClass }">` +
-            encodedValue +
-            '</span>'
-        );
-    }
-}
-
 /**
  * Maps Jivs severity values to the names exposed through `data-severity`.
  *

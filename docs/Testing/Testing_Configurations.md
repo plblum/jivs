@@ -39,7 +39,7 @@ through a report.
   - Required properties have values.
   
 - Identifies each Lookup Key in use, along with the services that are needed by your ValueHostConfigs.
-- For properties that support localization, it shows all cultural localizations of the text registered with the TextLocalizerService.
+- For properties that support localization, it shows all cultural localizations of the text registered with the ErrorMessagesService.
   > Localization has fallbacks. You may have a rule that lets all text fallback to your default language.
 
 ## Adding to app
@@ -315,7 +315,7 @@ interface IConfigAnalysisResultsExplorer {
 - `report` - Both `reportIntoJson()` and `reportToConsole()` use this, and supply a specific value to its outputter parameter. If you want to chose a different format or destination, use this function with a suitable outputter object. See `reportIntoJson()` for parameters. In addition:
 	+ `outputter` - An implementation of `IConfigAnalysisOutputter` that takes the report data, formats it and sends it to the destination. Here are classes already included with Jivs:
 		* `ConsoleConfigAnalysisOutputter` - Use the supplied formatter and send the result to the console.
-		* `LoggerConfigAnalsysOutputter` - Use the supplied formatter and send the result to the LoggerService.
+		* `LoggerConfigAnalsysOutputter` - Use the supplied formatter and send the result to the LoggingService.
 		* `NullConfigAnalysisOutputter` - The `report()` function returns the formatted result. If you don't want to output it but intend to capture the function result, use this and supply a formatter.
 		* `JsonConfigAnalysisOutputFormatter` - A formatter object that converts the report data into JSON.
 		* `CleanedObjectConfigAnalysisOutputFormatter` - A formatter object that creates a variation of the report data object, without some internal properties. Generally use this if you want to return the report data as an object from the `report()` function.

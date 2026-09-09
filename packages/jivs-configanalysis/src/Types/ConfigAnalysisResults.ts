@@ -410,7 +410,7 @@ export interface PropertyCAResult extends CAResultBase, IssueForCAResultBase {
 export interface LocalizedPropertyCAResult extends PropertyCAResult {
     feature: CAFeature.l10nProperty;
     /**
-     * The localization key passed to TextLocalizerService.
+     * The localization key passed to ErrorMessagesService.
      */
     l10nKey: string;
     /**

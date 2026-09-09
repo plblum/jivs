@@ -112,7 +112,7 @@ Here are the arguments and parameters for all `ValueHosts` described above.
 - `name` – The `ValueHost` name. Required. See [Naming each ValueHost](./Home.md#naming-each-valuehost).
 - `dataType` – The data type. Use either the `LookupKey` enumerated type or a string with your own data type. See [Data Types and Companion Tools](../Data_Type_Support/Home.md).
 - `label` – The text to show in the {Label} and {SecondLabel} tokens of an error message.
-- `labell10n` – Localization key to get the label from the [TextLocalizerService](../JivsServices/TextLocalizerService.md).
+- `labell10n` – Localization key to get the label from the [ErrorMessagesService](../JivsServices/ErrorMessagesService.md).
 - `initialValue` – An initial native value for the `ValueHost`. If not assigned, it is initially undefined.
 - `initialEnabled` – `ValueHosts` have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the `ValidationStatus` is `Disabled`. Use `initialEnabled=false` to configure the `ValueHost` as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.
 - `enablerConfig` – Use `builder.enabler('valueHostName', (builder)=> builder.condition(parameters))` to set it up. Don't directly modify this property. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.

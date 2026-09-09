@@ -3,7 +3,7 @@
  * @module jivs-engine/Services/ConcreteClasses/MessageTokenResolverService
  */
 import type { DataTypeResolution } from '../Interfaces/DataTypes';
-import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../Interfaces/LoggerService';
+import { LogErrorDetails, LoggingCategory, LoggingLevel, LogOptions } from '../Interfaces/LoggingService';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';
 import { IMessageTokenSource, TokenLabelAndValue } from '../Interfaces/MessageTokenSource';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';

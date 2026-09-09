@@ -7,13 +7,13 @@ import { IDataTypeComparer } from "../../src/Interfaces/DataTypeComparers";
 import { SimpleValueType } from "../../src/Interfaces/DataTypeConverterService";
 import { IDataTypeConverter } from "../../src/Interfaces/DataTypeConverters";
 import { IDataTypeIdentifier } from "../../src/Interfaces/DataTypeIdentifier";
-import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
-import { ConsoleLoggerService } from "../../src/Services/ConsoleLoggerService";
+import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggingService";
+import { ConsoleLoggingService } from "../../src/Services/ConsoleLoggingService";
 import { DataTypeComparerService } from "../../src/Services/DataTypeComparerService";
 import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
 import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
 import { InvalidTypeError } from "../../src/Utilities/ErrorHandling";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { MockJivsServices } from "../TestSupport/mocks";
 
 function setupServicesWithExtraLogging(): {
@@ -24,12 +24,12 @@ function setupServicesWithExtraLogging(): {
     let comparerService = new DataTypeComparerService();
     services.dataTypeComparerService = comparerService;
     comparerService.services = services;
-    let logger = services.loggerService as CapturingLogger;
+    let logger = services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Warn;
     logger.overrideMinLevelWhen({
         type: 'DataTypeComparerService', // basically silence Identityservice
     });
-    logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, null, true);
+    logger.chainedLogger = new ConsoleLoggingService(LoggingLevel.Debug, null, true);
 
     return { services, testItem: comparerService };
 
@@ -164,7 +164,7 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
     test('Custom comparer with datatype lookup resolved by IDataTypeIdentifier', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
 
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
@@ -208,7 +208,7 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
     test('Custom comparer for a custom type throws an error when one of the values is not that type', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
 
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
@@ -228,7 +228,7 @@ describe('DataTypeComparerServices compare with custom classes', ()=>{
     test('Custom comparer for custom type that works with another of type LookupKey.String when a converter is present', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
         dtis.register(new TestIdentifier());
@@ -267,7 +267,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Either value has nulls returns Equal for both having or Undetermined otherwise', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
       
         expect(testItem.compare(null, null, null, null)).toBe(ComparersResult.Equal);
@@ -286,7 +286,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Either value has undefined returns Undetermined', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
       
         expect(testItem.compare(undefined, undefined, null, null)).toBe(ComparersResult.Undetermined);
         expect(logger.findMessage('Has nulls', LoggingLevel.Debug)).toBeTruthy();
@@ -304,7 +304,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
       
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equal);
@@ -354,7 +354,7 @@ describe('DataTypeComparerService.compare', () => {
         }
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
 
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
@@ -375,7 +375,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Number value resolves lookupKey and correctly handles comparisons', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
 
         expect(testItem.compare(0, 0, LookupKey.Integer, LookupKey.Number)).toBe(ComparersResult.Equal);
@@ -397,7 +397,7 @@ describe('DataTypeComparerService.compare', () => {
     test('With the IntegerConverter present, ensure it does not modify the values', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
 
         let dtcs = setup.services.dataTypeConverterService as DataTypeConverterService;
@@ -438,7 +438,7 @@ describe('DataTypeComparerService.compare', () => {
     });    
     test('String values with various non-string lookup keys show lookup keys have no meaning as they are only used to pick a comparer', () => {
         let services = new MockJivsServices(false, true);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = new DataTypeComparerService();
@@ -461,7 +461,7 @@ describe('DataTypeComparerService.compare', () => {
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
         dtis.register(new BooleanDataTypeIdentifier());
         testItem.register(new BooleanDataTypeComparer());
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
         expect(testItem.compare(true, true, null, null)).toBe(ComparersResult.Equal);
         expect(logger.findMessage('Using BooleanDataTypeComparer', LoggingLevel.Debug)).toBeTruthy();
         expect(logger.findMessage('Comparison result: Equal', LoggingLevel.Info)).toBeTruthy();
@@ -484,7 +484,7 @@ describe('DataTypeComparerService.compare', () => {
         let setup = setupServicesWithExtraLogging();
         setup.services.lookupKeyFallbackService.register('Custom1', LookupKey.Boolean);
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         let dtis = setup.services.dataTypeIdentifierService as DataTypeIdentifierService;
         dtis.register(new BooleanDataTypeIdentifier());
@@ -514,7 +514,7 @@ describe('DataTypeComparerService.compare', () => {
 
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         testItem.register(new BooleanDataTypeComparer());
 
@@ -530,7 +530,7 @@ describe('DataTypeComparerService.compare', () => {
 
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         testItem.register(new BooleanDataTypeComparer());
 
@@ -639,7 +639,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Logging tracked for valid value that results in successful request', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         expect(testItem.compare(0, 0, null, null)).toBe(ComparersResult.Equal);
         expect(logger.findMessage('Using defaultComparer', LoggingLevel.Debug, null)).toBeTruthy();        
@@ -659,7 +659,7 @@ describe('DataTypeComparerService.compare', () => {
         }
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         testItem.register(new NonSevereErrorComparer());    
 
@@ -671,7 +671,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Unsupported data type for lookupKey using JavaScript object logs error and throws', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare({}, 'A', null, null)).toThrow(/operand/);
@@ -682,7 +682,7 @@ describe('DataTypeComparerService.compare', () => {
     test('Unsupported data type for lookupKey using some class instance logs error and throws', () => {
         let setup = setupServicesWithExtraLogging();
         let testItem = setup.testItem;
-        let logger = setup.services.loggerService as CapturingLogger;
+        let logger = setup.services.loggingService as TestingLoggingService;
 
         let result: ComparersResult | null = null;
         expect(() => result = testItem.compare(testItem /* some class */, 'A', null, null)).toThrow(/operand/);

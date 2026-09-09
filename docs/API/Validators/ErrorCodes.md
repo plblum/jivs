@@ -1,5 +1,5 @@
 # ErrorCodes
-Each `Validator` has an error code that is used to align it with the [TextLocalizerService](../JivsServices/TextLocalizerService.md) and other features. Its value is setup in the Validator's `errorCode` configuration property, but is usually omitted due to it taking on a default.
+Each `Validator` has an error code that is used to align it with the [ErrorMessagesService](../JivsServices/ErrorMessagesService.md) and other features. Its value is setup in the Validator's `errorCode` configuration property, but is usually omitted due to it taking on a default.
 ```ts
 builder.field('FirstName', LookupKey.String, { label: 'First name'} )
    .requiredText()  // errorCode defaults to ConditionType.RequireText
@@ -8,7 +8,7 @@ builder.field('FirstName', LookupKey.String, { label: 'First name'} )
    });
 ```
 The error code is used like this:
-- To lookup the error message with the [`TextLocalizerService`](../JivsServices/TextLocalizerService.md).
+- To lookup the error message with the [`ErrorMessagesService`](../JivsServices/ErrorMessagesService.md).
 - It is included in the `IssueFound object` that is passed to the UI along with the error message to allow your UI to recognize it.
 - When business logic provides errors, they can supply their own error code. You have to convert your error info into an `IssueFound object` and call `ValueHostsManager.addExternalIssueFound()` for it to appear in Jivs. At that time, map it to the ConditionType or errorCode found on an individual Jivs validator. Your business logic error now activates the same validator, using the error message supplied for that validator.
 
@@ -25,10 +25,10 @@ Assign the `errorCode` property in these cases:
 - To provide multiple localized error messages for the same condition type.
 
 ## API References
-- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validator_ConcreteClasses.Validator.html)
-- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validator_Types.ValidatorConfig.html)
+- [Validator class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Validation_ConcreteClasses.Validator.html)
+- [ValidatorConfig type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.ValidatorConfig.html)
 - [IssueFound type](http://jivs.peterblum.com/TypeDoc/interfaces/jivs-engine_Validation_Types.IssueFound.html)
-- [TextLocalizerService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_TextLocalizerService.TextLocalizerService.html)
+- [ErrorMessagesService class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_Services_ConcreteClasses_ErrorMessagesService.ErrorMessagesService.html)
 
 ---
 Go to [Validators Home](./Home.md)

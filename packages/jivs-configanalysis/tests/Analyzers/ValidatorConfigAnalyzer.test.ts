@@ -395,13 +395,13 @@ describe('ValidatorConfigAnalyzer', () => {
                 conditionCreator: null!,    // ConditionCreatorConfigPropertyAnalyzer will not report an error
                 errorMessage: 'Test Error Message',    // AllMessagePropertiesConfigPropertyAnalyzer
                 summaryMessage: 'Test Summary Message',    // AllMessagePropertiesConfigPropertyAnalyzer
-                errorMessagel10n: 'eml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + TextLocalizerService supporting 'eml10n'
-                summaryMessagel10n: 'sml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + TextLocalizerService supporting 'sml10n'
+                errorMessagel10n: 'eml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + ErrorMessagesService supporting 'eml10n'
+                summaryMessagel10n: 'sml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + ErrorMessagesService supporting 'sml10n'
 
             };
             let services = createServices();
-            services.textLocalizerService.register('eml10n', { '*': 'Error Message Localized' });
-            services.textLocalizerService.register('sml10n', { '*': 'Summary Message Localized' });
+            services.errorMessagesService.register('eml10n', { '*': 'Error Message Localized' });
+            services.errorMessagesService.register('sml10n', { '*': 'Summary Message Localized' });
             let helper = setupHelperForTheseTests(services);
             let propertyAnalyzers = [
                 new AllMessagePropertiesConfigPropertyAnalyzer(),
@@ -425,8 +425,8 @@ describe('ValidatorConfigAnalyzer', () => {
                 conditionCreator: () => { return {} as any },    // ConditionCreatorConfigPropertyAnalyzer will report an error because conditionCOnfig is already used
                 errorMessage: null,    // AllMessagePropertiesConfigPropertyAnalyzer will not report an error for this
                 summaryMessage: null,    // AllMessagePropertiesConfigPropertyAnalyzer will not report an error for this
-                errorMessagel10n: 'eml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + TextLocalizerService NOT supporting 'eml10n'
-                summaryMessagel10n: 'sml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + TextLocalizerService NOT supporting 'sml10n'
+                errorMessagel10n: 'eml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + ErrorMessagesService NOT supporting 'eml10n'
+                summaryMessagel10n: 'sml10n',    // AllMessagePropertiesConfigPropertyAnalyzer + ErrorMessagesService NOT supporting 'sml10n'
 
             };
             let services = createServices();
@@ -443,9 +443,9 @@ describe('ValidatorConfigAnalyzer', () => {
             checkLocalizedPropertyResultFromArray(results.properties, 1, 'summaryMessage',
                 1, 'en', '*', undefined, false);
             // checkPropertyCAResultsFromArray(results.properties, 0,
-            //     'errorMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
+            //     'errorMessage', 'localization not declared in ErrorMessagesService.', CAIssueSeverity.error);
             // checkPropertyCAResultsFromArray(results.properties, 1,
-            //     'summaryMessage', 'localization not declared in TextLocalizerService.', CAIssueSeverity.error);
+            //     'summaryMessage', 'localization not declared in ErrorMessagesService.', CAIssueSeverity.error);
             checkPropertyCAResultsFromArray(results.properties, 2,
                 'conditionCreator', 'Cannot supply both conditionCreator', CAIssueSeverity.error);
         });

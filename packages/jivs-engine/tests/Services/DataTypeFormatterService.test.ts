@@ -3,11 +3,11 @@ import { BooleanFormatter, CurrencyFormatter, NumberFormatter } from "../../src/
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeFormatter } from "../../src/Interfaces/DataTypeFormatters";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
-import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggerService";
+import { LoggingLevel, LoggingCategory } from "../../src/Interfaces/LoggingService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
 
 import { MockJivsServices } from "../TestSupport/mocks";
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { JivsServices } from "../../src/Services/JivsServices";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
@@ -54,7 +54,7 @@ describe('DataTypeFormatterService.format', () => {
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services);
         let testItem = services.dataTypeFormatterService;
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format({}, null, 'en')).toThrow(/LookupKey/);
@@ -68,7 +68,7 @@ describe('DataTypeFormatterService.format', () => {
         populateServicesWithManyCultures(services);
         let testItem = services.dataTypeFormatterService;
 
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = testItem.format(0, 'huh', 'en')).toThrow(/No DataTypeFormatter/);
@@ -79,7 +79,7 @@ describe('DataTypeFormatterService.format', () => {
     test('Lookup Key in DataTypeFormatter en', () => {
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, true);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
@@ -93,7 +93,7 @@ describe('DataTypeFormatterService.format', () => {
     test('Lookup Key in DataTypeFormatter en using fallback from en-GB', () => {
         let services = new MockJivsServices(false, true, 'en-GB');
         populateServicesWithManyCultures(services, true);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
 
@@ -162,7 +162,7 @@ describe('DataTypeFormatterService.format', () => {
         }
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, false);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
 
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
@@ -188,7 +188,7 @@ describe('DataTypeFormatterService.format', () => {
         }
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, false);
-        let logger = services.loggerService as CapturingLogger;
+        let logger = services.loggingService as TestingLoggingService;
         logger.minLevel = LoggingLevel.Debug;
         let testItem = services.dataTypeFormatterService as DataTypeFormatterService;
         testItem.register(new FormatterThrowsString());
@@ -221,8 +221,8 @@ describe('format() using lookupKeyFallbackService', () => {
 
     test('Integer datatype uses NumberFormatter', () => {
         let services = createJivsServices();
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number
@@ -238,8 +238,8 @@ describe('format() using lookupKeyFallbackService', () => {
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', LookupKey.Currency);
         lkfb.register('CUSTOMB', 'CUSTOMA');        
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number
@@ -256,8 +256,8 @@ describe('format() using lookupKeyFallbackService', () => {
         let lkfb = services.lookupKeyFallbackService;
         lkfb.register('CUSTOMA', 'CUSTOMB');
         lkfb.register('CUSTOMB', 'CUSTOMA');        
-        let logger = new CapturingLogger();
-        services.loggerService = logger;
+        let logger = new TestingLoggingService();
+        services.loggingService = logger;
         logger.minLevel = LoggingLevel.Debug;
 
         // default contains Integer->Number

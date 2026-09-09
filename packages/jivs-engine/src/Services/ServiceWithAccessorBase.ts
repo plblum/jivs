@@ -6,7 +6,7 @@
 import { IServicesAccessor } from '../Interfaces/Services';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { assertNotNull, assertWeakRefExists } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 import { ServiceBase } from './ServiceBase';
 
 /**
@@ -61,14 +61,14 @@ export abstract class ServiceWithAccessorBase extends ServiceBase implements ISe
     }    
  
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.hasServices() ? this.services.loggerService : null,
+            this._logger = new LoggingFacade(this.hasServices() ? this.services.loggingService : null,
                 'service', this, null, true);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;    
+    private _logger: LoggingFacade | null = null;    
 }

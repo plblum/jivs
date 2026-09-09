@@ -1,6 +1,6 @@
 import { IValueAdapterService } from '../../src/Interfaces/ValueAdapterService';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
-import { LoggingLevel } from '../../src/Interfaces/LoggerService';
+import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 import
     {
         ValueAdapterService, thenEmptyArray, thenEmptyObject, thenEmptyString,
@@ -9,7 +9,7 @@ import
         whenEmptyStringOrNull, whenNull, whenNullOrUndefined, whenUndefined, whenZero,
         whenZeroNullOrUndefined, whenZeroOrNull
     } from '../../src/Services/ValueAdapterService';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 
 class TestValueAdapterService extends ValueAdapterService
@@ -44,14 +44,14 @@ class TestValueAdapterService extends ValueAdapterService
 function setup():
     {
         services: IJivsServices,
-        logger: CapturingLogger,
+        logger: TestingLoggingService,
         valueAdapterService: IValueAdapterService
     }
 {
     let services = createJivsServicesForTesting({ loggerLevel: LoggingLevel.Debug });
     // will already have default valueAdapterService and valueAdapterService. So the caller should 
     // use the right one for the test.
-    let logger = services.loggerService;
+    let logger = services.loggingService;
 
     return { services, logger, valueAdapterService: services.valueAdapterService as IValueAdapterService };
 }
@@ -158,7 +158,7 @@ describe('ValueAdapterService', () =>
     describe('resolve()', () =>
     {
         let _services: IJivsServices | null = null;
-        let _logger: CapturingLogger | null = null;
+        let _logger: TestingLoggingService | null = null;
         let _valueAdapterService: IValueAdapterService | null = null;
 
         beforeEach(() =>

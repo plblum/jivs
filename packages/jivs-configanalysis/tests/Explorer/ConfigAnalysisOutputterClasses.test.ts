@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
-import { LoggingCategory, LoggingLevel, LogDetails } from '@plblum/jivs-engine/build/Interfaces/LoggerService';
-import { ConsoleLoggerService } from '@plblum/jivs-engine/build/Services/ConsoleLoggerService';
+import { LoggingCategory, LoggingLevel, LogDetails } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import { ConsoleLoggingService } from '@plblum/jivs-engine/build/Services/ConsoleLoggingService';
 import { ConfigAnalysisResultsExplorerFactory } from '../../src/Explorer/ConfigAnalysisResultsExplorer';
 import { JsonConfigAnalysisOutputFormatter, CleanedObjectConfigAnalysisOutputFormatter } from '../../src/Explorer/Formatters/ConfigAnalysisOutputFormatterClasses';
 import { ConfigAnalysisOutputterBase, ConsoleConfigAnalysisOutputter, JsonConsoleConfigAnalysisOutputter, LoggerConfigAnalysisOutputter, NullConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
@@ -141,7 +141,7 @@ describe('IConfigAnalysisOutputter implementations', () => {
     });
 
     describe('LoggerConfigAnalysisOutputter', () => {
-        // We'll use the ConsoleLoggerService for this test
+        // We'll use the ConsoleLoggingService for this test
         // It internally directs to console.log with the LogDetails object (not a string)
         // so we'll spy on console.log
 
@@ -149,8 +149,8 @@ describe('IConfigAnalysisOutputter implementations', () => {
             formatter: IConfigAnalysisOutputFormatter | null)
         {
             let logSpy = jest.spyOn(console, 'log');
-            let loggerService = new ConsoleLoggerService(LoggingLevel.Error);   // ensures that it writes even at Error level
-            let outputter = new LoggerConfigAnalysisOutputter(formatter, loggerService);
+            let loggingService = new ConsoleLoggingService(LoggingLevel.Error);   // ensures that it writes even at Error level
+            let outputter = new LoggerConfigAnalysisOutputter(formatter, loggingService);
             let result = outputter.send(reportData) as LogDetails;
             expect(logSpy).toHaveBeenCalledTimes(1);
             expect(logSpy).toHaveBeenCalledWith(expect.any(Object));
@@ -177,15 +177,15 @@ describe('IConfigAnalysisOutputter implementations', () => {
             expect(result.message).toContain('valueHostQueryResults');
             expect(result.message).toContain('lookupKeyQueryResults');
             expect(result.message).toContain('completeResults');
-            expect(loggerService.minLevel).toBe(LoggingLevel.Error);    // ensure that the minLevel was restored
+            expect(loggingService.minLevel).toBe(LoggingLevel.Error);    // ensure that the minLevel was restored
             logSpy.mockReset();
         }
 
 
-        test('constructor throws with null loggerService', () => {
+        test('constructor throws with null loggingService', () => {
             expect(() => new LoggerConfigAnalysisOutputter(new JsonConfigAnalysisOutputFormatter(), null!)).toThrow();
         }); 
-        test('With JsonConfigAnalysisOutputFormatter, data supplied sent to loggerService.log', () => {
+        test('With JsonConfigAnalysisOutputFormatter, data supplied sent to loggingService.log', () => {
             let formatter = new JsonConfigAnalysisOutputFormatter();
             let reportData: ConfigAnalysisOutputReportData = {
                 valueHostQueryResults: [],
@@ -196,14 +196,14 @@ describe('IConfigAnalysisOutputter implementations', () => {
         });
         // when using CleanedObjectConfigAnalysisOutputFormatter, expect send to throw because not supported
         test('With CleanedObjectConfigAnalysisOutputFormatter, send throws because not supported', () => {
-            let loggerService = new ConsoleLoggerService(LoggingLevel.Error);
+            let loggingService = new ConsoleLoggingService(LoggingLevel.Error);
             let formatter = new CleanedObjectConfigAnalysisOutputFormatter();
             let reportData: ConfigAnalysisOutputReportData = {
                 valueHostQueryResults: [],
                 lookupKeyQueryResults: [],
                 completeResults: {} as any
             };
-            let outputter = new LoggerConfigAnalysisOutputter(formatter, loggerService);
+            let outputter = new LoggerConfigAnalysisOutputter(formatter, loggingService);
             expect(() => outputter.send(reportData)).toThrow(/requires content to be a string/);
         });
         test('With null formatter, JsonConfigAnalysisOutputFormatter is used', () => {

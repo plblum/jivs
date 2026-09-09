@@ -11,7 +11,7 @@ import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { IValidatableValueHost, ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState, ValidatableValueHostBaseSetValueOptions, ValueHostValidationState } from '../Interfaces/ValidatableValueHostBase';
 import { IssueFound, ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity } from '../Interfaces/Validation';
 import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerCallbacks } from '../Interfaces/ValueHostsManager';
-import { LoggingLevel } from '../Interfaces/LoggerService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
 

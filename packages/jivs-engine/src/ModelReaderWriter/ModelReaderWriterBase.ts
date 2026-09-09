@@ -8,7 +8,7 @@ import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';
-import { LoggerFacade } from '../Utilities/LoggerFacade';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 
 /**
  * Base class for ModelReader and ModelWriter.
@@ -56,16 +56,16 @@ export abstract class ModelReaderWriterBase<T extends object>
     private _services: IJivsServices;
 
     /**
-     * Provides an API for logging, sending entries to the loggerService.
+     * Provides an API for logging, sending entries to the loggingService.
      */
-    protected get logger(): LoggerFacade
+    protected get logger(): LoggingFacade
     {
         if (!this._logger)
-            this._logger = new LoggerFacade(this.services.loggerService,
+            this._logger = new LoggingFacade(this.services.loggingService,
                 this.constructor.name, this, null, true);
         return this._logger;
     }
-    private _logger: LoggerFacade | null = null;
+    private _logger: LoggingFacade | null = null;
 
     /**
      * Evaluate the value of the model property and any rule that applies to it.

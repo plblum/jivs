@@ -1,10 +1,10 @@
 import { jest } from '@jest/globals';
-import { ILoggerService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggerService";
+import { ILoggingService, LogDetails, LogErrorDetails, LogOptions, LoggingCategory, LoggingLevel, logGatheringErrorHandler, logGatheringHandler } from "../../src/Interfaces/LoggingService";
 
-import { CapturingLogger } from "../../src/Support/CapturingLogger";
-import { LoggerServiceBase } from '../../src/Services/LoggerServiceBase';
+import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
+import { LoggingServiceBase } from '../../src/Services/LoggingServiceBase';
 
-class TestLoggerServiceBase extends LoggerServiceBase {
+class TestLoggingServiceBase extends LoggingServiceBase {
 
     public override get serviceName(): string {
         return this._serviceName;
@@ -12,7 +12,7 @@ class TestLoggerServiceBase extends LoggerServiceBase {
     public override set serviceName(value: string) {
         this._serviceName = value;
     }
-    private _serviceName: string = 'TestLoggerServiceBase';
+    private _serviceName: string = 'TestLoggingServiceBase';
 
     protected writeLog(level: LoggingLevel, logDetails: LogDetails): void {
         this.lastLevel = level;
@@ -29,32 +29,32 @@ class TestLoggerServiceBase extends LoggerServiceBase {
     }   
 }
 
-describe('TestLoggerServiceBase.log', () => {
+describe('TestLoggingServiceBase.log', () => {
     function messageOnly(options?: LogOptions): LogDetails {
         return {
             message: 'Message'
         };
     }
     test('Debug', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Debug, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual({ message: 'Message' });
         expect(testItem.lastLevel).toBe(LoggingLevel.Debug);
     });
     test('Info', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Info, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual({ message: 'Message' });
         expect(testItem.lastLevel).toBe(LoggingLevel.Info);
     });
     test('Warn', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Warn, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual({ message: 'Message' });
         expect(testItem.lastLevel).toBe(LoggingLevel.Warn);
     });
     test('Error', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual({ message: 'Message' });
         expect(testItem.lastLevel).toBe(LoggingLevel.Error);
@@ -69,7 +69,7 @@ describe('TestLoggerServiceBase.log', () => {
                 identity: 'Identity',
             };
         }
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual({
             message: 'Message',
@@ -98,7 +98,7 @@ describe('TestLoggerServiceBase.log', () => {
 
         }
 
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug);
         expect(() => testItem.log(LoggingLevel.Error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(
             {
@@ -114,7 +114,7 @@ describe('TestLoggerServiceBase.log', () => {
 });
 
 
-describe('TestLoggerServiceBase.log without output when LoggingLevel is too low', () => {
+describe('TestLoggingServiceBase.log without output when LoggingLevel is too low', () => {
     function messageOnly(options?: LogOptions): LogDetails {
         return {
             message: 'Message'
@@ -122,62 +122,62 @@ describe('TestLoggerServiceBase.log without output when LoggingLevel is too low'
     }
 
     test('Debug', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Info);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Info);
         expect(() => testItem.log(LoggingLevel.Debug, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toBeNull();
         expect(testItem.lastLevel).toBeNull();
     });
     test('Info', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Warn);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Warn);
         expect(() => testItem.log(LoggingLevel.Info, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toBeNull();
         expect(testItem.lastLevel).toBeNull();
     });
     test('Warn', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         expect(() => testItem.log(LoggingLevel.Warn, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).toBeNull();
         expect(testItem.lastLevel).toBeNull();
     });
     test('Error is always output', () => {
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         expect(() => testItem.log(LoggingLevel.Error, messageOnly)).not.toThrow();
         expect(testItem.lastLogDetails).not.toBeNull();
         expect(testItem.lastLevel).not.toBeNull();
     });
 });
 
-describe('TestLoggerServiceBase.log using chainedLogger to also capture content', () => {
+describe('TestLoggingServiceBase.log using chainedLogger to also capture content', () => {
     function messageOnly(options?: LogOptions): LogDetails {
         return {
             message: 'Message'
         };
     }
     test('Debug', () => {
-        let chainedLogger = new CapturingLogger();
+        let chainedLogger = new TestingLoggingService();
         chainedLogger.minLevel = LoggingLevel.Debug;
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, chainedLogger);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug, chainedLogger);
         expect(() => testItem.log(LoggingLevel.Debug, messageOnly)).not.toThrow();
         expect(chainedLogger.findMessage('Message', LoggingLevel.Debug, null)).toBeTruthy();
     });
     test('Info', () => {
-        let chainedLogger = new CapturingLogger();
+        let chainedLogger = new TestingLoggingService();
         chainedLogger.minLevel = LoggingLevel.Debug;
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, chainedLogger);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug, chainedLogger);
         expect(() => testItem.log(LoggingLevel.Info, messageOnly)).not.toThrow();
         expect(chainedLogger.findMessage('Message', LoggingLevel.Info, null)).toBeTruthy();
     });
     test('Warn', () => {
-        let chainedLogger = new CapturingLogger();
+        let chainedLogger = new TestingLoggingService();
         chainedLogger.minLevel = LoggingLevel.Debug;
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, chainedLogger);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug, chainedLogger);
         expect(() => testItem.log(LoggingLevel.Warn, messageOnly)).not.toThrow();
         expect(chainedLogger.findMessage('Message', LoggingLevel.Warn, null)).toBeTruthy();
     });
     test('Error', () => {
-        let chainedLogger = new CapturingLogger();
+        let chainedLogger = new TestingLoggingService();
         chainedLogger.minLevel = LoggingLevel.Debug;
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, chainedLogger);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug, chainedLogger);
         expect(() => testItem.log(LoggingLevel.Error, messageOnly)).not.toThrow();
         expect(chainedLogger.findMessage('Message', LoggingLevel.Error, null)).toBeTruthy();
     });
@@ -191,7 +191,7 @@ describe('logError()', () => {
             } as any;
         }
         let error = new Error('Message');
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(
             {
@@ -210,7 +210,7 @@ describe('logError()', () => {
             };
         }
         let error = new Error('Message');
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(
             {
@@ -235,7 +235,7 @@ describe('logError()', () => {
             };
         }
         let error = new Error('Message');
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(
             {
@@ -254,7 +254,7 @@ describe('logError()', () => {
             } as any;
         }
         let error = new Error('Message');
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Error);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Error);
         testItem.showStack = true;
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(expect.objectContaining(
@@ -271,9 +271,9 @@ describe('logError()', () => {
             } as any;
         }
 
-        let chainedLogger = new CapturingLogger();
+        let chainedLogger = new TestingLoggingService();
         chainedLogger.minLevel = LoggingLevel.Debug;
-        let testItem = new TestLoggerServiceBase(LoggingLevel.Debug, chainedLogger);
+        let testItem = new TestLoggingServiceBase(LoggingLevel.Debug, chainedLogger);
         let error = new Error('Message');
         expect(() => testItem.logError(error, handler)).not.toThrow();
         expect(testItem.lastLogDetails).toEqual(
@@ -289,10 +289,10 @@ describe('logError()', () => {
 
 });
 describe('OverrideMinLevelWhen features', () => {
-    let logger: TestLoggerServiceBase;
+    let logger: TestLoggingServiceBase;
 
     beforeEach(() => {
-        logger = new TestLoggerServiceBase();
+        logger = new TestLoggingServiceBase();
     });
 
     describe('matchToOverrides', () => {

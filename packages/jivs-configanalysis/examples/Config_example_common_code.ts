@@ -13,7 +13,7 @@
 
 
 */
-import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { createMinimalJivsServices } from "./support";
 import {
     DataTypeCheckConditionConfig, DataTypeCheckCondition,
@@ -33,7 +33,7 @@ import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/Dat
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { SimpleValueType } from "@plblum/jivs-engine/build/Interfaces/DataTypeConverterService";
 import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { TextLocalizerService } from "@plblum/jivs-engine/build/Services/TextLocalizerService";
+import { ErrorMessagesService } from "@plblum/jivs-engine/build/Services/ErrorMessagesService";
 import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
 import { ICalcValueHost } from "@plblum/jivs-engine/build/Interfaces/CalcValueHost";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
@@ -72,7 +72,7 @@ export function differenceBetweenDates(callingValueHost: ICalcValueHost, findVal
 // with the exception of default error messages.
 // Here we show how to prepare it from scratch configured
 // for this example.
-export function createJivsServices(cultureID: string): JivsServices {
+export function createJivsServices(cultureID: string): IJivsServices {
     let services = createMinimalJivsServices(cultureID);
     // We are expecting to use Data Types: Date, Integer, String. 
     // Jivs preconfigures Date and String.
@@ -112,19 +112,19 @@ export function createJivsServices(cultureID: string): JivsServices {
     // These will override any passed through the ValueHostsManagerConfig as the supplied messages are assumed to
     // come from business logic, not the UI layer.
     // In this case, our error message for LessThan will be a custom one, so we will set it later.
-    let textLocalizationService = services.textLocalizerService as TextLocalizerService;
-    textLocalizationService.registerErrorMessage(ConditionType.LessThan, null, {
+    let errorMessagesService = services.errorMessagesService as ErrorMessagesService;
+    errorMessagesService.registerErrorMessage(ConditionType.LessThan, null, {
         '*': '{Label} must be less than to {SecondLabel}.'
     });
 
-    textLocalizationService.registerErrorMessage(ConditionType.LessThanOrEqual, null, {
+    errorMessagesService.registerErrorMessage(ConditionType.LessThanOrEqual, null, {
         '*': '{Label} must be less than or equal to {SecondLabel}.'
     });
 
-    textLocalizationService.registerErrorMessage('NumOfDays', null, {
+    errorMessagesService.registerErrorMessage('NumOfDays', null, {
         '*': 'Less than {compareTo} days apart'
     });
-    textLocalizationService.registerSummaryMessage('NumOfDays', null, {
+    errorMessagesService.registerSummaryMessage('NumOfDays', null, {
         '*': 'The dates must be less than {compareTo} days apart'
     });
 

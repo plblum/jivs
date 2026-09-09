@@ -13,10 +13,10 @@ import { ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces
 import { ComparersResult } from '../../src/Interfaces/DataTypeComparerService';
 import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
-import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggerService';
-import { ConsoleLoggerService } from '../../src/Services/ConsoleLoggerService';
+import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggingService';
+import { ConsoleLoggingService } from '../../src/Services/ConsoleLoggingService';
 import { DataTypeConverterService } from '../../src/Services/DataTypeConverterService';
-import { CapturingLogger } from '../../src/Support/CapturingLogger';
+import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { InvalidTypeError } from '../../src/Utilities/ErrorHandling';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
 
@@ -25,9 +25,9 @@ function setupServicesAndVM(): {
     vhm: MockValueHostsManager
 } {
     let services = new MockJivsServices(false, false);
-    let logger = services.loggerService as CapturingLogger;
+    let logger = services.loggingService as TestingLoggingService;
     logger.minLevel = LoggingLevel.Debug;
-    logger.chainedLogger = new ConsoleLoggerService(LoggingLevel.Debug, undefined, true);
+    logger.chainedLogger = new ConsoleLoggingService(LoggingLevel.Debug, undefined, true);
     let vhm = new MockValueHostsManager(services);
 
     return { services, vhm };
@@ -89,7 +89,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
         test('Config.secondValuewith null logs and returns Undetermined', () =>
         {
             let setup = setupWithValueHost();
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             setup.vh.setValue('');
             let config: CompareToValueConditionBaseConfig = {
                 conditionType: ConditionType.EqualTo,
@@ -118,7 +118,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual(expect.objectContaining({
@@ -152,7 +152,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual(expect.objectContaining({
@@ -187,7 +187,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
                 {
                     data: {
@@ -236,7 +236,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             expect(testItem.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Undetermined);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual({
@@ -262,7 +262,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             expect(testItem.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Undetermined);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual({
@@ -328,7 +328,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
                 valueHostName: null
             };
             let testItem = new Publicify_CompareToValueConditionBase(config);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             expect(testItem.evaluate(setup.vh, setup.vhm)).toBe(ConditionEvaluateResult.Undetermined);
             expect(logger.findMessage('ValueHost not found', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
         });
@@ -352,7 +352,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual(expect.objectContaining({
@@ -387,7 +387,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Converted to type "Number"', LoggingLevel.Info, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual(expect.objectContaining({
@@ -423,7 +423,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             testItem.evaluate(null, setup.vhm);  // result does not matter. We are looking at logs for conversion facts
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage(null, LoggingLevel.Info, LoggingCategory.Result,
                 {
                     data: {
@@ -473,7 +473,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             expect(testItem.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Undetermined);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual({
@@ -500,7 +500,7 @@ describe('CompareToValueConditionBase class additional cases', () =>
             let testItem = new Publicify_CompareToValueConditionBase(config);
 
             expect(testItem.evaluate(null, setup.vhm)).toBe(ConditionEvaluateResult.Undetermined);
-            let logger = setup.services.loggerService as CapturingLogger;
+            let logger = setup.services.loggingService as TestingLoggingService;
             let logDetails = logger.findMessage('Need a DataTypeConverter', LoggingLevel.Warn, LoggingCategory.Result);
             expect(logDetails).toBeTruthy();
             expect(logDetails!.data).toEqual({

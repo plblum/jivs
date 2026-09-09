@@ -1,6 +1,6 @@
 /**
- * {@inheritDoc jivs-engine/Validator/ConcreteClasses!}
- * @module jivs-engine/Validator/Types
+ * {@inheritDoc jivs-engine/Validation/ConcreteClasses!}
+ * @module jivs-engine/Validation/Types
  */
 import { ConditionEvaluateResult, ICondition, ConditionConfig } from './Conditions';
 import { IssueFound, ValidateOptions, ValidationSeverity } from './Validation';
@@ -164,17 +164,17 @@ export interface ValidatorConfig {
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in ErrorMessagel10n, the value can be set to ''
-     * so long as your TextLocalizerService ALWAYS returns the text.
+     * so long as your ErrorMessagesService ALWAYS returns the text.
      * Otherwise, this should be the fallback.
-     * If you have setup defaults for error messages with TextLocalizerService,
+     * If you have setup defaults for error messages with ErrorMessagesService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
     errorMessage?: undefined | null | string | ((host: IValidator) => string);
 
     /**
      * Localization key for errorMessage. Its value will be matched to an entry
-     * made to JivsServices.TextLocalizerService, specific to the active culture.
-     * If setup and no entry was found in TextLocalizerService,
+     * made to JivsServices.ErrorMessagesService, specific to the active culture.
+     * If setup and no entry was found in ErrorMessagesService,
      * the value from the errorMessage property is used.
      */
     errorMessagel10n?: string | null | undefined;
@@ -190,17 +190,17 @@ export interface ValidatorConfig {
      *   allowing you to replace or customize the message during validation.
      *   The function must return a string, although an empty string is valid.
      * When localization is setup in SummaryMessagel10n, the value can be set to ''
-     * so long as your TextLocalizerService ALWAYS returns the text.
+     * so long as your ErrorMessagesService ALWAYS returns the text.
      * Otherwise, this should be the fallback.
-     * If you have setup defaults for error messages with TextLocalizerService,
+     * If you have setup defaults for error messages with ErrorMessagesService,
      * leave this null to use the default. Any value here supersedes default error messages.
      */
     summaryMessage?: undefined | null | string | ((host: IValidator) => string);
 
     /**
      * Localization key for summaryMessage. Its value will be matched to an entry
-     * made to JivsServices.TextLocalizerService, specific to the active culture.
-     * If setup and no entry was found in TextLocalizerService,
+     * made to JivsServices.ErrorMessagesService, specific to the active culture.
+     * If setup and no entry was found in ErrorMessagesService,
      * the value from the errorMessage property is used.
      */
     summaryMessagel10n?: string | null | undefined;
