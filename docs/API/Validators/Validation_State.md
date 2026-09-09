@@ -94,7 +94,7 @@ interface IssueFound {
 ```
 - `errorMessage` - The error message, with all tokens and localization already applied. See [Error Messages](../Validators/Error_Messages.md) for extensive details on setting these up.
     > When building an HTML-based UI, always follow these prerequisites: [Jivs Presentation Prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md).
-- `summaryMessage` - A companion error message that is ideal for the Validation Summary element. 
+- `summaryMessage` - A companion error message that is ideal for the Validation Summary widget. 
   If null or undefined, use `errorMessage` as no `summaryMessage` was supplied.
 - `severity` - Determines how a `Validator` behaves if there was an issue:
     - `Error` (or null/undefined) - Normal error

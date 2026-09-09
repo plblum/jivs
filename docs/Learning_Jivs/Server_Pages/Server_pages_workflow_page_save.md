@@ -4,7 +4,7 @@ A Page Save starts when the user attempts to submit the page. At this point, the
 
 Successful client validation and submission do not complete the save. The server must also validate the submitted data. When server validation prevents the save, the server returns the errors through a regenerated page.
 
-> Traditional server-generated pages often inject validation messages directly into their output. With Jivs, the server places the validation information in a hidden input and generates the HTML elements that will present it. After the page reloads, client-side Jivs supplies the validation information to the Field Error Displays, Validation Summary, and other presentation elements.
+> Traditional server-generated pages often inject validation messages directly into their output. With Jivs, the server places the validation information in a hidden input and generates the HTML elements that will present it. After the page reloads, client-side Jivs supplies the validation information to the Field Error Displays, Validation Summary, and other presentation widgets.
 
 This document focuses on the client workflow and the information the regenerated page must provide. For the server validation process, see [Understanding Server-Side Validation](../Understanding_Server_Side_Validation.md).
 

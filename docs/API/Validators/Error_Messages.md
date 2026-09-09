@@ -13,7 +13,7 @@ Jivs has a lot of depth in its error message support.
 
   `Requires a value.`
 
-  Its `summaryMessage` property, intended for a Validation Summary displayed elsewhere on the screen, includes the field name for clarity. 
+  Its `summaryMessage` property, intended for a Validation Summary widget displayed elsewhere on the screen, includes the field name for clarity. 
   
   `First name requires a value.`
   

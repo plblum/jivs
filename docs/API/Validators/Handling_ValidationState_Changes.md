@@ -15,7 +15,7 @@ Let's look at the basics for these callbacks to work with your UI.
     ```ts
     type (valueHost: IValidatableValueHost, validationState: ValueHostValidationState) => void
     ```
-2. Use the ValueHost to identify some name that you can use to find the corresponding element. It greatly helps to configure the [Element Identifier](../../Learning_Jivs/Server_Pages/Home.md#using-the-element-identifier) on the `ValueHost`.
+2. Use the `ValueHost` to identify some name that you can use to find the corresponding element. It greatly helps to configure the [Element Identifier](../../Learning_Jivs/Server_Pages/Home.md#using-the-element-identifier) on the `ValueHost`.
     ```ts
     let fldId = valueHost.getElementIdentifier(); // setup during configuration
     ```
@@ -29,7 +29,7 @@ Let's look at the basics for these callbacks to work with your UI.
     let editor = document.querySelector('[data-field=' + fldId + '][data-jivs-role=editor]');    
     let errorHost = document.querySelector('[data-field=' + fldId + '][data-jivs-role=error]');   
     ```
-4. Use the `ValueHostValidationState object` to adjust those elements. Use the `isValid` property to change a style sheet on the editor. Use the `issuesFound` property to determine if there are issues to show in an Error Display, and to get the error messages.    
+4. Use the `ValueHostValidationState object` to adjust those elements. Use the `isValid` property to change a style sheet on the editor. Use the `issuesFound` property to determine if there are issues to show in a Field Error Display widget, and to get the error messages.    
     - See [ValueHostValidationState object](./Validation_State.md#valuehostvalidationstate)
     - See [IssueFound object](./Validation_State.md#issuefound)
     - See [Jivs Presentation Prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md)
@@ -106,12 +106,12 @@ function fieldValidated(valueHost: IValidatableValueHost, validationState: Value
     ```ts
     let valSummary = document.querySelector('[data-jivs-role=summary]');   
     ```
-3. Use the `ValidationState object` to adjust those elements. Always use the doNotSave property, not isValid, to prevent submitting. Use the `issuesFound` property to determine if there are issues to show in a Validation Summary, and to get the error messages.    
+3. Use the `ValidationState object` to adjust those elements. Always use the `doNotSave` property, not `isValid`, to prevent submitting. Use the `issuesFound` property to determine if there are issues to show in a Validation Summary widget, and to get the error messages.    
     - See [ValidationState object](./Validation_State.md#validationstate)
     - See [IssueFound object](./Validation_State.md#issuefound)
     - See [Jivs Presentation Prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md)
     - See [jivs-DOM_helpers.ts](../../../starter_code/jivs-DOM_helpers.ts) for our error message building helper: `buildErrorMessagesHtml()`.
-    - We recommend using a style sheet class to hide a valid element with display:none instead of a class to show the invalid element.
+    - We recommend using a style sheet class to hide a valid element with `display:none` instead of a class to show the invalid element.
 ```ts
 config.onValidationStateChanged = formValidated;
 let vhm = new ValueHostsManager(config);

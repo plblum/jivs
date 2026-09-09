@@ -4,15 +4,15 @@ Validation is really just a process that evaluates some rule and returns a resul
 There are several aspects to validation:
 - [Configuration](./Configuration.md), which happens when you setup the `ValueHostsManager`. It uses the `ValidatorConfig object`, which contains:
     - a `ConditionConfig object` describing the condition to use
-    - [two error messages](./Error_Messages.md), with one targetting a ValidationSummary
-    - an optional [errorCode](./ErrorCodes.md)
+    - [two error messages](./Error_Messages.md), with one targetting a Validation Summary widget
+    - an optional [error code](./ErrorCodes.md)
     - an optional severity
-- [Invoking the validation process](./Invoking_Validation.md).
-- [The results of validation](./Handling_ValidationState_Changes.md)
+- [Invoking the validation process](./Invoking_Validation.md)
+- [The results of validation - Validation State](./Handling_ValidationState_Changes.md)
     - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
     - [`ValueHostValidationState object`](./Validation_State.md#valuehostvalidationstate) from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
-    - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both ValidationState and `ValueHostValidationState`.
-- [Data Type Check Validators](./DataTypeCheck_validators.md) categorizes validators required to confirm the native value matches the Lookup Key. It provides a way to automatically have them generated, avoiding setup.
+    - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both `ValidationState` and `ValueHostValidationState`.
+- [Data Type Check Validators](./DataTypeCheck_validators.md) categorizes validators required to confirm the native value matches the [Lookup Key](../Data_Type_Support/Home.md#lookup-keys). It provides a way to automatically have them generated, avoiding setup.
 - [Injecting errors on demand](./Injecting_errors_on_demand.md), where you receive an error outside of normal scope such as a parser failure.
 
 For example:

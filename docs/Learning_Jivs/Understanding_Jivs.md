@@ -12,7 +12,7 @@ Jivs takes a focused approach to that problem. Validation rules can remain part 
 
 The UI knows very little about what needs to be validated. It delivers input values to Jivs and asks for validation results. Jivs reports the current **Validation State**, such as `Valid`, `Invalid`, or `Undetermined`, along with any errors that were found.
 
-The application can then decide what to do with that information: show a Field Error, update a Validation Summary, change the appearance of an input, or prevent submission.
+The application can then decide what to do with that information: show a Field Error, update a Validation Summary widget, change the appearance of an input, or prevent submission.
 
 Jivs does not know about the UI that performs those actions. The UI supplies values to Jivs, and Jivs supplies validation information back to the application.
 

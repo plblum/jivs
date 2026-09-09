@@ -165,7 +165,7 @@ The values supplied to a validator may include:
 
 Finding a validation problem and communicating it are separate concerns. The Value Manager needs to make **Error Messages** available to the surrounding application, but it does not need to own what happens next.
 
-On the client, an Error Message may appear with the field that caused it, in a Validation Summary, or both.
+On the client, an Error Message may appear with the field that caused it, in a Validation Summary widget, or both.
 
 ```mermaid id="zjpl0b"
 flowchart LR

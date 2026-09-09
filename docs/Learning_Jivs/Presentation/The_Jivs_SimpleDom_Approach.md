@@ -304,7 +304,7 @@ This gives application code one consistent connection between the `FieldValueHos
 
 Form-level validation can also have several UI consumers. Common examples include:
 
-- a Validation Summary that presents issues from across the form
+- a Validation Summary widget that presents issues from across the form
 - a Submit button whose availability reflects whether the form can be saved
 
 Here is some typical markup, already updated with Jivs SimpleDom custom attributes.
@@ -334,7 +334,7 @@ These consumers belong to the form rather than to an individual field, so they d
 
 Jivs SimpleDom uses two additional `data-jivs-role` values for form-level consumers:
 
-- `summary` — identifies the form's Validation Summary
+- `summary` — identifies the form's Validation Summary widget
 - `submit` — identifies the form's Submit button
 
 The Validation Summary and Submit button consume changing form validation state, so each requests one of the Presentation Functions developed under [The Form Presentation Functions](Form_Presentation_of_Jivs_Validation.md#the-form-presentation-functions):

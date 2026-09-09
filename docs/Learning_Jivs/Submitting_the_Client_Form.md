@@ -173,7 +173,7 @@ const issuesFound = convertToIssueFound(response.validationErrors);
 vhm.addExternalIssuesFound(issuesFound, false);
 ```
 
-In either case, updating the `ValueHostsManager` causes the validation callbacks established earlier to refresh the Field Errors, Validation Summary, and other validation-related UI.
+In either case, updating the `ValueHostsManager` causes the validation callbacks established earlier to refresh the Field Error Displays, Validation Summary, and other validation-related widgets.
 
 The user can then correct the form and submit again.
 

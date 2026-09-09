@@ -14,12 +14,12 @@ class MyModelRules extends ValueHostRulesBase {
     }
 }
 ```
-- _validatorname_ is effectively the condition name in pascalCase and omitting the word "Condition". (`RequiredTextCondition` → `requiredText`; `RangeCondition` → `range`). Yet there are some variations (`AllMatchesCondition` → all, `LessThanCondition` is both `lessThan` and `lt`)
+- _validatorname_ is effectively the condition name in pascalCase and omitting the word "Condition". (`RequiredTextCondition` → `requiredText`; `RangeCondition` → `range`). Yet there are some variations (`AllMatchesCondition` → `all`, `LessThanCondition` is both `lessThan` and `lt`)
 - _parameters_ reflects two overloaded forms.
     - required rules and both error message and summary message.
     - required rules and the Validation Parameters object.
 
-Let's look at the `RangeCondition` to see how its setup in Builder:
+Let's look at the `RangeCondition` to see how its setup:
 ```ts
 range(minimum, maximum, errorMessage?, summaryMessage?);
 range(minimum, maximum, 

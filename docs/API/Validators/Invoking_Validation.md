@@ -70,7 +70,7 @@ interface SetValueOptions {
 These properties are all related to validation:
 - `validate` - When true, invoke validation but only if the value changed. It defaults to true.
 - `duringEdit` - described above
-- `reset` - When true, change the state of the ValueHost to unchanged and validation has not been attempted. It defaults to false.
+- `reset` - When true, change the state of the `ValueHost` to unchanged and validation has not been attempted. It defaults to false.
 - `injectedError` - When you handle parsing, your parser may report an error that you want to display.
     Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](./Injecting_errors_on_demand.md).
 

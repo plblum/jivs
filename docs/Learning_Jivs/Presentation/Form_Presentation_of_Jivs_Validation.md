@@ -2,7 +2,7 @@
 
 A form may have several UI elements that respond to validation across the complete `ValueHostsManager`.
 
-The primary Form Validation UI consumers in Jivs SimpleDom are the Validation Summary and Submit / Save Control.
+The primary Form Validation UI consumers in Jivs SimpleDom are the Validation Summary widget and Submit / Save Control.
 
 The preparation from [The Jivs SimpleDom Approach](The_Jivs_SimpleDom_Approach.md) and [From Jivs Validation State to Client Presentation](From_Jivs_Validation_State_to_Client_Presentation.md) now pays off:
 
@@ -60,7 +60,7 @@ export function formValidated(
 
 You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpledom.ts).
 
-The Form Dispatcher Function does not rebuild the Validation Summary, enable or disable the Submit button, or otherwise decide how form validation should appear.
+The Form Dispatcher Function does not rebuild the Validation Summary widget, enable or disable the Submit button, or otherwise decide how form validation should appear.
 
 Those decisions belong to the individual Form Presentation Functions.
 
@@ -70,7 +70,7 @@ Form Presentation Functions receive validation state from the Form Dispatcher Fu
 
 Form validation commonly affects two kinds of UI elements:
 
-- **Validation Summary** — presents issues from across the complete `ValueHostsManager`
+- **Validation Summary widget** — presents issues from across the complete `ValueHostsManager`
 - **Submit / Save Control** — enables or disables the operation based on whether the current state can be saved
 
 Each is an independent validation consumer. They receive the same `ValidationState`, but their Presentation Functions use different parts of it and produce different results.
@@ -194,7 +194,7 @@ You can find this code in [`jivs-simpledom.ts`](../../../starter_code/jivs-simpl
 
 ### Presentation for a Validation Summary
 
-A Validation Summary presents issues across the complete `ValueHostsManager`.
+A Validation Summary widget presents issues across the complete `ValueHostsManager`.
 
 Select the Presentation Function in the Validation Summary's markup:
 
@@ -250,7 +250,7 @@ Applications can have several Validation Summaries with different Presentation F
 
 #### Helping Users Reach Validation Problems
 
-A Validation Summary can do more than list messages.
+A Validation Summary widget can do more than list messages.
 
 When an `IssueFound` supplies `valueHostName`, application code can resolve the corresponding `FieldValueHost` and use its element identifier to locate the editor.
 

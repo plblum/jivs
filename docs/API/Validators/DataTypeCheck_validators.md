@@ -75,7 +75,7 @@ To provide the best error messages for the situation:
 ### Adding your own Lookup Keys
 When you have a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), you have several options:
 
-1. Take no action. You will still benefit from a `DataTypeCheckCondition`. Make sure that your native value is always assigned to undefined when its invalid.
+1. Take no action. You will still benefit from a `DataTypeCheckCondition`. Make sure that your native value is always assigned to `undefined` when its invalid.
 2. For a string with a strong pattern, use the `registerLookupKey()` function together with your Lookup Key and regular expression.
     ```ts
     services.dataTypeCheckGeneratorService.registerLookupKey('Email', /^([\w\.!#\$%\-+.'_]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]{2,})+)/i);

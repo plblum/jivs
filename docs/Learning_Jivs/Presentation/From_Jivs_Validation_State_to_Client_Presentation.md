@@ -81,14 +81,14 @@ interface IssueFound {
 
 Its properties are:
 
-- `errorMessage` — the fully prepared Error Message normally presented by a Field Error Display
-- `summaryMessage` — an alternative Error Message intended for a Validation Summary
+- `errorMessage` — the fully prepared Error Message normally presented by a Field Error Display widget
+- `summaryMessage` — an alternative Error Message intended for a Validation Summary widget
 - `severity` — identifies the severity of the issue
 - `valueHostName` — identifies the ValueHost associated with the issue
 - `errorCode` — identifies the type of issue or Validator that supplied it
 - `doNotSave` — indicates whether this issue should prevent saving
 
-A Validation Summary normally uses `summaryMessage` when it is supplied and falls back to `errorMessage` when it is not.
+A Validation Summary widget normally uses `summaryMessage` when it is supplied and falls back to `errorMessage` when it is not.
 
 `valueHostName` lets form-level UI connect an issue back to its field. For example, a Validation Summary can use it to locate, focus, or scroll to the corresponding editor. Some issues may not identify a specific ValueHost, so this property is optional.
 
@@ -240,13 +240,13 @@ export function buildErrorMessageHtml(
 }
 ```
 
-A Field Error Display uses the default behavior:
+A Field Error Display widget uses the default behavior:
 
 ```ts
 buildErrorMessagesHtml(issues);
 ```
 
-A Validation Summary requests summary messages:
+A Validation Summary widget requests summary messages:
 
 ```ts
 buildErrorMessagesHtml(

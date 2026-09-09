@@ -228,7 +228,7 @@ For much more, see [Build the Field Validation UI](./Presentation/Field_Presenta
 
 `onValidationStateChanged` reports changes to the validation state of the full `ValueHostsManager`.
 
-This is useful when the UI needs to react to the state of the form as a whole, such as updating a Validation Summary or deciding whether an action should remain available.
+This is useful when the UI needs to react to the state of the form as a whole, such as updating a Validation Summary widget or deciding whether an action should remain available.
 
 ```mermaid
 flowchart LR
@@ -236,7 +236,7 @@ flowchart LR
     CODE --> SUMMARY["Validation Summary"]
 ```
 
-A callback can inspect the current Validation State and available Error Messages, then pass that information to the application's Validation Summary.
+A callback can inspect the current Validation State and available Error Messages, then pass that information to the application's Validation Summary widget.
 
 The details of that presentation belong to the UI. What matters here is the boundary: Jivs reports the change, and application code decides how to communicate it.
 

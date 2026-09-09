@@ -185,7 +185,7 @@ Use `aria-live="polite"` for messages that should be announced after the current
 
 Severity-aware announcement behavior should inspect the individual `IssueFound` objects. Do not assume every Severe issue should interrupt the user; the appropriate behavior also depends on when and how the issue appeared.
 
-A live region is not required for every Field Error Display. Avoid creating repeated or competing announcements when focus movement, `aria-errormessage`, a Validation Summary, or a UI-library component already communicates the same information.
+A live region is not required for every Field Error Display. Avoid creating repeated or competing announcements when focus movement, `aria-errormessage`, a Validation Summary widget, or a UI-library component already communicates the same information.
 
 ## Required Indicator Accessibility
 
@@ -206,7 +206,7 @@ Jivs supplies the required state through `FieldValueHost.required`. The UI remai
 
 ## Validation Summary Accessibility
 
-A Validation Summary presents issues from across the complete `ValueHostsManager`.
+A Validation Summary widget presents issues from across the complete `ValueHostsManager`.
 
 Give the summary a clear visible heading so users understand its purpose. If the summary changes dynamically, it may use an established polite live region to announce the updated content.
 

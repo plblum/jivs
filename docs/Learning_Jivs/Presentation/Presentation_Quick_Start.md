@@ -98,7 +98,7 @@ The supplied initialization code reads `FieldValueHost.required` to determine wh
 
 ### 7. Add a Validation Summary If Desired
 
-Place the Validation Summary within the form:
+Place the Validation Summary widget within the form:
 
 ```html
 <div
