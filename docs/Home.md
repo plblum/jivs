@@ -24,3 +24,4 @@
 - [Localization](./Localization.md)
 - [Logging](./API/JivsServices/Logging.md)
 - [Testing your work](./Testing/Home.md)
+- [Explore Use Cases](./Learning_Jivs/Use_Cases/Home.md)

@@ -68,5 +68,7 @@ Client presentation appears at the end because it builds on the validation state
 
     Use server generated pages together with Jivs. Includes guidelines, code snippets, and workflows.
 
+## Explore Use Cases
+[Explore Use Cases](./Use_Cases/Home.md)
 ---
 Get started with [Understanding Value Management](Understanding_Value_Management.md).

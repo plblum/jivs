@@ -12,20 +12,20 @@ import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHos
 import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator';
 
 /**
- * Interface handles the rendering needed by a Fivase Directive based
+ * Interface handles the rendering needed by a Jivs Directive based
  * on the validation state of the element and/or its associated ValueHost. 
  * It allows Directives that deal with appearance behaviors to vary their rendering
  * of that appearance through classes that implement this interface. 
  * 
  * Each Directive class that uses IRendererAction has its own Factory, based on
- * ActionFactoryBase which is a registered in the FivaseServices class.
+ * ActionFactoryBase which is a registered in the JivsServices class.
  * 
  * When getting the instance from the factory, use the constant ACTION_RENDERER.
  * ```ts
- * let renderer = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).resolve(element, '');
+ * let renderer = jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).resolve(element, '');
  * ```
  * 
- * That factory provides a default instance, which can be overridden by the [fivase-render] attribute
+ * That factory provides a default instance, which can be overridden by the [jivs-render] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
  * classes or implement the interfaces directly on the component class. Within the component,
@@ -37,7 +37,7 @@ import { highestSeverity } from '@plblum/jivs-engine/build/Validation/Validator'
  */
 export interface IRendererAction {
     /**
-     * Handles the rendering needed by a Fivase Directive based on the validation state of the element
+     * Handles the rendering needed by a Jivs Directive based on the validation state of the element
      * and/or its associated ValueHost.
      * 
      * NOTE: The method name is a little long, because this interface may be implemented directly
@@ -49,7 +49,7 @@ export interface IRendererAction {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseForm - The ValueHostsManager responsible for managing the validation
+     * @param jivsForm - The ValueHostsManager responsible for managing the validation
      * logic, errors, and state.
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
@@ -58,7 +58,7 @@ export interface IRendererAction {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions
     ): void;
 }
@@ -70,16 +70,16 @@ export interface IRendererActionOptions {
 
 /**
  * Interface for setting up listeners for value changes on an element
- * that will transfer the value into Fivase and invoke validation logic.
+ * that will transfer the value into Jivs and invoke validation logic.
  * 
  * Each Directive class that uses IValueChangeListenerAction has its own Factory, based on
- * ActionFactoryBase which is a registered in the FivaseServices class.
+ * ActionFactoryBase which is a registered in the JivsServices class.
  * 
  * When getting the instance from the factory, use the constant ACTION_VALUE_CHANGE_LISTENER.
  * ```ts
- * let renderer = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_VALUE_CHANGE_LISTENER).resolve(element, '');
+ * let renderer = jivsServices.getFactory(DIRECTIVE_NAME, ACTION_VALUE_CHANGE_LISTENER).resolve(element, '');
  * ```
- * That factory provides a default instance, which can be overridden by the [fivase-valuechangelistener] attribute
+ * That factory provides a default instance, which can be overridden by the [jivs-valuechangelistener] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique Render requirements. They can either implement standalone
  * classes or implement the interfaces directly on the component class. Within the component,
@@ -93,29 +93,29 @@ export interface IValueChangeListenerAction {
     /**
      * Sets up validation-related event handlers on the target element.
      * The method attaches event listeners for anything that may be validated.
-     * Your listener should get the value from the component and pass it back to Fivase,
+     * Your listener should get the value from the component and pass it back to Jivs,
      * where it will be validated.
      * If your component has a value that is a string, use the setTextValueCallback,
-     * which will use FieldValueHost.setTextValue to set the value in Fivase.
+     * which will use FieldValueHost.setTextValue to set the value in Jivs.
      * If your component has a value that is not a string, use the setValueCallback,
-     * which will use ValueHost.setValue to set the value in Fivase.
+     * which will use ValueHost.setValue to set the value in Jivs.
      * 
      * @param element - The target DOM element. It could be an input field, a
      * container, etc.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
-     * @param setTextValueCallback - A callback function that hands the input value to Fivase
+     * @param setTextValueCallback - A callback function that hands the input value to Jivs
      * to store in the ValueHost and validate. It is called when the value is a string
      * and needs conversion or a parser to make it a native value.
      * You may setup the parser in the ValueHost, or use your own in this function.
      * If you handle it here, call both setTextValueCallback and setValueCallback.
      * The "duringEdit" parameter is true when the value is being edited, specifically when the 
      * oninput event is triggered. Use false for most other cases.
-     * @param setValueCallback - A callback function that hands the value to Fivase to store in the
+     * @param setValueCallback - A callback function that hands the value to Jivs to store in the
      * ValueHost and validate. It is called when the value is already its native type.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
-     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
-     * Fivase's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * @param jivsForm - Access to Jivs's features. Its valueHostsManager property is 
+     * Jivs's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
      * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
@@ -125,7 +125,7 @@ export interface IValueChangeListenerAction {
         setTextValueCallback: (textValue: string, duringEdit: boolean) => void,
         setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
-        fivaseForm: IFivaseForm
+        jivsForm: IJivsForm
     ): void;
 
     /**
@@ -137,16 +137,16 @@ export interface IValueChangeListenerAction {
 
 /**
  * Interface for setting up listeners for focus changes on an element.
- * This action will listen for focus and blur events and communicate with the FivaseForm.
+ * This action will listen for focus and blur events and communicate with the JivsForm.
  *
  * Each Directive class that uses IFocusListenerAction has its own Factory, based on
- * ActionFactoryBase which is registered in the FivaseServices class.
+ * ActionFactoryBase which is registered in the JivsServices class.
  *
  * When getting the instance from the factory, use the constant ACTION_FOCUS_LISTENER.
  * ```ts
- * let focusListener = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_FOCUS_LISTENER).resolve(element, '');
+ * let focusListener = jivsServices.getFactory(DIRECTIVE_NAME, ACTION_FOCUS_LISTENER).resolve(element, '');
  * ```
- * That factory provides a default instance, which can be overridden by the [fivase-focuslistener] attribute
+ * That factory provides a default instance, which can be overridden by the [jivs-focuslistener] attribute
  * on the same element or component as the directive. Components can also provide a specific
  * implementation that handles their unique focus requirements. They can either implement standalone
  * classes or implement the interfaces directly on the component class. Within the component,
@@ -163,13 +163,13 @@ export interface IFocusListenerAction {
      * @param element - The target DOM element.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
      * @param valueHostName - The name of the value host associated with this element.
-     * @param fivaseForm - The FivaseForm instance to manage interactions.
+     * @param jivsForm - The JivsForm instance to manage interactions.
      */
     listenForFocusChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseForm: IFivaseForm
+        jivsForm: IJivsForm
     ): void;
 
     /**
@@ -181,7 +181,7 @@ export interface IFocusListenerAction {
 }
 
 /**
- * Interface for managing the display of popup elements within a Fivase directive.
+ * Interface for managing the display of popup elements within a Jivs directive.
  * Provides methods to show and hide the popup as needed.
  * 
  * Often popups are just changing the visibility of an element, but 
@@ -189,11 +189,11 @@ export interface IFocusListenerAction {
  * Use PopupAction class for the standard case, and implement this interface for custom behavior.
  * 
  * Each Directive class that uses `IPopupAction` has its own Factory, based on
- * `ActionFactoryBase`, which is registered in the `FivaseServices` class.
+ * `ActionFactoryBase`, which is registered in the `JivsServices` class.
  * 
  * When getting the instance from the factory, use the constant `ACTION_POPUP`.
  * ```ts
- * let popupAction = fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_POPUP).resolve(element, '');
+ * let popupAction = jivsServices.getFactory(DIRECTIVE_NAME, ACTION_POPUP).resolve(element, '');
  * ```
  * 
  * Classes implementing this interface should not expect any Angular Dependency Injection 
@@ -201,22 +201,22 @@ export interface IFocusListenerAction {
  */
 export interface IPopupAction {
     /**
-     * Handles the display of the popup for a Fivase Directive.
+     * Handles the display of the popup for a Jivs Directive.
      * This method is called when the associated event (e.g., focusGained) is triggered.
      * 
      * @param element - The DOM element associated with the directive.
      * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
      */
-    show(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void;
+    show(element: HTMLElement, renderer: Renderer2, jivsServices: IJivsServices): void;
 
     /**
-     * Handles hiding the popup for a Fivase Directive.
+     * Handles hiding the popup for a Jivs Directive.
      * This method is called when the associated event (e.g., focusLost) is triggered.
      * 
      * @param element - The DOM element associated with the directive.
      * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
      */
-    hide(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void;
+    hide(element: HTMLElement, renderer: Renderer2, jivsServices: IJivsServices): void;
 }
 
 /**
@@ -227,14 +227,14 @@ export interface IPopupAction {
  * The event listeners are attached to the DOM element supplied. The class also includes the ability to enable
  * or disable 'input' event listeners through a protected getter, making it accessible for subclasses.
  * 
- * This targets the ValidateInputDirective, which is used to handle input events and supply the value to FivaseForm.
+ * This targets the ValidateInputDirective, which is used to handle input events and supply the value to JivsForm.
  * It is the default supplied by the ValidateInputDirectiveFactory. If you want to change the 
  * constructor's parameters, consider just replacing the default in ValidationInputDirectiveFactory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_VALIDATE_INPUT, ACTION_VALUE_CHANGE_LISTENER).defaultFallback(new HtmlTagValueChangeListener(true, 200));
+ * jivsServices.getFactory(DIRECTIVE_VALIDATE_INPUT, ACTION_VALUE_CHANGE_LISTENER).defaultFallback(new HtmlTagValueChangeListener(true, 200));
  * ```
- * Alternatively, use the [fivase-valuechangelistener] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-valuechangelistener] attribute to supply an instance directly to the tag.
  */
 export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
 
@@ -289,19 +289,19 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
      * @param element - The target DOM element. It could be an input field, a
      * container, etc.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
-     * @param setTextValueCallback - A callback function that hands the input value to Fivase
+     * @param setTextValueCallback - A callback function that hands the input value to Jivs
      * to store in the ValueHost and validate. It is called when the value is a string
      * and needs conversion or a parser to make it a native value.
      * You may setup the parser in the ValueHost, or use your own in this function.
      * If you handle it here, call both setTextValueCallback and setValueCallback.
      * The "duringEdit" parameter is true when the value is being edited, specifically when the 
      * oninput event is triggered. Use false for most other cases.
-     * @param setValueCallback - A callback function that hands the value to Fivase to store in the
+     * @param setValueCallback - A callback function that hands the value to Jivs to store in the
      * ValueHost and validate. It is called when the value is already its native type.
      * @param valueHostName - The name of the value host associated with this element, used to identify
      * the data being validated.
-     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
-     * Fivase's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
+     * @param jivsForm - Access to Jivs's features. Its valueHostsManager property is 
+     * Jivs's ValueHostsManager object, fully configured and ready to use. Generally you use this with valueHostName
      * to implement the call to ValueHost.setTextValue or ValueHost.setValue instead of using 
      * the callback functions.
      */
@@ -311,7 +311,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
         setTextValueCallback: (textValue: string, nativeValue: any, duringEdit: boolean) => void,
         setValueCallback: (nativeValue: any) => void,
         valueHostName: string,
-        fivaseForm: IFivaseForm
+        jivsForm: IJivsForm
     ): void {
         const self = this;
         const tagName = element.tagName.toLowerCase();
@@ -353,7 +353,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             renderer.listen(element, 'change', (event: Event) => {
                 const isChecked = (event.target as HTMLInputElement).checked;
                 setValueCallback(isChecked);
-           //     fivaseForm.setValue(valueHostName, isChecked, { validate: true });
+           //     jivsForm.setValue(valueHostName, isChecked, { validate: true });
             });
         }
 
@@ -371,7 +371,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
                     )
                     : ''; // Send empty string if no files are selected
                 setValueCallback(fileData);
-         //       fivaseForm.setValue(valueHostName, fileData, { validate: true });
+         //       jivsForm.setValue(valueHostName, fileData, { validate: true });
             });
         }
 
@@ -380,7 +380,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             renderer.listen(element, 'change', (event: Event) => {
                 const selectValue = (event.target as HTMLSelectElement).value;
                 setTextValueCallback(selectValue, undefined, false);
-          //      fivaseForm.setTextValue(valueHostName, selectValue, { validate: true });
+          //      jivsForm.setTextValue(valueHostName, selectValue, { validate: true });
             });
         }
 
@@ -391,7 +391,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
                     .subscribe((event: Event) => {
                         const textValue = (event.target as HTMLInputElement).value;
                         setTextValueCallback(textValue, undefined, true);
-                  //      fivaseForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit: true });
+                  //      jivsForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit: true });
                     });
             }
         }
@@ -401,7 +401,7 @@ export class HtmlTagValueChangeListener implements IValueChangeListenerAction {
             renderer.listen(element, 'change', (event: Event) => {
                 const textValue = (event.target as HTMLInputElement).value;
                 setTextValueCallback(textValue, undefined, false);
-            //    fivaseForm.setTextValue(valueHostName, textValue, { validate: true });
+            //    jivsForm.setTextValue(valueHostName, textValue, { validate: true });
             });
         }
     }
@@ -495,8 +495,8 @@ export abstract class RendererActionBase implements IRendererAction {
      * identify which validation rules apply.
      * @param validationState - A ValeuHosts' ValidationState, which includes the current validation status,
      * issues found, and other relevant data.
-     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
-     * Fivase's ValueHostsManager object, fully configured and ready to use. 
+     * @param jivsForm - Access to Jivs's features. Its valueHostsManager property is 
+     * Jivs's ValueHostsManager object, fully configured and ready to use. 
      * @param options - Determined by the Directive to deliver any attribute values it gets from the user.
      */
     public render(
@@ -504,12 +504,12 @@ export abstract class RendererActionBase implements IRendererAction {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions
     ): void {
-        const twoStates = this.resolveTwoStates(valueHostName, validationState, fivaseForm, options);
+        const twoStates = this.resolveTwoStates(valueHostName, validationState, jivsForm, options);
         if (twoStates !== null) {
-            this.twoStateRender(twoStates, element, renderer, valueHostName, validationState, fivaseForm, options);
+            this.twoStateRender(twoStates, element, renderer, valueHostName, validationState, jivsForm, options);
             this.twoStateHideElement(twoStates, element, renderer);
         }
     }
@@ -522,8 +522,8 @@ export abstract class RendererActionBase implements IRendererAction {
      * @param renderer 
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
-     * Fivase's ValueHostsManager object, fully configured and ready to use. 
+     * @param jivsForm - Access to Jivs's features. Its valueHostsManager property is 
+     * Jivs's ValueHostsManager object, fully configured and ready to use. 
      * @param options 
      */
     protected twoStateRender(
@@ -532,7 +532,7 @@ export abstract class RendererActionBase implements IRendererAction {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions
     ): void {
         const enabledCssClass = options?.enabledCssClass ?? this.enabledCssClass;
@@ -574,7 +574,7 @@ export abstract class RendererActionBase implements IRendererAction {
     protected abstract resolveTwoStates(
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null;
 
     /**
@@ -583,7 +583,7 @@ export abstract class RendererActionBase implements IRendererAction {
      * @param renderer 
      * @param errorMessage 
      */
-    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseFormat: IFivaseForm): void {
+    protected addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, jivsFormat: IJivsForm): void {
         renderer.setProperty(element, 'innerHTML', issueFound.errorMessage);    // NOTE: errorMessage is already in HTML format
         const severity: ValidationSeverity = issueFound.severity ?? ValidationSeverity.Error;
         renderer.setAttribute(element, 'data-severity', ValidationSeverity[severity].toLowerCase());
@@ -617,11 +617,11 @@ export function changeCssClasses(toAdd: string | null | undefined, toRemove: str
  * This targets the IssuesFoundDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new IssuesFoundRenderer('invalid-issues', 'valid-issues'));
+ * jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new IssuesFoundRenderer('invalid-issues', 'valid-issues'));
  * ```
- * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-render] attribute to supply an instance directly to the tag.
  */
 export class IssuesFoundRenderer extends RendererActionBase {
 
@@ -633,7 +633,7 @@ export class IssuesFoundRenderer extends RendererActionBase {
 
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -646,11 +646,11 @@ export class IssuesFoundRenderer extends RendererActionBase {
  * This targets the ShowWhenIssuesFoundDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenIssuesFoundRenderer('invalid-showissues', 'valid-showissues'));
+ * jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenIssuesFoundRenderer('invalid-showissues', 'valid-showissues'));
  * ```
- * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-render] attribute to supply an instance directly to the tag.
  */
 export class ShowWhenIssuesFoundRenderer extends RendererActionBase {
     constructor(
@@ -660,7 +660,7 @@ export class ShowWhenIssuesFoundRenderer extends RendererActionBase {
     }
 
     protected resolveTwoStates(valueHostName: string, validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -674,11 +674,11 @@ export class ShowWhenIssuesFoundRenderer extends RendererActionBase {
  * This targets the ShowWhenCorrectedDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenCorrectedRenderer('corrected', 'not-corrected'));
+ * jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenCorrectedRenderer('corrected', 'not-corrected'));
  * ```
- * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-render] attribute to supply an instance directly to the tag.
  */
 export class ShowWhenCorrectedRenderer extends RendererActionBase {
     constructor(
@@ -688,7 +688,7 @@ export class ShowWhenCorrectedRenderer extends RendererActionBase {
     }
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null {
         return validationState.corrected;
     }
@@ -702,11 +702,11 @@ export class ShowWhenCorrectedRenderer extends RendererActionBase {
  * This targets the ShowWhenRequiredDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenRequiredRenderer('required', 'not-required'));
+ * jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ShowWhenRequiredRenderer('required', 'not-required'));
  * ```
- * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-render] attribute to supply an instance directly to the tag.
  */
 export class ShowWhenRequiredRenderer extends RendererActionBase {
 
@@ -717,9 +717,9 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
     }
     protected resolveTwoStates(valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null {
-        const vh = fivaseForm.valueHostsManager.getFieldValueHost(valueHostName);
+        const vh = jivsForm.valueHostsManager.getFieldValueHost(valueHostName);
         if (!vh) {
             throw new Error(`ValueHost not found for ${valueHostName}.`);
         }
@@ -757,11 +757,11 @@ export class ShowWhenRequiredRenderer extends RendererActionBase {
  * This targets the ErrorMessagesDirective.
  * It is the default supplied by a factory. If you want to change the 
  * constructor's parameters, consider just replacing the default in factory.defaultFallback
- * where you setup the FivaseServices.
+ * where you setup the JivsServices.
  * ```ts
- * fivaseServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ErrorMessagesRenderer('ul', 'li, 'error-list', 'error-item'));
+ * jivsServices.getFactory(DIRECTIVE_NAME, ACTION_RENDERER).defaultFallback(new ErrorMessagesRenderer('ul', 'li, 'error-list', 'error-item'));
  * ```
- * Alternatively, use the [fivase-render] attribute to supply an instance directly to the tag.
+ * Alternatively, use the [jivs-render] attribute to supply an instance directly to the tag.
  */
 export class ErrorMessagesRenderer extends RendererActionBase {
     constructor(
@@ -820,7 +820,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
 
     /**
      * Extends each error message UI to set focus to the input element when clicked
-     * by calling fivaseForm.sendMessage(COMMAND_SETFOCUS, valueHostName).
+     * by calling jivsForm.sendMessage(COMMAND_SETFOCUS, valueHostName).
      */
     protected get setFocusToInput(): boolean {
         return this._setFocusToInput;
@@ -832,7 +832,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
         renderer: Renderer2,
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions
     ): void {
         // Clear existing content inside the element
@@ -844,7 +844,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
                 // No outer tag, so just display the first error message
                 const listItem = renderer.createElement(this.innerTag);
                 changeCssClasses(this.innerTagCssClass, null, listItem, renderer);
-                this.addErrorMessageToElement(listItem, renderer, issuesFound[0], fivaseForm);
+                this.addErrorMessageToElement(listItem, renderer, issuesFound[0], jivsForm);
                 renderer.appendChild(element, listItem);
             }
             else {
@@ -856,7 +856,7 @@ export class ErrorMessagesRenderer extends RendererActionBase {
                 issuesFound.forEach(issue => {
                     const listItem = renderer.createElement(this.innerTag);
                     changeCssClasses(this.innerTagCssClass, null, listItem, renderer);
-                    this.addErrorMessageToElement(listItem, renderer, issue, fivaseForm);
+                    this.addErrorMessageToElement(listItem, renderer, issue, jivsForm);
                     renderer.appendChild(outer, listItem);
                 });
 
@@ -866,14 +866,14 @@ export class ErrorMessagesRenderer extends RendererActionBase {
         }
 
         // Apply the CSS class logic from the base class
-        super.render(element, renderer, valueHostName, validationState, fivaseForm, options);
+        super.render(element, renderer, valueHostName, validationState, jivsForm, options);
     }
 
-    protected override addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, fivaseForm: IFivaseForm): void {
+    protected override addErrorMessageToElement(element: HTMLElement, renderer: Renderer2, issueFound: IssueFound, jivsForm: IJivsForm): void {
         if (this.setFocusToInput && issueFound.valueHostName) {
-            this.addSetFocusToValueHost(element, renderer, fivaseForm, issueFound.valueHostName);
+            this.addSetFocusToValueHost(element, renderer, jivsForm, issueFound.valueHostName);
         }
-        super.addErrorMessageToElement(element, renderer, issueFound, fivaseForm);
+        super.addErrorMessageToElement(element, renderer, issueFound, jivsForm);
     }
 
     /**
@@ -883,12 +883,12 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      * A good UI will ensure the element's styles make it appear clickable.
      * @param element 
      * @param renderer 
-     * @param fivaseForm 
+     * @param jivsForm 
      * @param valueHostName 
      */
-    protected addSetFocusToValueHost(element: HTMLElement, renderer: Renderer2, fivaseForm: IFivaseForm, valueHostName: string): void {
+    protected addSetFocusToValueHost(element: HTMLElement, renderer: Renderer2, jivsForm: IJivsForm, valueHostName: string): void {
         renderer.listen(element, 'click', () => {
-            fivaseForm.sendMessage(valueHostName, COMMAND_SETFOCUS);
+            jivsForm.sendMessage(valueHostName, COMMAND_SETFOCUS);
         });
     }
 
@@ -896,15 +896,15 @@ export class ErrorMessagesRenderer extends RendererActionBase {
      * Enables when validationState.issuesFound is not empty.
      * @param valueHostName 
      * @param validationState 
-     * @param fivaseForm - Access to Fivase's features. Its valueHostsManager property is 
-     * Fivase's ValueHostsManager object, fully configured and ready to use. 
+     * @param jivsForm - Access to Jivs's features. Its valueHostsManager property is 
+     * Jivs's ValueHostsManager object, fully configured and ready to use. 
      * @param options 
      * @returns true if issuesFound is not empty.
      */
     protected override resolveTwoStates(
         valueHostName: string,
         validationState: ValueHostValidationState,
-        fivaseForm: IFivaseForm,
+        jivsForm: IJivsForm,
         options?: IRendererActionOptions): boolean | null {
         return validationState.issuesFound && validationState.issuesFound.length > 0;
     }
@@ -927,21 +927,21 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
 
     /**
      * Sets up focus-related event handlers on the target element.
-     * Sends focus gained/lost messages through the FivaseForm.
+     * Sends focus gained/lost messages through the JivsForm.
      *
      * @param element - The target DOM element.
      * @param renderer - The Angular Renderer2 service used to attach event listeners to the DOM.
      * @param valueHostName - The name of the value host associated with this element.
-     * @param fivaseForm - The FivaseForm instance to manage interactions.
+     * @param jivsForm - The JivsForm instance to manage interactions.
      */
     public listenForFocusChanges(
         element: HTMLElement,
         renderer: Renderer2,
         valueHostName: string,
-        fivaseForm: IFivaseForm
+        jivsForm: IJivsForm
     ): void {
-        this.focusHandler = (): void => { fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_GAINED); };
-        this.blurHandler = (): void => { fivaseForm.sendMessage(valueHostName, COMMAND_FOCUS_LOST); };
+        this.focusHandler = (): void => { jivsForm.sendMessage(valueHostName, COMMAND_FOCUS_GAINED); };
+        this.blurHandler = (): void => { jivsForm.sendMessage(valueHostName, COMMAND_FOCUS_LOST); };
 
         if (this.useFocusInOut) {
             element.addEventListener('focusin', this.focusHandler);
@@ -971,7 +971,7 @@ export class HtmlTagFocusListener implements IFocusListenerAction {
 }
 
 /**
- * Used by FivaseForm's subscribeToValueHostMessaging system as available commands.
+ * Used by JivsForm's subscribeToValueHostMessaging system as available commands.
  */
 export const COMMAND_FOCUS_GAINED = 'focusGained';  // eslint-disable-line @typescript-eslint/naming-convention
 export const COMMAND_FOCUS_LOST = 'focusLost';  // eslint-disable-line @typescript-eslint/naming-convention
@@ -983,7 +983,7 @@ export const COMMAND_FOCUS_LOST = 'focusLost';  // eslint-disable-line @typescri
 export const COMMAND_SETFOCUS = 'setFocus';  // eslint-disable-line @typescript-eslint/naming-convention
 
 /**
- * The `PopupAction` class manages the display of popup elements within a Fivase directive.
+ * The `PopupAction` class manages the display of popup elements within a Jivs directive.
  * It provides methods to show and hide elements based on CSS classes or styles.
  * 
  * - `showCssClass`: The CSS class to apply when showing the element.
@@ -1009,9 +1009,9 @@ export class PopupAction implements IPopupAction {
      * 
      * @param element - The DOM element to show.
      * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
-     * @param fivaseServices - The FivaseServices instance, to provide access to tooling and configurations.
+     * @param jivsServices - The JivsServices instance, to provide access to tooling and configurations.
      */
-    public show(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+    public show(element: HTMLElement, renderer: Renderer2, jivsServices: IJivsServices): void {
         if (this.useDisplayNone) {
             renderer.removeStyle(element, 'display');
         }
@@ -1028,9 +1028,9 @@ export class PopupAction implements IPopupAction {
      * 
      * @param element - The DOM element to hide.
      * @param renderer - The Angular Renderer2 service, used to manipulate the DOM.
-     * @param fivaseServices - The FivaseServices instance, to provide access to tooling and configurations.
+     * @param jivsServices - The JivsServices instance, to provide access to tooling and configurations.
      */
-    public hide(element: HTMLElement, renderer: Renderer2, fivaseServices: IFivaseServices): void {
+    public hide(element: HTMLElement, renderer: Renderer2, jivsServices: IJivsServices): void {
         if (this.useDisplayNone) {
             renderer.setStyle(element, 'display', 'none');
         }
@@ -1045,16 +1045,16 @@ export class PopupAction implements IPopupAction {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
- * These are used by the Fivase Directives to
+ * These are used by the Jivs Directives to
  * associate themselves with the appropriate ActionFactoryBase implementations.
  */
 
-export const DIRECTIVE_VALIDATE_INPUT = 'fivase-ValidateInput'; 
-export const DIRECTIVE_VALIDATION_ERRORS = 'fivase-ErrorMessages';
-export const DIRECTIVE_SHOW_WHEN_ISSUES_FOUND = 'fivase-ShowWhenIssuesFound';
-export const DIRECTIVE_SHOW_WHEN_CORRECTED = 'fivase-ShowWhenCorrected';
-export const DIRECTIVE_SHOW_WHEN_REQUIRED = 'fivase-ShowWhenRequired';
-export const DIRECTIVE_POPUP = 'fivase-Popup';
+export const DIRECTIVE_VALIDATE_INPUT = 'jivs-ValidateInput'; 
+export const DIRECTIVE_VALIDATION_ERRORS = 'jivs-ErrorMessages';
+export const DIRECTIVE_SHOW_WHEN_ISSUES_FOUND = 'jivs-ShowWhenIssuesFound';
+export const DIRECTIVE_SHOW_WHEN_CORRECTED = 'jivs-ShowWhenCorrected';
+export const DIRECTIVE_SHOW_WHEN_REQUIRED = 'jivs-ShowWhenRequired';
+export const DIRECTIVE_POPUP = 'jivs-Popup';
 
 export const ACTION_RENDERER = 'Renderer';
 export const ACTION_VALUE_CHANGE_LISTENER = 'ValueChangeListener';
@@ -1089,7 +1089,7 @@ export interface IActionFactory {
      * Registers an instance of a directive action associated with a unique 
      * name. These values are only used when the resolve function is supplied
      * the name parameter. The name parameter value is expected to come from the Directive's
-     * [fivase-render] or [fivase-valuechangelistener] attribute, and is null or undefined
+     * [jivs-render] or [jivs-valuechangelistener] attribute, and is null or undefined
      * if the attribute is not present.
      * 
      * @param name - The name used to register the instance.
@@ -1126,25 +1126,25 @@ export interface IActionFactory {
 
 /**
  * Abstract factory class that manages the `IValueChangeListenerAction` and
- * `IRendererAction` instances needed by Fivase Directives. 
+ * `IRendererAction` instances needed by Jivs Directives. 
  * 
  * Each Directive will create subclasses specific to each Directive Action it uses.
- * Those will be registered in the FivaseServices class via IFivaseServices.registerFactory.
+ * Those will be registered in the JivsServices class via IJivsServices.registerFactory.
  * Directives must create unique names for themselves, and pass those keys to lookup
- * the factory in IFivaseServices.getFactory.
+ * the factory in IJivsServices.getFactory.
  * 
  * Implementations of this class should be specific to Directive Actions.
  * 
  * Thus a Directive can have multiple factories, each managing a different type of Directive Action.
  * 
- * The Directive will get the FivaseServices through DI in the constructor,
+ * The Directive will get the JivsServices through DI in the constructor,
  * and will use the factory's resolve method to get the appropriate instance.
  * There are several sources for the instance: 
  * - A default instance, which is normally used. It is created by the factory and
  *   in the defaultFallback property. The user can override it during factory setup.
  * - Instances registered to a unique name. That name will be supplied by attributes
- *   found on the same element or component as the directive: [fivase-render] and
- *   [fivase-valuechangelistener]. So the user can supply the unique name through the attribute
+ *   found on the same element or component as the directive: [jivs-render] and
+ *   [jivs-valuechangelistener]. So the user can supply the unique name through the attribute
  *   to override the default instance.
  * - Components often have to supply a specific implementation that handles their unique event
  *   handling or Render requirements. They can either implement stand-alone classes
@@ -1212,7 +1212,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      * Registers an instance of a directive action associated with a unique 
      * name. These values are only used when the resolve function is supplied
      * the name parameter. The name parameter value is expected to come from the Directive's
-     * [fivase-render] or [fivase-valuechangelistener] attribute, and is null or undefined
+     * [jivs-render] or [jivs-valuechangelistener] attribute, and is null or undefined
      * if the attribute is not present.
      * 
      * @param name - The name used to register the instance.
@@ -1285,7 +1285,7 @@ export abstract class ActionFactoryBase<T> implements IActionFactory {
      * The resolve method will look for this custom property and use the instance if found.
      */
     protected get customPropertyName(): string {
-        return `fivase-${this.directiveName}-${this.actionName}`;
+        return `jivs-${this.directiveName}-${this.actionName}`;
     }
 
     /**
@@ -1388,7 +1388,7 @@ export class PopupActionFactory extends ActionFactoryBase<IPopupAction> {
 
 
 /**
- * Abstract base class for Fivase-related directives that need a ValueHostName.
+ * Abstract base class for Jivs-related directives that need a ValueHostName.
  * 
  * Subclasses define the directive name, like "validate" or "validationErrors",
  * and all take the value of a ValueHostName, which identifies the input
@@ -1397,7 +1397,7 @@ export class PopupActionFactory extends ActionFactoryBase<IPopupAction> {
  * or ValueHost values.
  *
  * Key functionality includes:
- * - Resolving the target HTML element based on the `fivase-target` input.
+ * - Resolving the target HTML element based on the `jivs-target` input.
  * - Can inherit the valueHostName from a ValueHostNameDirective applied to a containing tag.
  *   In that case, this directive does not need anything assigned to it.
  * 
@@ -1412,12 +1412,12 @@ export class PopupActionFactory extends ActionFactoryBase<IPopupAction> {
  *    <tag [directive]>
  * </tag>
  * 
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where this directive will do its work. If not provided, the directive will use the host element.
  */
 @Directive()
-export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
+export abstract class JivsDirectiveBase implements OnInit, OnDestroy {
     /**
      * The internal property that will be used in the directive to manage
      * the name of the value host. The `valueHostName` is part of the 
@@ -1440,13 +1440,13 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
      * - A string can be a CSS selector or a template reference.
      * - An object can specify either a selector or a template reference.
      */
-    @Input('fivase-target') public target: string | { selector?: string } | undefined;
+    @Input('jivs-target') public target: string | { selector?: string } | undefined;
 
     constructor(
         protected el: ElementRef,
         protected renderer: Renderer2,
-        protected fivaseServices: FivaseServices,
-        protected fivaseForm: IFivaseForm,
+        protected jivsServices: JivsServices,
+        protected jivsForm: IJivsForm,
         @Optional() @SkipSelf() private readonly valueHostNameDirective: ValueHostNameDirective
     ) {
     }
@@ -1476,7 +1476,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
         }
 
         if (!valueHostName)
-            throw new Error('valueHostName is required and cannot be null or empty for FivaseDirectiveBase.');
+            throw new Error('valueHostName is required and cannot be null or empty for JivsDirectiveBase.');
 
         return valueHostName;
     }
@@ -1520,7 +1520,7 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
      * Ensures ariaManager is created and initialized with the appropriate settings.
      */
     protected initializeAriaManager(): void {
-        this.ariaManager = new AriaAttributeManager(this.getTargetElement(), this.fivaseServices.ariaSettings, this.fivaseForm);
+        this.ariaManager = new AriaAttributeManager(this.getTargetElement(), this.jivsServices.ariaSettings, this.jivsForm);
         this.initAriaAttributes(); // Calls an abstract method for additional subclass-specific setup
     }
 
@@ -1534,8 +1534,8 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         // not required but good form
         (this.el as any) = undefined;
-        (this.fivaseServices as any) = undefined;
-        (this.fivaseForm as any) = undefined;
+        (this.jivsServices as any) = undefined;
+        (this.jivsForm as any) = undefined;
         (this.valueHostNameDirective as any) = undefined;
         (this.ariaManager as any) = undefined;
     }
@@ -1543,11 +1543,11 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
 }
 
 /**
- * Abstract base class for Fivase Directives that provides an implementation of `IRendererAction` to 
+ * Abstract base class for Jivs Directives that provides an implementation of `IRendererAction` to 
  * update the user interface based on validation state changes.
  * 
  * Key functionality includes:
- * - Subscribing to validation state changes via the `FivaseForm`.
+ * - Subscribing to validation state changes via the `JivsForm`.
  * - Applying a render through an object that supports `IRendererAction`, which
  *   comes from a factory property on FivasServicesHost.
  * 
@@ -1563,22 +1563,22 @@ export abstract class FivaseDirectiveBase implements OnInit, OnDestroy {
  * </tag>
  * ```
  * 
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  */
 @Directive()
-export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
+export abstract class RenderingDirectiveBase extends JivsDirectiveBase {
 
     /**
      * Select a custom implementation of `IRendererAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-render') public renderFactoryName: string | undefined;
+    @Input('jivs-render') public renderFactoryName: string | undefined;
 
     private _subscription: Subscription | null = null;
     protected directiveRenderer: IRendererAction | null = null;
@@ -1586,11 +1586,11 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     constructor(
         el: ElementRef,
         renderer: Renderer2,
-        fivaseServices: FivaseServices,
-        fivaseForm: IFivaseForm,
+        jivsServices: JivsServices,
+        jivsForm: IJivsForm,
         @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
     ) {
-        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
+        super(el, renderer, jivsServices, jivsForm, valueHostNameDirective);
     }
 
     /**
@@ -1599,7 +1599,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     protected abstract get directiveNameInFactory(): string;
 
     /**
-     * Establishes the IRendererAction implementation from either the [fivase-render] input or the Factory.
+     * Establishes the IRendererAction implementation from either the [jivs-render] input or the Factory.
      * Establishes a subscription to the validation state changes for the ValueHost.
      * @param valueHostName 
      */
@@ -1612,19 +1612,19 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     }
 
     /** 
-     * Gets the factory from fivaseServices used to create the IRendererAction implementation.
+     * Gets the factory from jivsServices used to create the IRendererAction implementation.
     */
     protected get resolveRendererFactory(): RendererActionFactory {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_RENDERER) as RendererActionFactory;
+        return this.jivsServices.getFactory(this.directiveNameInFactory, ACTION_RENDERER) as RendererActionFactory;
     }
 
     /**
-     * Uses the FivaseForm to subscribe to validation state changes for the ValueHost.
+     * Uses the JivsForm to subscribe to validation state changes for the ValueHost.
      * Passes the validation state to the IRendererAction implementation.
      * @param valueHostName 
      */
     private setupSubscription(valueHostName: string): void {
-        this._subscription = this.fivaseForm.subscribeToValueHostValidationState(valueHostName, (validationState) => {
+        this._subscription = this.jivsForm.subscribeToValueHostValidationState(valueHostName, (validationState) => {
             this.onValueHostValidationStateChanged(this.getTargetElement(), validationState);
         });
     }
@@ -1633,7 +1633,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
      * Ensures the UI conforms with the current validation state
      */
     protected setupInitialRender(valueHostName: string): void {
-        const vh = this.fivaseForm.valueHostsManager.getValidatorsValueHost(valueHostName)!;
+        const vh = this.jivsForm.valueHostsManager.getValidatorsValueHost(valueHostName)!;
         if (!vh)
             throw new Error(`Unknown valueHostName "${valueHostName}"`);
         this.onValueHostValidationStateChanged(this.getTargetElement(), vh.currentValidationState);
@@ -1653,7 +1653,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
             this.renderer,
             this.valueHostName!,
             validationState,
-            this.fivaseForm,
+            this.jivsForm,
             this.getRenderOptions()
         );
     }
@@ -1693,7 +1693,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
         this.resolveRendererFactory.unavailable(this.getFactoryElement());
 
         if (this._subscription) {
-            this.fivaseForm.unsubscribeFromValueHostValidationState(this._subscription);
+            this.jivsForm.unsubscribeFromValueHostValidationState(this._subscription);
             (this._subscription as any) = undefined;
         }
         // not required but good form
@@ -1703,7 +1703,7 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
     }
 }
 /**
- * Directive `validate` manages how an input element interacts with Fivase.
+ * Directive `validate` manages how an input element interacts with Jivs.
  * It must supply the value to be validated to ValueHostsManager and update the
  * UI to show any validation state changes.
  *
@@ -1718,21 +1718,21 @@ export abstract class RenderingDirectiveBase extends FivaseDirectiveBase {
  *    <tag [validate]>
  * </tag>
  * ```
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the IssuesFoundRenderer.
  *
- * ### [fivase-valuechangelistener]
+ * ### [jivs-valuechangelistener]
  * Use to select the custom implementation of IValueChangeListenerAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the HtmlTagValueChangeListener.
  *
- * ### [fivase-focuslistener]
+ * ### [jivs-focuslistener]
  * Use to select the custom implementation of IFocusListenerAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * When not assigned, the factory defaults to the HtmlTagFocusListener.
@@ -1770,13 +1770,13 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
      * Select a custom implementation of `IValueChangeListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-valuechangelistener') public eventHandlerName: string | undefined;
+    @Input('jivs-valuechangelistener') public eventHandlerName: string | undefined;
 
     /**
      * Select a custom implementation of `IFocusListenerAction` from the factory
      * by supplying the name of the implementation. The name is case-insensitive.
      */
-    @Input('fivase-focuslistener') public focusHandlerName: string | undefined;
+    @Input('jivs-focuslistener') public focusHandlerName: string | undefined;
 
 
     private _focusListener: IFocusListenerAction | null = null;
@@ -1784,11 +1784,11 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
     constructor(
         el: ElementRef,
         renderer: Renderer2,
-        fivaseServices: FivaseServices,
-        @Inject(FIVASE_FORM_TOKEN) fivaseForm: IFivaseForm,
+        jivsServices: JivsServices,
+        @Inject(FIVASE_FORM_TOKEN) jivsForm: IJivsForm,
         valueHostNameDirective: ValueHostNameDirective
     ) {
-        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
+        super(el, renderer, jivsServices, jivsForm, valueHostNameDirective);
     }
 
     protected get directiveNameInFactory(): string {
@@ -1796,18 +1796,18 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
     }
 
     protected get resolveEventHandlerFactory(): ValueChangeListenerActionFactory {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_VALUE_CHANGE_LISTENER) as ValueChangeListenerActionFactory;
+        return this.jivsServices.getFactory(this.directiveNameInFactory, ACTION_VALUE_CHANGE_LISTENER) as ValueChangeListenerActionFactory;
     }
 
     protected get resolveFocusListenerFactory(): FocusListenerActionFactory {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, ACTION_FOCUS_LISTENER) as FocusListenerActionFactory;
+        return this.jivsServices.getFactory(this.directiveNameInFactory, ACTION_FOCUS_LISTENER) as FocusListenerActionFactory;
     }
 
     /**
-     * resolves the IValueChangeListenerAction implementation from either the [fivase-valuechangelistener] input or the Factory.
+     * resolves the IValueChangeListenerAction implementation from either the [jivs-valuechangelistener] input or the Factory.
      * Has the event handler setup the input events to deliver the input value to the ValueHostsManager.
-     * Resolves the IFocusListenerAction implementation from the [fivase-focuslistener] input or the Factory.
-     * Sets up listeners for focus in and focus out events to deliver focus messages to the FivaseForm.
+     * Resolves the IFocusListenerAction implementation from the [jivs-focuslistener] input or the Factory.
+     * Sets up listeners for focus in and focus out events to deliver focus messages to the JivsForm.
      * @param valueHostName
      */
     protected override setupDirective(valueHostName: string): void {
@@ -1822,13 +1822,13 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
             this.getTargetElement(),
             this.renderer,
             (textValue: string, duringEdit: boolean) => {
-                this.fivaseForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit : duringEdit  });
+                this.jivsForm.setTextValue(valueHostName, textValue, { validate: true, duringEdit : duringEdit  });
             },
             (nativeValue: any) => {
-                this.fivaseForm.setTextValue(valueHostName, nativeValue, { validate: true });
+                this.jivsForm.setTextValue(valueHostName, nativeValue, { validate: true });
             },
             valueHostName,
-            this.fivaseForm
+            this.jivsForm
         );
 
         // Setup Focus Listener
@@ -1842,7 +1842,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
                 this.getTargetElement(),
                 this.renderer,
                 valueHostName,
-                this.fivaseForm
+                this.jivsForm
             );
         }
     }
@@ -1887,7 +1887,7 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
 
     protected override initAriaAttributes(): void {
         // Set aria-required based on the required field in the ValueHost
-        const valueHost = this.fivaseForm.valueHostsManager.getFieldValueHost(this.valueHostName!);
+        const valueHost = this.jivsForm.valueHostsManager.getFieldValueHost(this.valueHostName!);
         if (valueHost && valueHost.required) {
             this.ariaManager.setAriaRequired(); // Set aria-required if required is true
         }
@@ -1942,11 +1942,11 @@ export class ValidateInputDirective extends RenderingDirectiveBase {
  *    <tag [validationErrors]>
  * </tag>
  * ```
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where this directive will do its work. If not provided, the directive will use the host element.
  * 
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction, instead of using the Factory.
  * It takes the class name of the desired IRendererAction object.
  * When not assigned, the factory defaults to ErrorMessagesRenderer which displays a list of error messages in <ul><li> tags.
@@ -2060,11 +2060,11 @@ export class ValidationErrorsDirective extends RenderingDirectiveBase {
  * </tag>
  * ```
  * 
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  *  
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * The default is ShowWhenCorrectedRenderer which shows the element when the input is corrected
@@ -2106,11 +2106,11 @@ export class ShowWhenCorrectedDirective extends RenderingDirectiveBase {
  * </tag>
  * ```
  * 
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  * 
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * The default is showWhenRequiredRenderer which shows the element when the input is corrected
@@ -2152,11 +2152,11 @@ export class ShowWhenRequiredDirective extends RenderingDirectiveBase {
  *   <tag [showWhenIssuesFound]>
  * </tag>
  * ```
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  * 
- * ### [fivase-render]
+ * ### [jivs-render]
  * Use to select the custom implementation of IRendererAction from the factory
  * by providing the name of the implementation. The name is case-insensitive.
  * The default is showWhenIssuesFoundRenderer which shows the element when the input is corrected
@@ -2186,17 +2186,17 @@ export class ShowWhenIssuesFoundDirective extends RenderingDirectiveBase {
 /**
  * Directive `popup` manages the visibility of popups tied to a specific input or form field.
  * It listens for messages such as `focusGained`, `focusLost`, `show`, and `hide` sent via
- * the `FivaseForm` messaging system and uses `IPopupAction` to show or hide popups accordingly.
+ * the `JivsForm` messaging system and uses `IPopupAction` to show or hide popups accordingly.
  * 
  * Expected behavior:
  * - When the input receives focus, the popup is shown by listening to the `focusGained` message.
  * - When the input loses focus, the popup is hidden by listening to the `focusLost` message.
- * - On demand to show, call the FivaseForm.sendMessage('show', valueHostName).
- * - On demand to hide, call the FivaseForm.sendMessage('hide', valueHostName).
+ * - On demand to show, call the JivsForm.sendMessage('show', valueHostName).
+ * - On demand to hide, call the JivsForm.sendMessage('hide', valueHostName).
  *
  * The popup's behavior is defined by the `IPopupAction` interface, which is resolved through a factory
- * provided by `FivaseServices`. This directive can either use a default implementation of `IPopupAction`
- * or select a custom implementation by specifying the factory name through the `fivase-popupAction` input.
+ * provided by `JivsServices`. This directive can either use a default implementation of `IPopupAction`
+ * or select a custom implementation by specifying the factory name through the `jivs-popupAction` input.
  *
  * `popup` takes the value of the `ValueHostName` registered with the Jivs ValueHostsManager and uses
  * it to subscribe to the appropriate form field messages.
@@ -2214,17 +2214,17 @@ export class ShowWhenIssuesFoundDirective extends RenderingDirectiveBase {
  * </tag>
  * ```
  *
- * ### [fivase-target]
+ * ### [jivs-target]
  * This optional input allows the directive to target a specific element within a component's template 
  * where the popup actions will be applied. If not provided, the directive will default to using the host element.
  * 
- * ### [fivase-popupAction]
+ * ### [jivs-popupAction]
  * This input allows specifying a custom factory name for resolving the `IPopupAction`. It is optional,
  * and if not provided, the factory will default to the standard popup implementation.
  *
  * Example usage:
  * ```html
- * <div [popup]="valueHostName" [fivase-popupAction]="'popup-action'"></div>
+ * <div [popup]="valueHostName" [jivs-popupAction]="'popup-action'"></div>
  * ```
  * Here is a more traditional case, where the icon is shown and the popup is displayed 
  * based on some code, like a mouse over.
@@ -2241,7 +2241,7 @@ export class ShowWhenIssuesFoundDirective extends RenderingDirectiveBase {
 @Directive({
     selector: '[popup]' // The directive name remains [popup]
 })
-export class PopupDirective extends FivaseDirectiveBase {
+export class PopupDirective extends JivsDirectiveBase {
     private _subscription: Subscription | null = null;
     private _popupAction: IPopupAction | null = null;
 
@@ -2260,16 +2260,16 @@ export class PopupDirective extends FivaseDirectiveBase {
      * Input to specify a custom factory name for IPopupAction.
      * This allows for a custom implementation of the popup behavior.
      */
-    @Input('fivase-popupAction') public popupFactoryName: string | undefined; // Changed input name to 'fivase-popupAction'
+    @Input('jivs-popupAction') public popupFactoryName: string | undefined; // Changed input name to 'jivs-popupAction'
 
     constructor(
         el: ElementRef,
         renderer: Renderer2,
-        fivaseServices: FivaseServices,
-        @Inject(FIVASE_FORM_TOKEN) fivaseForm: IFivaseForm,
+        jivsServices: JivsServices,
+        @Inject(FIVASE_FORM_TOKEN) jivsForm: IJivsForm,
         @Optional() @SkipSelf() valueHostNameDirective: ValueHostNameDirective
     ) {
-        super(el, renderer, fivaseServices, fivaseForm, valueHostNameDirective);
+        super(el, renderer, jivsServices, jivsForm, valueHostNameDirective);
     }
 
     /**
@@ -2288,17 +2288,17 @@ export class PopupDirective extends FivaseDirectiveBase {
             throw new Error('PopupAction could not be resolved for PopupDirective. Ensure a valid PopupAction is provided in the factory.');
         }
 
-        // Subscribe to FivaseForm messages for this valueHostName
-        this._subscription = this.fivaseForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
+        // Subscribe to JivsForm messages for this valueHostName
+        this._subscription = this.jivsForm.subscribeToValueHostMessaging(valueHostName, (message: string) => {
             switch (message) {
                 case 'focusGained':
                 case 'show':
-                    this._popupAction!.show(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this._popupAction!.show(this.getTargetElement(), this.renderer, this.jivsServices);
                     this.updateAriaHidden(false);  
                     break;
                 case 'focusLost':
                 case 'hide':
-                    this._popupAction!.hide(this.getTargetElement(), this.renderer, this.fivaseServices);
+                    this._popupAction!.hide(this.getTargetElement(), this.renderer, this.jivsServices);
                     this.updateAriaHidden(true); 
                     break;
                 default:
@@ -2309,13 +2309,13 @@ export class PopupDirective extends FivaseDirectiveBase {
     }
 
     /**
-     * Resolves the PopupActionFactory from FivaseServices used to create 
+     * Resolves the PopupActionFactory from JivsServices used to create 
      * the IPopupAction implementation.
      * 
      * @returns {PopupActionFactory}
      */
     protected resolvePopupActionFactory(): PopupActionFactory {
-        return this.fivaseServices.getFactory(this.directiveNameInFactory, 'PopupActionFactory') as PopupActionFactory;
+        return this.jivsServices.getFactory(this.directiveNameInFactory, 'PopupActionFactory') as PopupActionFactory;
     }
 
     /**
@@ -2398,11 +2398,11 @@ export class ContainsInvalidChildrenDirective {
     constructor(
         private readonly el: ElementRef,
         private readonly renderer: Renderer2,
-        @Inject(FIVASE_FORM_TOKEN) private readonly fivaseForm: IFivaseForm
+        @Inject(FIVASE_FORM_TOKEN) private readonly jivsForm: IJivsForm
     ) { }
 
     public ngOnInit(): void {
-        this._subscription = this.fivaseForm.subscribeToValidationState(() => {
+        this._subscription = this.jivsForm.subscribeToValidationState(() => {
             this.checkChildValidation();
         });
     }
@@ -2482,9 +2482,9 @@ export class ValueHostNameDirective {
  *
  * Used by directives and components to trigger validation, retrieve validation state, and manage input values.
  */
-export interface IFivaseForm {
+export interface IJivsForm {
     readonly valueHostsManager: IValueHostsManager;
-    readonly services: IFivaseServices;
+    readonly services: IJivsServices;
     validate(options?: any): ValidationState;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
     setTextValue(valueHostName: string, textValue: string, options?: FieldValueHostSetValueOptions): void;
@@ -2504,19 +2504,19 @@ export interface IFivaseForm {
 }
 
 /**
- * Injection token for IFivaseForm. Use this token when providing or injecting
- * an IFivaseForm instance, since interfaces have no runtime value in Angular's DI.
+ * Injection token for IJivsForm. Use this token when providing or injecting
+ * an IJivsForm instance, since interfaces have no runtime value in Angular's DI.
  *
  * Example in a component:
  * ```ts
- * providers: [{ provide: FIVASE_FORM_TOKEN, useValue: myFivaseFormInstance }]
+ * providers: [{ provide: FIVASE_FORM_TOKEN, useValue: myJivsFormInstance }]
  * ```
  */
-export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');    // eslint-disable-line @typescript-eslint/naming-convention
+export const FIVASE_FORM_TOKEN = new InjectionToken<IJivsForm>('IJivsForm');    // eslint-disable-line @typescript-eslint/naming-convention
 
 
 /**
- * The Fivase ValueHostsManager service.
+ * The Jivs ValueHostsManager service.
  * Manages validation logic in Angular using the underlying ValueHostsManager from Jivs.
  * Handles state changes, value updates, validation subscriptions, and destruction of the manager.
  *
@@ -2524,9 +2524,9 @@ export const FIVASE_FORM_TOKEN = new InjectionToken<IFivaseForm>('IFivaseForm');
  *
  * Used by directives to trigger validation, manage input values, and handle state subscriptions for forms.
  */
-export class FivaseForm implements IFivaseForm {
+export class JivsForm implements IJivsForm {
 
-    constructor(config: ValueHostsManagerConfig, services: IFivaseServices) {
+    constructor(config: ValueHostsManagerConfig, services: IJivsServices) {
         this._services = services;
         this._valueHostsManager = new ValueHostsManager(config);
 
@@ -2541,17 +2541,17 @@ export class FivaseForm implements IFivaseForm {
     }
 
     /**
-     * Access to the FivaseServices instance
+     * Access to the JivsServices instance
      */
-    public get services(): IFivaseServices {
+    public get services(): IJivsServices {
         return this._services;
     }
-    private readonly _services: IFivaseServices;
+    private readonly _services: IJivsServices;
 
 
     /**
-     * Central object in Fivase that represents all of the ValueHosts.
-     * Some of its most prominent members have been exposed on FivaseForm,
+     * Central object in Jivs that represents all of the ValueHosts.
+     * Some of its most prominent members have been exposed on JivsForm,
      * but use this to access the rest.
      */
     public get valueHostsManager(): IValueHostsManager {
@@ -2561,7 +2561,7 @@ export class FivaseForm implements IFivaseForm {
 
     /**
      * Execute validation across all ValueHosts. Same as calling `valueHostsManager.validate(options)`.
-     * See Fivase documentation for details.
+     * See Jivs documentation for details.
      * @param options 
      * @returns 
      */
@@ -2573,7 +2573,7 @@ export class FivaseForm implements IFivaseForm {
      * Call when a value supported within the ValueHosts has changed. 
      * Consider using setTextValue instead for FieldValueHosts.
      * Same as calling `valueHostsManager.setValue(valueHostName, value, options)`.
-     * See Fivase documentation for details.
+     * See Jivs documentation for details.
      * @param valueHostName 
      * @param value 
      * @param options 
@@ -2583,7 +2583,7 @@ export class FivaseForm implements IFivaseForm {
     }
     /**
      * Call when an input value has changed.  Same as calling `valueHostsManager.vh.field(valueHostName).setTextValue(textValue,options)`.
-     * See Fivase documentation for details.
+     * See Jivs documentation for details.
      * @param valueHostName 
      * @param textValue 
      * @param options 
@@ -2658,7 +2658,7 @@ export class FivaseForm implements IFivaseForm {
     }
 
     /**
-     * General communication between validation UI elements through the FivaseForm.
+     * General communication between validation UI elements through the JivsForm.
      * Designed for these use cases, but can be used for other purposes:
      * - ValidationSummary contains error messages from all ValueHosts. A click on an error message should set focus to the input.
      *   However, ValidationSummary shouldn't care about the implemention. It sends a message and the input registers with 
@@ -2685,7 +2685,7 @@ export class FivaseForm implements IFivaseForm {
         subscription.unsubscribe();
     }
     /**
-     * UI element sends a command to other UI elements through the FivaseForm.
+     * UI element sends a command to other UI elements through the JivsForm.
      * @param valueHostName - The name of the value host to send the message to.
      * @param command - The command to send.
      * @param payload - Optional data to send with the command.
@@ -2716,7 +2716,7 @@ export class FivaseForm implements IFivaseForm {
 /**
  * Interface for a service responsible for managing ValueHostsManagerConfigs and states of the ValueHostsManager + ValueHost objects.
  */
-export interface IFivaseConfigHost {
+export interface IJivsConfigHost {
     getConfig(formId: string): ValueHostsManagerConfig;
 
     // Register a configuration for a formId
@@ -2726,11 +2726,11 @@ export interface IFivaseConfigHost {
 /**
  * In Jivs, each Form must have a configuration found in ValueHostsManagerConfig to setup a ValueHostsManager.
  * This configuration includes the ValueHosts, Validators, and other settings for the form.
- * FivaseConfigHost is an Angular service where the configurations are stored during setup and retrieved
+ * JivsConfigHost is an Angular service where the configurations are stored during setup and retrieved
  * when a form is being created.
  * 
  * ValueHostsManager and its ValueHosts have a state that should be saved and restored across sessions.
- * This service uses an implementation of IFivaseStateStore to persist form states across sessions.
+ * This service uses an implementation of IJivsStateStore to persist form states across sessions.
  * Each form gets its state from ValueHostsManager.getCapturedState and its retained in the key formId within the state store.
  * 
  * As a result, every form must have a unique formId, used to register the configuration and save the state.
@@ -2742,10 +2742,10 @@ export interface IFivaseConfigHost {
  *   You can also use these callbacks to handle the state changes in the application, as yours will be called
  *   after this class saves the state.
  */
-export class FivaseConfigHost implements IFivaseConfigHost {
+export class JivsConfigHost implements IJivsConfigHost {
     private readonly _configs: Map<string, ValueHostsManagerConfig | ((formId: string) => ValueHostsManagerConfig)> = new Map();
 
-    constructor(private readonly stateStore: IFivaseStateStore) { }
+    constructor(private readonly stateStore: IJivsStateStore) { }
 
 
     /**
@@ -2817,27 +2817,27 @@ export class FivaseConfigHost implements IFivaseConfigHost {
 }
 
 /**
- * Interface representing the services provided by Fivase.
- * - Use configHost to register configurations for forms and create FivaseForm objects
+ * Interface representing the services provided by Jivs.
+ * - Use configHost to register configurations for forms and create JivsForm objects
  *   that consume them.
  * - Use each Factory to provide customizations for each Directive supplied.
  */
-export interface IFivaseServices {
+export interface IJivsServices {
 
     /**
-     * Creates a FivaseForm with the configuration specific to formId.
+     * Creates a JivsForm with the configuration specific to formId.
      * Throws error if the formId is not registered.
      * @param formId 
      * @returns The instance created.
      */
-    createFivaseForm(formId: string): IFivaseForm;
+    createJivsForm(formId: string): IJivsForm;
 
     /**
-     * The FivaseConfigHost service, which manages the configurations for forms and their states.
+     * The JivsConfigHost service, which manages the configurations for forms and their states.
      * Use this service to register configurations for forms and retrieve them when needed.
      * For example, when creating a new form, register the configuration for that form like this:
      * ```ts
-     * fivaseServices.configHost.register('myFormId', (formId: string) => {
+     * jivsServices.configHost.register('myFormId', (formId: string) => {
      * let builder = build(createJivsServices());
      * ... use the Jivs Builder to create the configuration ...
      *    return builder.complete();
@@ -2845,10 +2845,10 @@ export interface IFivaseServices {
      * ```
      * Retrieve the configuration for that form using the getConfig method.
      * ```ts
-     * const config = fivaseServices.configHost.getConfig('myFormId');
+     * const config = jivsServices.configHost.getConfig('myFormId');
      * ```
      */
-    configHost: IFivaseConfigHost;
+    configHost: IJivsConfigHost;
 
     /**
      * Adds or replaces a factory for creating instances of Directive Actions.
@@ -2872,7 +2872,7 @@ export interface IFivaseServices {
 }
 
 /**
- * Services provided by Fivase. This must be registered as a provider in an NgModule,
+ * Services provided by Jivs. This must be registered as a provider in an NgModule,
  * and configured there too.
  * ```ts
  * @NgModule({
@@ -2880,29 +2880,29 @@ export interface IFivaseServices {
  *   imports: [BrowserModule],
  *   providers: [
  *     {
- *       provide: FivaseServices,
- *       useFactory: ()=> new FivaseServices(new InMemoryFivaseStateStore())
+ *       provide: JivsServices,
+ *       useFactory: ()=> new JivsServices(new InMemoryJivsStateStore())
  *     }
  *   ],
  *   bootstrap: [AppComponent]
  * })
  * export class AppModule {
- * 	constructor(private fivaseServices: FivaseServices)
+ * 	constructor(private jivsServices: JivsServices)
  * 	{
- * 		// populate fivaseServices.configHost
- *      // populate various Factories in fivaseServices
+ * 		// populate jivsServices.configHost
+ *      // populate various Factories in jivsServices
  * 	}
  * }
  * ```
- * - Use configHost to register configurations for forms and create FivaseForm objects
+ * - Use configHost to register configurations for forms and create JivsForm objects
  *   that consume them.
  * - Use each Factory to provide customizations for each Directive supplied.
- * - Supply an implementation of IFivaseStateStore into the constructor to retain stateful
+ * - Supply an implementation of IJivsStateStore into the constructor to retain stateful
  *   information between form rebuilds.
  */
-export class FivaseServices implements IFivaseServices {
-    constructor(stateStore: IFivaseStateStore) {
-        this._configHost = new FivaseConfigHost(stateStore);
+export class JivsServices implements IJivsServices {
+    constructor(stateStore: IJivsStateStore) {
+        this._configHost = new JivsConfigHost(stateStore);
 
         // Initialize ariaSettings with default values
         this._ariaSettings = {
@@ -2920,21 +2920,21 @@ export class FivaseServices implements IFivaseServices {
         };
     }
     /**
-     * Creates a FivaseForm with the configuration specific to formId.
+     * Creates a JivsForm with the configuration specific to formId.
      * Throws error if the formId is not registered.
      * @param formId 
      * @returns The instance created.
      */
-    public createFivaseForm(formId: string): IFivaseForm {
+    public createJivsForm(formId: string): IJivsForm {
         const config = this.configHost.getConfig(formId);
-        return new FivaseForm(config, this);
+        return new JivsForm(config, this);
     }
     /**
-     * The FivaseConfigHost service, which manages the configurations for forms and their states.
+     * The JivsConfigHost service, which manages the configurations for forms and their states.
      * Use this service to register configurations for forms and retrieve them when needed.
      * For example, when creating a new form, register the configuration for that form like this:
      * ```ts
-     * fivaseServices.configHost.register('myFormId', (formId: string) => {
+     * jivsServices.configHost.register('myFormId', (formId: string) => {
      * let builder = build(createJivsServices());
      * ... use the Jivs Builder to create the configuration ...
      *    return builder.complete();
@@ -2942,13 +2942,13 @@ export class FivaseServices implements IFivaseServices {
      * ```
      * Retrieve the configuration for that form using the getConfig method.
      * ```ts
-     * const config = fivaseServices.configHost.getConfig('myFormId');
+     * const config = jivsServices.configHost.getConfig('myFormId');
      * ```
      */
-    public get configHost(): IFivaseConfigHost {
+    public get configHost(): IJivsConfigHost {
         return this._configHost;
     }
-    private readonly _configHost: FivaseConfigHost;
+    private readonly _configHost: JivsConfigHost;
 
 
     /**
@@ -3022,7 +3022,7 @@ export class FivaseServices implements IFivaseServices {
         focusListenerFactory.register(NAME_FOCUS_LISTENER, new HtmlTagFocusListener(false));
         focusListenerFactory.register(NAME_BUBBLING_FOCUS_LISTENER, new HtmlTagFocusListener(true));
 
-        // Register the factory in FivaseServices
+        // Register the factory in JivsServices
         this.registerFactory(focusListenerFactory);
 
         this.registerFactory(new PopupActionFactory(DIRECTIVE_POPUP, new PopupAction()));
@@ -3050,24 +3050,24 @@ export const NAME_SETFOCUSONCLICK_ERROR_MESSAGES = 'setFocusOnClickErrorMessages
 /* eslint-enable @typescript-eslint/naming-convention   */
 
 /**
- * Interface responsible for storing and retrieving any state from Fivase, 
+ * Interface responsible for storing and retrieving any state from Jivs, 
  * allowing validation progress to be saved across sessions or page reloads.
- * Required by FivaseConfigHost to save and retrieve the state of the ValueHostsManager and ValueHosts.
+ * Required by JivsConfigHost to save and retrieve the state of the ValueHostsManager and ValueHosts.
  *
  * Provides an abstraction for state management, allowing different implementations (e.g., local storage, Redux, or other state management libraries) 
  * to be used without altering the core validation logic. This flexibility ensures the validation system can work with various state management approaches.
  *
- * Implemented by services like `InMemoryFivaseStateStore` to save and retrieve validation states for forms.
+ * Implemented by services like `InMemoryJivsStateStore` to save and retrieve validation states for forms.
  */
-export interface IFivaseStateStore {
+export interface IJivsStateStore {
     getState(key: string): any;
     saveState(key: string, state: any): void;
 }
 
 /**
- * A simple implementation of `IFivaseStateStore` using an in-memory map to store state.
+ * A simple implementation of `IJivsStateStore` using an in-memory map to store state.
  */
-export class InMemoryFivaseStateStore implements IFivaseStateStore {
+export class InMemoryJivsStateStore implements IJivsStateStore {
     private readonly _stateMap: Map<string, any> = new Map();
 
     public getState(key: string): any {
@@ -3187,11 +3187,11 @@ export class ElementAttributeManager {
  * AriaAttributeManager is designed to help directive writers manage ARIA attributes 
  * consistently and efficiently for any HTML element. It abstracts away the logic 
  * of setting, removing, and retrieving ARIA attributes, ensuring that they respect 
- * the global configuration provided by IAriaSettings and the localization services in IFivaseForm.
+ * the global configuration provided by IAriaSettings and the localization services in IJivsForm.
  * 
  * Usage:
  * - Directive writers can instantiate this class with the target HTML element, global ARIA settings, 
- *   and form services (IFivaseForm) to dynamically manage ARIA attributes.
+ *   and form services (IJivsForm) to dynamically manage ARIA attributes.
  * - The class supports common ARIA attributes needed for form validation, such as `aria-invalid`, 
  *   `aria-errormessage`, `aria-roledescription`, and `aria-live`.
  * - All ARIA attributes managed by this class are controlled by the settings in IAriaSettings, 
@@ -3208,7 +3208,7 @@ export class ElementAttributeManager {
  * 
  * Example:
  * ```typescript
- * const ariaManager = new AriaAttributeManager(this.element, this.ariaSettings, this.fivaseForm);
+ * const ariaManager = new AriaAttributeManager(this.element, this.ariaSettings, this.jivsForm);
  * ariaManager.setAriaInvalid(isInvalid);
  * ariaManager.setAriaErrormessage(inputId);
  * ```
@@ -3218,18 +3218,18 @@ export class ElementAttributeManager {
  */
 export class AriaAttributeManager extends ElementAttributeManager {
     private readonly _ariaSettings: IAriaSettings;
-    private readonly _fivaseForm: IFivaseForm;
+    private readonly _jivsForm: IJivsForm;
 
     /**
-     * Constructor that takes an HTMLElement, IAriaSettings, and IFivaseForm to manage ARIA attributes.
+     * Constructor that takes an HTMLElement, IAriaSettings, and IJivsForm to manage ARIA attributes.
      * @param element The HTMLElement that will have ARIA attributes managed.
      * @param ariaSettings Global ARIA settings to control ARIA behavior.
-     * @param fivaseForm Provides localization and form-related services.
+     * @param jivsForm Provides localization and form-related services.
      */
-    constructor(element: HTMLElement, ariaSettings: IAriaSettings, fivaseForm: IFivaseForm) {
+    constructor(element: HTMLElement, ariaSettings: IAriaSettings, jivsForm: IJivsForm) {
         super(element);
         this._ariaSettings = ariaSettings;
-        this._fivaseForm = fivaseForm;
+        this._jivsForm = jivsForm;
     }
 
     /**
@@ -3266,8 +3266,8 @@ export class AriaAttributeManager extends ElementAttributeManager {
                 return; // Do nothing if role description is undefined
             }
 
-            const localizedRoleDescription = this._fivaseForm.valueHostsManager.services.errorMessagesService.localize(
-                this._fivaseForm.valueHostsManager.behaviors.activeCultureId!,
+            const localizedRoleDescription = this._jivsForm.valueHostsManager.services.errorMessagesService.localize(
+                this._jivsForm.valueHostsManager.behaviors.activeCultureId!,
                 roleDescriptionConfig.l10nKey,
                 roleDescriptionConfig.text
             );

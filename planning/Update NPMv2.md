@@ -125,7 +125,7 @@ Files modified:
 
 - package.json — compile now runs ng-packagr; added build alias; moved @plblum/jivs-engine from dependencies to peerDependencies (ng-packagr requires this); corrected types field to index.d.ts; removed stale main field
 - .npmignore — added Planning to fix pre-existing leak of design docs into the tarball
-- workproduct.ts — added InjectionToken + Inject to the Angular import; exported FIVASE_FORM_TOKEN; added @Inject(FIVASE_FORM_TOKEN) to the three concrete directive constructors that were injecting IFivaseForm by interface type (a real bug that plain tsc was masking)
+- workproduct.ts — added InjectionToken + Inject to the Angular import; exported FIVASE_FORM_TOKEN; added @Inject(FIVASE_FORM_TOKEN) to the three concrete directive constructors that were injecting IJIvsForm by interface type (a real bug that plain tsc was masking)
 
 Result: ng-packagr builds successfully, produces proper partial-Ivy ESM output, and the tarball is clean.
 ---

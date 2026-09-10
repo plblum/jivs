@@ -11,17 +11,20 @@ let vhm = new ValueHostsManager(config);
 ```
 As a result, it is essential that you have a `createJivsServices()` function, and gone through it to ensure it configures dependency injection according to your needs. 
 
-## Configuring JivsServices
-Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
+## Adding the create_JivsServices.ts file
+Jivs does not provide a ready-made `createJivsServices()` function. Its starter file, `create_JivsServices.ts`, defines `createJivsServices()` and the registration functions that assemble an application’s services. The file serves as the starting point for application-specific service configuration.
+> Jivs documentation will refer to this file by its name. While you can change its name and names of its internal functions, we recommend leaving them unchanged.
 
-Add the contents of `create_JivsServices.ts` to your project. It results in several new functions starting with this one.
-```ts
-export function createJivsServices(... parameters ...): IJivsServices {
-…
-}
-// also many register() functions plus registerCultures() and createErrorMessagesService
-```
-Edit as needed, although initially leave most of the classes it registers alone, so you can start using the system.
+1. Go to [https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts](https://github.com/plblum/jivs/blob/main/starter_code/create_JivsServices.ts)
+
+2. Add the contents of `create_JivsServices.ts` to your project. It results in several new functions starting with this one.
+    ```ts
+    export function createJivsServices(... parameters ...): IJivsServices {
+    …
+    }
+    // also many register() functions plus registerCultures() and createErrorMessagesService
+    ```
+3. You can customize this file later. Initially, leave most of the classes it registers alone, so you can start using the system.
 
 ## JivsServices class
 JivsServices implements this interface:
