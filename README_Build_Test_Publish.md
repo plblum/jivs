@@ -96,6 +96,22 @@ The resulting libraries are published here: https://www.npmjs.com/settings/plblu
 This can be done both from github actions and locally. 
 In either case, it is run manually.
 
+### Introducing a new package
+When adding a package that does not exist on NPM, there are extra steps involved.
+1. Publish the first version manually from your machine:
+
+    This creates the package on npm under your account.
+
+2. Configure Trusted Publishing for it (same as the other 3 packages):
+
+    - Go to the new package's page on npmjs.com → Settings → Publishing access → Add a publisher
+    - GitHub Actions
+        - owner: plblum
+        - repo: jivs
+        - workflow: github-action-publish-to-npm.yml
+        - allow NPM publish
+    - Package Access: Require two-factor authentication and disallow bypass 2fa tokens (recommended)
+
 ### On Github
 - Recommend only publishing from the main branch
 - Recommend updating CHANGELOG.md and determining the next version in this document first.
