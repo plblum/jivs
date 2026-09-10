@@ -1,7 +1,7 @@
 {
   "name": "@plblum/jivs",
   "type": "module",
-  "version": "0.22.1",
+  "version": "0.23.0",
   "publishConfig": {
     "access": "public"
   },
@@ -21,7 +21,7 @@
     "postpack": "node scripts/remove-starter-file.mjs"
   },
   "dependencies": {
-    "@plblum/jivs-builder": "^0.22.1",
-    "@plblum/jivs-engine": "^0.22.1"
+    "@plblum/jivs-builder": "^0.23.0",
+    "@plblum/jivs-engine": "^0.23.0"
   }
 }
