@@ -6,6 +6,9 @@ The [`JivsServices`](../../API/JivsServices/Home.md) object provides customizati
 ## Where do I customize the services?
 [You added a code file called creating_JivsServices.ts](../../API/JivsServices/Home.md#configuring-jivsservices) to your project during Jivs installation. You will be working in this file. It contains the createJivsServices() function that explicitly establishes all services, and is loaded with inline documentation to help you out.
 
+## When should I create JivsServices?
+`JivsServices` is stateless. You can create a single instance for your entire multi-threaded app as it starts up if you like. Our code examples show on-demand creation. But that can be switched to exposing it as a singleton through a global variable or dependency injection services of your app.
+
 ## Establishing the ISO language-region codes used in localization
 If you intend to support multiple languages or regional variations, identify and add their ISO language-region codes to the `CultureServices` object. See [CultureServices](../../API/JivsServices/CultureServices.md).
 

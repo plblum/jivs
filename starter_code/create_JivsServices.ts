@@ -18,6 +18,11 @@
  *   IDataTypeConverter, IDataTypeComparer, and IDataTypeParser.
  *   See the [jivs-examples folder](..\packages\jivs-examples) for numerous examples of custom data types.
  * - LoggingService: Like any good service, Jivs outputs to logs. It defaults to using the Console, only showing errors. 
+ * 
+ * Valuable info:
+ * - JivsServices is stateless. You can create a single instance for your entire multi-threaded app as it starts up if you like.
+ * - Many services support lazy loading
+ * 
  */
 
 

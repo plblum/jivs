@@ -8,6 +8,9 @@
  * It contains such a function, createJivsServices().
  * Edit that file to adjust your configuration.
  * 
+ * JivsServices is stateless. You can create a single instance for your entire multi-threaded app as it starts up if you like.
+ * Many services support lazy loading.
+ * 
  * To add more services, use setService(name, service) to add a new service to the IJivsServices instance.
  * Alternatively, use the ModuleServicesInstaller to add services to the global default IJivsServices instance.
  * @module jivs-engine/Services/ConcreteClasses/JivsServices
