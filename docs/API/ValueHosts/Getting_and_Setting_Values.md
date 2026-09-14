@@ -266,7 +266,7 @@ _Use Cases:_
 ```ts
 class FieldValueHost
 {
-    setValues(nativeValue: any, textValue: string, options?: SetValueOptions): void {}
+    setValues(nativeValue: any, textValue: string, options?: FieldValueHostSetValueOptions): void {}
 }
 ```
 - The [options parameter](#options-parameter-setvalueoptions) is described below.

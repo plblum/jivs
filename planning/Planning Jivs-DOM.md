@@ -7,7 +7,7 @@ This worksheet will be transformed into ideas for the Jivs-dom module.
 - Needs at least two actual "packages": the npm package jivs-dom and a website that demonstrates it in operation. jest testing for jivs-dom is part of the jivs-dom package. The website is designed for end-user exploration and learning.
 - It is possible that we actually have jivs-dom and jivs-simpledom separate. jivs-dom starts from jivs-DOM_Helpers.ts and is code that can be used even when building a UI without jivs-simpleDOM approach. Not sure. Both projects could be very light and harmless to keep together.
 - We should explore that workproduct.ts file of jivs-angular. It attempted to do the same for Angular. It likely will be overhauled, both to update to recent Angular and to consume jivs-dom for some of its work. That is out of scope for this planning. The point is workproduct.ts should give some ideas to what features we'll offer in jivs-simpledom.
-- Note that jivs-simpleDom will change. It will be formalized. Up to now, we needed it to offer training via Learning Jivs. Yet its likely a sustainable pattern. We may radically alter it too. Nobody is using this codebase yet.
+- Note that jivs-simpleDom will change. It will be formalized. Up to now, we needed it to offer training via Learning Jivs. Yet its likely a sustainable elementIdentifierTemplate. We may radically alter it too. Nobody is using this codebase yet.
 
 ## S02 Jivs-dom's version of jivs-DOM_helpers.ts
 - The entire file's concepts are likely to find a home here, even if we rename and restructure things. Its conceivable that we'll have a class or service with these tools. If its a service, it will get attached to JivsServices.
@@ -92,7 +92,7 @@ interface IDomElementResolver {
     getElement(
         valueHost: IFieldValueHost,
         role: string,
-        pattern?: string
+        elementIdentifierTemplate?: string
     ): HTMLElement | null;
 }
 ```
@@ -173,7 +173,7 @@ The built-in editor boundary is the native HTML editing model:
 
 `contenteditable` is intentionally outside the built-in editor scope. It is a useful custom widget and can be supported later through custom adapters and installers. Buttons are action or form controls, not value editors; submit/save behavior belongs to form presentation rather than text-value or native-value synchronization.
 
-`input[type="file"]` is included in the built-in editor boundary only as a browser-exposed value check. The adapter may pass `HTMLInputElement.value` as a Text Value so Jivs validators can decide whether a file appears to be selected or whether its exposed filename matches a rule such as an extension pattern. The adapter does not read file contents, and the browser's protected path/filename behavior may limit what value is available. Content validation and security remain application/server responsibilities.
+`input[type="file"]` is included in the built-in editor boundary only as a browser-exposed value check. The adapter may pass `HTMLInputElement.value` as a Text Value so Jivs validators can decide whether a file appears to be selected or whether its exposed filename matches a rule such as an extension elementIdentifierTemplate. The adapter does not read file contents, and the browser's protected path/filename behavior may limit what value is available. Content validation and security remain application/server responsibilities.
 
 PLB: Q66 and Q67 resolved: support the built-in input, textarea, select, radio, and limited file-value cases; leave `contenteditable` to custom widget support.
 
@@ -329,7 +329,7 @@ PLB: Q02 resolved: define standard string-valued role names in `jivs-dom`, inclu
 
 The installer asks a factory for the presentation object, then attaches it to the element. A user who does not use SimpleDom can call this function directly with their own role and presentation names. `jivs-simpledom` can subclass the installer so that it reads `data-jivs-role` and `data-jivs-presentation` before calling the same base mechanism.
 
-The same pattern applies to value installers. The public API should make the one-element installation call easy, while the separate installers remain available for users who need precise control. Factories and installer parameters resolve a concrete widget without requiring the base package to know the widget's name or markup.
+The same elementIdentifierTemplate applies to value installers. The public API should make the one-element installation call easy, while the separate installers remain available for users who need precise control. Factories and installer parameters resolve a concrete widget without requiring the base package to know the widget's name or markup.
 
 PLB: Correct
 
@@ -485,7 +485,7 @@ Required state comes from `FieldValueHost.required` and should be initialized se
 
 PLB: Q03 I'm wondering if we have an interface for an Aria class with one public function, `apply(element, role, validationState)`, and a standard implementation. This class can be a service. We may have an abstract base class and concrete implementation, inviting users to rework its ARIA support as needed.
 
-## S18 Callback integration and services
+## S18 Dispatcher service and callback attachment
 
 The engine configuration receives callbacks before `ValueHostsManager` is constructed:
 
@@ -495,25 +495,25 @@ config.onValueHostValidationStateChanged = ...;
 config.onValidationStateChanged = ...;
 ```
 
-`DomServicesCallbacks` should expose one explicit attachment method for each callback rather than one method that attaches everything:
+`IDomDispatcherService` should expose one explicit attachment method for each `ValueHostsManagerConfig` callback hook rather than one method that attaches everything:
 
 ```ts
-domServices.callbacks.attachTextValueChanged(
+domServices.dispatchers.attachTextValueChanged(
     config,
     options
 );
 
-domServices.callbacks.attachValueChanged(
+domServices.dispatchers.attachValueChanged(
     config,
     options
 );
 
-domServices.callbacks.attachValueHostValidationStateChanged(
+domServices.dispatchers.attachValueHostValidationStateChanged(
     config,
     options
 );
 
-domServices.callbacks.attachValidationStateChanged(
+domServices.dispatchers.attachValidationStateChanged(
     config,
     options
 );
@@ -573,7 +573,7 @@ class DomServices {
     ) {}
 
     public elementResolver: IDomElementResolver;
-    public callbacks: DomServicesCallbacks;
+    public dispatchers: IDomDispatcherService;
     public textValueInstaller: ITextValueInstaller;
     public valueInstaller: IValueInstaller;
     public fieldPresentationInstaller:
@@ -589,13 +589,13 @@ class DomServices {
 The exact child-service list is still being designed. The initial candidates are:
 
 - an element resolver that understands the requested role;
-- the stateless Jivs callback façade, with four registered dispatcher factories;
+- the stateless dispatcher service, with four registered dispatcher factories;
 - separate replaceable text-value, native-value, field-presentation, and form-presentation installers;
 - a composite editor installer;
 - an ARIA service;
 - error-message generation and formatting.
 
-This answers the earlier question about whether the DOM callback façade should be a separate companion object. It can be a child service, such as `domServices.callbacks`, while `DomServices` owns its construction and dependencies. Applications can replace that child service without replacing the entire DOM service collection.
+This answers the earlier question about whether the DOM dispatcher service should be a separate companion object. It can be a child service, such as `domServices.dispatchers`, while `DomServices` owns its construction and dependencies. Applications can replace that child service without replacing the entire DOM service collection.
 
 Each installer owns or receives the factory it needs to create a per-element adapter. Factories are not separate public `DomServices` properties unless a future shared-capability requirement justifies exposing one. The installer properties themselves have getter and setter access so applications can replace their interface-typed implementations.
 
@@ -654,7 +654,53 @@ Jivs validation -> DOM presentation
 The next planning questions are:
 
 1. **Q09:** Which default presenters, ARIA helpers, and CSS are included in the first release? ARIA design itself remains deferred until the broader architecture is complete.
-2. **Q12:** Should `DomServicesCallbacks` methods avoid `this`, or should they be bound so they can use sibling DOM services later?
+2. **Q12:** Should `IDomDispatcherService` methods avoid `this`, or should they be bound so they can use sibling DOM services later?
 3. **Q19:** Should adapter binding occur through the constructor or a separate method? This is intentionally deferred as an implementation detail.
 4. **Q57:** How should the optional composite editor installer coordinate the individual installers? This is intentionally deferred as a nice-to-have.
 5. **Q71:** Define and implement the Jivs `MultiSelect` data type, including array Native Value, semicolon-delimited Text Value, parser, formatter, data-type validation, and collection-aware validation before adding the multi-select DOM adapter.
+
+## Still remaining
+- ARIA planning
+- Jivs-SimpleDom planning
+- Implementation guide for repo changes 
+- Required flag installer
+
+### Implementation guide
+
+```text
+packages/jivs-dom
+packages/jivs-simpledom
+packages/jivs-dom-website
+```
+
+It should explain what each package is responsible for, but not describe the work sequence.
+
+A separate implementation-planning document should describe:
+
+- creating the packages;
+- moving or replacing starter code;
+- updating Learning Jivs documentation;
+- package dependencies;
+- build and Jest configuration;
+- website setup;
+- migration order;
+- eventual Angular integration.
+
+Future Implementation Guide
+
+Repository/package structure.
+NPM package metadata and exports.
+Workspace registration.
+Build and compilation.
+Jest and DOM test environment setup.
+Coverage and CI.
+CSS and other published assets.
+Website tooling and dev server.
+Documentation migration.
+Starter-code migration or deprecation.
+Package dependency order.
+Publishing and release workflow.
+Angular integration timing.
+Migration checklist.
+
+A fourth useful document may eventually be a Testing Guide, because the DOM environment, fixture strategy, coverage expectations, and test-support utilities could become substantial. For now, D13 is enough to establish the requirement; implementation details belong in the implementation guide.
