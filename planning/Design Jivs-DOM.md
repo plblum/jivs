@@ -59,9 +59,9 @@ class DomServices implements IDomServices {
         value: IFormPresentationInstaller
     );
 
-    public get aria(): IDomAriaService;
+    public get aria(): IDomAriaService | null;
     public set aria(
-        value: IDomAriaService
+        value: IDomAriaService | null
     );
 
     public get issuesFoundFormatter():
@@ -231,6 +231,13 @@ interface IDomEditorAdapterFactory {
     findDefinition(
         element: HTMLElement
     ): IDomEditorAdapterDefinition | null;
+}
+
+interface IDomAriaEditorDefinition {
+    findAriaEditors(
+        root: HTMLElement,
+        installationElement: IJivsDomElement
+    ): Iterable<HTMLElement>;
 }
 ```
 
@@ -577,22 +584,26 @@ interface IFormValidationDispatcher {
 
 abstract class FieldDispatcherBase {
     protected forEachConsumer(
+        root: HtmlElement,
         valueHost: IFieldValueHost,
         operation: (element: IJivsDomElement) => void
     ): void;
 
     protected abstract findConsumers(
+        root: HtmlElement,        
         valueHost: IFieldValueHost
     ): Iterable<IJivsDomElement>;
 }
 
 abstract class FormDispatcherBase {
     protected forEachConsumer(
+        root: HtmlElement,
         valueHostsManager: IValueHostsManager,
         operation: (element: IJivsDomElement) => void
     ): void;
 
     protected abstract findConsumers(
+        root: HtmlElement,
         valueHostsManager: IValueHostsManager
     ): Iterable<IJivsDomElement>;
 }
@@ -646,6 +657,7 @@ The concrete dispatcher interfaces do not expose the adapter or presentation pro
 
 The field and form base classes own the common rules:
 
+- `findConsumers()` takes a containing element from which to run its query; it is the value of document unless ValueHostsManagerConfig.containerIdentifier supplies a way to find a root element.
 - enumerate every consumer returned by `findConsumers()`;
 - invoke the supplied operation once per consumer, in discovery order;
 - continue dispatching to other consumers when one consumer has no matching capability;
@@ -912,12 +924,184 @@ These exclusions do not prevent future packages or integrations from building on
 
 ## D17 ARIA Service
 
-ARIA support is a replaceable `DomServices` child service. Its detailed field/form methods and default policy remain to be designed after the broader architecture review, but the service has a formal place in the API:
+ARIA support is an optional, replaceable `DomServices` child service. Setting `DomServices.aria` to `null` disables all Jivs-managed ARIA work. The module does not attempt to detect whether a screen reader or another assistive technology is active.
+
+ARIA is independent of presentation. A field validation dispatcher first invokes every installed field presentation, then calls the ARIA service once. The ARIA service makes its own fresh DOM queries and does not use presentation adapters or the elements discovered for presentation. Form validation has no standard ARIA behavior in the initial release.
+
+### D17.1 Public Service Contract
 
 ```ts
 interface IDomAriaService {
-    // Field and form operations to be defined.
+    applyFieldState(
+        root: HTMLElement,
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
 }
 ```
 
-The service may eventually provide separate field and form operations. It must remain replaceable so applications can adapt ARIA behavior to their accessibility policy and widget semantics.
+The dispatcher resolves `root` before it calls the service. When `ValueHostsManager.getContainerIdentifier()` supplies an identifier, the dispatcher resolves it to an `HTMLElement`. Otherwise, `root` is `document.body`. When a configured container identifier cannot be resolved, the dispatcher logs and performs no DOM or ARIA work; it must not fall back to `document.body` and accidentally affect a matching field in another form.
+
+The service does not retain `root`, the `IFieldValueHost`, a `ValueHostsManager`, a DOM element, or an element collection after an operation returns.
+
+The service is supplied IDomServices upon creation to provide access to relevant services.
+
+### D17.2 AriaServiceBase
+
+`jivs-dom` exports `AriaServiceBase` as the standard reusable implementation and extension point. It implements `IDomAriaService`, the standard attribute-update policy, error handling, and use of sibling `DomServices` services. Its subclasses provide field discovery for their markup convention.
+
+```ts
+interface IFieldAriaElementAnchors {
+    readonly editorAnchor:
+        IJivsDomElement | null;
+
+    readonly errorMessageElement:
+        HTMLElement | null;
+
+    readonly errorMessageContentOwner:
+        'presentation' | 'ariaService' | null;
+}
+
+abstract class AriaServiceBase
+    implements IDomAriaService {
+    public applyFieldState(
+        root: HTMLElement,
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+
+    protected abstract findFieldElements(
+        root: HTMLElement,
+        valueHost: IFieldValueHost
+    ): IFieldAriaElementAnchors;
+}
+```
+
+`findFieldElements()` receives the query root and the `IFieldValueHost`, including access to `getElementIdentifier()` for an implementation's field-identification convention. It decides how to query the DOM and returns the semantic results required by the base class. The contract does not prescribe selectors, attributes, element relationships, or whether a field identifier is used directly or through a template.
+
+`editorAnchor` is the one editor element discovered for the field. It owns the selected `jivsEditorAdapterDefinition` and is the starting point for widget-specific ARIA target resolution. It may also be the final ARIA target.
+
+The result of `findFieldElements()` identifies one editor anchor and at most one error host element. `errorMessageContentOwner` states whether the selected error host is populated by its visual presentation or by `AriaServiceBase`. When no error host exists, `errorMessageElement` and `errorMessageContentOwner` are both `null`.
+
+When `editorAnchor` is not null, `AriaServiceBase` reads its `jivsEditorAdapterDefinition`. When that definition also implements `IDomAriaEditorDefinition`, the base class uses `findAriaEditors(root, editorAnchor)` to find the actual accessibility control or controls. Otherwise, `editorAnchor` itself is the single ARIA editor target. This permits a widget to choose a native input, a role-bearing custom control, or every member of a radio group without requiring presentation and ARIA to share their element-discovery logic.
+
+The built-in native editor definitions implement `IDomAriaEditorDefinition`. Standard input, textarea, select, and file definitions return their editor anchor. The radio definition returns every same-name radio in the group below `root`. The base class applies its field-state attributes, including required semantics, to every returned target.
+
+`AriaServiceBase` catches and logs failures in discovery, editor-target lookup, formatting, or individual element updates. It continues with later targets when possible and never allows an ARIA failure to interrupt Jivs validation or presentation.
+
+### D17.3 Field ARIA Behavior
+
+The standard policy updates each ARIA editor target according to the current field state:
+
+- When `state.isValid` is `false`, set `aria-invalid="true"`.
+- When valid, remove `aria-invalid`.
+- When an eligible error-message element is available while invalid, set `aria-errormessage` to that element's nonempty `id`.
+- Otherwise, and whenever valid, remove `aria-errormessage`.
+> Note: This applies to all editor aria elements supplied, so that all radio buttons in a group have all of this happen to it.
+```html
+<!-- when isValid = false -->
+<input type='text' aria-invalid="true" aria-errormessage="id_of_error_host" >
+```
+
+The selected error-message element must have a unique, nonempty `id`. Applications should assign one explicitly. When it does not have an ID, `AriaServiceBase` assigns a deterministic fallback derived from the container and field identifiers, using the documented `{containerIdentifier}_{elementIdentifier}_ariaerror` pattern. The implementation encodes identifier text as needed to create a valid DOM ID; it does not use raw query-selector syntax as an ID.
+
+When `errorMessageContentOwner` is `ariaService`, `AriaServiceBase` populates that element's `textContent` using `DomServices.issuesFoundFormatter.buildErrorMessagesText(state.issuesFound ?? [])`. When the field becomes valid, it clears the dedicated host's text. When the content owner is `presentation`, the ARIA service never writes or clears its content; the visual Error Display presentation remains its sole content owner.
+
+The standard service does not require an error-message host to apply `aria-invalid` or other supported editor state. A custom `IDomAriaService` may choose a stricter opt-in policy.
+
+### D17.4 Required State
+
+Required state comes from `IFieldValueHost.required`, not from `ValueHostValidationState`. The initialization pass through the field validation dispatcher establishes this state, and subsequent dispatcher calls keep it synchronized when necessary.
+
+For native `HTMLInputElement`, `HTMLSelectElement`, and `HTMLTextAreaElement` controls that support required semantics, the standard service sets or removes native `required`. It does not also set `aria-required`. This includes every radio input returned for a radio group; applying `required` to every member is valid and preserves the ordinary native group-required behavior. For an ARIA control without an equivalent native required semantic, the standard service sets `aria-required="true"` while required and removes it otherwise.
+
+A visual required indicator is not an ARIA service target. The standard Required widget presentation sets `aria-hidden="true"` because the editor already communicates the required state. Custom presentations can omit or replace that behavior when their indicator has distinct useful content.
+
+### D17.5 Error-Message Hosts
+
+ARIA's handling of error messages is awkward and impactful on the user.
+- The error message must be separate from the editor. There are no aria tags to assign an error message to an editor element.
+- The error message text content must not use display=none, visibility=hidden, or aria-hidden=true. This creates problems for popup error displays.
+
+As a result, we have to support the Error Display for non-popup cases and ask the user to drop in an element that will host a second aria-specific holder of an error message. That element will have a special style sheet class designed to keep it hidden without using display=none.
+
+- Normal error display: always defined, but not always used for aria's purposes
+- Aria error host: added by web dev for when their normal error display hides its text
+
+An application can make a visible Error Display serve as the ARIA error-message host when its presentation keeps the error content available to assistive technology. The presentation signals this capability according to the application's discovery convention.
+The element requires a unique id attribute value, to connect with the editor's aria-errormessages attribute.
+
+In Jivs SimpleDom, the standard ARIA-aware Error Display presentation assigns `data-aria-errormessage="true"` to its `data-jivs-role="error"` element. The ARIA service treats it as presentation-owned content. 
+
+```html
+<div
+    id="first-name-errors"
+    data-field="FirstName"
+    data-jivs-role="error"
+    data-aria-errormessage="true">
+</div>
+```
+
+When an Error Display is hidden in a popup, tooltip, or another interaction-dependent UI, the application can provide a dedicated ARIA error host. That host contains accessible plain text, normally uses the published `jivs-visually-hidden` utility class, and is content-owned by the ARIA service. We will supply this in jivs-dom support files.
+```css
+.jivs-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+```
+
+In Jivs SimpleDom it uses `data-jivs-role="aria-error"` and the same `data-field` value as its editor. SimpleDom presentation installation and presentation dispatch exclude this ARIA-only role.
+```html
+<span
+    id="first-name-aria-errors"
+    data-field="FirstName"
+    data-jivs-role="aria-error"
+    class="jivs-visually-hidden">
+</span>
+<!-- and the visible one exists too without data-aria-errormessage attribute -->
+<div
+    id="first-name-errors"
+    data-field="FirstName"
+    data-jivs-role="error">
+</div>
+```
+
+The two forms are alternatives. A concrete discovery implementation chooses at most one error-message element for a field. It may define deterministic precedence when both are present. Jivs SimpleDom should prefer an ARIA-enabled visible Error Display, then a dedicated `aria-error` host.
+
+### D17.6 Web Dev Guidance
+
+The initial `AriaServiceBase` does not query or update a Validation Summary, submit control, label, container, or required indicator. These elements do not require dynamic Jivs ARIA behavior for the standard field policy.
+
+For required indicator, avoid assigning aria-required=true because the editor will get a similar attribute to manage a required rule.
+
+An application that wants changed Validation Summary content announced may declare stable live-region semantics in its markup:
+
+```html
+<div
+    data-jivs-role="summary"
+    role="status"
+    aria-atomic="true">
+</div>
+```
+
+`role="status"` supplies polite live-region behavior. `aria-atomic="true"` requests that the complete updated summary be announced. The summary presentation owns its content, and application code owns any deliberate focus movement after a failed submission. A future release may add form-level ARIA operations through a separate extension of `IDomAriaService`.
+
+### D17.7 Custom DOM Conventions
+
+`jivs-simpledom` supplies the first concrete `AriaServiceBase` implementation because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions. An application that uses `jivs-dom` directly subclasses `AriaServiceBase` and implements `findFieldElements()` for its own markup, while retaining standard ARIA mutation behavior. It may instead replace the complete `IDomAriaService` when it needs a different policy.
+
+All discovery occurs below the dispatcher-supplied root during each operation. Implementations must not retain discovered elements, collections, or DOM subtrees between calls.
+
+## D18 ValueHostsManagerConfig modifications
+We will introduce a new ValuehostsManagerConfig property, containerIdentifier, that can be used when there are multiple forms, each with its own ValueHostsManager. In that case, it will work much like FieldValueHostConfig.elementIdentifier as a way to locate the element containing the form, such as the \<form> tag. We'd recommend the user provide a DOM query to return a single element, but each implementation of dispatcher will decide on how to consume it. jivs-simpledom will definitely require a DOM query pattern.
+
+The containerIdentifier will be resolved by the dispatcher.dispatch() function through ValueHostsManager.getContainerIdentifier(template). If it returns non-null, use that to query for fields. Otherwise, fields will be queried under document.
+
+dispatcher.findConsumer functions will require a parameter with the results, and findConsumer must use its element as the root of its searches.
