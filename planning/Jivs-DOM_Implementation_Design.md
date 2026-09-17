@@ -1,0 +1,1976 @@
+# Jivs-DOM Implementation Design
+
+## Purpose and Scope
+
+This document is the implementation blueprint for adding DOM support to the Jivs repository. It defines the architecture, public API, concrete types, and package responsibilities needed to implement:
+
+* `@plblum/jivs-dom`
+* `@plblum/jivs-simpledom`
+* demonstration websites that exercise and explain those packages
+
+`jivs-dom` provides reusable integration between Jivs and browser DOM elements. It supplies editor adapters, installation services, dispatchers, validation presentations, accessibility support, error-message formatting, and related CSS without imposing a particular HTML markup convention.
+
+`jivs-simpledom` is a concrete implementation built on `jivs-dom`. It uses a defined set of HTML attributes to discover elements, associate them with Jivs objects, select presentations, and install the required DOM behavior.
+
+The document also identifies changes required in `jivs-engine` to support these packages.
+
+This is a coding blueprint rather than a history of the design process or an end-user learning guide. It uses exact API names and signatures where decisions have been completed. Any remaining conceptual APIs are identified as unresolved and must be finalized before their implementation sections are considered complete.
+
+Repository placement, demonstration website organization, and testing responsibilities are included where they affect the implementation design. Detailed development commands, migration sequencing, publishing procedures, and end-user documentation remain outside its scope.
+
+## Architectural Overview
+
+### Relationship with jivs-engine
+
+```mermaid
+flowchart TB
+    subgraph DOM["jivs-dom"]
+        direction TB
+
+        DISPATCHERS["DOM dispatchers"]
+        EDITORS["Editor adapter definitions"]
+        PRESENTATIONS["Field and form presentations"]
+
+        DISPATCHERS ~~~ EDITORS ~~~ PRESENTATIONS
+    end
+
+    subgraph ENGINE["jivs-engine"]
+        direction TB
+
+        CONFIG["ValueHostsManagerConfig"]
+        FIELD["IFieldValueHost"]
+        TYPES["Validation and error types"]
+
+        CONFIG ~~~ FIELD ~~~ TYPES
+    end
+
+    DISPATCHERS <-->|"attach and receive callbacks"| CONFIG
+    EDITORS -->|"setTextValue, setValue, setValues"| FIELD
+
+    TYPES -.->|"ValidationState and ValueHostValidationState"| DISPATCHERS
+    TYPES -.->|"IssueFound"| PRESENTATIONS
+    EDITORS -.->|"InjectedError"| TYPES
+```
+
+The principal `jivs-engine` integration points are:
+
+| Jivs API                                                    | Use within `jivs-dom`                                                                                                                                                               |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ValueHostsManagerConfig.onTextValueChanged`                | Notifies a Text Value dispatcher. The dispatcher obtains the current Text Value from the supplied `IFieldValueHost` and writes it through installed `IDomTextValueAdapter` objects. |
+| `ValueHostsManagerConfig.onValueChanged`                    | Notifies a Native Value dispatcher. The dispatcher obtains the current Native Value from the supplied `IValueHost` and writes it through installed `IDomValueAdapter` objects.      |
+| `ValueHostsManagerConfig.onValueHostValidationStateChanged` | Supplies the `ValueHostValidationState` used by installed field presentations and field-level ARIA behavior.                                                                        |
+| `ValueHostsManagerConfig.onValidationStateChanged`          | Supplies the `ValidationState` used by installed form presentations.                                                                                                                |
+| `IFieldValueHost.setTextValue()`                            | Accepts textual editor input and lets Jivs perform its configured parsing and validation.                                                                                           |
+| `IFieldValueHost.setValue()`                                | Accepts a Native Value from an editor that exposes non-textual or structured data.                                                                                                  |
+| `IFieldValueHost.setValues()`                               | Accepts related Text and Native Values when parsing is performed outside Jivs. It can also receive an `InjectedError` when that parsing fails.                                      |
+| `IFieldValueHost.getElementIdentifier()`                    | Supplies the application-defined identifier used by a DOM convention to associate the field with its elements.                                                                      |
+| `ValidationState`                                           | Describes validation across the `ValueHostsManager` and drives form presentation.                                                                                                   |
+| `ValueHostValidationState`                                  | Describes validation for one ValueHost and drives field presentation.                                                                                                               |
+| `IssueFound`                                                | Supplies the validation messages and metadata consumed by error displays, summaries, and DOM-oriented message formatting.                                                           |
+| `InjectedError`                                             | Allows an editor adapter definition that performs external parsing to report a parsing failure through Jivs validation.                                                             |
+| `ValueHostsManager.broadcastState()`                        | Republishes current Text Values, field validation state, and form validation state when initialization did not produce the usual change callbacks.                                  |
+
+### Editor Element Installation
+
+```mermaid
+flowchart TB
+    INSTALLER["IEditorInstaller"]
+    DEFINITION["Selected IDomEditorAdapterDefinition"]
+    PRESENTATION_INSTALLER["IFieldPresentationInstaller"]
+
+    subgraph FACTORY["IDomEditorAdapterFactory"]
+        direction LR
+
+        REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, RadioAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
+        FACTORY_API["Definition registry and selection"]
+
+        REGISTERED -->|"used by"| FACTORY_API
+    end
+
+    ELEMENT["IJivsDomElement"]
+    TEXT_ADAPTER["IDomTextValueAdapter"]
+    VALUE_ADAPTER["IDomValueAdapter"]
+    PRESENTATION["IFieldPresentation"]
+
+    INSTALLER -->|"uses"| FACTORY
+    FACTORY -->|"returns"| DEFINITION
+    INSTALLER -->|"uses"| PRESENTATION_INSTALLER
+
+    DEFINITION -->|"creates"| TEXT_ADAPTER
+    DEFINITION -->|"creates"| VALUE_ADAPTER
+    DEFINITION -->|"attachToSendValues()"| ELEMENT
+
+    DEFINITION -->|"jivsEditorAdapterDefinition"| ELEMENT
+    TEXT_ADAPTER -->|"jivsTextValueAdapter"| ELEMENT
+    VALUE_ADAPTER -->|"jivsValueAdapter"| ELEMENT
+
+    PRESENTATION_INSTALLER -->|"creates"| PRESENTATION
+    PRESENTATION -->|"jivsFieldPresentation"| ELEMENT
+```
+
+### Editor Callback Flows
+
+```mermaid
+flowchart LR
+    subgraph TEXT["Text Value callback"]
+        direction TB
+
+        TEXT_CALLBACK["onTextValueChanged"]
+        TEXT_DISPATCHER["TextValueDispatcher"]
+        TEXT_ELEMENT["IJivsDomElement"]
+        TEXT_ADAPTER["IDomTextValueAdapter"]
+        TEXT_EDITOR["Editor Text Value"]
+
+        TEXT_CALLBACK -->|"supplies ValueHost"| TEXT_DISPATCHER
+        TEXT_DISPATCHER -->|"getTextValue(); findConsumers()"| TEXT_ELEMENT
+        TEXT_ELEMENT -->|"resolve jivsTextValueAdapter"| TEXT_ADAPTER
+        TEXT_ADAPTER -->|"writeTextValue()"| TEXT_EDITOR
+    end
+
+    subgraph VALUE["Native Value callback"]
+        direction TB
+
+        VALUE_CALLBACK["onValueChanged"]
+        VALUE_DISPATCHER["ValueDispatcher"]
+        VALUE_ELEMENT["IJivsDomElement"]
+        VALUE_ADAPTER["IDomValueAdapter"]
+        VALUE_EDITOR["Editor Native Value"]
+
+        VALUE_CALLBACK -->|"supplies ValueHost"| VALUE_DISPATCHER
+        VALUE_DISPATCHER -->|"getValue(); findConsumers()"| VALUE_ELEMENT
+        VALUE_ELEMENT -->|"resolve jivsValueAdapter"| VALUE_ADAPTER
+        VALUE_ADAPTER -->|"writeValue()"| VALUE_EDITOR
+    end
+```
+
+### Presentation Installation
+
+```mermaid
+flowchart LR
+    subgraph FIELD["Field presentation installation"]
+        direction TB
+
+        FIELD_INSTALLER["IFieldPresentationInstaller"]
+        FIELD_PRESENTATION["Selected IFieldPresentation"]
+        FIELD_ELEMENT["IJivsDomElement.jivsFieldPresentation"]
+
+        FIELD_INSTALLER -->|"selects and creates"| FIELD_PRESENTATION
+        FIELD_PRESENTATION -->|"assigned to"| FIELD_ELEMENT
+    end
+
+    subgraph FORM["Form presentation installation"]
+        direction TB
+
+        FORM_INSTALLER["IFormPresentationInstaller"]
+        FORM_PRESENTATION["Selected IFormPresentation"]
+        FORM_ELEMENT["IJivsDomElement.jivsFormPresentation"]
+
+        FORM_INSTALLER -->|"selects and creates"| FORM_PRESENTATION
+        FORM_PRESENTATION -->|"assigned to"| FORM_ELEMENT
+    end
+```
+
+### Field Presentation Flow
+
+```mermaid
+flowchart TB
+    CALLBACK["onValueHostValidationStateChanged"]
+
+    subgraph DISPATCHER["FieldValidationDispatcher"]
+        direction TB
+
+        FIND["findConsumers()"]
+        APPLY["IJivsDomElement.jivsFieldPresentation.apply"]
+        FIELD_UI["Updated field UI"]
+
+        FIND --> |"for each consumer"| APPLY
+        APPLY --> FIELD_UI
+    end
+
+
+    CALLBACK -->|"supplies ValueHost and ValueHostValidationState"| DISPATCHER
+
+```
+
+### Form Presentation Flow
+
+```mermaid
+flowchart TB
+    CALLBACK["onValidationStateChanged"]
+
+    subgraph DISPATCHER["FormValidationDispatcher"]
+        direction TB
+
+        FIND["findConsumers()"]
+        APPLY["IJivsDomElement.jivsFormPresentation.apply"]
+        FORM_UI["Updated form UI"]
+
+        FIND -->|"for each consumer"| APPLY
+        APPLY --> FORM_UI
+    end
+
+    CALLBACK -->|"supplies ValueHostsManager and ValidationState"| DISPATCHER
+```
+## Core Design Principles
+
+* DOM elements own element-specific installation state. Installed adapter definitions, adapters, and presentations are exposed through the `IJivsDomElement` contract.
+
+* Registered adapter definitions are shared and immutable. They do not retain element-specific, ValueHost-specific, or installation-specific state.
+
+* Adapters and presentations are created for individual elements. They may retain state belonging to that element but do not retain a `ValueHostsManager`.
+
+* Shared services do not retain forms, elements, element collections, or DOM subtrees.
+
+* Dispatchers are created for a specific callback attachment. They may retain configuration and discovery policy, but they rediscover consumer elements during every dispatch and do not retain the elements they find.
+
+* The four callback capabilities remain independent: Text Value changes, Native Value changes, field validation changes, and form validation changes can be attached and replaced separately.
+
+* Editor installation is idempotent after successful completion. Later calls that resolve to the same installation anchor do not modify the anchor or attach additional event handlers.
+
+* Public behavior is replaceable through interfaces, service properties, factories, and registration methods. Applications can supply custom widgets, presentations, dispatchers, discovery conventions, accessibility behavior, and message formatting without changing `jivs-dom` internals.
+
+* Where reusable behavior requires markup-specific element discovery, `jivs-dom` exposes protected abstract methods for a concrete DOM convention to implement. `jivs-simpledom` supplies the standard implementation delivered with Jivs, while `jivs-dom` remains independent of SimpleDom attributes and selectors.
+
+## Required Jivs Engine Support
+
+### Container Identifier
+
+A page may contain more than one `ValueHostsManager`, each responsible for a different form or region of the DOM. Field identifiers, presentation roles, and other selector characteristics may be repeated between those regions.
+
+Dispatchers rediscover consumer elements whenever a callback occurs. If discovery always begins at the document level, a dispatcher may find and update elements belonging to another `ValueHostsManager`.
+
+The manager therefore needs an optional identifier for its containing DOM region. A dispatcher can resolve that container first and restrict all consumer discovery to the resulting subtree.
+
+`ValueHostsManagerConfig` adds:
+
+```ts
+interface ValueHostsManagerConfig {
+    containerIdentifier?: string | null;
+}
+```
+
+`IValueHostsManager` and `ValueHostsManager` expose that identifier through:
+
+```ts
+getContainerIdentifier(
+    template?: string
+): string | null;
+```
+
+When `containerIdentifier` contains a nonempty string, `getContainerIdentifier()` returns it. When a template is supplied, the method replaces `{0}` with the configured identifier.
+
+When the configuration value is absent, `null`, or empty, the method returns `null`. Unlike `IFieldValueHost.getElementIdentifier()`, it does not fall back to a ValueHost name.
+
+DOM dispatchers use the result to determine their query root:
+
+* When the result is `null`, discovery begins at `document.body`.
+* When an identifier is returned, the concrete DOM convention resolves the corresponding container element and uses it as the discovery root.
+* When a configured identifier cannot be resolved, dispatch is abandoned and logged. It must not fall back to `document.body`, where it could affect elements belonging to another `ValueHostsManager`.
+
+The engine stores the identifier but does not interpret it. A concrete DOM convention decides whether it represents selector syntax or another lookup mechanism.
+
+### Current Validation State
+
+Form presentation installation requires access to the manager’s current validation state without running validation or invoking validation callbacks. Validation groups make this state group-specific.
+
+#### Validation-State Group
+
+`ValidationState` gains an optional `group` property:
+
+```ts
+interface ValidationState {
+    group?: string;
+    isValid: boolean;
+    doNotSave: boolean;
+    issuesFound: IssueFound[] | null;
+    asyncProcessing: boolean;
+}
+```
+
+The property identifies the validation group used to construct the state. When no group was supplied, it remains `undefined`.
+
+`ValueHostValidationState` continues to extend `ValidationState`. It therefore also includes `group`:
+
+```ts
+interface ValueHostValidationState
+    extends ValidationState {
+
+    status: ValidationStatus;
+
+    // Existing field-specific members.
+}
+```
+
+A `ValueHostValidationState` retains the group supplied through `ValidateOptions.group` when its field was validated.
+
+The standard explicit wildcard group is `"*"`. Omitting the group remains valid and produces `undefined`. Group comparison uses the existing `groupsMatch()` behavior, under which `null`, `undefined`, `""`, and `"*"` all mean that group matching is unrestricted.
+
+#### Manager Current-State Method
+
+`IValueHostsManager` exposes the current manager state as a method because the requested group affects the result:
+
+```ts
+interface IValueHostsManager {
+    currentValidationState(
+        group?: string
+    ): ValidationState;
+}
+```
+
+`currentValidationState(group)` returns a state calculated for the requested group:
+
+* `isValid`, `doNotSave`, `issuesFound`, and `asyncProcessing` include only the Value Hosts and validation results applicable to that group;
+* the returned state carries the requested group in `state.group`;
+* omitting the argument returns the unrestricted manager state;
+* calling the method does not run validation;
+* calling the method does not invoke validation callbacks.
+
+This allows a newly installed Validation Summary or submit-control presentation to receive the correct existing state:
+
+```ts
+presentation.apply(
+    valueHostsManager,
+    valueHostsManager.currentValidationState(
+        options.group
+    )
+);
+```
+
+#### Group-Specific Caching
+
+Constructing a manager `ValidationState` requires calculating several aggregate values and collecting the applicable issues. The result is therefore cached.
+
+The cache must associate each state with the group for which it was created. A state created for one specific group must never satisfy a request for another group.
+
+Group keys follow the same case-insensitive semantics used by validation-group matching. Wildcard forms represent the unrestricted state.
+
+Whenever engine activity changes validation information that could affect a manager state, all cached manager states are invalidated. Clearing the complete cache is required because one change may affect:
+
+* a specifically grouped state;
+* the unrestricted state;
+* another state whose applicable validators overlap that group.
+
+The next call to `currentValidationState(group)` reconstructs and caches the missing state for that group. Repeated calls for the same group return the cached instance until invalidation.
+
+#### State Construction
+
+The existing protected state-construction behavior remains the source of the calculated values:
+
+```ts
+protected createValidationState(
+    options?: ValidateOptions
+): ValidationState {
+    return {
+        group: options?.group,
+        isValid:
+            this.calculateIsValid(options),
+        doNotSave:
+            this.calculateDoNotSave(options),
+        issuesFound:
+            this.getIssuesFound(options?.group),
+        asyncProcessing:
+            this.calculateAsyncProcessing(options)
+    };
+}
+```
+
+Normal validation processing continues to create one `ValidationState` instance and deliver that same instance to every validation-state listener.
+
+Cache invalidation and state calculation must be separated sufficiently for `currentValidationState(group)` to populate one missing cache entry without invalidating valid entries for other groups. This may be implemented with a private calculation helper shared by `createValidationState()` and `currentValidationState()`, while normal state-changing engine paths invalidate the cache before creating and notifying their new state.
+
+This support allows `jivs-dom` to initialize and update grouped form presentations without rerunning validation and without independently reconstructing manager validation state.
+
+## The Installed DOM Element
+
+`IJivsDomElement` is the stateful installation surface shared by installers and dispatchers. It augments an ordinary `HTMLElement` with the Jivs behavior installed for that element.
+
+It is a TypeScript contract, not a new runtime element class:
+
+```ts
+interface IJivsDomElement extends HTMLElement {
+    jivsEditorAdapterDefinition?:
+        IDomEditorAdapterDefinition;
+
+    jivsTextValueAdapter?:
+        IDomTextValueAdapter | null;
+
+    jivsValueAdapter?:
+        IDomValueAdapter | null;
+
+    jivsFieldPresentation?:
+        IFieldPresentation | null;
+
+    jivsFormPresentation?:
+        IFormPresentation | null;
+}
+```
+
+### Adapter Definition State
+
+`jivsEditorAdapterDefinition` has two states:
+
+| Value                         | Meaning                                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `undefined`                   | Editor installation has not completed on this element.                                                    |
+| `IDomEditorAdapterDefinition` | Editor installation completed on this element using this definition. Later installation calls are no-ops. |
+
+`IEditorInstaller` assigns the definition only after installing the anchor’s adapter capabilities, DOM-to-Jivs event handling, and field presentation. The property therefore identifies both the installed definition and successful completion of editor installation.
+
+The installed definition is shared and immutable. It describes the widget behavior but does not contain state belonging to this element.
+
+### Adapter State
+
+`jivsTextValueAdapter` and `jivsValueAdapter` each have three states:
+
+| Value            | Meaning                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------- |
+| `undefined`      | The capability has not been examined. An installer may attempt to create it.                                  |
+| Adapter instance | The capability is installed and available to its dispatcher.                                                  |
+| `null`           | The capability was examined but is unavailable for this widget. Installation does not retry it automatically. |
+
+Text Value and Native Value capabilities are independent. An element may provide either adapter, both adapters, or neither adapter.
+
+### Presentation State
+
+`jivsFieldPresentation` and `jivsFormPresentation` also have three states:
+
+| Value                 | Meaning                                                        |
+| --------------------- | -------------------------------------------------------------- |
+| `undefined`           | Presentation installation has not been attempted.              |
+| Presentation instance | The presentation is installed and available to its dispatcher. |
+| `null`                | Presentation was explicitly disabled for this element.         |
+
+A no-op presentation is still a presentation instance. `null` specifically records the decision that the element has no presentation.
+
+The presentation installer methods return nullable results consistent with these states:
+
+```ts
+interface IFieldPresentationInstaller {
+    install(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        presentationName: string | null | undefined
+    ): IFieldPresentation | null;
+}
+
+interface IFormPresentationInstaller {
+    install(
+        valueHostsManager: IValueHostsManager,
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        presentationName: string | null | undefined
+    ): IFormPresentation | null;
+}
+```
+
+### Element Lifetime
+
+Adapter and presentation instances belong to the element on which they are installed. For editor installation, that element is the installation anchor resolved by the selected editor adapter definition and may differ from the element originally supplied to `IEditorInstaller.install()`.
+
+Replacing an installation anchor removes its installed Jivs behavior with it. The replacement element must be installed before dispatchers can use it.
+
+Dispatchers read these public properties but never create missing capabilities during dispatch. Both `undefined` and `null` are skipped.
+
+Applications may replace installed adapter and presentation instances through these public properties. The definition recorded by a completed editor installation remains assigned for the lifetime of the anchor.
+
+## Editor Architecture
+
+### Editor Adapter Contracts
+
+An Editor Adapter gives a specific editor widget the value-transfer functions needed by `jivs-dom`. Different widget behaviors require different adapter implementations. Initial implementations will support input, textarea, and select elements, with specialized implementations where their value semantics differ.
+
+Applications do not register adapters directly. They register an `IDomEditorAdapterDefinition` with `IDomEditorAdapterFactory`. The factory maintains and selects from those definitions. After a definition is selected for an element, the definition directly instantiates the appropriate adapters. There is no separate adapter registry or adapter lookup.
+
+Editor adapters support two directions of communication:
+
+* The write methods support Jivs-to-DOM callbacks. `onTextValueChanged` ultimately calls `writeTextValue()`, while `onValueChanged` ultimately calls `writeValue()`.
+* The read methods support DOM-to-Jivs event handling. An `IDomEditorAdapterDefinition` attaches the editor’s change events and uses the installed adapter to obtain the current value before sending it to the `IFieldValueHost`.
+
+> Without the DOM-to-Jivs event-handling requirement, the read methods would not be part of these adapter contracts. They exist so adapter definitions can reuse the same widget-specific value access used by callback dispatchers in the opposite direction.
+
+Text Value and Native Value support remain separate capabilities. An adapter definition may create a Text Value adapter, a Native Value adapter, or both:
+
+```ts
+interface IDomTextValueAdapter {
+    readTextValue(): string | undefined;
+
+    writeTextValue(
+        textValue: string | undefined
+    ): void;
+}
+
+interface IDomValueAdapter {
+    readValue(): unknown;
+
+    writeValue(
+        value: unknown
+    ): void;
+}
+```
+
+> Text Value adapters preserve the `string | undefined` contract of `IFieldValueHost.getTextValue()` and `IFieldValueHost.setTextValue()`. A concrete adapter is responsible for translating `undefined` when its DOM widget cannot represent it directly.
+
+Each adapter instance belongs to one element. The standard base classes give concrete implementations strongly typed access to that element while preserving normal class behavior:
+
+```ts
+abstract class DomTextValueAdapterBase<
+    TElement extends HTMLElement = HTMLElement
+> implements IDomTextValueAdapter {
+
+    public constructor(
+        protected readonly element: TElement
+    ) {
+    }
+
+    public abstract readTextValue():
+        string | undefined;
+
+    public abstract writeTextValue(
+        textValue: string | undefined
+    ): void;
+}
+
+abstract class DomValueAdapterBase<
+    TElement extends HTMLElement = HTMLElement
+> implements IDomValueAdapter {
+
+    public constructor(
+        protected readonly element: TElement
+    ) {
+    }
+
+    public abstract readValue(): unknown;
+
+    public abstract writeValue(
+        value: unknown
+    ): void;
+}
+```
+
+Concrete adapters select the element type appropriate to their widget:
+
+```ts
+class InputTextValueAdapter
+    extends DomTextValueAdapterBase<HTMLInputElement> {
+
+    public readTextValue(): string {
+        return this.element.value;
+    }
+
+    public writeTextValue(
+        textValue: string | undefined
+    ): void {
+        this.element.value = textValue ?? "";
+    }
+}
+```
+
+Within adapter methods, `this` is the adapter instance. The associated DOM element is available through `this.element`.
+
+The selected adapter definition constructs each adapter with the installation anchor and returns an instance ready for immediate use. No separate binding operation is required.
+
+Adapters may retain additional element-specific state as class members. They do not retain an `IFieldValueHost` or `IValueHostsManager`.
+### Editor Adapter Definitions
+
+An editor adapter definition keeps the behaviors for one widget model together. Without this coordinating type, widget recognition, installation-anchor selection, Jivs-to-DOM value transfer, and DOM-to-Jivs event handling could be implemented independently and disagree about how the editor represents its value.
+
+A definition is responsible for:
+
+* recognizing fields and elements that use its widget model;
+* resolving the element that serves as the installation anchor;
+* directly constructing the anchor’s Text Value and Native Value adapters;
+* attaching DOM event handlers that send edited values to the `IFieldValueHost`;
+* identifying the default field presentation associated with the widget, when applicable;
+* when also implementing `IDomAriaEditorDefinition`, supplying editor-element information to the ARIA service.
+
+```ts
+interface IDomEditorAdapterDefinition {
+    readonly adapterKey: string;
+    readonly priority: number;
+
+    readonly defaultFieldPresentationName?:
+        string | null;
+
+    matches(
+        valueHost: IFieldValueHost,
+        element: HTMLElement
+    ): boolean;
+
+    resolveInstallationAnchor(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement
+    ): IJivsDomElement;
+
+    createTextValueAdapter?(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement
+    ): IDomTextValueAdapter | null;
+
+    createValueAdapter?(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement
+    ): IDomValueAdapter | null;
+
+    attachToSendValues(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement,
+        options: EditorInstallOptions
+    ): void;
+}
+```
+
+The `IFieldValueHost` provides installation-time context to each operation. Neither the definition nor its returned adapters retain it.
+
+#### Definition Selection
+
+`IDomEditorAdapterFactory` registers and selects editor adapter definitions. It does not register, create, or look up adapter instances. Once the factory selects a definition, the definition resolves the installation anchor and directly instantiates the adapters appropriate to that anchor.
+
+```ts
+interface IDomEditorAdapterFactory {
+    register(
+        definition: IDomEditorAdapterDefinition
+    ): void;
+
+    getDefinition(
+        adapterKey: string
+    ): IDomEditorAdapterDefinition | null;
+
+    findDefinition(
+        valueHost: IFieldValueHost,
+        element: HTMLElement
+    ): IDomEditorAdapterDefinition | null;
+}
+```
+
+The factory preregisters all adapter definitions supplied with jivs-dom. They are given a low priority to allow easy overrides. It maintains an internal list of registrations ordered by priority in descending order for searching.
+
+`getDefinition()` performs explicit selection by `adapterKey`. It does not use `priority` or call `matches()`.
+
+`findDefinition()` performs automatic selection:
+
+1. It evaluates definitions in descending numeric `priority` order.
+2. It preserves registration order among definitions having the same priority.
+3. It calls `matches(valueHost, element)` until the first definition returns `true`.
+4. It returns `null` when no definition matches.
+
+Priorities from `0` through `100` are the documented normal range, with larger values examined first. Negative values and values greater than `100` remain valid so applications are not prevented from placing definitions before or after the standard range.
+
+`adapterKey` uniquely identifies a registered definition. Registering another definition with an existing key logs the replacement and uses the new definition for future explicit and automatic selection. Anchors already installed with the earlier definition retain it.
+
+`matches()` is a read-only predicate. It must not modify or retain either argument.
+
+#### Resolving the Installation Anchor
+
+The element supplied to `IEditorInstaller.install()` identifies the editor encountered by the caller. The selected definition determines which element stores the completed installation and its installed capabilities.
+
+`resolveInstallationAnchor()` returns that element.
+
+For ordinary editors, the supplied element is also the installation anchor. `DomEditorAdapterDefinitionBase` implements this default behavior.
+
+A composite editor may use several DOM elements for one logical value. Its definition overrides `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. For example, `RadioAdapterDefinition` can return the radio-group member on which the group was already installed.
+
+Anchor resolution occurs before the installer examines `jivsEditorAdapterDefinition` or performs any installation mutations. Once an anchor is resolved, the installer passes that anchor to the adapter creation, event attachment, and presentation installation operations.
+
+`resolveInstallationAnchor()` must not install adapters, attach events, install a presentation, or assign `jivsEditorAdapterDefinition`.
+
+#### Completed Installation State
+
+`IJivsDomElement.jivsEditorAdapterDefinition` records that editor installation completed successfully on the anchor.
+
+The definition does not assign this property. `IEditorInstaller` assigns it after installing the adapters, event handlers, and presentation.
+
+When anchor resolution returns an element whose `jivsEditorAdapterDefinition` is already assigned, the installer returns without calling the definition’s adapter creation or event attachment methods.
+
+The property therefore serves both as the installed definition and as the completed-installation marker. No additional symbol or event-attachment marker is used.
+
+#### Adapter Creation
+
+The adapter creation methods are independent:
+
+* An omitted method indicates that the definition never supports that capability.
+* A returned adapter installs that capability on the anchor.
+* A returned `null` records that the capability is unavailable for this particular installation.
+
+The definition directly constructs the adapter. There is no adapter-instance registry or secondary factory lookup.
+
+#### Base Implementation
+
+`DomEditorAdapterDefinitionBase` implements shared definition behavior, default anchor resolution, diagnostic logging, and the standard DOM-to-Jivs submission paths.
+
+Its constructor initializes the immutable definition properties:
+
+```ts
+abstract class DomEditorAdapterDefinitionBase
+    implements IDomEditorAdapterDefinition {
+
+    protected constructor(
+        public readonly adapterKey: string,
+        public readonly priority: number,
+        public readonly defaultFieldPresentationName?:
+            string | null
+    ) {
+    }
+
+    public abstract matches(
+        valueHost: IFieldValueHost,
+        element: HTMLElement
+    ): boolean;
+
+    public resolveInstallationAnchor(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement
+    ): IJivsDomElement {
+        return element;
+    }
+
+    public attachToSendValues(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement,
+        options: EditorInstallOptions
+    ): void {
+        // Log the start of event attachment at Debug level.
+
+        this.attachToSendValuesCore(
+            valueHost,
+            anchor,
+            options
+        );
+
+        // Log successful completion at Debug level.
+    }
+
+    protected abstract attachToSendValuesCore(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement,
+        options: EditorInstallOptions
+    ): void;
+}
+```
+
+Concrete definitions override `attachToSendValuesCore()`, not `attachToSendValues()`. They choose and attach the DOM events appropriate to their widgets, while the public method provides consistent logging.
+
+Definitions for ordinary editors inherit `resolveInstallationAnchor()`. Definitions for composite editors override it.
+
+#### Diagnostic Logging
+
+`attachToSendValues()` has access to `valueHost.services.loggingService`. It logs at `LoggingLevel.Debug` so normal applications do not receive installation noise unless diagnostic logging is enabled.
+
+Useful entries include:
+
+* attachment started, identifying the ValueHost and `adapterKey`;
+* attachment completed successfully;
+* a concrete definition intentionally attached no handler;
+* a required installed adapter was unavailable when an event fired.
+
+Concrete definitions may add Debug entries describing their selected event strategy, such as attaching `change` alone or attaching both `input` and `change`.
+
+Logs should identify the ValueHost, adapter key, and relevant event names. They should not include the editor’s actual value because it may contain private application data.
+
+#### Protected Submission Helpers
+
+The base class provides protected methods for the standard event-handler paths. Concrete definitions attach events and invoke the appropriate helper.
+
+##### Send a Text Value
+
+```ts
+protected sendTextValue(
+    valueHost: IFieldValueHost,
+    anchor: IJivsDomElement,
+    duringEdit: boolean
+): void;
+```
+
+This helper:
+
+1. obtains `anchor.jivsTextValueAdapter`;
+2. returns after a Debug log when the adapter is `undefined` or `null`;
+3. calls `readTextValue()`;
+4. calls `valueHost.setTextValue()` with the result;
+5. sets `validate: true`;
+6. includes `duringEdit: true` only for an intermediate-edit event.
+
+Conceptually:
+
+```ts
+valueHost.setTextValue(
+    adapter.readTextValue(),
+    {
+        validate: true,
+        duringEdit: duringEdit || undefined
+    }
+);
+```
+
+##### Send a Native Value
+
+```ts
+protected sendValue(
+    valueHost: IFieldValueHost,
+    anchor: IJivsDomElement
+): void;
+```
+
+This helper:
+
+1. obtains `anchor.jivsValueAdapter`;
+2. returns after a Debug log when the adapter is `undefined` or `null`;
+3. calls `readValue()`;
+4. calls `valueHost.setValue()` with the result;
+5. sets `validate: true`.
+
+Conceptually:
+
+```ts
+valueHost.setValue(
+    adapter.readValue(),
+    {
+        validate: true
+    }
+);
+```
+
+##### Send an Externally Parsed Text Value
+
+Applications may need to parse editor text outside Jivs while still preserving both the Native Value and Text Value in the `IFieldValueHost`. `ParsedTextEditorAdapterDefinitionBase` adds this submission path.
+
+```ts
+abstract class ParsedTextEditorAdapterDefinitionBase
+    extends DomEditorAdapterDefinitionBase {
+
+    protected abstract parseTextValue(
+        textValue: string | undefined,
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement
+    ): {
+        nativeValue: unknown | undefined;
+        injectedError?: InjectedError;
+    };
+
+    protected sendParsedTextValue(
+        valueHost: IFieldValueHost,
+        anchor: IJivsDomElement,
+        duringEdit: boolean
+    ): void;
+}
+```
+
+`sendParsedTextValue()`:
+
+1. obtains `anchor.jivsTextValueAdapter`;
+2. returns after a Debug log when the adapter is `undefined` or `null`;
+3. obtains the current Text Value through `readTextValue()`;
+4. passes it to `parseTextValue()`;
+5. calls `valueHost.setValues()` with both values;
+6. supplies any returned `InjectedError`;
+7. sets `validate: true`;
+8. includes `duringEdit: true` only for an intermediate-edit event.
+
+Conceptually:
+
+```ts
+const textValue = adapter.readTextValue();
+
+const result = this.parseTextValue(
+    textValue,
+    valueHost,
+    anchor
+);
+
+valueHost.setValues(
+    result.nativeValue,
+    textValue,
+    {
+        validate: true,
+        duringEdit: duringEdit || undefined,
+        injectedError: result.injectedError
+    }
+);
+```
+
+The helper methods do not catch errors from adapters, parsing, or the `IFieldValueHost`. Logging may record the failure, but the original exception remains observable.
+
+#### Built-in Definitions
+
+`jivs-dom` supplies these concrete descendants of `DomEditorAdapterDefinitionBase`:
+
+* `InputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `input:type` format;
+* `CheckboxAdapterDefinition` for checkbox inputs with `adapterKey="input:checkbox"`;
+* `RadioAdapterDefinition` for radio groups with `adapterKey="input:radio"`;
+* `TextAreaAdapterDefinition` for textarea elements with `adapterKey="textarea"`;
+* `SelectAdapterDefinition` for select elements with `adapterKey="select"`;
+* `FileInputAdapterDefinition` for file inputs with `adapterKey="input:file"`.
+
+Each class supplies its matching rules, directly creates its adapters, and attaches its widget-specific events. Composite definitions also override installation-anchor resolution when needed. The concrete definitions inherit diagnostic logging and the standard ValueHost submission helpers.
+
+`ParsedTextEditorAdapterDefinitionBase` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
+
+A registered definition instance is shared by every element that selects it. It remains immutable after registration and does not retain element-specific, ValueHost-specific, or installation-specific state.
+
+### Editor Installation
+
+An editor element needs several related behaviors installed consistently:
+
+* one adapter definition must be selected;
+* one installation anchor must be resolved;
+* the definition’s Text Value and Native Value capabilities must be examined;
+* its DOM-to-Jivs event handlers must be attached;
+* its field presentation must be selected and installed;
+* the completed installation must be recorded on the anchor element.
+
+`IEditorInstaller` coordinates these operations for one supplied element and `IFieldValueHost`. It does not discover editor elements or interpret SimpleDom attributes.
+
+```ts
+interface IEditorInstaller {
+    install(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        options?: EditorInstallOptions
+    ): void;
+}
+
+interface EditorInstallOptions {
+    adapterKey?: string | null;
+    presentationName?: string | null;
+    duringEdit?: boolean;
+}
+```
+
+SimpleDom discovers editor elements, interprets their attributes, and calls `install()` with the resulting options. Applications may also call `install()` directly.
+
+There is no separate operation that merely binds an adapter key. Supplying an explicit adapter key is part of complete editor installation.
+
+#### Selecting a Definition and Resolving the Anchor
+
+The installer must first obtain the definition because that definition determines how to resolve the installation anchor:
+
+1. If `options.adapterKey` is a string, obtain the definition through `editorAdapterFactory.getDefinition()`.
+2. Otherwise, call `editorAdapterFactory.findDefinition(valueHost, element)`.
+3. If no definition can be selected, log the failure and throw.
+4. Call `definition.resolveInstallationAnchor(valueHost, element)` to obtain the anchor.
+
+An explicit adapter key bypasses priority-based matching. An unregistered explicit key is an installation failure.
+
+For ordinary editors, the supplied element is also the anchor. A definition for a composite editor may return another element. For example, a radio definition may return the radio-group member on which that group was already installed.
+
+After resolving the anchor, every remaining installation decision and mutation uses the anchor rather than the originally supplied element.
+
+#### Completed-Installation Guard
+
+The installer next examines:
+
+```ts
+anchor.jivsEditorAdapterDefinition
+```
+
+If it is already assigned, `install()` returns immediately. The existing value means that installation for the anchor completed successfully.
+
+The no-op is unconditional. The installer does not compare the current `valueHost`, definition, adapter key, presentation name, `duringEdit` setting, or any other argument with those used by the completed installation.
+
+Consequently, the first successful installation establishes the permanent configuration for that anchor’s DOM lifetime. Replacing the anchor element creates a new installation lifetime.
+
+For a composite editor, resolving several supplied elements to the same installed anchor makes later calls no-ops. This allows a DOM scrape to call `install()` for every discovered element without installing the composite editor more than once.
+
+#### Installing Adapter Capabilities
+
+When the anchor has not completed installation, the installer examines its two adapter properties independently.
+
+For `anchor.jivsTextValueAdapter`:
+
+* `undefined` causes the installer to call `definition.createTextValueAdapter()` when the definition supplies that method;
+* an omitted creation method produces `null`;
+* the returned adapter or `null` is assigned to the anchor;
+* an existing adapter instance or `null` is preserved.
+
+The same rules apply independently to `anchor.jivsValueAdapter` and `definition.createValueAdapter()`.
+
+This preserves the three-state contract:
+
+| State            | Installer behavior                              |
+| ---------------- | ----------------------------------------------- |
+| `undefined`      | Examine and install the capability.             |
+| Adapter instance | Preserve the installed implementation.          |
+| `null`           | Preserve the decision that it is not available. |
+
+A definition may install either adapter, both adapters, or neither adapter.
+
+#### Attaching DOM-to-Jivs Behavior
+
+After examining the adapter capabilities, the installer calls:
+
+```ts
+definition.attachToSendValues(
+    valueHost,
+    anchor,
+    options
+);
+```
+
+A completed installation never reaches this call again because the installer has already returned upon finding `anchor.jivsEditorAdapterDefinition`.
+
+`duringEdit` controls intermediate Text Value handling:
+
+* `undefined` or `false` installs only the definition’s completed-edit behavior;
+* `true` permits the definition to attach an intermediate-edit event, such as `input`;
+* intermediate Text Value and parsed Text Value events pass `duringEdit: true` to Jivs;
+* Native Value submission does not support `duringEdit`, so native-only definitions ignore this option.
+
+The option determines which DOM triggers are attached. It is not passed to callers as an unrestricted `FieldValueHostSetValueOptions` object.
+
+The standard submission helpers always request validation. `EditorInstallOptions` does not expose Jivs options such as `validate`, `reset`, `skipIfUnchanged`, `injectedError`, `ensureEnabled`, `overrideDisabled`, `skipValueChangedCallback`, `disableParser`, or `disableFormatter`.
+
+#### Installing the Editor Presentation
+
+The editor installer invokes `IFieldPresentationInstaller` for `ElementRole.editor`.
+
+It resolves the presentation name in this order:
+
+1. If `options.presentationName` is a string or `null`, use it.
+2. Otherwise, if `definition.defaultFieldPresentationName` is a string or `null`, use it.
+3. Otherwise, pass `undefined` so the presentation installer can apply its universal editor fallback.
+
+The values have distinct meanings:
+
+| Value       | Meaning                                                  |
+| ----------- | -------------------------------------------------------- |
+| String      | Request that named presentation.                         |
+| `null`      | Explicitly disable presentation for the editor.          |
+| `undefined` | Allow the next fallback policy to select a presentation. |
+
+When `anchor.jivsFieldPresentation` is `undefined`, the editor installer calls:
+
+```ts
+fieldPresentationInstaller.install(
+    valueHost,
+    anchor,
+    ElementRole.editor,
+    resolvedPresentationName
+);
+```
+
+An existing presentation instance or explicit `null` is preserved.
+
+A definition can therefore select a widget-specific presentation, such as one for a radio group, without requiring every definition to repeat the universal editor default.
+
+#### Recording Completed Installation
+
+`anchor.jivsEditorAdapterDefinition` is assigned only after the installation operations complete successfully:
+
+```ts
+anchor.jivsEditorAdapterDefinition = definition;
+```
+
+This assignment records completed installation. Once assigned, a later call resolving to the same anchor is an immediate no-op.
+
+Conceptually:
+
+```ts
+public install(
+    valueHost: IFieldValueHost,
+    element: IJivsDomElement,
+    options: EditorInstallOptions = {}
+): void {
+    const definition = this.selectDefinition(
+        valueHost,
+        element,
+        options.adapterKey
+    );
+
+    const anchor = definition.resolveInstallationAnchor(
+        valueHost,
+        element
+    );
+
+    if (anchor.jivsEditorAdapterDefinition !== undefined) {
+        return;
+    }
+
+    if (anchor.jivsTextValueAdapter === undefined) {
+        anchor.jivsTextValueAdapter =
+            definition.createTextValueAdapter?.(
+                valueHost,
+                anchor
+            ) ?? null;
+    }
+
+    if (anchor.jivsValueAdapter === undefined) {
+        anchor.jivsValueAdapter =
+            definition.createValueAdapter?.(
+                valueHost,
+                anchor
+            ) ?? null;
+    }
+
+    definition.attachToSendValues(
+        valueHost,
+        anchor,
+        options
+    );
+
+    if (anchor.jivsFieldPresentation === undefined) {
+        const presentationName =
+            options.presentationName !== undefined
+                ? options.presentationName
+                : definition.defaultFieldPresentationName;
+
+        this.fieldPresentationInstaller.install(
+            valueHost,
+            anchor,
+            ElementRole.editor,
+            presentationName
+        );
+    }
+
+    anchor.jivsEditorAdapterDefinition = definition;
+}
+```
+
+#### Installation Sequence
+
+The complete installation sequence is:
+
+1. Select the adapter definition for the supplied element.
+2. Ask that definition to resolve the installation anchor.
+3. Return immediately if the anchor already has `jivsEditorAdapterDefinition`.
+4. Examine and install the anchor’s Text Value adapter capability.
+5. Examine and install the anchor’s Native Value adapter capability.
+6. Attach the definition’s DOM-to-Jivs event handling to the anchor.
+7. Resolve and install the anchor’s editor presentation.
+8. Assign the definition to `anchor.jivsEditorAdapterDefinition`, recording successful completion.
+
+Once installation completes, subsequent calls may repeat definition selection and anchor resolution, but they return without modifying the anchor or attaching additional event handlers.
+
+The installer may write Debug-level entries describing definition selection, anchor resolution, adapter creation, unavailable capabilities, completed-installation no-ops, presentation selection, and installation completion. Installation failures are logged before being thrown.
+
+### Built-in Native Editor Definitions
+
+Native HTML editors expose superficially similar APIs, but several have materially different value and event behavior. The built-in definitions provide those differences without requiring application code to configure common HTML controls individually.
+
+All initial built-in definitions use the Text Value path. They read strings from the DOM and let Jivs perform parsing, formatting, and validation. Native Value adapters remain available for application-defined widgets whose primary value is not textual.
+
+| Editor case              | Registered definition              | Text Value adapter                | Default event behavior                              |
+| ------------------------ | ---------------------------------- | --------------------------------- | --------------------------------------------------- |
+| Ordinary `input`         | `InputAdapterDefinition`           | `InputTextValueAdapter`           | `change`, plus `input` when `duringEdit` is enabled |
+| Checkbox `input`         | `CheckboxAdapterDefinition`        | `CheckboxTextValueAdapter`        | `change`                                            |
+| Native input radio group | `InputRadioGroupAdapterDefinition` | `InputRadioGroupTextValueAdapter` | One bubbling `change` handler on the group anchor   |
+| `textarea`               | `TextAreaAdapterDefinition`        | `TextAreaTextValueAdapter`        | `change`, plus `input` when `duringEdit` is enabled |
+| Single-value `select`    | `SelectAdapterDefinition`          | `SelectTextValueAdapter`          | `change`                                            |
+| File `input`             | `FileInputAdapterDefinition`       | `FileInputTextValueAdapter`       | `change`                                            |
+
+None of these definitions creates an `IDomValueAdapter`. During installation, `jivsValueAdapter` is therefore set to `null`.
+
+#### Input Definition Registration
+
+Each supported ordinary input type has its own adapter key and registered definition. This allows an application to override one input case without changing the others.
+
+The factory registers a separate `InputAdapterDefinition` instance for each supported type:
+
+```text
+input:text
+input:search
+input:tel
+input:url
+input:email
+input:password
+input:number
+input:range
+input:date
+input:month
+input:week
+input:time
+input:datetime-local
+input:color
+```
+
+The input type is passed to the definition’s constructor. Unless an adapter key is supplied explicitly, the constructor derives it using the standard `input:type` pattern.
+
+Conceptually, built-in registration is:
+
+```ts
+const inputTypes = [
+    "text",
+    "search",
+    "tel",
+    "url",
+    "email",
+    "password",
+    "number",
+    "range",
+    "date",
+    "month",
+    "week",
+    "time",
+    "datetime-local",
+    "color"
+];
+
+for (const inputType of inputTypes) {
+    editorAdapterFactory.register(
+        new InputAdapterDefinition(inputType)
+    );
+}
+```
+
+`InputAdapterDefinition.matches()` requires an `HTMLInputElement` whose normalized `type` equals the definition’s configured input type. The type distinguishes registered definitions but does not change their adapter or event implementation.
+
+All these definitions create `InputTextValueAdapter`. The adapter is type-agnostic: it reads and writes `HTMLInputElement.value`. Numeric, date, time, color, and other specialized browser input types do not cause `jivs-dom` to parse their values or adopt the browser’s interpretation as a Native Value.
+
+#### Input Adapter Definition
+
+`InputAdapterDefinition` illustrates the expected shape of a concrete definition:
+
+```ts
+class InputAdapterDefinition
+    extends DomEditorAdapterDefinitionBase {
+
+    private readonly inputType: string;
+
+    public constructor(
+        inputType: string,
+        adapterKey?: string,
+        priority: number = 0,
+        defaultFieldPresentationName?:
+            string | null
+    ) {
+        const normalizedInputType =
+            inputType.toLowerCase();
+
+        super(
+            adapterKey ??
+                `input:${normalizedInputType}`,
+            priority,
+            defaultFieldPresentationName
+        );
+
+        this.inputType = normalizedInputType;
+    }
+
+    public matches(
+        _valueHost: IFieldValueHost,
+        element: HTMLElement
+    ): boolean {
+        return element instanceof HTMLInputElement
+            && element.type === this.inputType;
+    }
+
+    public createTextValueAdapter(
+        _valueHost: IFieldValueHost,
+        element: IJivsDomElement
+    ): IDomTextValueAdapter {
+        return new InputTextValueAdapter(
+            this.requireInputElement(element)
+        );
+    }
+
+    protected attachToSendValuesCore(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        options: EditorInstallOptions
+    ): void {
+        const input =
+            this.requireInputElement(element);
+
+        input.addEventListener(
+            "change",
+            () => this.sendTextValue(
+                valueHost,
+                element,
+                false
+            )
+        );
+
+        if (options.duringEdit) {
+            input.addEventListener(
+                "input",
+                () => this.sendTextValue(
+                    valueHost,
+                    element,
+                    true
+                )
+            );
+        }
+    }
+
+    private requireInputElement(
+        element: IJivsDomElement
+    ): HTMLInputElement {
+        if (
+            !(element instanceof HTMLInputElement)
+            || element.type !== this.inputType
+        ) {
+            throw new Error(
+                `Adapter definition '${this.adapterKey}' `
+                + `requires input type '${this.inputType}'.`
+            );
+        }
+
+        return element;
+    }
+}
+```
+
+The definition does not implement `createValueAdapter()`. The editor installer therefore records `null` in `jivsValueAdapter`.
+
+`attachToSendValuesCore()` attaches the completed-edit `change` event in every installation. It additionally attaches the intermediate `input` event when `duringEdit` is enabled. The inherited public `attachToSendValues()` method provides diagnostic logging around this implementation.
+
+#### Checkbox Adapter Definition
+
+Checkboxes use a separate `CheckboxAdapterDefinition` registered with `adapterKey="input:checkbox"`. The ordinary `InputAdapterDefinition` does not select or configure checkboxes.
+
+A checkbox remains on the Text Value path because `jivs-dom` cannot assume that the field’s Native Value is Boolean. The Text Value is passed through the field’s configured parser, which determines the appropriate Native Value type.
+
+`CheckboxTextValueAdapter` maps the checked state to the checkbox element’s string value:
+
+```ts
+class CheckboxTextValueAdapter
+    extends DomTextValueAdapterBase<HTMLInputElement> {
+
+    public readTextValue(): string {
+        return this.element.checked
+            ? this.element.value
+            : "";
+    }
+
+    public writeTextValue(
+        textValue: string | undefined
+    ): void {
+        this.element.checked =
+            textValue === this.element.value;
+    }
+}
+```
+
+This mapping is reciprocal:
+
+* a checked checkbox reads as `element.value`;
+* an unchecked checkbox reads as an empty string;
+* writing `element.value` checks the checkbox;
+* writing another string or `undefined` clears it.
+
+Applications remain free to use a Native Value for checkboxes. For example, an application can register a higher-priority definition whose `matches()` requires both an `input[type="checkbox"]` and a Boolean field data type. That definition can create an `IDomValueAdapter` backed by `HTMLInputElement.checked` and submit through `setValue()`.
+
+#### Native Input Radio Groups
+
+A native radio group uses several `HTMLInputElement` instances to represent one Text Value. The built-in implementation treats an enclosing element as the logical editor and installation anchor. Value access queries its descendant radio inputs, while event handling, presentation, and ARIA state operate on the anchor.
+
+```html
+<div role="radiogroup">
+    <label>
+        First:
+        <input
+            type="radio"
+            name="groupname"
+            value="1"
+        >
+    </label>
+
+    <label>
+        Second:
+        <input
+            type="radio"
+            name="groupname"
+            value="2"
+        >
+    </label>
+
+    <label>
+        Third:
+        <input
+            type="radio"
+            name="groupname"
+            value="3"
+        >
+    </label>
+</div>
+```
+
+The enclosing element, rather than one of its radio inputs, is passed to `IEditorInstaller.install()`.
+
+This container-based approach also illustrates how applications can implement other composite editors, such as a dynamic list of textboxes that produces one delimited Text Value.
+
+> If an application requires radio inputs without an enclosing installation element, it supplies its own Adapter Definition and Text Value adapter. `IDomEditorAdapterDefinition.resolveInstallationAnchor()` supports that use case, but `jivs-dom` does not provide the implementation.
+
+##### Radio-Group Markup
+
+The enclosing element must:
+
+* contain all radio inputs belonging to the logical editor, including radios nested at any descendant level;
+* have `role="radiogroup"`;
+* when ARIA support is needed, have an accessible name supplied through `aria-label`, `aria-labelledby`, or an equivalent mechanism.
+
+All descendant `input[type="radio"]` elements must belong to this logical editor and must use the same nonempty `name`.
+
+These are markup requirements of the built-in implementation. `jivs-dom` does not query the group during installation to verify that it contains radios, that their names are nonempty, or that their names agree.
+
+A labeled group can use markup such as:
+
+```html
+<div
+    role="radiogroup"
+    aria-labelledby="delivery-method-label"
+>
+    <span id="delivery-method-label">
+        Delivery method
+    </span>
+
+    <label>
+        <input
+            type="radio"
+            name="deliveryMethod"
+            value="standard"
+        >
+        Standard
+    </label>
+
+    <div>
+        <label>
+            <input
+                type="radio"
+                name="deliveryMethod"
+                value="express"
+            >
+            Express
+        </label>
+    </div>
+</div>
+```
+
+##### Input Radio-Group Adapter Definition
+
+`InputRadioGroupAdapterDefinition` represents radio groups constructed from native `input[type="radio"]` elements.
+
+| Rule                      | Value                               |
+| ------------------------- | ----------------------------------- |
+| Default `adapterKey`      | `"input:radio-group"`               |
+| Default matching selector | `"[role=\"radiogroup\"]"`           |
+| Installation anchor       | The element supplied to `install()` |
+| Text Value adapter        | `InputRadioGroupTextValueAdapter`   |
+| Native Value adapter      | None                                |
+
+The matching selector can be replaced through the constructor.
+
+The relevant definition behavior is:
+
+```ts
+class InputRadioGroupAdapterDefinition
+    extends DomEditorAdapterDefinitionBase
+    implements IDomAriaEditorDefinition {
+
+    private readonly matchingSelector: string;
+
+    public constructor(
+        matchingSelector:
+            string = '[role="radiogroup"]',
+        adapterKey:
+            string = "input:radio-group",
+        priority: number = 0,
+        defaultFieldPresentationName?:
+            string | null
+    ) {
+        super(
+            adapterKey,
+            priority,
+            defaultFieldPresentationName
+        );
+
+        this.matchingSelector =
+            matchingSelector;
+    }
+
+    public matches(
+        _valueHost: IFieldValueHost,
+        element: HTMLElement
+    ): boolean {
+        return element.matches(
+            this.matchingSelector
+        );
+    }
+
+    public createTextValueAdapter(
+        _valueHost: IFieldValueHost,
+        element: IJivsDomElement
+    ): IDomTextValueAdapter {
+        return new InputRadioGroupTextValueAdapter(
+            element
+        );
+    }
+
+    protected attachToSendValuesCore(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        _options: EditorInstallOptions
+    ): void {
+        element.addEventListener(
+            "change",
+            () => this.sendTextValue(
+                valueHost,
+                element,
+                false
+            )
+        );
+    }
+
+    public findAriaEditors(
+        _root: HTMLElement,
+        installationElement: IJivsDomElement
+    ): Iterable<HTMLElement> {
+        return [installationElement];
+    }
+}
+```
+
+`matches()` tests only the candidate installation element. It does not search beneath every candidate while the adapter factory is selecting a definition.
+
+The inherited `resolveInstallationAnchor()` returns the supplied element. An application supporting radio groups without an enclosing installation element can replace the definition and override that method.
+
+`attachToSendValuesCore()` attaches one `change` handler to the installation anchor. Every `change` event that bubbles to the anchor submits the adapter’s current Text Value. The handler does not inspect or filter the event target.
+
+The `duringEdit` option has no effect. Applications that place other editable controls within the same anchor or require different event filtering can replace the definition.
+
+##### Input Radio-Group Text Value Adapter
+
+`InputRadioGroupTextValueAdapter` retains the installation anchor. It queries the anchor’s current descendants for `input[type="radio"]` whenever it reads or writes the Text Value.
+
+```ts
+class InputRadioGroupTextValueAdapter
+    implements IDomTextValueAdapter {
+
+    public constructor(
+        private readonly anchor: IJivsDomElement
+    ) {
+    }
+
+    public readTextValue():
+        string | undefined {
+
+        for (const radio of this.getRadios()) {
+            if (radio.checked) {
+                return radio.value;
+            }
+        }
+
+        return undefined;
+    }
+
+    public writeTextValue(
+        textValue: string | undefined
+    ): void {
+        let matched = false;
+
+        for (const radio of this.getRadios()) {
+            const shouldCheck =
+                !matched &&
+                textValue !== undefined &&
+                radio.value === textValue;
+
+            radio.checked = shouldCheck;
+
+            if (shouldCheck) {
+                matched = true;
+            }
+        }
+    }
+
+    private getRadios():
+        HTMLInputElement[] {
+
+        return Array.from(
+            this.anchor.querySelectorAll<HTMLInputElement>(
+                'input[type="radio"]'
+            )
+        );
+    }
+}
+```
+
+The implementation establishes these rules:
+
+| Situation                           | Result                                                        |
+| ----------------------------------- | ------------------------------------------------------------- |
+| No radio is checked                 | `readTextValue()` returns `undefined`.                        |
+| More than one radio is checked      | The first checked radio in DOM order supplies the Text Value. |
+| `writeTextValue(undefined)`         | Every radio is unchecked.                                     |
+| The string matches one radio        | That radio is checked and all others are unchecked.           |
+| The string matches duplicate values | Only the first matching radio in DOM order is checked.        |
+| The string matches no radio         | Every radio is unchecked.                                     |
+| The string is `""`                  | The first radio whose value is `""` is checked.               |
+
+The adapter does not retain the discovered radio elements. Radios added or removed after installation therefore participate in the next read or write automatically. The anchor-level event handler also receives changes from newly added radios through event bubbling.
+
+##### Radio-Group Presentation and ARIA
+
+The installation anchor is the editor’s presentation target. Its field presentation can apply validation-related CSS classes to the radio group as a whole instead of modifying each radio input.
+
+The built-in definition does not require a radio-specific presentation. Normal presentation-name resolution remains in effect.
+
+`InputRadioGroupAdapterDefinition.findAriaEditors()` returns only the installation anchor. Because the anchor has `role="radiogroup"`, the ARIA service applies group-level state there, including:
+
+* `aria-required`;
+* `aria-invalid`;
+* `aria-errormessage`.
+
+The ARIA service does not apply native `required` or duplicate validation-state attributes across the descendant radio inputs.
+
+The definition does not add or validate the anchor’s `role`, accessible name, or other required markup. Applications using a different accessibility model can replace the definition.
+
+#### Other Definition Keys
+
+The other built-in definitions use these keys:
+
+| Definition                         | Default `adapterKey` |
+| ---------------------------------- | -------------------- |
+| `CheckboxAdapterDefinition`        | `input:checkbox`     |
+| `InputRadioGroupAdapterDefinition` | `input:radio-group`  |
+| `TextAreaAdapterDefinition`        | `textarea`           |
+| `SelectAdapterDefinition`          | `select`             |
+| `FileInputAdapterDefinition`       | `input:file`         |
+
+The built-in definitions are registered at a low priority so application definitions can match before them. An application may also replace a built-in registration under the same adapter key when it wants future explicit and automatic selection for that case to use the replacement definition.
+
+#### Excluded and Deferred Elements
+
+The initial built-in definitions do not support:
+
+* `select[multiple]`, pending a Jivs collection-value contract;
+* `contenteditable`, which remains an application-defined widget scenario;
+* radio inputs without an enclosing radio-group installation anchor;
+* custom ARIA radio widgets that do not use native `input[type="radio"]` descendants;
+* button, submit, reset, and image inputs, as they are not editors;
+* `button`, `output`, `meter`, and `progress` elements, as they are not editors;
+* reading file contents.
+
+Action and display elements are not editors. File support is limited to the browser-exposed string available from `HTMLInputElement.value`.
+
+### Field Presentation Contracts
+
+A field presentation translates one field’s current validation state into changes to one widget. Each installed presentation is an element-bound object that may retain presentation-specific state.
+
+Presentation installation occurs after the `ValueHostsManager` and its `IFieldValueHost` instances have been created. This allows installation to apply the field’s current validation state immediately, regardless of whether preliminary validation has already run.
+
+`FieldValidationDispatcher` locates each relevant consumer element, reads its installed `jivsFieldPresentation`, and invokes `apply()`.
+
+#### Field Presentation Interface and Base Class
+
+```ts
+interface IFieldPresentation {
+    apply(
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+}
+
+abstract class FieldPresentationBase<
+    TElement extends HTMLElement = HTMLElement
+> implements IFieldPresentation {
+
+    public constructor(
+        protected readonly element: TElement
+    ) {
+    }
+
+    public abstract apply(
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+}
+```
+
+An `IFieldPresentation` instance may retain its own state. Within `apply()`, `this` is the presentation instance; the target DOM element is available through `this.element` when the presentation derives from `FieldPresentationBase`.
+
+The presentation retains its element but does not retain the `IFieldValueHost` or its validation state. Those values are supplied to each `apply()` call.
+
+Applications may implement `IFieldPresentation` directly or derive from `FieldPresentationBase`.
+
+#### Field Presentation Factory
+
+The field presentation factory creates element-bound presentation instances from registered presentation names. It is consumed by the Field Presentation Installer.
+
+```ts
+type FieldPresentationCreator = (
+    element: IJivsDomElement
+) => IFieldPresentation;
+
+interface IFieldPresentationFactory {
+    register(
+        presentationName: string,
+        creator: FieldPresentationCreator
+    ): void;
+
+    setDefaultPresentationName(
+        role: ElementRole | string,
+        presentationName: string
+    ): void;
+
+    create(
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        presentationName?: string
+    ): IFieldPresentation;
+}
+```
+
+Presentation names and roles are open-ended strings. The built-in `ElementRole` values provide the standard role vocabulary, while applications may register presentations and defaults for custom roles.
+
+`register()` associates a presentation name with a creator. Registering the same name again replaces its creator for future installations. Presentations already installed on elements are unaffected.
+
+`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. For editors, `IEditorInstaller` first considers `EditorInstallOptions.presentationName`, then `IDomEditorAdapterDefinition.defaultFieldPresentationName`. Only when neither supplies a value does it pass `undefined`, allowing the factory to use the default registered for `ElementRole.editor`.
+
+Assigning another default for the same role replaces the earlier string. The method does not require the named presentation to be registered at that time, allowing defaults and creators to be configured in either order.
+
+The factory does not provide an operation for removing a role default after it has been assigned.
+
+`create()` resolves the presentation name as follows:
+
+1. When `presentationName` is supplied, use it directly.
+2. Otherwise, obtain the default presentation name registered for `role`.
+3. Resolve the creator registered under that name.
+4. Invoke the creator with `element` and return the resulting IFieldPresentation instance.
+
+If an explicit name is not registered, or an omitted name has no role default, the factory logs the failure and throws. A role default that identifies an unregistered presentation also logs and throws when creation is attempted.
+
+Each successful call creates a new presentation instance for the supplied element. The factory does not retain created presentations or DOM elements.
+
+`DomServices` exposes the replaceable factory used by the installer:
+
+```ts
+domServices.fieldPresentationFactory
+```
+
+This public access allows applications to register their presentations and replace built-in registrations or role defaults during setup.
+
+Because the factory uses logging, it requires a reference to DomServices which has a reference to JivsServices.loggingService.
+
+#### Field Presentation Installer
+
+```ts
+interface IFieldPresentationInstaller {
+    install(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        presentationName?:
+            string | null
+    ): IFieldPresentation | null;
+}
+```
+
+The three possible `presentationName` values have distinct meanings:
+
+| Value       | Meaning                                                  |
+| ----------- | -------------------------------------------------------- |
+| String      | Create the presentation registered under that name.      |
+| `undefined` | Use the default presentation name registered for `role`. |
+| `null`      | Explicitly disable field presentation for this element.  |
+
+The installer is idempotent through `IJivsDomElement.jivsFieldPresentation`:
+
+| Existing property value | Installer behavior                                             |
+| ----------------------- | -------------------------------------------------------------- |
+| `undefined`             | Perform presentation installation.                             |
+| Presentation instance   | Preserve and return the existing instance without applying it. |
+| `null`                  | Preserve and return `null` without attempting resolution.      |
+
+When installation is required and `presentationName` is `null`, the installer assigns `null` to `element.jivsFieldPresentation` and returns `null` without calling the factory.
+
+Otherwise, the installer:
+
+1. Calls `fieldPresentationFactory.create()` with the element, role, and requested presentation name.
+2. Applies the current field state:
+
+```ts
+presentation.apply(
+    valueHost,
+    valueHost.currentValidationState
+);
+```
+
+3. Assigns the successfully initialized presentation to `element.jivsFieldPresentation`.
+4. Returns the presentation.
+
+Using `currentValidationState` allows presentation installation to occur before or after an application calls:
+
+```ts
+valueHost.validate({
+    preliminary: true
+});
+```
+
+When validation has not run, `currentValidationState` supplies the field’s initial neutral state. When validation has already run, the newly installed presentation immediately reflects the resulting state.
+
+A later validation callback may apply the same state again. Presentation implementations must therefore tolerate repeated `apply()` calls.
+
+If factory resolution, presentation creation, or the initial `apply()` call throws, installation logs and propagates the failure. The presentation property remains `undefined`, identifying that installation did not complete successfully.
+
+Replacing the DOM element creates a new presentation lifetime. The replacement element begins with `jivsFieldPresentation === undefined` and must be installed separately.
+### Built-in Field Presentations
+> This section is a work in progress. Much of it is based on conversations that are unfinished. We'll be returning to it in a separate chat.
+
+`jivs-dom` supplies field presentations for common validation visualizations. Applications can replace their registrations, select another presentation explicitly, or derive from the exported base classes.
+
+Presentation code owns visual content and CSS state. It does not assign ARIA attributes. Dynamic accessibility state remains the responsibility of `AriaService`.
+
+The initial presentation CSS will be supplied in one file:
+
+```text
+jivs-dom.css
+```
+
+The initial CSS definitions will be designed separately after the presentation contracts are finalized.
+
+#### Invalid-State Presentations
+
+Editors, labels, and field containers use separate presentations because their visual treatments are substantially different.
+
+| Role      | Presentation name  | State class              |
+| --------- | ------------------ | ------------------------ |
+| Editor    | `invalidEditor`    | `jivs-invalid-editor`    |
+| Label     | `invalidLabel`     | `jivs-invalid-label`     |
+| Container | `invalidContainer` | `jivs-invalid-container` |
+
+Each presentation toggles its state class when:
+
+```ts
+state.isValid === false
+```
+
+They share an exported invalid-state base class that accepts or otherwise defines the class to toggle. The base class is part of the public extensibility API so applications can create equivalent presentations for custom roles.
+
+#### Required Indicator Presentation
+
+A Required Indicator is installed as an `IFieldPresentation`. Its `apply()` implementation toggles the `jivs-required` class according to:
+
+```ts
+valueHost.required
+```
+
+The presentation does not assign a visible `display` value. CSS hides an inactive Required Indicator:
+
+```css
+[data-jivs-role="required"]:not(.jivs-required) {
+    display: none;
+}
+```
+
+Separate CSS applies the desired appearance while the indicator is active:
+
+```css
+[data-jivs-role="required"].jivs-required {
+    /* visual styling */
+}
+```
+
+This separates two CSS responsibilities:
+
+* visibility when the indicator is inactive;
+* appearance when the indicator is active.
+
+The active rule should not assign `display`, because `jivs-dom` cannot predict whether the application expects the element to use inline, inline-block, flex, or another layout mode.
+
+The presentation does not create or replace the indicator’s content. The application may supply `*`, the word “Required,” an icon, or other content in its markup.
+
+#### Error Display Direction
+
+Error displays require a more specialized design and will be completed in a focused presentation-design pass.
+
+The intended developer experience is that the application supplies one installation element, provisionally:
+
+```html
+<span
+    data-jivs-role="errors"
+    data-jivs-presentation="...">
+</span>
+```
+
+The selected presentation constructs the complete error-display widget. Depending on the presentation, that may include:
+
+* an inline message container;
+* an icon or other popup trigger;
+* a popup container;
+* a header;
+* the generated Issue Found messages;
+* a footer;
+* other presentation-specific content.
+
+The user should not need to mark up and register each internal part separately. Customization should normally require only presentation properties and CSS.
+
+A presentation may create descendants, siblings, or another presentation-specific structure associated with its installation element. It may retain references to generated elements, retain generated identifiers, or use a known relationship such as a generated next sibling.
+
+Non-popup structure may be created during installation and retained for the presentation’s lifetime. Popup structure may be created lazily. Once created, it also remains presentation-owned state for the rest of that lifetime.
+
+#### Shared Issue-Display Construction
+
+Field Error Displays and the Validation Summary need substantially the same HTML-construction machinery. Shared base behavior should support:
+
+* selecting an HTML template;
+* resolving template tokens;
+* obtaining localized presentation text;
+* generating Issue Found message HTML;
+* assigning the resulting HTML;
+* exposing issue state through CSS classes.
+
+Field and form presentations then supply their different contexts:
+
+* a Field Error Display can supply `{Label}`;
+* a Validation Summary can supply `{Count}`.
+
+The exact inheritance and helper-class structure remains to be designed.
+
+#### Complete HTML Templates
+
+Rather than prescribing separate header, message, and footer markup, the presentation should allow the application to supply the complete HTML within the generated container.
+
+Two templates are anticipated:
+
+* the normal template, including the multiple-issue case;
+* an optional single-issue template.
+
+When the single-issue template is blank or absent, the normal template is used.
+
+Templates may establish any required HTML structure, CSS classes, and inline presentation details. Tokens use the existing PascalCase convention. Anticipated tokens include:
+
+```text
+{HeaderHtml}
+{IssuesFound}
+{FooterHtml}
+{Label}
+{Count}
+```
+
+Additional tokens may be introduced when the detailed design identifies a concrete need.
+
+The complete template is structural HTML controlled by the developer. Human-readable static text used by the presentation must be localizable through `ErrorMessagesService`.
+
+#### Token Content and Encoding
+
+`{Label}` is plain dynamic text and must be HTML-encoded before insertion.
+
+`{Count}` is a generated numeric value and can be inserted directly.
+
+`{IssuesFound}` is deliberately inserted as HTML. Its error messages and dynamic token values have already passed through the existing message-generation and encoding pipeline. The resulting HTML may contain intentional markup. For example:
+
+```text
+The {Label} is required.
+```
+
+may become:
+
+```html
+The <span class="labelstyle">Book</span> is required.
+```
+
+The detailed design must preserve this distinction between trusted generated HTML and dynamic values that still require encoding.
+
+#### Deferred Error-Display Decisions
+
+The focused presentation-design work still needs to determine:
+
+* the exact base classes and public configuration API;
+* the final role name, including reconciliation of `errors` with the earlier singular `error` convention;
+* how header and footer text and their Localization Keys are configured;
+* whether issue-count selection requires rules beyond normal and single-issue templates;
+* which tokens are supported by field and form presentations;
+* the trust and encoding contract for localized HTML fragments;
+* the initial inline, icon, tooltip, popup, and Validation Summary presentations;
+* popup construction and interaction behavior;
+* the state classes used by each presentation;
+* the initial definitions in `jivs-dom.css`.
