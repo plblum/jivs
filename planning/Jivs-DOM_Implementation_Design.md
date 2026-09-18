@@ -2627,3 +2627,285 @@ issuesFoundFormatter.buildAsText(
 ```
 
 The separator is already plain text and is not passed through `htmlToText()`. An empty issue array produces an empty string.
+
+## ARIA Service
+
+ARIA support is an optional, replaceable `DomServices` child service. Setting `DomServices.ariaService` to `null` disables all Jivs-managed ARIA work. The module does not attempt to detect whether assistive technology is active.
+
+The ARIA service owns the accessibility attributes managed by Jivs. Its responsibilities include:
+
+* fixed accessibility semantics established during installation;
+* required state obtained from the `IFieldValueHost`;
+* validation state applied after field presentations have run;
+* the relationship between an editor and its separate error-message element.
+
+The standard service manages an editor or another element representing it, a separate error-message element, a Validation Summary, a Required Indicator, and editor-specific structures such as a radio-group container.
+
+Labels, general field containers, and buttons do not have standard Jivs-managed ARIA behavior. The developer remains responsible for their accessibility, including accessible names and relationships Jivs cannot infer.
+
+An Editor Adapter Definition provides editor-specific ARIA support by implementing `IDomAriaEditorDefinition`. The definition identifies the element or elements representing its editor to assistive technology and can supply fixed accessibility requirements for its editor model.
+
+ARIA processing remains independent of visual presentation. Presentations own visual content and styling. The ARIA service discovers its own targets and owns the accessibility attributes described here.
+
+### Managed Accessibility Attributes
+
+This table defines the attributes written by the standard ARIA service. Later sections explain target discovery and special cases without repeating these assignment rules.
+
+| Attribute                  | Applied during                                    | Target element                                                        | Purpose                                                                                                            | Presence and value                                                                                                | Comments                                                                                                                           |
+| -------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `role="status"`            | Installation — fixed                              | Validation Summary                                                    | Makes summary updates advisory live-region content.                                                                | Assigned when `role` is absent.                                                                                   | Implies `aria-live="polite"` and `aria-atomic="true"`. An existing role is preserved.                                              |
+| `aria-atomic="true"`       | Installation — fixed                              | Validation Summary                                                    | Requests announcement of the complete summary when its content changes.                                            | Assigned when `aria-atomic` is absent.                                                                            | Assigned explicitly even though `role="status"` implies it. An existing value is preserved.                                        |
+| `aria-hidden="true"`       | Installation — fixed                              | Required Indicator                                                    | Prevents the visual indicator from duplicating the required state communicated by the editor.                      | Assigned when `aria-hidden` is absent.                                                                            | The Required Indicator presentation controls visual state but does not assign this attribute.                                      |
+| `role="radiogroup"`        | Installation — fixed                              | Radio-group editor anchor                                             | Identifies the container as representing one radio-group value and makes it the target for group-level ARIA state. | Requested by `InputRadioGroupAdapterDefinition` and assigned when `role` is absent.                               | An existing role is preserved. The developer remains responsible for the group’s accessible name.                                  |
+| `required`                 | Field-state synchronization — dynamic             | Native `input`, `select`, or `textarea` supporting required semantics | Uses the control’s native required behavior and accessibility semantics.                                           | Present when `valueHost.required` is `true`; removed otherwise.                                                   | Determined by field configuration rather than `ValueHostValidationState`. `aria-required` is not also assigned.                    |
+| `aria-required="true"`     | Field-state synchronization — dynamic             | ARIA editor target without equivalent native required semantics       | Communicates that the represented value is required.                                                               | Assigned when `valueHost.required` is `true`; removed otherwise.                                                  | Used on the standard radio-group anchor. A custom definition returning individual native radios may use native `required` instead. |
+| `aria-invalid="true"`      | Field-state synchronization — dynamic             | Each resolved ARIA editor target                                      | Communicates that the editor’s current value is invalid.                                                           | Assigned when `state.isValid === false`; removed when valid.                                                      | Applied even when no eligible error-message element exists.                                                                        |
+| `aria-errormessage="{id}"` | Field-state synchronization — dynamic             | Each resolved ARIA editor target                                      | Associates an invalid editor with its separate error-message element.                                              | Assigned while invalid when an eligible error-message element is available; removed otherwise and whenever valid. | A radio group uses its group anchor rather than duplicating the attribute on descendant radio inputs.                              |
+| `id="{generatedId}"`       | Field-state synchronization — fixed once assigned | Selected error-message element                                        | Supplies the target required by `aria-errormessage` when the developer did not provide an ID.                      | Assigned when the selected element lacks a nonempty ID and the relationship is needed.                            | The fallback follows `{containerIdentifier}_{elementIdentifier}_ariaerror`. A developer-supplied ID is preserved.                  |
+
+### Error-Message Containment and Selection
+
+`aria-errormessage` always references an element separate from the editor. That element must have a unique ID, contain the error-message text, and remain available to assistive technology.
+
+Jivs supports two alternatives:
+
+| Error-message element                | When to use it                                                                                                         | Content owner                    |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Accessible Field Error Display       | The visible display remains in the accessibility tree whenever it contains an error.                                   | Field Error Display presentation |
+| Dedicated ARIA error-message element | The visible display may be hidden by a popup, tooltip, `display: none`, `visibility: hidden`, or `aria-hidden="true"`. | ARIA service                     |
+
+#### Selection Method
+
+`AriaServiceBase.applyFieldState()` calls the subclass implementation of:
+
+```ts
+protected abstract findFieldElements(
+    root: HTMLElement,
+    valueHost: IFieldValueHost
+): IFieldAriaElementAnchors;
+```
+
+The returned object identifies the selected error-message element and its content owner:
+
+```ts
+interface IFieldAriaElementAnchors {
+    readonly editorAnchor:
+        IJivsDomElement | null;
+
+    readonly errorMessageElement:
+        HTMLElement | null;
+
+    readonly errorMessageContentOwner:
+        'presentation' | 'ariaService' | null;
+}
+```
+
+The concrete implementation supplied by `jivs-simpledom` is `SimpleDomAriaService`. Its `findFieldElements()` method performs fresh queries below `root` using the field’s element identifier.
+
+For the error-message element, `SimpleDomAriaService.findFieldElements()` applies this precedence:
+
+1. Select the field’s `data-jivs-role="error"` element when it declares `data-aria-errormessage="true"`. Return `"presentation"` as its content owner.
+2. Otherwise, select the field’s `data-jivs-role="aria-error"` element. Return `"ariaService"` as its content owner.
+3. When neither exists, return `null` for both error-message properties.
+
+Selection occurs during every `applyFieldState()` operation. The service does not retain the selected element between calls.
+
+#### Accessible Field Error Display
+
+A Field Error Display signals that it is eligible to serve as the error-message element according to the DOM implementation’s discovery convention.
+
+In SimpleDom:
+
+```html
+<div
+    id="first-name-errors"
+    data-field="FirstName"
+    data-jivs-role="error"
+    data-aria-errormessage="true">
+</div>
+```
+
+The Field Error Display presentation owns this element’s content. The ARIA service may assign its missing ID and reference it from the editor, but it never writes or clears its content.
+
+#### Dedicated ARIA Error-Message Element
+
+When the visible Field Error Display is not eligible, the developer supplies a dedicated element:
+
+```html
+<span
+    id="first-name-aria-errors"
+    data-field="FirstName"
+    data-jivs-role="aria-error"
+    class="jivs-visually-hidden">
+</span>
+```
+
+The dedicated element:
+
+* has no field presentation;
+* remains in the accessibility tree;
+* is visually hidden by the published `jivs-visually-hidden` class;
+* receives plain-text error content from the ARIA service;
+* is cleared by the ARIA service when the field becomes valid.
+
+The published class hides the element visually without removing it from the accessibility tree:
+
+```css
+.jivs-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+```
+
+SimpleDom presentation installation and presentation dispatch exclude the `aria-error` role.
+
+When the dedicated element is selected, `AriaServiceBase` builds its plain-text content with:
+
+```ts
+domServices
+    .issuesFoundFormatter
+    .buildAsText(
+        state.issuesFound ?? []
+    );
+```
+
+The developer should supply the selected element’s ID. When it is absent, `AriaServiceBase` assigns:
+
+```text
+{containerIdentifier}_{elementIdentifier}_ariaerror
+```
+
+The service obtains the container identifier through the `ValueHostsManager` publicly referenced by the `IFieldValueHost`. It converts identifier text as necessary to produce a valid DOM ID.
+
+### Public Service Contract
+
+The service retains the field-state operation:
+
+```ts
+interface IDomAriaService {
+    applyFieldState(
+        root: HTMLElement,
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+}
+```
+
+An installation-time operation will be added for the fixed attributes identified in the table. Its API and the corresponding `IDomAriaEditorDefinition` additions remain intentionally deferred.
+
+The field validation dispatcher resolves `root` before calling `applyFieldState()`. When `ValueHostsManager.getContainerIdentifier()` supplies an identifier, the dispatcher resolves it to an `HTMLElement`. Otherwise, `root` is `document.body`.
+
+When a configured container identifier cannot be resolved, the dispatcher logs the failure and performs no presentation or ARIA work. It does not fall back to `document.body`, where it could affect a matching field belonging to another form.
+
+The dispatcher first invokes all installed field presentations and then calls:
+
+```ts
+domServices.ariaService?.applyFieldState(
+    root,
+    valueHost,
+    state
+);
+```
+
+This order ensures that presentation-owned error content is current before the ARIA service establishes a relationship to it.
+
+The service receives `IDomServices` when it is created, giving it access to required sibling services.
+
+The service does not retain `root`, the `IFieldValueHost`, a `ValueHostsManager`, a discovered DOM element, or an element collection after an operation returns.
+
+### AriaServiceBase
+
+`jivs-dom` exports `AriaServiceBase` as the standard reusable implementation and extension point. It implements `IDomAriaService`, the standard attribute policy, error handling, and use of sibling `DomServices` services.
+
+Subclasses supply field discovery for their markup convention:
+
+```ts
+abstract class AriaServiceBase
+    implements IDomAriaService {
+
+    public applyFieldState(
+        root: HTMLElement,
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+
+    protected abstract findFieldElements(
+        root: HTMLElement,
+        valueHost: IFieldValueHost
+    ): IFieldAriaElementAnchors;
+}
+```
+
+`findFieldElements()` receives the query root and the `IFieldValueHost`, including access to `getElementIdentifier()`. It returns semantic results rather than prescribing selectors, attributes, or element relationships.
+
+`editorAnchor` identifies the installed editor element discovered for the field. It owns the selected `jivsEditorAdapterDefinition` and provides the starting point for editor-specific ARIA target resolution. It may also be the final ARIA target.
+
+When `editorAnchor` is not `null`, `AriaServiceBase` reads its `jivsEditorAdapterDefinition`. When the definition also implements `IDomAriaEditorDefinition`, the base class calls:
+
+```ts
+definition.findAriaEditors(
+    root,
+    editorAnchor
+);
+```
+
+The returned elements are the targets for the dynamic editor attributes identified in the table.
+
+When the definition does not implement `IDomAriaEditorDefinition`, the editor anchor is the single ARIA target.
+
+This delegation permits a widget to select a native input, a role-bearing custom control, a containing element, or multiple controls without requiring presentation and ARIA discovery to use the same elements.
+
+The built-in input, textarea, select, and file definitions return their editor anchor. `InputRadioGroupAdapterDefinition` returns its radio-group installation anchor.
+
+### Field-State Synchronization
+
+`AriaServiceBase.applyFieldState()` performs these operations:
+
+1. Calls `findFieldElements()` to locate the editor anchor and select an error-message element.
+2. Uses the editor’s `IDomAriaEditorDefinition`, when available, to resolve the actual ARIA editor targets.
+3. Prepares the selected error-message element when the field is invalid.
+4. Synchronizes the dynamic attributes defined in the managed-attributes table.
+5. Clears ARIA-service-owned error content when the field becomes valid.
+
+The editor cannot serve as its own error-message element. The absence of an eligible error-message element does not prevent the service from applying `aria-invalid`, `required`, or `aria-required`.
+
+Required state comes from `IFieldValueHost.required`, not from `ValueHostValidationState`.
+
+Native controls use `required` when they support it. ARIA controls without an equivalent native semantic use `aria-required`.
+
+The built-in radio-group definition returns the containing editor anchor as its ARIA target. The service therefore applies `aria-required`, `aria-invalid`, and `aria-errormessage` to that anchor rather than duplicating the state across descendant radio inputs.
+
+A custom radio definition without a containing ARIA target may return the individual native radio inputs. In that model, applying native `required` to each returned input preserves native radio-group required behavior.
+
+### Installation-Time Responsibilities
+
+The fixed rows in the managed-attributes table are established during element installation.
+
+The ARIA service assigns a fixed attribute only when the element does not already have that attribute. It preserves explicit developer-supplied values.
+
+The Validation Summary presentation continues to own the summary’s content. `role="status"` provides polite live-region behavior, while `aria-atomic="true"` requests announcement of the complete updated summary. Application code owns any deliberate focus movement after a failed submission.
+
+The Required Indicator presentation controls the indicator’s visual state. The ARIA service supplies `aria-hidden="true"` because the editor already communicates whether the value is required.
+
+`InputRadioGroupAdapterDefinition` requests `role="radiogroup"` for its installation anchor. The ARIA service applies the role, while the developer remains responsible for the group’s accessible name.
+
+An Editor Adapter Definition may request other fixed accessibility attributes required by its editor model. The definition describes those requirements but does not assign the attributes itself.
+
+The API used to perform these installation-time responsibilities will be defined separately.
+
+### Failure Handling and Custom Implementations
+
+`AriaServiceBase` catches and logs failures in field discovery, editor-target resolution, message formatting, or individual element updates. It continues with later targets when possible and does not allow an ARIA failure to interrupt validation or presentation.
+
+`jivs-simpledom` supplies `SimpleDomAriaService` because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions.
+
+An application using `jivs-dom` directly can subclass `AriaServiceBase` and implement `findFieldElements()` for its own markup while retaining the standard attribute policy. It may instead replace the complete `IDomAriaService` when it requires a different policy.
+
+All discovery occurs below the operation’s supplied root. Implementations must not retain discovered elements, collections, or DOM subtrees between calls.
