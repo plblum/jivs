@@ -81,7 +81,7 @@ flowchart TB
     subgraph FACTORY["IDomEditorAdapterFactory"]
         direction LR
 
-        REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, RadioAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
+        REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, InputRadioGroupAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
         FACTORY_API["Definition registry and selection"]
 
         REGISTERED -->|"used by"| FACTORY_API
@@ -402,6 +402,8 @@ interface IJivsDomElement extends HTMLElement {
 
     jivsFormPresentation?:
         IFormPresentation | null;
+
+    jivsFormPresentationGroup?: string;
 }
 ```
 
@@ -434,13 +436,17 @@ Text Value and Native Value capabilities are independent. An element may provide
 
 `jivsFieldPresentation` and `jivsFormPresentation` also have three states:
 
-| Value                 | Meaning                                                        |
-| --------------------- | -------------------------------------------------------------- |
-| `undefined`           | Presentation installation has not been attempted.              |
-| Presentation instance | The presentation is installed and available to its dispatcher. |
-| `null`                | Presentation was explicitly disabled for this element.         |
+| Value                 | Meaning                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `undefined`           | Presentation installation has not been attempted.                                                     |
+| Presentation instance | The presentation is installed and available to its dispatcher.                                        |
+| `null`                | The element has no presentation because it was disabled or no form-role default was configured.       |
 
 A no-op presentation is still a presentation instance. `null` specifically records the decision that the element has no presentation.
+
+For a field presentation, `null` results from explicit disabling. For a form presentation, it can also result when neither an explicit presentation name nor a role default is available.
+
+`jivsFormPresentationGroup` stores the routing group bound to an installed form presentation. It remains `undefined` when form presentation installation has not completed or resolves to `null`.
 
 The presentation installer methods return nullable results consistent with these states:
 
@@ -454,12 +460,17 @@ interface IFieldPresentationInstaller {
     ): IFieldPresentation | null;
 }
 
+interface FormPresentationInstallOptions {
+    presentationName?: string | null;
+    group?: string;
+}
+
 interface IFormPresentationInstaller {
     install(
         valueHostsManager: IValueHostsManager,
         element: IJivsDomElement,
         role: ElementRole | string,
-        presentationName: string | null | undefined
+        options?: FormPresentationInstallOptions
     ): IFormPresentation | null;
 }
 ```
@@ -668,7 +679,7 @@ The element supplied to `IEditorInstaller.install()` identifies the editor encou
 
 For ordinary editors, the supplied element is also the installation anchor. `DomEditorAdapterDefinitionBase` implements this default behavior.
 
-A composite editor may use several DOM elements for one logical value. Its definition overrides `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. For example, `RadioAdapterDefinition` can return the radio-group member on which the group was already installed.
+A composite editor may use several DOM elements for one logical value. Its definition can override `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. The built-in `InputRadioGroupAdapterDefinition` instead requires the enclosing radio-group element to be supplied directly and uses the inherited default resolution.
 
 Anchor resolution occurs before the installer examines `jivsEditorAdapterDefinition` or performs any installation mutations. Once an anchor is resolved, the installer passes that anchor to the adapter creation, event attachment, and presentation installation operations.
 
@@ -832,10 +843,10 @@ valueHost.setValue(
 
 ##### Send an Externally Parsed Text Value
 
-Applications may need to parse editor text outside Jivs while still preserving both the Native Value and Text Value in the `IFieldValueHost`. `ParsedTextEditorAdapterDefinitionBase` adds this submission path.
+Applications may need to parse editor text outside Jivs while still preserving both the Native Value and Text Value in the `IFieldValueHost`. `ParsedTextEditorAdapterDefinition` adds this submission path.
 
 ```ts
-abstract class ParsedTextEditorAdapterDefinitionBase
+abstract class ParsedTextEditorAdapterDefinition
     extends DomEditorAdapterDefinitionBase {
 
     protected abstract parseTextValue(
@@ -896,14 +907,14 @@ The helper methods do not catch errors from adapters, parsing, or the `IFieldVal
 
 * `InputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `input:type` format;
 * `CheckboxAdapterDefinition` for checkbox inputs with `adapterKey="input:checkbox"`;
-* `RadioAdapterDefinition` for radio groups with `adapterKey="input:radio"`;
+* `InputRadioGroupAdapterDefinition` for native input radio groups with `adapterKey="input:radio-group"`;
 * `TextAreaAdapterDefinition` for textarea elements with `adapterKey="textarea"`;
 * `SelectAdapterDefinition` for select elements with `adapterKey="select"`;
 * `FileInputAdapterDefinition` for file inputs with `adapterKey="input:file"`.
 
-Each class supplies its matching rules, directly creates its adapters, and attaches its widget-specific events. Composite definitions also override installation-anchor resolution when needed. The concrete definitions inherit diagnostic logging and the standard ValueHost submission helpers.
+Each class supplies its matching rules, directly creates its adapters, and attaches its widget-specific events. The concrete definitions inherit diagnostic logging and the standard ValueHost submission helpers.
 
-`ParsedTextEditorAdapterDefinitionBase` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
+`ParsedTextEditorAdapterDefinition` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
 
 A registered definition instance is shared by every element that selects it. It remains immutable after registration and does not retain element-specific, ValueHost-specific, or installation-specific state.
 
@@ -1641,6 +1652,8 @@ The initial built-in definitions do not support:
 
 Action and display elements are not editors. File support is limited to the browser-exposed string available from `HTMLInputElement.value`.
 
+## Field Presentation Architecture
+
 ### Field Presentation Contracts
 
 A field presentation translates one field’s current validation state into changes to one widget. Each installed presentation is an element-bound object that may retain presentation-specific state.
@@ -1648,6 +1661,8 @@ A field presentation translates one field’s current validation state into chan
 Presentation installation occurs after the `ValueHostsManager` and its `IFieldValueHost` instances have been created. This allows installation to apply the field’s current validation state immediately, regardless of whether preliminary validation has already run.
 
 `FieldValidationDispatcher` locates each relevant consumer element, reads its installed `jivsFieldPresentation`, and invokes `apply()`.
+
+Although `ValueHostValidationState` includes the group that caused validation, `FieldValidationDispatcher` does not perform group routing. A field presentation is already scoped to one `IFieldValueHost` and reflects that field's current state regardless of which validation group produced it.
 
 #### Field Presentation Interface and Base Class
 
@@ -1802,6 +1817,7 @@ A later validation callback may apply the same state again. Presentation impleme
 If factory resolution, presentation creation, or the initial `apply()` call throws, installation logs and propagates the failure. The presentation property remains `undefined`, identifying that installation did not complete successfully.
 
 Replacing the DOM element creates a new presentation lifetime. The replacement element begins with `jivsFieldPresentation === undefined` and must be installed separately.
+
 ### Built-in Field Presentations
 > This section is a work in progress. Much of it is based on conversations that are unfinished. We'll be returning to it in a separate chat.
 
@@ -1843,10 +1859,10 @@ A Required Indicator is installed as an `IFieldPresentation`. Its `apply()` impl
 valueHost.required
 ```
 
-The presentation does not assign a visible `display` value. CSS hides an inactive Required Indicator:
+The presentation assigns the persistent `jivs-required-indicator` class to identify its element without depending on a particular DOM discovery convention. It does not assign a visible `display` value. CSS hides an inactive Required Indicator:
 
 ```css
-[data-jivs-role="required"]:not(.jivs-required) {
+.jivs-required-indicator:not(.jivs-required) {
     display: none;
 }
 ```
@@ -1854,7 +1870,7 @@ The presentation does not assign a visible `display` value. CSS hides an inactiv
 Separate CSS applies the desired appearance while the indicator is active:
 
 ```css
-[data-jivs-role="required"].jivs-required {
+.jivs-required-indicator.jivs-required {
     /* visual styling */
 }
 ```
@@ -1974,3 +1990,640 @@ The focused presentation-design work still needs to determine:
 * popup construction and interaction behavior;
 * the state classes used by each presentation;
 * the initial definitions in `jivs-dom.css`.
+
+## Form Presentation Architecture
+
+### Form Presentation Contracts
+
+A form presentation translates the `ValueHostsManager` validation state into changes to one form-level consumer. Typical consumers include Validation Summaries and submit controls.
+
+Form presentations are separate from field presentations because they receive an `IValueHostsManager` and `ValidationState` rather than an individual `IFieldValueHost` and `ValueHostValidationState`.
+
+`FormValidationDispatcher` locates each relevant consumer element, reads its installed `IJivsDomElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
+
+#### Form Presentation Interface and Base Class
+
+```ts
+interface IFormPresentation {
+    apply(
+        valueHostsManager: IValueHostsManager,
+        state: ValidationState
+    ): void;
+}
+
+abstract class FormPresentationBase<
+    TElement extends IJivsDomElement =
+        IJivsDomElement
+> implements IFormPresentation {
+
+    public respondToWildcardGroup: boolean =
+        false;
+
+    public constructor(
+        protected readonly element: TElement
+    ) {
+    }
+
+    public apply(
+        valueHostsManager: IValueHostsManager,
+        state: ValidationState
+    ): void {
+        const presentationGroup =
+            this.element.jivsFormPresentationGroup;
+
+        const presentationIsWildcard =
+            this.isWildcardGroup(
+                presentationGroup
+            );
+
+        const stateIsWildcard =
+            this.isWildcardGroup(
+                state.group
+            );
+
+        if (
+            !presentationIsWildcard
+            && stateIsWildcard
+        ) {
+            if (!this.respondToWildcardGroup) {
+                return;
+            }
+
+            this.applyCore(
+                valueHostsManager,
+                valueHostsManager
+                    .currentValidationState(
+                        presentationGroup
+                    )
+            );
+            return;
+        }
+
+        if (
+            presentationIsWildcard
+            !== stateIsWildcard
+        ) {
+            return;
+        }
+
+        if (
+            !groupsMatch(
+                presentationGroup,
+                state.group
+            )
+        ) {
+            return;
+        }
+
+        this.applyCore(
+            valueHostsManager,
+            state
+        );
+    }
+
+    protected abstract applyCore(
+        valueHostsManager: IValueHostsManager,
+        state: ValidationState
+    ): void;
+
+    private isWildcardGroup(
+        group: string | null | undefined
+    ): boolean {
+        return group === null
+            || group === undefined
+            || group === ""
+            || group === "*";
+    }
+}
+```
+
+An `IFormPresentation` instance may retain presentation-specific state belonging to its element. The base class retains its element but does not retain the `IValueHostsManager` or a validation state. Those values are supplied to every `apply()` call.
+
+`FormPresentationBase.apply()` owns the standard group-routing behavior. Derived presentations implement `applyCore()` to update their element after the base class has determined that the state applies.
+
+Group routing is intentionally asymmetric:
+
+| Presentation group                                  | Validation-state group | Result                                                                              |
+| --------------------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------- |
+| Same normalized group                               | Same group             | Call `applyCore()` with the supplied state.                                         |
+| Specific group                                      | Wildcard               | Ignore unless `respondToWildcardGroup` is `true`.                                   |
+| Specific group with `respondToWildcardGroup = true` | Wildcard               | Obtain the current state for the presentation’s group and pass it to `applyCore()`. |
+| Wildcard                                            | Specific group         | Ignore.                                                                             |
+| Different specific groups                           | Different groups       | Ignore.                                                                             |
+
+In jivs-engine, the `groupsMatch()` function provides the established case-insensitive comparison. `null`, `undefined`, `""`, and `"*"` are treated as wildcard forms when determining the routing case.
+
+When wildcard response is enabled for a group-specific presentation, the base class obtains:
+
+```ts
+valueHostsManager.currentValidationState(
+    presentationGroup
+);
+```
+
+The resulting group-specific state is passed intact to `applyCore()`. The base class does not create a replacement `ValidationState` or copy selected properties from the wildcard state.
+
+`respondToWildcardGroup` defaults to `false`. It is presentation configuration rather than an installation option. A registered presentation creator may set this property, along with any other configurable presentation properties, before returning the instance. An application that needs different configurations registers different presentation names.
+
+Applications may implement `IFormPresentation` directly instead of deriving from `FormPresentationBase`. A direct implementation receives every state supplied by the dispatcher and is responsible for its own group-routing policy.
+
+### Form Presentation Factory
+
+Form presentations use a factory separate from the field presentation factory.
+
+```ts
+type FormPresentationCreator = (
+    element: IJivsDomElement
+) => IFormPresentation;
+
+interface IFormPresentationFactory {
+    register(
+        presentationName: string,
+        creator: FormPresentationCreator
+    ): void;
+
+    setDefaultPresentationName(
+        role: ElementRole | string,
+        presentationName: string
+    ): void;
+
+    create(
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        presentationName?: string
+    ): IFormPresentation | null;
+}
+```
+
+Presentation names and roles are open-ended strings. The standard form roles are `ElementRole.summary` and `ElementRole.submit`.
+
+`register()` associates a presentation name with a creator. Registering the same name again replaces its creator for future installations. Presentations already installed on elements are unaffected.
+
+A creator constructs and configures the presentation before returning it. Configuration such as `respondToWildcardGroup` is therefore associated with the registered presentation name rather than supplied through `FormPresentationInstallOptions`.
+
+`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. Assigning another default for the same role replaces the earlier string. The method does not require the presentation to be registered at that time, allowing defaults and creators to be configured in either order.
+
+The factory does not provide an operation for removing a role default after it has been assigned.
+
+`create()` resolves the presentation as follows:
+
+1. When `presentationName` is supplied, use it directly.
+2. Otherwise, obtain the default presentation name registered for `role`.
+3. If the role has no default, return `null`.
+4. Resolve the creator registered under the selected name.
+5. Invoke the creator with `element` and return the resulting `IFormPresentation`.
+
+An explicit name that is not registered logs and throws. A role default that identifies an unregistered presentation also logs and throws. In contrast, omitting the name when the role has no configured default is an expected no-presentation case and returns `null` without error.
+
+Each successful call creates a new presentation instance for the supplied element. The factory does not retain created presentations or DOM elements.
+
+`DomServices` exposes the replaceable form presentation factory:
+
+```ts
+domServices.formPresentationFactory
+```
+
+This factory has registrations and role defaults independent of `fieldPresentationFactory`.
+
+### Form Presentation Installer
+
+```ts
+interface FormPresentationInstallOptions {
+    presentationName?: string | null;
+    group?: string;
+}
+
+interface IFormPresentationInstaller {
+    install(
+        valueHostsManager: IValueHostsManager,
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        options?: FormPresentationInstallOptions
+    ): IFormPresentation | null;
+}
+```
+
+The possible `options.presentationName` values have these meanings:
+
+| Value       | Meaning                                                            |
+| ----------- | ------------------------------------------------------------------ |
+| String      | Create the presentation registered under that name.                |
+| `undefined` | Use the default presentation registered for `role`, if one exists. |
+| `null`      | Explicitly disable form presentation for this element.             |
+
+`options.group` selects the validation group represented by the presentation. The value is preserved exactly as supplied:
+
+| Supplied value | Stored value                 |
+| -------------- | ---------------------------- |
+| Omitted        | `undefined`                  |
+| `"*"`          | `"*"`                        |
+| `""`           | `""`                         |
+| Named group    | Original spelling and casing |
+
+The installer does not normalize the stored value. Group comparison and current-state caching apply the established group semantics when the value is used.
+
+The installer is idempotent through `IJivsDomElement.jivsFormPresentation`:
+
+| Existing property value | Installer behavior                                                 |
+| ----------------------- | ------------------------------------------------------------------ |
+| `undefined`             | Perform presentation installation.                                 |
+| Presentation instance   | Preserve and return the existing instance and its installed group. |
+| `null`                  | Preserve and return `null` without attempting resolution.          |
+
+The first completed installation permanently binds both the presentation and its group to the element. Later installation calls ignore newly supplied options.
+
+When `options.presentationName` is `null`, the installer assigns `null` to `element.jivsFormPresentation` and returns `null` without calling the factory. `jivsFormPresentationGroup` remains `undefined`.
+
+Otherwise, the installer calls `formPresentationFactory.create()`. If the factory returns `null` because neither an explicit name nor a role default exists, the installer assigns `null` to `element.jivsFormPresentation` and returns `null`. The group remains unassigned.
+
+When the factory creates a presentation, the installer performs these steps:
+
+1. Assigns the requested group to `element.jivsFormPresentationGroup`.
+2. Obtains the manager’s current validation state for that group.
+3. Calls the presentation’s initial `apply()`.
+4. Assigns the successfully initialized presentation to `element.jivsFormPresentation`.
+5. Returns the presentation.
+
+Conceptually:
+
+```ts
+const group = options?.group;
+
+const presentation =
+    formPresentationFactory.create(
+        element,
+        role,
+        options?.presentationName
+    );
+
+if (presentation === null) {
+    element.jivsFormPresentation = null;
+    return null;
+}
+
+element.jivsFormPresentationGroup =
+    group;
+
+try {
+    presentation.apply(
+        valueHostsManager,
+        valueHostsManager
+            .currentValidationState(
+                group
+            )
+    );
+
+    element.jivsFormPresentation =
+        presentation;
+
+    return presentation;
+}
+catch (error) {
+    delete element
+        .jivsFormPresentationGroup;
+
+    throw error;
+}
+```
+
+Assigning the group before the initial `apply()` allows `FormPresentationBase` to read it from the element while performing routing.
+
+The initial call does not invoke validation or notify validation callbacks. `currentValidationState(group)` returns the ValueHostsManager’s cached current state for that group or creates it when no cached state exists.
+
+A later validation callback may apply the same effective state again. Form presentations must therefore tolerate repeated `apply()` calls.
+
+If factory resolution, presentation creation, or the initial `apply()` call throws, installation logs and propagates the failure. Both `jivsFormPresentation` and `jivsFormPresentationGroup` remain `undefined`, identifying that installation did not complete successfully.
+
+Replacing the DOM element creates a new presentation lifetime. The replacement element begins with both form-presentation properties `undefined` and must be installed separately.
+
+### Form Validation Dispatcher
+
+`FormValidationDispatcher` does not evaluate validation groups. Group-routing policy belongs to each form presentation.
+
+For every discovered form-level consumer, the dispatcher:
+
+1. Reads `element.jivsFormPresentation`.
+2. Skips the element when the property is `undefined` or `null`.
+3. Calls the installed presentation with the callback’s `IValueHostsManager` and complete `ValidationState`.
+
+Conceptually:
+
+```ts
+const presentation =
+    element.jivsFormPresentation;
+
+if (presentation) {
+    presentation.apply(
+        valueHostsManager,
+        state
+    );
+}
+```
+
+The dispatcher does not compare group names, call `groupsMatch()`, filter `state.issuesFound`, replace the state, or obtain another state from the manager.
+
+Presentations derived from `FormPresentationBase` receive the standard routing behavior described earlier. Direct `IFormPresentation` implementations determine for themselves whether and how to respond.
+
+The dispatcher does not call `IDomAriaService`. The shared ARIA service remains limited to dynamic field state through `applyFieldState()`. Form-level accessibility that is static or specific to one presentation remains the responsibility of the markup and concrete presentation.
+
+### SimpleDom Form Presentation Selection
+
+`jivs-simpledom` discovers both `data-jivs-role="summary"` and `data-jivs-role="submit"` elements whether or not they declare `data-jivs-presentation`.
+
+When `data-jivs-presentation` is present, its value supplies `FormPresentationInstallOptions.presentationName`. When it is absent, SimpleDom leaves that option `undefined` so the form presentation factory can use the role-specific default.
+
+The `data-jivs-group` attribute supplies `FormPresentationInstallOptions.group`. When the attribute is absent, the group is `undefined`. SimpleDom preserves the supplied attribute value without normalizing its casing or wildcard form.
+
+Both Validation Summaries and submit-role elements use the same selection rules:
+
+* an explicit presentation name takes precedence;
+* otherwise, the form presentation factory consults the default for that role;
+* when the role has no default, installation records `jivsFormPresentation = null` and leaves the element untouched.
+
+### Built-in Form Presentations
+
+The built-in configuration:
+
+* registers `validationSummary` and assigns it as the default presentation for `ElementRole.summary`;
+* registers `disableSubmit` as an available presentation;
+* does not assign a default presentation for `ElementRole.submit`.
+
+Consequently, a Validation Summary receives the standard summary presentation unless it requests another one. A submit-role element without an explicit or application-configured default presentation remains untouched. Submit-role elements are not limited to buttons, and additional submit presentations may implement other approaches.
+
+The built-in `validationSummary` registration leaves `respondToWildcardGroup` at its default value of `false`. Applications that want a group-specific summary to respond when wildcard validation occurs can register another presentation name whose creator enables the property.
+
+Applications may register additional form presentations and may assign their own default for either role. The detailed HTML, interaction, group-display policy, and CSS design of the initial Validation Summary and submit presentations remain part of the focused presentation-design work.
+
+## Built-in Form Presentations
+
+> PENDING: Detailed implementation design for the built-in Validation Summary and submit presentations is deferred.
+
+## Issues Found Formatter Service
+
+`jivs-dom` provides reusable formatting of `IssueFound` objects through `IIssuesFoundFormatterService`. The service produces either prepared HTML for DOM presentations or plain text for consumers such as native browser tooltips and ARIA-only content.
+
+This service is distinct from the jivs-engine `ErrorMessagesService`. The engine service prepares an issue’s message, including message-token resolution. The DOM service formats already-prepared messages for presentation.
+
+### Service Contract
+
+```ts
+interface IIssuesFoundFormatterService {
+    buildAsHtml(
+        issues: IssueFound[],
+        useSummaryMessage?: boolean
+    ): string;
+
+    buildAsText(
+        issues: IssueFound[],
+        useSummaryMessage?: boolean,
+        separator?: string
+    ): string;
+}
+```
+
+When `useSummaryMessage` is `false` or omitted, the formatter uses `IssueFound.errorMessage`. When it is `true`, the formatter uses `IssueFound.summaryMessage` when supplied and otherwise falls back to `IssueFound.errorMessage`.
+
+The interface does not prescribe an HTML structure, issue ordering, filtering policy, metadata attributes, text separator, or internal conversion technique. Applications may replace the service with an implementation that constructs its content differently.
+
+`DomServices` exposes the replaceable service:
+
+```ts
+domServices.issuesFoundFormatter
+```
+
+### Abstract Base Class
+
+`IssuesFoundFormatterServiceBase` provides reusable utilities without prescribing how a subclass implements the two public build operations.
+
+```ts
+abstract class IssuesFoundFormatterServiceBase
+    implements IIssuesFoundFormatterService {
+
+    public abstract buildAsHtml(
+        issues: IssueFound[],
+        useSummaryMessage?: boolean
+    ): string;
+
+    public abstract buildAsText(
+        issues: IssueFound[],
+        useSummaryMessage?: boolean,
+        separator?: string
+    ): string;
+
+    public static htmlToText(
+        html: string
+    ): string;
+
+    protected orderIssuesFound(
+        issues: IssueFound[]
+    ): IssueFound[];
+
+    protected buildIssueAsHtml(
+        tagName: keyof HTMLElementTagNameMap,
+        issue: IssueFound,
+        useSummaryMessage: boolean
+    ): string;
+
+    protected buildErrorCodeAttribute(
+        issue: IssueFound,
+        attributeName?: string
+    ): string;
+
+    protected buildSeverityAttribute(
+        issue: IssueFound,
+        attributeName?: string
+    ): string;
+
+    protected retrieveMessage(
+        issue: IssueFound,
+        useSummaryMessage: boolean
+    ): string;
+
+    protected retrieveSeverityName(
+        severity:
+            ValidationSeverity | undefined
+    ): string;
+}
+```
+
+Applications may derive from this class and use any combination of its utilities. They may instead implement `IIssuesFoundFormatterService` directly when the base behavior is not useful.
+
+The base class retains no formatting state and does not modify supplied `IssueFound` objects or arrays.
+
+#### Issue Ordering
+
+`orderIssuesFound()` provides an override point for subclasses that need a particular issue order. The base implementation returns the supplied array unchanged.
+
+An override must not reorder or otherwise modify the supplied array. When changing the order, it returns a separate array:
+
+```ts
+protected orderIssuesFound(
+    issues: IssueFound[]
+): IssueFound[] {
+    return [...issues].sort(
+        this.compareIssues
+    );
+}
+```
+
+The standard formatter calls `orderIssuesFound()` before generating either HTML or text. A subclass can therefore retain the standard output behavior while replacing only its ordering policy.
+
+#### Message Retrieval
+
+`retrieveMessage()` implements the established `useSummaryMessage` behavior:
+
+* `false` selects `errorMessage`;
+* `true` selects `summaryMessage` and falls back to `errorMessage`.
+
+#### Metadata Attributes
+
+`buildErrorCodeAttribute()` returns a complete HTML attribute without leading whitespace. Its default attribute name is `data-error-code`.
+
+```html
+data-error-code="RequireText"
+```
+
+The method uses the `encodeHtml()` function supplied by jivs-engine to encode the attribute value. `jivs-dom` does not duplicate or re-export that function.
+
+When `IssueFound.errorCode` is missing, the attribute value is an empty string:
+
+```html
+data-error-code=""
+```
+
+A caller may supply another attribute name while retaining the prescribed value handling.
+
+`buildSeverityAttribute()` follows the same convention. Its default name is `data-severity`, and it delegates value selection to `retrieveSeverityName()`.
+
+```html
+data-severity="warning"
+```
+
+`retrieveSeverityName()` returns:
+
+| Source severity              | Result      |
+| ---------------------------- | ----------- |
+| Missing                      | `"error"`   |
+| `ValidationSeverity.Error`   | `"error"`   |
+| `ValidationSeverity.Warning` | `"warning"` |
+| `ValidationSeverity.Severe`  | `"severe"`  |
+
+The lookup used by `retrieveSeverityName()` is a module-private readonly `severityNames` array. Subclasses can override the method without receiving a mutable lookup array.
+
+#### One-Issue HTML
+
+`buildIssueAsHtml()` combines the two metadata attributes with the selected message. The attribute builders return complete attribute strings without leading whitespace; `buildIssueAsHtml()` joins them using single spaces.
+
+For example:
+
+```html
+<span data-error-code="RequireText" data-severity="error">The First name requires a value.</span>
+```
+
+The selected message is inserted as prepared HTML rather than encoded as plain text. This preserves markup produced during message-token resolution, such as:
+
+```html
+The <span class="token label">First name</span> is invalid.
+```
+
+The established message-token resolver is responsible for HTML-encoding replacement values before adding token markup. The formatter separately passes `errorCode` through the engine’s `encodeHtml()` function because the value is inserted into an HTML attribute.
+
+#### HTML-to-Text Conversion
+
+`htmlToText()` is a public static utility that converts arbitrary prepared HTML into plain text. It assigns the HTML to a detached DOM element and returns the element’s `textContent`, or an empty string when `textContent` is `null`.
+
+For example:
+
+```html
+The <span class="token label">First name</span> is invalid.
+```
+
+becomes:
+
+```text
+The First name is invalid.
+```
+
+The utility can be used without creating a formatter instance:
+
+```ts
+IssuesFoundFormatterServiceBase.htmlToText(
+    html
+);
+```
+
+### Standard Implementation
+
+`IssuesFoundFormatterService` is the default implementation:
+
+```ts
+class IssuesFoundFormatterService
+    extends IssuesFoundFormatterServiceBase
+```
+
+It calls `orderIssuesFound()` and then formats every returned issue without additional filtering or deduplication. Because the base ordering implementation returns the supplied array unchanged, the standard formatter preserves the original issue order.
+
+The standard implementation leaves the supplied array and `IssueFound` objects unchanged.
+
+#### Standard HTML Output
+
+`buildAsHtml()` uses these structures:
+
+| Issue count | Result                                       |
+| ----------- | -------------------------------------------- |
+| Zero        | An empty string                              |
+| One         | One `<span>` containing the selected message |
+| Multiple    | A `<ul>` containing one `<li>` per issue     |
+
+Every generated `<span>` or `<li>` includes both standard metadata attributes.
+
+One issue produces:
+
+```html
+<span
+    data-error-code="RequireText"
+    data-severity="error">
+    The First name requires a value.
+</span>
+```
+
+Multiple issues produce:
+
+```html
+<ul>
+    <li
+        data-error-code="RequireText"
+        data-severity="error">
+        The First name requires a value.
+    </li>
+    <li
+        data-error-code="UnusualValue"
+        data-severity="warning">
+        This value is unusual.
+    </li>
+</ul>
+```
+
+The metadata belongs to each issue element rather than the enclosing `<ul>`.
+
+#### Standard Text Output
+
+`buildAsText()` calls `orderIssuesFound()`, retrieves each returned issue’s selected message, converts it through `htmlToText()`, and joins the resulting strings.
+
+The default separator is:
+
+```text
+ • 
+```
+
+A caller may supply another plain-text separator, including an empty string:
+
+```ts
+issuesFoundFormatter.buildAsText(
+    issues,
+    false,
+    "\n"
+);
+```
+
+The separator is already plain text and is not passed through `htmlToText()`. An empty issue array produces an empty string.
