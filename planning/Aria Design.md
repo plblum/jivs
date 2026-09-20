@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is the working design for ARIA support in `jivs-dom` and `jivs-simpledom`. It records the participating types, responsibilities, and decisions settled through Q269.
+This is the working design for ARIA support in `jivs-dom` and `jivs-simpledom`. It records the participating types, responsibilities, and decisions settled through Q280.
 
 The ARIA section in `Jivs-DOM_Implementation_Design.md` remains unchanged until this design is settled and a revision is requested.
 
@@ -10,7 +10,7 @@ The ARIA section in `Jivs-DOM_Implementation_Design.md` remains unchanged until 
 
 - `AriaServiceBase` coordinates ARIA work but contains very little element-specific behavior.
 - Immutable updater objects perform role-specific or widget-specific work.
-- Static installation work and dynamic field-state work use separate updater interfaces.
+- Static installation work and dynamic validation-state work use separate updater interfaces.
 - `AriaServiceBase` owns the role-to-updater registries directly.
 - An Editor Adapter Definition may supply widget-specific updaters.
 - A field or form presentation may optionally supply presentation-specific updaters.
@@ -25,7 +25,7 @@ An updater is an immutable object that applies one category of accessibility beh
 Two updater kinds separate installation work from validation-state work:
 
 - A static updater establishes fixed semantics such as `role`, `aria-hidden`, or an error-message element ID.
-- A field-state updater synchronizes changing semantics or content such as required state, invalid state, `aria-errormessage`, or dedicated plain-text error content.
+- A validation-state updater synchronizes changing semantics or content such as required state, invalid state, `aria-errormessage`, or dedicated plain-text error content.
 
 An element may be affected by two updater sources:
 
@@ -57,7 +57,7 @@ flowchart TB
     Service --> Elements
 ```
 
-The installers are installation-time consumers. They request static composition and record the specialized field-state updater on each installed element. The root-aware coordinator initializes dynamic ARIA after the field's elements are installed. `FieldValidationDispatcher` invokes the same validation-state operation after later validation changes.
+The installers are installation-time consumers. They request static composition and record the specialized validation-state updater on each installed element. The root-aware coordinator initializes dynamic ARIA after the field's elements are installed. `FieldValidationDispatcher` invokes the same validation-state operation after later validation changes.
 
 ## Core Updater Contracts
 
@@ -79,12 +79,12 @@ interface IDomAriaStaticElementUpdater {
 
 `valueHost` is available for field roles and omitted for form roles.
 
-### `IDomAriaFieldStateElementUpdater`
+### `IDomAriaValidationStateElementUpdater`
 
 Synchronizes one installed field element with the current field state.
 
 ```ts
-interface IDomAriaFieldStateElementUpdater {
+interface IDomAriaValidationStateElementUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -101,8 +101,8 @@ interface IDomAriaFieldStateElementUpdater {
 
 ### Updater Composition
 
-- A role may have zero or one registered static updater and zero or one registered field-state updater.
-- Registering another updater for the same role replaces the previous registration.
+- A role may have zero or one registered static updater and zero or one registered validation-state updater.
+- Registering another updater for the same role silently replaces the previous registration.
 - There are no unregister operations.
 - A specialized updater is supplied by an Adapter Definition or presentation.
 - When no specialized updater is supplied, the registered role updater runs when available.
@@ -110,6 +110,13 @@ interface IDomAriaFieldStateElementUpdater {
 - When `alsoRunRoleUpdater` is `false`, only the specialized updater runs.
 - `alsoRunRoleUpdater` is ignored when an updater itself was obtained from the role registry.
 - If the role updater throws, the specialized updater is not invoked.
+
+### Role Normalization
+
+Role registration and lookup normalize role values with `trim().toLowerCase()`. The normalized role is passed to the updater.
+
+- Registration rejects a role that is empty after trimming.
+- An unregistered normalized role remains valid. It has no role updater, but a specialized updater may still run.
 
 ### Updater Lifetime
 
@@ -131,9 +138,9 @@ interface IDomAriaService {
         updater: IDomAriaStaticElementUpdater
     ): void;
 
-    registerFieldStateUpdater(
+    registerValidationStateUpdater(
         role: ElementRole | string,
-        updater: IDomAriaFieldStateElementUpdater
+        updater: IDomAriaValidationStateElementUpdater
     ): void;
 
     applyStaticAttributes(
@@ -152,9 +159,9 @@ interface IDomAriaService {
 }
 ```
 
-Setting the `DomServices` ARIA service property to `null` disables Jivs-managed ARIA work.
+Setting the `DomServices` ARIA service property to `null` disables Jivs-managed ARIA work. Installers and validation dispatchers skip ARIA processing, and installers do not assign an ARIA completion value to the element. Jivs does not provide a late-assignment or replay lifecycle for assigning an ARIA service after `DomServices` construction.
 
-Role updater lookup occurs during each operation. Replacing a static role updater affects future installations. Replacing a field-state role updater affects already-installed elements on their next validation-state application.
+Role updater lookup occurs during each operation. Replacing a static role updater affects future installations. Replacing a validation-state role updater affects already-installed elements on their next validation-state application. Replacement is silent; the service does not log it.
 
 `AriaServiceBase` does not catch or log discovery or updater exceptions. They propagate to the installation coordinator or dispatcher, which owns failure handling and logging.
 
@@ -169,8 +176,8 @@ interface IDomEditorAdapterDefinition {
     getStaticAriaElementUpdater?():
         IDomAriaStaticElementUpdater | null;
 
-    getFieldStateAriaElementUpdater?():
-        IDomAriaFieldStateElementUpdater | null;
+    getValidationStateAriaElementUpdater?():
+        IDomAriaValidationStateElementUpdater | null;
 }
 
 interface IFieldPresentation {
@@ -179,8 +186,8 @@ interface IFieldPresentation {
     getStaticAriaElementUpdater?():
         IDomAriaStaticElementUpdater | null;
 
-    getFieldStateAriaElementUpdater?():
-        IDomAriaFieldStateElementUpdater | null;
+    getValidationStateAriaElementUpdater?():
+        IDomAriaValidationStateElementUpdater | null;
 }
 
 interface IFormPresentation {
@@ -194,7 +201,7 @@ interface IFormPresentation {
 There are no separate `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `IDomAriaFieldPresentation` capability interfaces.
 
 - Field and form presentations may supply static updaters.
-- Only field presentations may supply field-state updaters.
+- Only field presentations may supply validation-state updaters.
 - Form roles currently have no validation-state ARIA updater contract.
 - `aria-error` never uses a presentation.
 - The former `findAriaEditors()` operation is removed. A specialized updater receives the installed editor anchor and owns any widget-specific distribution of work.
@@ -209,21 +216,21 @@ There are no separate `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `ID
 
 ## Installed Element State
 
-`IJivsDomElement` stores only the specialized field-state updater selected during installation.
+`IJivsDomElement` stores only the specialized validation-state updater selected during installation.
 
 ```ts
 interface IJivsDomElement extends HTMLElement {
-    jivsAriaFieldStateUpdater?:
-        IDomAriaFieldStateElementUpdater | null;
+    jivsAriaValidationStateUpdater?:
+        IDomAriaValidationStateElementUpdater | null;
 
     // Existing installed capabilities.
 }
 ```
 
-| Value | Meaning |
-| --- | --- |
-| `undefined` | ARIA installation did not complete. Field-state processing skips the element. |
-| `null` | ARIA installation completed without a specialized updater. The registered role updater remains eligible. |
+| Value            | Meaning                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| `undefined`      | ARIA installation did not complete. Validation-state processing skips the element.                           |
+| `null`           | ARIA installation completed without a specialized updater. The registered role updater remains eligible.     |
 | Updater instance | ARIA installation completed with a specialized updater. Its `alsoRunRoleUpdater` value controls composition. |
 
 The property is also the completion guard for the element's entire ARIA installation. Static updaters are applied immediately and are not stored.
@@ -233,35 +240,54 @@ If static application throws, the property remains `undefined`. A later installa
 ## Field Presentation Installation Support
 
 ```ts
+interface IFieldPresentationInstaller {
+    install(
+        valueHost: IFieldValueHost,
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        options?: FieldPresentationInstallOptions
+    ): IFieldPresentation | null;
+}
+
 interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
         IDomAriaStaticElementUpdater | null;
 
-    fieldStateAriaUpdater?:
-        IDomAriaFieldStateElementUpdater | null;
+    validationStateAriaUpdater?:
+        IDomAriaValidationStateElementUpdater | null;
 }
 ```
 
 The ARIA option values mean:
 
-| Value | Meaning |
-| --- | --- |
-| `undefined` | Obtain the specialized updater from the installed presentation's optional ARIA capability. |
-| `null` | The caller explicitly supplies no specialized updater. |
-| Updater instance | Use the caller-supplied specialized updater. |
+| Value            | Meaning                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| `undefined`      | Obtain the specialized updater from the installed presentation's optional ARIA capability. |
+| `null`           | The caller explicitly supplies no specialized updater.                                     |
+| Updater instance | Use the caller-supplied specialized updater.                                               |
 
 `FieldPresentationInstaller.install()` completes presentation work before independent ARIA work:
 
 1. Resolve, create, initially apply, and store the presentation when presentation installation is required.
 2. Resolve specialized ARIA updaters from the options or installed presentation.
 3. Apply static ARIA through `IDomAriaService.applyStaticAttributes()`.
-4. Store the specialized field-state updater or `null`.
+4. Store the specialized validation-state updater or `null`.
 
 A presentation result of `null` does not prevent ARIA installation. If ARIA installation fails after presentation installation succeeds, the presentation remains stored and ARIA remains `undefined` for retry.
 
 `EditorInstaller` always calls `FieldPresentationInstaller` during a new editor installation, even when the editor has no presentation. Presentation and ARIA installation are independent.
+
+## Form Presentation Installation Support
+
+`FormPresentationInstaller` completes presentation work independently from static ARIA installation. For each form-role element whose `jivsAriaValidationStateUpdater` is `undefined`, it:
+
+1. Obtains the specialized static updater from the installed form presentation, when one is supplied.
+2. Calls `IDomAriaService.applyStaticAttributes()` with `valueHost` set to `undefined`.
+3. Sets `jivsAriaValidationStateUpdater` to `null` only after static application succeeds.
+
+Form roles use the same installed-element property as their ARIA completion guard, but they do not participate in `applyValidationState()`.
 
 ## `ElementRole`
 
@@ -296,7 +322,7 @@ interface IFieldAriaElementAnchors {
 The role identifies content ownership:
 
 - `error`: a field presentation owns the element's error content.
-- `ariaError`: the registered ARIA field-state updater owns plain-text content.
+- `ariaError`: the registered ARIA validation-state updater owns plain-text content.
 - `null`: no eligible error-message element was selected.
 
 The anchors determine which element is passed to each updater. Updaters do not receive the complete anchors object.
@@ -320,11 +346,11 @@ abstract class AriaServiceBase
 
 It:
 
-- owns the static and field-state role registries;
+- owns the static and validation-state role registries;
 - implements registration and replacement;
 - implements updater composition;
 - implements static application;
-- orchestrates field-state application;
+- orchestrates validation-state application;
 - retrieves the selected error-message element's existing ID;
 - performs no role-specific attribute or content mutation itself.
 
@@ -345,14 +371,13 @@ An editor cannot serve as its own error-message element. The absence of an eligi
 `AriaServiceBase.applyValidationState()`:
 
 1. Calls `findElements()`.
-2. Skips any selected element whose `jivsAriaFieldStateUpdater` remains `undefined`.
-3. Reads the selected error-message element's existing, nonempty ID.
-4. Applies the error-message element's registered and specialized field-state updaters in the agreed order.
-5. Applies the editor's registered and specialized field-state updaters, passing the error-message ID.
+2. Determines independently whether the selected editor and error-message elements completed ARIA installation. An element whose `jivsAriaValidationStateUpdater` remains `undefined` is skipped.
+3. When the error-message element completed ARIA installation, reads its existing, nonempty ID and applies its registered and specialized validation-state updaters in the agreed order.
+4. When the editor completed ARIA installation, applies its registered and specialized validation-state updaters. It receives the error-message ID only when the error-message element also completed ARIA installation; otherwise it receives `undefined`.
 
-The error-message element is processed before the editor. The ID is established during static installation and is not generated during field-state processing.
+The error-message element is processed before the editor. The ID is established during static installation and is not generated during validation-state processing.
 
-If a selected error-message element lacks a usable ID, field-state processing passes `undefined` and continues. The editor updater omits `aria-errormessage` but may still apply required and invalid state.
+If a selected error-message element lacks a usable ID, validation-state processing passes `undefined` and continues. The editor updater omits `aria-errormessage` but may still apply required and invalid state.
 
 The root-aware installation coordinator performs initial dynamic ARIA once it has installed the editor and all field-presentation elements for the field:
 
@@ -372,14 +397,16 @@ Exact concrete class names remain to be selected.
 
 ### Registered Static Updaters
 
-| Role | Behavior |
-| --- | --- |
-| `ElementRole.summary` | Assign `role="status"` when `role` is absent. Assign `aria-atomic="true"` when `aria-atomic` is absent. Preserve each existing value independently. |
-| `ElementRole.required` | Assign `aria-hidden="true"` when `aria-hidden` is absent. |
-| `ElementRole.error` | Assign a missing ID using the `error` suffix. |
-| `ElementRole.ariaError` | Assign a missing ID using the `ariaerror` suffix. |
+| Role                    | Behavior                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ElementRole.summary`   | Assign `role="status"` when `role` is absent. Assign `aria-atomic="true"` when `aria-atomic` is absent. Preserve each existing value independently. |
+| `ElementRole.required`  | Assign `aria-hidden="true"` when `aria-hidden` is absent.                                                                                           |
+| `ElementRole.error`     | Assign a missing ID using the `error` suffix.                                                                                                       |
+| `ElementRole.ariaError` | Assign a missing ID using the `ariaerror` suffix.                                                                                                   |
 
 One immutable error-element updater may be registered under both error roles and use its `role` parameter to select the suffix.
+
+The updater obtains the field identifier from `valueHost.getElementIdentifier()`. It follows the `IFieldValueHost` reference to its associated `ValueHostsManager` and obtains the container identifier from `ValueHostsManager.getContainerIdentifier()`. The updater encodes both identifier values as needed for use within a DOM ID rather than treating raw query-selector syntax as ID text.
 
 Default generated IDs use distinct forms so both error elements may coexist:
 
@@ -390,14 +417,14 @@ Default generated IDs use distinct forms so both error elements may coexist:
 
 Existing developer-supplied IDs are preserved.
 
-### Registered Field-State Updaters
+### Registered Validation-State Updaters
 
-| Role | Behavior |
-| --- | --- |
-| `ElementRole.editor` | Native-editor default. Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. Does not assign `aria-required`. |
-| `ElementRole.ariaError` | Writes the selected field error messages as plain text and clears the content when appropriate. |
+| Role                    | Behavior                                                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `ElementRole.editor`    | Native-editor default. Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. Does not assign `aria-required`. |
+| `ElementRole.ariaError` | Writes the selected field error messages as plain text and clears the content when appropriate.                                  |
 
-There is no registered field-state updater for `ElementRole.error`. Its presentation owns state-dependent content. A presentation may supply a specialized updater when its markup requires additional accessibility behavior.
+There is no registered validation-state updater for `ElementRole.error`. Its presentation owns state-dependent content. A presentation may supply a specialized updater when its markup requires additional accessibility behavior.
 
 The `aria-error` updater uses the existing Issues Found formatter so issue ordering, field message selection, and HTML-to-text conversion are shared:
 
@@ -415,7 +442,7 @@ The semicolon-and-space delimiter is supplied explicitly instead of using the fo
 
 ### Exported ARIA-Required Editor Updater
 
-Jivs-DOM also exports a reusable field-state updater that synchronizes:
+Jivs-DOM also exports a reusable validation-state updater that synchronizes:
 
 - `aria-required`;
 - `aria-invalid`;
@@ -428,7 +455,7 @@ It is not registered as the default updater for `ElementRole.editor`. Adapter De
 The built-in radio-group definition supplies:
 
 - a specialized static updater that assigns `role="radiogroup"` to the containing installation anchor only when `role` is absent;
-- the exported ARIA-required field-state updater with `alsoRunRoleUpdater: false`.
+- the exported ARIA-required validation-state updater with `alsoRunRoleUpdater: false`.
 
 The containing anchor receives group-level required, invalid, and error-message relationship state. Descendant radio inputs do not receive duplicate group-level ARIA state.
 
@@ -440,13 +467,13 @@ Static updaters assign their attributes only when the attribute is absent. Devel
 
 ### Dynamic Attributes
 
-Field-state updaters fully own the dynamic attributes they manage. They set or remove them according to current Jivs configuration and validation state, even when authored markup initially supplied them.
+Validation-state updaters fully own the dynamic attributes they manage. They set or remove them according to current Jivs configuration and validation state, even when authored markup initially supplied them.
 
-| Attribute | Standard dynamic rule |
-| --- | --- |
-| `required` | Present when `valueHost.required` is `true`; removed otherwise. |
-| `aria-required="true"` | Present when `valueHost.required` is `true`; removed otherwise. |
-| `aria-invalid="true"` | Present when `state.isValid === false`; removed otherwise. |
+| Attribute                  | Standard dynamic rule                                                           |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| `required`                 | Present when `valueHost.required` is `true`; removed otherwise.                 |
+| `aria-required="true"`     | Present when `valueHost.required` is `true`; removed otherwise.                 |
+| `aria-invalid="true"`      | Present when `state.isValid === false`; removed otherwise.                      |
 | `aria-errormessage="{id}"` | Present while invalid when a usable error-message ID exists; removed otherwise. |
 
 An Adapter Definition may suppress the role updater and supply different ownership rules through its specialized updater.
@@ -467,5 +494,4 @@ The following decisions belong to later implementation-guide sections or require
 - the root-aware installation coordinator's concrete identity and complete algorithm;
 - concrete `EditorInstaller` ownership and construction;
 - `DomServices` default construction and registration of built-in updaters;
-- any logging policy for replacing an existing role registration;
 - final TypeScript documentation comments and public export list.
