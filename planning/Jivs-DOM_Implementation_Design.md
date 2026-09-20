@@ -2634,10 +2634,10 @@ ARIA support is an optional, replaceable `DomServices` child service. Setting `D
 
 The ARIA service owns the accessibility attributes managed by Jivs. Its responsibilities include:
 
-* fixed accessibility semantics established during installation;
-* required state obtained from the `IFieldValueHost`;
-* validation state applied after field presentations have run;
-* the relationship between an editor and its separate error-message element.
+- fixed accessibility semantics established during installation;
+- required state obtained from the `IFieldValueHost`;
+- validation state applied after field presentations have run;
+- the relationship between an editor and its separate error-message element.
 
 The standard service manages an editor or another element representing it, a separate error-message element, a Validation Summary, a Required Indicator, and editor-specific structures such as a radio-group container.
 
@@ -2651,17 +2651,17 @@ ARIA processing remains independent of visual presentation. Presentations own vi
 
 This table defines the attributes written by the standard ARIA service. Later sections explain target discovery and special cases without repeating these assignment rules.
 
-| Attribute                  | Applied during                                    | Target element                                                        | Purpose                                                                                                            | Presence and value                                                                                                | Comments                                                                                                                           |
-| -------------------------- | ------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `role="status"`            | Installation — fixed                              | Validation Summary                                                    | Makes summary updates advisory live-region content.                                                                | Assigned when `role` is absent.                                                                                   | Implies `aria-live="polite"` and `aria-atomic="true"`. An existing role is preserved.                                              |
-| `aria-atomic="true"`       | Installation — fixed                              | Validation Summary                                                    | Requests announcement of the complete summary when its content changes.                                            | Assigned when `aria-atomic` is absent.                                                                            | Assigned explicitly even though `role="status"` implies it. An existing value is preserved.                                        |
-| `aria-hidden="true"`       | Installation — fixed                              | Required Indicator                                                    | Prevents the visual indicator from duplicating the required state communicated by the editor.                      | Assigned when `aria-hidden` is absent.                                                                            | The Required Indicator presentation controls visual state but does not assign this attribute.                                      |
-| `role="radiogroup"`        | Installation — fixed                              | Radio-group editor anchor                                             | Identifies the container as representing one radio-group value and makes it the target for group-level ARIA state. | Requested by `InputRadioGroupAdapterDefinition` and assigned when `role` is absent.                               | An existing role is preserved. The developer remains responsible for the group’s accessible name.                                  |
-| `required`                 | Field-state synchronization — dynamic             | Native `input`, `select`, or `textarea` supporting required semantics | Uses the control’s native required behavior and accessibility semantics.                                           | Present when `valueHost.required` is `true`; removed otherwise.                                                   | Determined by field configuration rather than `ValueHostValidationState`. `aria-required` is not also assigned.                    |
-| `aria-required="true"`     | Field-state synchronization — dynamic             | ARIA editor target without equivalent native required semantics       | Communicates that the represented value is required.                                                               | Assigned when `valueHost.required` is `true`; removed otherwise.                                                  | Used on the standard radio-group anchor. A custom definition returning individual native radios may use native `required` instead. |
-| `aria-invalid="true"`      | Field-state synchronization — dynamic             | Each resolved ARIA editor target                                      | Communicates that the editor’s current value is invalid.                                                           | Assigned when `state.isValid === false`; removed when valid.                                                      | Applied even when no eligible error-message element exists.                                                                        |
-| `aria-errormessage="{id}"` | Field-state synchronization — dynamic             | Each resolved ARIA editor target                                      | Associates an invalid editor with its separate error-message element.                                              | Assigned while invalid when an eligible error-message element is available; removed otherwise and whenever valid. | A radio group uses its group anchor rather than duplicating the attribute on descendant radio inputs.                              |
-| `id="{generatedId}"`       | Field-state synchronization — fixed once assigned | Selected error-message element                                        | Supplies the target required by `aria-errormessage` when the developer did not provide an ID.                      | Assigned when the selected element lacks a nonempty ID and the relationship is needed.                            | The fallback follows `{containerIdentifier}_{elementIdentifier}_ariaerror`. A developer-supplied ID is preserved.                  |
+| Attribute | Applied during | Target element | Purpose | Presence and value | Comments |
+| --- | --- | --- | --- | --- | --- |
+| `role="status"` | Installation — fixed | Validation Summary | Makes summary updates advisory live-region content. | Assigned when `role` is absent. | Implies `aria-live="polite"` and `aria-atomic="true"`. An existing role is preserved. |
+| `aria-atomic="true"` | Installation — fixed | Validation Summary | Requests announcement of the complete summary when its content changes. | Assigned when `aria-atomic` is absent. | Assigned explicitly even though `role="status"` implies it. An existing value is preserved. |
+| `aria-hidden="true"` | Installation — fixed | Required Indicator | Prevents the visual indicator from duplicating the required state communicated by the editor. | Assigned when `aria-hidden` is absent. | The Required Indicator presentation controls visual state but does not assign this attribute. |
+| `role="radiogroup"` | Installation — fixed | Radio-group editor anchor | Identifies the container as representing one radio-group value and makes it the target for group-level ARIA state. | Requested by `InputRadioGroupAdapterDefinition` and assigned when `role` is absent. | An existing role is preserved. The developer remains responsible for the group’s accessible name. |
+| `required` | Field-state synchronization — dynamic | Native `input`, `select`, or `textarea` supporting required semantics | Uses the control’s native required behavior and accessibility semantics. | Present when `valueHost.required` is `true`; removed otherwise. | Determined by field configuration rather than `ValueHostValidationState`. `aria-required` is not also assigned. |
+| `aria-required="true"` | Field-state synchronization — dynamic | ARIA editor target without equivalent native required semantics | Communicates that the represented value is required. | Assigned when `valueHost.required` is `true`; removed otherwise. | Used on the standard radio-group anchor. A custom definition returning individual native radios may use native `required` instead. |
+| `aria-invalid="true"` | Field-state synchronization — dynamic | Each resolved ARIA editor target | Communicates that the editor’s current value is invalid. | Assigned when `state.isValid === false`; removed when valid. | Applied even when no eligible error-message element exists. |
+| `aria-errormessage="{id}"` | Field-state synchronization — dynamic | Each resolved ARIA editor target | Associates an invalid editor with its separate error-message element. | Assigned while invalid when an eligible error-message element is available; removed otherwise and whenever valid. | A radio group uses its group anchor rather than duplicating the attribute on descendant radio inputs. |
+| `id="{generatedId}"` | Field-state synchronization — fixed once assigned | Selected error-message element | Supplies the target required by `aria-errormessage` when the developer did not provide an ID. | Assigned when the selected element lacks a nonempty ID and the relationship is needed. | The fallback follows `{containerIdentifier}_{elementIdentifier}_ariaerror`. A developer-supplied ID is preserved. |
 
 ### Error-Message Containment and Selection
 
@@ -2669,10 +2669,10 @@ This table defines the attributes written by the standard ARIA service. Later se
 
 Jivs supports two alternatives:
 
-| Error-message element                | When to use it                                                                                                         | Content owner                    |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| Accessible Field Error Display       | The visible display remains in the accessibility tree whenever it contains an error.                                   | Field Error Display presentation |
-| Dedicated ARIA error-message element | The visible display may be hidden by a popup, tooltip, `display: none`, `visibility: hidden`, or `aria-hidden="true"`. | ARIA service                     |
+| Error-message element | When to use it | Content owner |
+| --- | --- | --- |
+| Accessible Field Error Display | The visible display remains in the accessibility tree whenever it contains an error. | Field Error Display presentation |
+| Dedicated ARIA error-message element | The visible display may be hidden by a popup, tooltip, `display: none`, `visibility: hidden`, or `aria-hidden="true"`. | ARIA service |
 
 #### Selection Method
 
@@ -2742,11 +2742,11 @@ When the visible Field Error Display is not eligible, the developer supplies a d
 
 The dedicated element:
 
-* has no field presentation;
-* remains in the accessibility tree;
-* is visually hidden by the published `jivs-visually-hidden` class;
-* receives plain-text error content from the ARIA service;
-* is cleared by the ARIA service when the field becomes valid.
+- has no field presentation;
+- remains in the accessibility tree;
+- is visually hidden by the published `jivs-visually-hidden` class;
+- receives plain-text error content from the ARIA service;
+- is cleared by the ARIA service when the field becomes valid.
 
 The published class hides the element visually without removing it from the accessibility tree:
 
