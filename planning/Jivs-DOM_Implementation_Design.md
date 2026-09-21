@@ -1992,7 +1992,7 @@ return presentation;
 
 If specialized-updater resolution or static ARIA application throws after presentation installation succeeds, installation logs and propagates the failure. The presentation remains stored while `jivsAriaValidationStateUpdater` remains `undefined`, allowing a later installation call to retry only the incomplete ARIA work. Static updaters must therefore be idempotent.
 
-`FieldPresentationInstaller` does not perform initial validation-state ARIA application. The root-aware installation coordinator calls `IDomAriaService.applyValidationState()` only after the editor and all other applicable field elements have been installed and their presentations initialized.
+`FieldPresentationInstaller` does not perform initial validation-state ARIA application. `DomFormInstallerBase` calls `IDomAriaService.applyValidationState()` once for each distinct non-null field represented in the field collector lists, only after all collected elements have been installed and their presentations initialized.
 
 Replacing the DOM element creates a new installation lifetime. The replacement element begins with both `jivsFieldPresentation` and `jivsAriaValidationStateUpdater` set to `undefined` and must be installed separately.
 
@@ -2908,7 +2908,7 @@ flowchart TB
     Providers["Adapter definitions and presentations"]
     FieldInstaller["FieldPresentationInstaller"]
     FormInstaller["FormPresentationInstaller"]
-    Coordinator["Root-aware installation coordinator"]
+    Coordinator["DomFormInstallerBase"]
     Dispatcher["FieldValidationDispatcher"]
     Service["IDomAriaService / AriaServiceBase"]
     Registry["Role updater registries"]
@@ -2926,7 +2926,7 @@ flowchart TB
 
 The installers are installation-time consumers. They request static updater composition and record the specialized validation-state updater on each installed element.
 
-After all elements for a field have been installed, the root-aware installation coordinator initializes dynamic ARIA through `applyValidationState()`. `FieldValidationDispatcher` invokes the same operation after later validation changes.
+After all collected elements have been installed, `DomFormInstallerBase` initializes dynamic ARIA through `applyValidationState()` for each distinct non-null field represented in the field collector lists. `FieldValidationDispatcher` invokes the same operation after later validation changes.
 
 ### Managed Accessibility Attributes
 
@@ -3126,8 +3126,8 @@ The following existing contracts and classes require ARIA-related changes.
 | `EditorInstaller` | Pass the Editor Adapter Definition's specialized updaters to `FieldPresentationInstaller`. |
 | `InputRadioGroupAdapterDefinition` | Remove `IDomAriaEditorDefinition` and `findAriaEditors()`; return the radio-group updater instances through the new getters. |
 | `FieldValidationDispatcher` | Call `applyValidationState()` after applying field presentations. |
-| `DomServices` and `IDomServices` | Expose the nullable `ariaService` child service and provide the standard service during default construction. |
-| Root-aware installation coordinator | Call `applyValidationState()` after installing all applicable elements for a field. Its concrete type is defined with installation coordination. |
+| `DomServices` and `IJivsDomServices` | Expose the nullable `ariaService` child service and provide the standard service during default construction. |
+| `DomFormInstallerBase` | Apply initial validation-state ARIA for each distinct non-null field represented in the field collector lists after all collected elements have been installed. |
 
 There are no `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `IDomAriaFieldPresentation` types.
 
@@ -3428,7 +3428,7 @@ Required state comes from `IFieldValueHost.required`, not from `ValueHostValidat
 
 ### Initial and Later Validation-State Application
 
-The root-aware installation coordinator performs the initial validation-state application after it has installed the editor and all field-presentation elements for the field:
+`DomFormInstallerBase` performs the initial validation-state application after installing all collected elements. It calls the ARIA service once for each distinct non-null `IFieldValueHost` represented in the editor and field-presentation collector lists:
 
 ```ts
 ariaService.applyValidationState(
@@ -3439,8 +3439,6 @@ ariaService.applyValidationState(
 ```
 
 This initial call occurs after presentation initialization.
-
-The coordinator's concrete identity and complete algorithm are defined later with installation coordination.
 
 For later validation changes, `FieldValidationDispatcher` resolves `root`, invokes the installed field presentations, and then calls:
 
@@ -3501,7 +3499,7 @@ Updater and discovery operations throw normally.
 `AriaServiceBase` does not catch or log their exceptions:
 
 - A registered-updater failure stops processing before the specialized updater for that element.
-- The installation coordinator owns installation logging and rethrows installation failures.
+- `DomFormInstallerBase` owns installation logging and rethrows installation failures.
 - Runtime validation dispatch follows the dispatcher's established failure policy.
 
 `jivs-simpledom` supplies `SimpleDomAriaService` because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions.
@@ -3512,7 +3510,6 @@ An application may instead replace the complete `IDomAriaService` when it requir
 
 The following implementation details remain deferred to later sections:
 
-- the root-aware installation coordinator's concrete identity and complete algorithm;
 - concrete `EditorInstaller` ownership and construction;
 - `DomServices` default construction and registration of built-in updater instances;
 - final TypeScript documentation comments and the complete package export inventory.
@@ -3914,7 +3911,7 @@ Attaching different dispatcher categories to the same configuration is valid. At
 
 Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
 
-Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed consumers. The installation coordinator performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
+Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed consumers. `DomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
 
 ## Form Installation Coordination
 
