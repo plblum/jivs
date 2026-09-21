@@ -3516,3 +3516,402 @@ The following implementation details remain deferred to later sections:
 - concrete `EditorInstaller` ownership and construction;
 - `DomServices` default construction and registration of built-in updater instances;
 - final TypeScript documentation comments and the complete package export inventory.
+
+## Dispatchers and Callback Attachment
+
+DOM dispatchers connect the four `ValueHostsManagerConfig` callbacks to capabilities installed on DOM elements.
+
+| Callback | Dispatcher | Installed capability |
+| --- | --- | --- |
+| `onTextValueChanged` | `TextValueDispatcher` | `jivsTextValueAdapter` |
+| `onValueChanged` | `ValueDispatcher` | `jivsValueAdapter` |
+| `onValueHostValidationStateChanged` | `FieldValidationDispatcher` | `jivsFieldPresentation` and field ARIA |
+| `onValidationStateChanged` | `FormValidationDispatcher` | `jivsFormPresentation` |
+
+Each dispatcher is created for one callback attachment. It retains its `IJivsDomServices` and may retain creator options and discovery policy. It must not retain a `ValueHostsManager`, DOM elements, element collections, or DOM subtrees.
+
+### Dispatcher Contracts
+
+Each dispatcher contract preserves every parameter supplied by its corresponding Jivs callback.
+
+```ts
+interface ITextValueDispatcher {
+    dispatch(
+        valueHost: IFieldValueHost,
+        oldTextValue: string | undefined
+    ): void;
+}
+
+interface IValueDispatcher {
+    dispatch(
+        valueHost: IFieldValueHost,
+        oldValue: unknown
+    ): void;
+}
+
+interface IFieldValidationDispatcher {
+    dispatch(
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+}
+
+interface IFormValidationDispatcher {
+    dispatch(
+        valueHostsManager: IValueHostsManager,
+        state: ValidationState
+    ): void;
+}
+```
+
+The standard Text Value and Native Value dispatchers obtain the new current value from the supplied `IFieldValueHost`. The old value remains available to custom dispatchers and overrides.
+
+### Shared Dispatcher Bases
+
+`jivs-dom` supplies abstract bases that implement root resolution, consumer iteration, failure handling, and access to DOM services. Concrete subclasses implement markup-specific consumer discovery.
+
+```ts
+abstract class FieldDispatcherBase {
+    protected constructor(
+        protected readonly domServices:
+            IJivsDomServices
+    ) {
+    }
+
+    protected forEachConsumer(
+        valueHost: IFieldValueHost,
+        operation: (
+            element: IJivsDomElement
+        ) => void
+    ): HTMLElement | null;
+
+    protected abstract findConsumers(
+        root: HTMLElement,
+        valueHost: IFieldValueHost
+    ): Iterable<IJivsDomElement>;
+}
+
+abstract class FormDispatcherBase {
+    protected constructor(
+        protected readonly domServices:
+            IJivsDomServices
+    ) {
+    }
+
+    protected forEachConsumer(
+        valueHostsManager: IValueHostsManager,
+        operation: (
+            element: IJivsDomElement
+        ) => void
+    ): HTMLElement | null;
+
+    protected abstract findConsumers(
+        root: HTMLElement,
+        valueHostsManager: IValueHostsManager
+    ): Iterable<IJivsDomElement>;
+}
+```
+
+The base operation:
+
+1. Resolves the manager’s DOM root.
+2. Abandons dispatch when a configured Container Identifier cannot be resolved.
+3. Calls `findConsumers()` for the current dispatch.
+4. Processes every returned consumer in discovery order.
+5. Does not retain the discovered elements after returning.
+6. Returns the resolved root when successful so field validation can perform ARIA processing after presentation.
+
+Root resolution is defined with element resolution and installation coordination.
+
+### Text Value Dispatcher
+
+```ts
+abstract class TextValueDispatcher
+    extends FieldDispatcherBase
+    implements ITextValueDispatcher {
+
+    public dispatch(
+        valueHost: IFieldValueHost,
+        oldTextValue: string | undefined
+    ): void;
+}
+```
+
+`dispatch()` obtains the new current Text Value through:
+
+```ts
+valueHost.getTextValue()
+```
+
+For each discovered consumer, it reads `jivsTextValueAdapter`. An adapter instance receives the current Text Value through `writeTextValue()`. Both `undefined` and `null` are skipped.
+
+The standard implementation does not use `oldTextValue`. It remains part of the contract so subclasses and direct interface implementations receive the complete callback information.
+
+Dispatch does not create or install an adapter.
+
+### Native Value Dispatcher
+
+```ts
+abstract class ValueDispatcher
+    extends FieldDispatcherBase
+    implements IValueDispatcher {
+
+    public dispatch(
+        valueHost: IFieldValueHost,
+        oldValue: unknown
+    ): void;
+}
+```
+
+`dispatch()` obtains the new current Native Value through:
+
+```ts
+valueHost.getValue()
+```
+
+For each discovered consumer, it reads `jivsValueAdapter`. An adapter instance receives the current Native Value through `writeValue()`. Both `undefined` and `null` are skipped.
+
+The standard implementation does not use `oldValue`. It remains part of the contract so subclasses and direct interface implementations receive the complete callback information.
+
+Dispatch does not create or install an adapter.
+
+### Field Validation Dispatcher
+
+```ts
+abstract class FieldValidationDispatcher
+    extends FieldDispatcherBase
+    implements IFieldValidationDispatcher {
+
+    public dispatch(
+        valueHost: IFieldValueHost,
+        state: ValueHostValidationState
+    ): void;
+}
+```
+
+For each discovered consumer, `dispatch()` reads `jivsFieldPresentation`. A presentation instance receives the supplied ValueHost and state through `apply()`. Both `undefined` and `null` are skipped.
+
+After all discovered field presentations have been processed, the dispatcher calls:
+
+```ts
+this.domServices.ariaService
+    ?.applyValidationState(
+        root,
+        valueHost,
+        state
+    );
+```
+
+ARIA runs after every field presentation so presentation-owned error content is current before the editor’s error-message relationship is synchronized.
+
+### Form Validation Dispatcher
+
+```ts
+abstract class FormValidationDispatcher
+    extends FormDispatcherBase
+    implements IFormValidationDispatcher {
+
+    public dispatch(
+        valueHostsManager: IValueHostsManager,
+        state: ValidationState
+    ): void;
+}
+```
+
+For each discovered consumer, `dispatch()` reads `jivsFormPresentation`. A presentation instance receives the supplied manager and complete state through `apply()`. Both `undefined` and `null` are skipped.
+
+The dispatcher does not interpret validation groups. Group routing belongs to the installed form presentation.
+
+Form dispatch does not invoke `IDomAriaService`. Form-role ARIA is static and is applied during installation.
+
+### Fresh Consumer Discovery
+
+Every dispatch calls `findConsumers()` again. Dispatchers do not cache consumer elements.
+
+Consequently:
+
+- removed elements cease receiving updates;
+- replacement elements participate after they are installed;
+- newly added and installed elements participate without reattaching the dispatcher;
+- one dispatcher cannot preserve an obsolete DOM subtree.
+
+The dispatcher reads each installed capability from the element at the time of dispatch. Replacing an installed adapter or presentation therefore affects the next dispatch.
+
+### Failure Handling
+
+Dispatcher failures are logged through:
+
+```ts
+this.domServices
+    .jivsServices
+    .loggingService
+```
+
+They do not propagate into Jivs or interrupt the end-user interaction.
+
+A missing consumer or missing installed capability is a normal no-op and does not require an error log.
+
+If an installed adapter or presentation throws:
+
+1. the dispatcher logs the consumer failure;
+2. processing continues with the next discovered consumer.
+
+If root resolution or `findConsumers()` throws, the dispatcher logs the operation failure and abandons that dispatch.
+
+When a configured Container Identifier cannot be resolved, the dispatcher logs the failure and abandons dispatch. It does not fall back to `document.body`.
+
+If `IDomAriaService.applyValidationState()` throws, the field dispatcher logs the failure and returns without propagating it.
+
+This policy applies to dispatcher-owned behavior. An exception thrown by an application callback composed ahead of the dispatcher remains observable and prevents DOM dispatch for that callback invocation.
+
+Logs identify the dispatcher operation, ValueHost or manager context, and failing capability when available. They do not include field values or error-message content.
+
+### Dispatcher Creators
+
+A Dispatcher Creator constructs one dispatcher for one callback attachment:
+
+```ts
+type DispatcherCreator<TDispatcher> = (
+    domServices: IJivsDomServices,
+    options?: unknown
+) => TDispatcher;
+```
+
+`IJivsDomServices` gives the new dispatcher access to the complete `jivs-dom` service scope and to its parent `IJivsServices`.
+
+The options argument is opaque to `IDomDispatcherService`. It is passed unchanged to the registered creator:
+
+- it is not inspected;
+- it is not cloned;
+- it is not merged;
+- it is not retained separately;
+- omission is passed as `undefined`.
+
+A concrete package may provide typed wrappers when it wants strongly typed creator options.
+
+### Dispatcher Service
+
+`IDomDispatcherService` coordinates creator registration and callback attachment:
+
+```ts
+interface IDomDispatcherService {
+    registerTextValueChangedDispatcher(
+        creator:
+            DispatcherCreator<ITextValueDispatcher>
+    ): void;
+
+    registerValueChangedDispatcher(
+        creator:
+            DispatcherCreator<IValueDispatcher>
+    ): void;
+
+    registerValueHostValidationStateChangedDispatcher(
+        creator:
+            DispatcherCreator<
+                IFieldValidationDispatcher
+            >
+    ): void;
+
+    registerValidationStateChangedDispatcher(
+        creator:
+            DispatcherCreator<
+                IFormValidationDispatcher
+            >
+    ): void;
+
+    attachTextValueChanged(
+        config: ValueHostsManagerConfig,
+        options?: unknown
+    ): ITextValueDispatcher | null;
+
+    attachValueChanged(
+        config: ValueHostsManagerConfig,
+        options?: unknown
+    ): IValueDispatcher | null;
+
+    attachValueHostValidationStateChanged(
+        config: ValueHostsManagerConfig,
+        options?: unknown
+    ): IFieldValidationDispatcher | null;
+
+    attachValidationStateChanged(
+        config: ValueHostsManagerConfig,
+        options?: unknown
+    ): IFormValidationDispatcher | null;
+}
+```
+
+`DomDispatcherService` is the standard implementation.
+
+Each dispatcher category has zero or one registered creator. Registering another creator for the same category replaces the earlier creator for future attachments. Already attached dispatchers are unaffected.
+
+`IJivsDomServices` exposes the replaceable service:
+
+```ts
+domServices.dispatchers
+```
+
+The standard `jivs-dom` service does not assume an element-discovery convention. `jivs-simpledom` registers creators that construct its concrete discovery-aware dispatchers.
+
+### Missing Creator
+
+When an attachment method has no registered creator for its category, it:
+
+1. logs that no dispatcher can be attached;
+2. leaves the existing configuration callback unchanged;
+3. returns `null`.
+
+A missing creator is not an exception because applications may intentionally omit any of the four integrations.
+
+### Callback Attachment
+
+Each attachment method:
+
+1. obtains the registered creator;
+2. creates one dispatcher with `IJivsDomServices` and the supplied options;
+3. captures the callback currently assigned to the corresponding configuration property;
+4. assigns a composed callback;
+5. returns the created dispatcher.
+
+The composed callback first invokes the existing callback and then invokes the dispatcher.
+
+Conceptually:
+
+```ts
+const previous =
+    config.onTextValueChanged;
+
+const dispatcher =
+    creator(
+        this.domServices,
+        options
+    );
+
+config.onTextValueChanged =
+    function (...args): void {
+        previous?.apply(this, args);
+        dispatcher.dispatch(...args);
+    };
+
+return dispatcher;
+```
+
+Both calls receive every argument supplied by Jivs.
+
+The existing callback receives its original dynamic `this` value. Its return value is ignored.
+
+The dispatcher is invoked as an object method, preserving the dispatcher instance as its `this` value.
+
+If the existing callback throws, the exception propagates and DOM dispatch does not run.
+
+### Attachment Lifetime
+
+The composed callback retains the dispatcher instance. No separate dispatcher registry or disposal contract is required.
+
+When the configuration, manager, and callback become unreachable, the dispatcher can also be collected.
+
+Attaching different dispatcher categories to the same configuration is valid. Attaching the same category more than once is unsupported caller misuse. The service does not track or detect duplicate attachment; another attachment naturally composes another callback and may cause duplicate DOM dispatch.
+
+Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
+
+Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed consumers. The installation coordinator performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
