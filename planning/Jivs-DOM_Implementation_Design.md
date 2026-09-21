@@ -5021,3 +5021,475 @@ The following settled sections require narrow terminology changes after this sec
 * the provisional service-retrieval line in Section 11 becomes `jivsServices.domServices`.
 
 No installer, dispatcher, presentation, ARIA, or form-installation behavior changes as a result.
+
+## Package Boundaries and Implementation Guide
+
+### Package Responsibilities
+
+The first implementation introduces three workspaces:
+
+| Workspace                   | Published | Responsibility                                                                                                                               |
+| --------------------------- | --------: | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/jivs-dom`         |       Yes | Reusable DOM contracts, services, adapters, installers, dispatchers, presentations, ARIA support, formatting, and framework-independent CSS. |
+| `packages/jivs-simpledom`   |       Yes | SimpleDom attributes, discovery, concrete services, dispatchers, ARIA discovery, form installation, and SimpleDom-specific CSS.              |
+| `packages/jivs-dom-website` |        No | Runnable demonstrations, manual browser verification, learning examples, and package integration coverage.                                   |
+
+The dependency direction is:
+
+```mermaid
+flowchart TB
+    WEBSITE["jivs-dom-website"]
+    SIMPLEDOM["jivs-simpledom"]
+    DOM["jivs-dom"]
+    ENGINE["jivs-engine"]
+
+    WEBSITE --> SIMPLEDOM
+    WEBSITE --> DOM
+    SIMPLEDOM --> DOM
+    DOM --> ENGINE
+```
+
+`jivs-dom` must not depend on `jivs-simpledom`.
+
+The website consumes the published package surfaces. It must not import sibling-package source files through relative paths. This makes the website an integration check for package exports, generated JavaScript, declaration files, and published CSS assets.
+
+### Website Strategy
+
+The initial implementation should use one website rather than separate websites for `jivs-dom` and `jivs-simpledom`.
+
+The website should contain:
+
+* a home page linking to the demonstrations;
+* SimpleDom demonstrations representing the normal developer experience;
+* selected direct `jivs-dom` demonstrations showing customization without SimpleDom;
+* pages focused on editors, field presentation, form presentation, ARIA, DOM replacement, and multiple managers.
+
+A second website should be introduced only when a future framework integration requires its own build system or runtime. Angular, React, and Vue examples should not determine the architecture of the initial DOM website.
+
+### Vite Website
+
+`packages/jivs-dom-website` should be a private Vite application using plain HTML, CSS, and TypeScript.
+
+Vite is appropriate because it provides:
+
+* a Node-based development server;
+* direct TypeScript module loading during development;
+* linked-package support in a monorepo;
+* multiple HTML entry points;
+* a static production build;
+* no required UI framework.
+
+The website package should be marked:
+
+```json
+{
+    "private": true
+}
+```
+
+It must not participate in NPM publishing.
+
+Its scripts should provide the equivalent of:
+
+```json
+{
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc --noEmit && vite build",
+        "preview": "vite preview"
+    }
+}
+```
+
+The exact TypeScript command should follow the repository’s existing project-reference or package-build convention.
+
+The website’s internal package dependencies should use the same version and workspace-linking convention already used elsewhere in the repository:
+
+```json
+{
+    "dependencies": {
+        "@plblum/jivs-engine": "...",
+        "@plblum/jivs-dom": "...",
+        "@plblum/jivs-simpledom": "..."
+    },
+    "devDependencies": {
+        "typescript": "...",
+        "vite": "..."
+    }
+}
+```
+
+Version values should not introduce a new workspace dependency convention solely for the website.
+
+### Website Organization
+
+A multi-page structure keeps each demonstration independent and makes its HTML easy to inspect:
+
+| Location                                | Purpose                                                   |
+| --------------------------------------- | --------------------------------------------------------- |
+| `index.html`                            | Demonstration index and package introduction.             |
+| `examples/basic/index.html`             | Basic SimpleDom form.                                     |
+| `examples/presentations/index.html`     | Field and form presentations.                             |
+| `examples/aria/index.html`              | ARIA attributes and dedicated error-message elements.     |
+| `examples/replacement/index.html`       | Partial DOM replacement and reinstallation.               |
+| `examples/multiple-managers/index.html` | Container Identifier isolation.                           |
+| `examples/custom-dom/index.html`        | Direct `jivs-dom` use without SimpleDom.                  |
+| `src/shared/`                           | Website-only layout, logging, and demonstration helpers.  |
+| `src/examples/`                         | TypeScript entry modules for individual demonstrations.   |
+| `public/`                               | Static website assets that are not produced by a package. |
+
+Each demonstration page should load one small TypeScript entry module. Shared website code must remain presentation or demonstration infrastructure rather than becoming an undocumented library implementation.
+
+The Vite production configuration must list every demonstration HTML file as a build input. The resulting `dist` directory is a deployable static website.
+
+### Consuming Workspace Packages
+
+The website should import only public package entry points:
+
+```ts
+import {
+    ValueHostsManager
+} from "@plblum/jivs-engine";
+
+import {
+    ElementRole
+} from "@plblum/jivs-dom";
+
+import {
+    SimpleDomFormInstaller
+} from "@plblum/jivs-simpledom";
+```
+
+CSS should also use explicit public exports when possible:
+
+```ts
+import "@plblum/jivs-dom/styles.css";
+import "@plblum/jivs-simpledom/styles.css";
+```
+
+The corresponding package `exports` maps must expose those CSS files.
+
+Avoid Vite aliases that point directly into sibling `src` directories. Such aliases can make development convenient while bypassing the package entry points that consumers actually receive.
+
+When the repository’s normal package build produces JavaScript before consumption, the website build must run after its dependent libraries. During active development, the repository may use its existing watch orchestration to rebuild those packages while Vite serves the website.
+
+### Website Runtime
+
+The initial website requires no application server.
+
+Node.js runs:
+
+* the Vite development server;
+* the Vite production build;
+* the local production preview server.
+
+The generated site is static and can later be hosted by GitHub Pages or another static host.
+
+A custom Node server should be added only when a demonstration genuinely requires server behavior, such as server-side validation or round-trip examples. That server should remain demonstration infrastructure and should not become a runtime dependency of `jivs-dom` or `jivs-simpledom`.
+
+### TypeScript DOM Configuration
+
+The TypeScript configurations for `jivs-dom`, `jivs-simpledom`, and the website must include browser declarations.
+
+Their effective compiler options must include the appropriate ECMAScript library together with:
+
+```json
+{
+    "lib": [
+        "ES2022",
+        "DOM",
+        "DOM.Iterable"
+    ]
+}
+```
+
+The exact ECMAScript version should follow the repository’s current target rather than adopting `ES2022` merely from this example.
+
+Node-only packages should not acquire DOM declarations through the root configuration unless they already intentionally include them. DOM libraries can extend the shared configuration and add the browser libraries locally.
+
+### Jest DOM Environment
+
+`jivs-dom` and `jivs-simpledom` should continue using Jest and the repository’s existing TypeScript transformation.
+
+Each DOM package adds a development dependency on:
+
+```text
+jest-environment-jsdom
+```
+
+Its major version should match the installed Jest major version.
+
+The effective Jest configuration for those packages sets:
+
+```ts
+testEnvironment: "jsdom"
+```
+
+The configuration may also establish a stable document URL:
+
+```ts
+testEnvironmentOptions: {
+    url: "http://localhost/"
+}
+```
+
+The existing Node test environment should remain in effect for `jivs-engine` and other packages that do not require browser globals.
+
+Do not change the entire monorepo to JSDOM merely because the new packages require it.
+
+### Jest Configuration Reuse
+
+If the repository has a shared Jest configuration, the DOM packages should extend it and override only their environment-specific settings.
+
+Conceptually:
+
+```ts
+export default {
+    ...sharedJestConfig,
+    testEnvironment: "jsdom",
+    testEnvironmentOptions: {
+        url: "http://localhost/"
+    },
+    setupFilesAfterEnv: [
+        "<rootDir>/test/setupTests.ts"
+    ]
+};
+```
+
+The exact module syntax and transform settings must match the existing Jest and `ts-jest` configuration.
+
+The DOM packages should not establish a second, competing TypeScript-to-Jest pipeline.
+
+### DOM Test Setup
+
+JSDOM supplies `document`, `HTMLElement`, native element classes, selectors, attributes, and DOM events.
+
+Tests should construct actual simulated elements:
+
+```ts
+const input = document.createElement("input");
+input.type = "text";
+input.value = "New value";
+
+document.body.append(input);
+
+input.dispatchEvent(
+    new Event("change", {
+        bubbles: true
+    })
+);
+```
+
+Do not replace standard DOM elements, selector behavior, or event bubbling with handwritten mocks.
+
+A shared package-local setup file may reset document state after each test:
+
+```ts
+afterEach(() => {
+    document.head.replaceChildren();
+    document.body.replaceChildren();
+});
+```
+
+Tests must also reset or recreate mutable service registrations that are not owned by the removed elements.
+
+Each test should normally create its own:
+
+* `JivsServices`;
+* DOM services;
+* `ValueHostsManager`;
+* elements;
+* adapter and presentation registrations that differ from defaults.
+
+This prevents registration replacement or installed element state from leaking between tests.
+
+### What JSDOM Tests Should Verify
+
+JSDOM unit tests should verify observable logic, including:
+
+* `resolveContainerElement()` and `resolveFieldElement()`;
+* root-self matching before descendant matching;
+* valid selectors with no matches;
+* invalid-selector propagation;
+* installed `IJivsDomElement` properties;
+* adapter-definition selection and priority;
+* adapter read and write behavior;
+* actual DOM event submission to an `IFieldValueHost`;
+* bubbling behavior for composite editors;
+* presentation-created content and CSS classes;
+* ARIA attributes and dedicated error-message text;
+* dispatcher consumer discovery on every invocation;
+* behavior after removal or replacement of elements;
+* full and partial form installation;
+* installation idempotency;
+* collector disposal;
+* generated error-message HTML.
+
+Queries should be made through normal DOM APIs such as:
+
+```ts
+element.matches(selector);
+element.querySelector(selector);
+root.querySelectorAll(selector);
+```
+
+Events should use the same event names, bubbling settings, and target relationships expected in the browser.
+
+### JSDOM Limitations
+
+JSDOM is not a rendering engine.
+
+Unit tests should not use it to prove:
+
+* visual layout;
+* computed element dimensions;
+* popup positioning;
+* actual screen-reader announcements;
+* browser focus behavior in every browser;
+* complete native constraint-validation behavior;
+* CSS appearance;
+* browser-specific file-input security behavior.
+
+CSS-related unit tests may verify that code assigns or removes the expected classes and attributes. They should not claim that the resulting page is visually correct.
+
+The demonstration website supplies manual browser verification during the initial implementation.
+
+A later browser integration suite may use Playwright when behavior depends on layout, focus, native browser controls, or complete page interaction. Playwright is not required to begin implementation of the DOM packages.
+
+### Test Organization
+
+Each DOM package should keep tests near its established package test location and group them by public responsibility.
+
+Recommended `jivs-dom` test areas include:
+
+* installed element state;
+* adapter factory;
+* individual native adapter definitions;
+* editor installer;
+* field presentation factory and installer;
+* form presentation factory and installer;
+* Issues Found formatter;
+* ARIA updater classes;
+* dispatcher service and callback composition;
+* dispatcher base failure behavior;
+* element resolution;
+* field and form collectors;
+* `JivsDomServiceBase`.
+
+Recommended `jivs-simpledom` test areas include:
+
+* attribute parsing;
+* role discovery;
+* collector population;
+* SimpleDom dispatcher discovery;
+* `SimpleDomAriaService`;
+* `SimpleDomServices`;
+* `SimpleDomFormInstaller`;
+* repeated and partial installation;
+* installation after DOM replacement.
+
+Tests for `jivs-dom` must not use SimpleDom attributes unless the test is verifying that generic behavior ignores them.
+
+### Public Exports
+
+`@plblum/jivs-dom` should export its public contracts, abstract bases, concrete reusable implementations, option and installation-record interfaces, standard editor definitions, presentations, ARIA updaters, formatter, and CSS entry point.
+
+`@plblum/jivs-simpledom` should export:
+
+* SimpleDom attribute-name constants;
+* `SimpleDomServices`;
+* `SimpleDomFormInstaller`;
+* concrete SimpleDom dispatcher classes;
+* `SimpleDomAriaService`;
+* public SimpleDom option types;
+* its CSS entry point.
+
+Internal selector-building helpers and package-registration implementation details do not need public exports unless applications require them to implement documented customization.
+
+The website exports nothing.
+
+### CSS and Published Assets
+
+`@plblum/jivs-dom` publishes its framework-independent CSS, including:
+
+* standard presentation classes;
+* validation-state classes;
+* Required Indicator classes;
+* Field Error Display classes;
+* `jivs-visually-hidden`.
+
+`@plblum/jivs-simpledom` publishes CSS that depends on its attributes or markup convention.
+
+Both packages must:
+
+* copy their CSS into the package output;
+* include the CSS in the NPM `files` list;
+* expose stable CSS subpaths through `package.json`;
+* verify the packed package rather than relying only on repository-local imports.
+
+The website may add demonstration layout and navigation CSS, but it must not silently provide CSS required by the published libraries.
+
+### Root Commands
+
+The root package should provide convenient commands using the repository’s existing workspace or Lerna convention.
+
+The intended capabilities are:
+
+| Command capability | Result                                                      |
+| ------------------ | ----------------------------------------------------------- |
+| Build DOM packages | Builds `jivs-dom` and `jivs-simpledom` in dependency order. |
+| Test DOM packages  | Runs their JSDOM Jest suites.                               |
+| Start DOM website  | Builds or watches dependencies and starts Vite.             |
+| Build DOM website  | Builds dependencies and then produces the static website.   |
+| Test all           | Includes both new package test suites.                      |
+| Build all          | Includes both libraries and the website.                    |
+
+Exact command text should be based on the current root scripts and task orchestration rather than introducing a second monorepo command style.
+
+### Publishing Order
+
+When engine changes are required, the publishing order is:
+
+1. `@plblum/jivs-engine`
+2. `@plblum/jivs-dom`
+3. `@plblum/jivs-simpledom`
+
+The website is not published to NPM. Its static build is deployed separately.
+
+`jivs-dom` declares its engine dependency according to the repository’s existing dependency policy. `jivs-simpledom` declares dependencies on both `jivs-engine` and `jivs-dom` when it imports their public APIs directly.
+
+### Starter-Code and Documentation Migration
+
+Reusable DOM behavior moves from starter code into the published packages.
+
+The migration must identify:
+
+* starter code replaced by `jivs-dom`;
+* starter code replaced by `jivs-simpledom`;
+* submission-related code that remains outside both packages;
+* Learning Jivs examples that should import the new packages;
+* CSS references that must use the published assets;
+* obsolete SimpleDom initialization functions.
+
+The demonstration website becomes the executable source for current examples. Documentation may quote or link to those examples, but duplicate implementations should not remain authoritative in both starter code and the website.
+
+### Implementation Checklist
+
+1. Apply the required `jivs-engine` API changes.
+2. Create `packages/jivs-dom`.
+3. Add DOM TypeScript libraries and package-scoped JSDOM Jest configuration.
+4. Implement and test the installed-element contracts.
+5. Implement and test adapters, factories, and installers.
+6. Implement and test presentations, formatting, and ARIA updaters.
+7. Implement and test dispatchers and callback attachment.
+8. Implement and test form installation coordination.
+9. Create `packages/jivs-simpledom`.
+10. Implement and test SimpleDom services, discovery, dispatchers, ARIA, and form installation.
+11. Publish and test CSS package assets.
+12. Create the private `packages/jivs-dom-website` Vite workspace.
+13. Add the demonstration index and focused example pages.
+14. Build the website exclusively through public package exports.
+15. Migrate applicable starter code and Learning Jivs examples.
+16. Run package tests, package builds, packing verification, and the website production build.
+17. Publish in dependency order.
+18. Deploy the static demonstration website separately.
