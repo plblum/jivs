@@ -3915,3 +3915,599 @@ Attaching different dispatcher categories to the same configuration is valid. At
 Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
 
 Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed consumers. The installation coordinator performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
+
+## Form Installation Coordination
+
+Creating an `IValueHostsManager` establishes the Jivs fields and their validation state. It does not locate DOM elements, connect editors to those fields, install validation presentations, or synchronize the DOM with validation state that may already exist.
+
+Form installation bridges that gap.
+
+The application calls one public `install()` operation after creating the manager. A concrete form installer identifies the field and form elements represented by its markup. Shared collectors normalize those discoveries and align field elements with their `IFieldValueHost`. `DomFormInstallerBase` then invokes the editor and presentation installers and performs the initial validation-state ARIA pass.
+
+This separates two responsibilities:
+
+* `jivs-dom` owns collection, field alignment, installation coordination, and initial ARIA synchronization.
+* A concrete package or application owns the markup-specific rules used to discover elements.
+
+`jivs-simpledom` supplies a screen-scraping implementation. An application may instead create a form-specific subclass that explicitly identifies every applicable element.
+
+Installation is repeatable. The same coordinator supports initial installation, partial installation, and reinstallation after DOM replacement.
+
+A typical application follows this sequence:
+
+```ts
+const jivsServices = createJivsServices('en-US');
+const domServices = /* Section 12 retrieval API */;
+
+const rules = new PersonFormRules(jivsServices);
+const config = rules.configure();
+
+domServices.dispatchers.attachTextValueChanged(config);
+domServices.dispatchers.attachValueChanged(config);
+domServices.dispatchers.attachValueHostValidationStateChanged(config);
+domServices.dispatchers.attachValidationStateChanged(config);
+
+const valueHostsManager = new ValueHostsManager(config);
+const formInstaller = new SimpleDomFormInstaller(domServices);
+
+formInstaller.install(valueHostsManager);
+```
+
+Section 12 will replace the provisional `domServices` line after defining how `IJivsDomServices` is installed into and retrieved from `IJivsServices`.
+
+### Architecture
+
+`IDomFormInstaller` defines the public operation used by the application. `DomFormInstallerBase` implements the coordination algorithm.
+
+A concrete subclass supplies only the two markup-specific discovery methods. Those methods populate the collectors created by the base class. The base class consumes the collected records and performs the installation work.
+
+```mermaid
+classDiagram
+    class IDomFormInstaller {
+        +install(valueHostsManager, root)
+    }
+
+    class DomFormInstallerBase {
+        #domServices
+        +install(valueHostsManager, root)
+        #identifyFieldElements(root, collector)
+        #identifyFormElements(root, collector)
+    }
+
+    class ConcreteDomFormInstaller
+    class FieldElementCollector
+    class FormElementCollector
+    class IJivsDomServices
+
+    IDomFormInstaller <|.. DomFormInstallerBase
+    DomFormInstallerBase <|-- ConcreteDomFormInstaller
+    DomFormInstallerBase --> IJivsDomServices : uses
+    ConcreteDomFormInstaller ..> FieldElementCollector : populates
+    DomFormInstallerBase ..> FieldElementCollector : creates and consumes
+    DomFormInstallerBase ..> FormElementCollector : creates and consumes
+    ConcreteDomFormInstaller ..> FormElementCollector : populates
+```
+
+`ConcreteDomFormInstaller` represents either `SimpleDomFormInstaller` or an application-defined subclass.
+
+### Coordination After Discovery
+
+The architecture continues after the concrete subclass finishes populating both collectors. `DomFormInstallerBase` consumes their records and coordinates the specialized installers and ARIA service.
+
+```mermaid
+flowchart TB
+    FIELD["Populated FieldElementCollector"]
+    FORM["Populated FormElementCollector"]
+    BASE["DomFormInstallerBase"]
+    EDITOR["EditorInstaller"]
+    PRESENTATION["Field and Form Presentation Installers"]
+    ARIA["ARIA Service"]
+
+    FIELD --> BASE
+    FORM --> BASE
+    BASE --> EDITOR
+    BASE --> PRESENTATION
+    BASE --> ARIA
+```
+
+The concrete subclass does not invoke these installers itself.
+
+### Form Installation Implementation Inventory
+
+| Type or class                          | Package          | Kind           | Purpose                                                                                             |
+| -------------------------------------- | ---------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| `IDomFormInstaller`                    | `jivs-dom`       | Interface      | Defines the public operation that installs one manager into a DOM region.                           |
+| `DomFormInstallerBase`                 | `jivs-dom`       | Abstract class | Coordinates discovery, element installation, and initial validation-state ARIA.                     |
+| `FieldElementCollector`                | `jivs-dom`       | Class          | Aligns discovered field elements with FieldValueHosts and collects normalized installation records. |
+| `FormElementCollector`                 | `jivs-dom`       | Class          | Collects normalized form-presentation installation records.                                         |
+| `EditorElementInstallation`            | `jivs-dom`       | Interface      | Describes one discovered editor and its resolved field and options.                                 |
+| `FieldPresentationElementInstallation` | `jivs-dom`       | Interface      | Describes one discovered presentation-only field element.                                           |
+| `FormElementInstallation`              | `jivs-dom`       | Interface      | Describes one discovered form-presentation element.                                                 |
+| `SimpleDomFormInstaller`               | `jivs-simpledom` | Concrete class | Discovers elements using the SimpleDom markup convention.                                           |
+
+The three installation-record interfaces and both collectors are public. Applications may use the collectors without using `DomFormInstallerBase`.
+
+### Supported Field-Discovery Approaches
+
+Field discovery must associate each discovered element with an `IFieldValueHost`. The collectors support two approaches.
+
+#### Element Identifier Alignment
+
+A screen-scraping implementation first discovers the DOM element. It then obtains the Element Identifier from the markup and passes it to the field collector.
+
+The collector resolves the field through:
+
+```ts
+valueHostsManager.getFieldByElementIdentifier(elementIdentifier);
+```
+
+`jivs-simpledom` uses this approach because the DOM is the source of the discovered elements.
+
+#### Direct FieldValueHost Alignment
+
+Application-specific code may already know which field belongs to an element. It may pass that `IFieldValueHost` directly to the collector.
+
+The collector uses the supplied field without verifying that it belongs to the manager used to construct the collector.
+
+Both approaches produce the same normalized installation records.
+
+### FieldElementCollector
+
+`FieldElementCollector` is the translation boundary between markup-specific field discovery and installation coordination.
+
+Concrete discovery finds an element and calls `addEditor()` or `addPresentation()`. It supplies either an Element Identifier or an already-known `IFieldValueHost`. The collector resolves any required field alignment and stores the result in the appropriate collection.
+
+The collector does not install elements. Its consumer processes the collected records after discovery completes.
+
+Its per-installation workflow is:
+
+1. Receive a discovered element and its installation characteristics.
+2. Resolve an Element Identifier when one was supplied.
+3. Retain the supplied or resolved `IFieldValueHost`.
+4. Normalize the discovery into an editor or presentation-only record.
+5. Add the record to the appropriate public read-only collection.
+
+#### Field Installation Records
+
+```ts
+interface EditorElementInstallation {
+    element: IJivsDomElement | null;
+    fieldValueHost: IFieldValueHost | null;
+    elementIdentifier: string | null;
+    editorOptions?: EditorInstallOptions;
+}
+
+interface FieldPresentationElementInstallation {
+    element: IJivsDomElement | null;
+    fieldValueHost: IFieldValueHost | null;
+    elementIdentifier: string | null;
+    role: ElementRole | string;
+    presentationOnlyOptions?: FieldPresentationInstallOptions;
+}
+```
+
+While the collector is active, every added record has a non-null `element`.
+
+When discovery supplies an Element Identifier, `elementIdentifier` retains that string whether or not a matching field is found.
+
+When discovery supplies an `IFieldValueHost` directly, `elementIdentifier` is `null`.
+
+Editor records contain `EditorInstallOptions`. Editor Adapter Definitions remain responsible for supplying any specialized editor ARIA updaters.
+
+Presentation-only records contain `FieldPresentationInstallOptions`. Their name distinguishes them from the presentation work that `EditorInstaller` performs for an editor.
+
+#### FieldElementCollector Contract
+
+```ts
+class FieldElementCollector {
+    constructor(domServices: IJivsDomServices, valueHostsManager: IValueHostsManager);
+
+    readonly editors: readonly EditorElementInstallation[];
+    readonly presentations: readonly FieldPresentationElementInstallation[];
+
+    addEditor(
+        element: IJivsDomElement,
+        elementIdentifier: string,
+        options?: EditorInstallOptions
+    ): void;
+
+    addEditor(
+        element: IJivsDomElement,
+        fieldValueHost: IFieldValueHost,
+        options?: EditorInstallOptions
+    ): void;
+
+    addPresentation(
+        element: IJivsDomElement,
+        elementIdentifier: string,
+        role: ElementRole | string,
+        options?: FieldPresentationInstallOptions
+    ): void;
+
+    addPresentation(
+        element: IJivsDomElement,
+        fieldValueHost: IFieldValueHost,
+        role: ElementRole | string,
+        options?: FieldPresentationInstallOptions
+    ): void;
+
+    dispose(): void;
+}
+```
+
+A screen-scraping implementation may add an editor by Element Identifier:
+
+```ts
+collector.addEditor(editorElement, elementIdentifier, editorOptions);
+```
+
+Application-specific discovery may add an element using a field it already obtained:
+
+```ts
+collector.addPresentation(
+    errorElement,
+    fieldValueHost,
+    ElementRole.error,
+    presentationOptions
+);
+```
+
+#### Element Identifier Resolution
+
+The collector owns a per-instance cache:
+
+```ts
+Map<string, IFieldValueHost | null>
+```
+
+Resolution is lazy. The first occurrence of an Element Identifier calls:
+
+```ts
+valueHostsManager.getFieldByElementIdentifier(elementIdentifier);
+```
+
+The returned `IFieldValueHost` or `null` is cached. Later occurrences of the same identifier reuse that result.
+
+Caching `null` is intentional. It avoids repeated manager searches and repeated log entries for multiple elements that refer to the same missing field.
+
+A missing field is logged at Warning level once for that Element Identifier. The collector still adds every applicable record with:
+
+```ts
+fieldValueHost: null
+```
+
+The public collections therefore preserve the complete discovery result. Consumers decide how to handle unresolved records. `DomFormInstallerBase` skips them during installation.
+
+#### Collection and Disposal Behavior
+
+The collector preserves every added record without duplicate detection.
+
+The same DOM element may legitimately participate in more than one role. Installation completion and duplicate-call behavior remain the responsibility of the individual element installers.
+
+The collector owns installation records that reference DOM elements and FieldValueHosts. Its consumer is responsible for calling `dispose()` when finished with those records.
+
+At minimum, `dispose()` nulls every retained `element` and `fieldValueHost` property. Other disposal mechanics are implementation details.
+
+`DomFormInstallerBase` is responsible for disposing the collectors it creates. An application using a collector independently assumes that responsibility itself.
+
+### FormElementCollector
+
+`FormElementCollector` performs the corresponding normalization for form-presentation elements.
+
+Form elements are associated with the complete `IValueHostsManager`, so they require no field alignment. Concrete discovery supplies the element, its role, and any form-presentation options. The collector retains a normalized record for later installation.
+
+The collector does not install presentations.
+
+#### Form Installation Record
+
+```ts
+interface FormElementInstallation {
+    element: IJivsDomElement | null;
+    role: ElementRole | string;
+    presentationOptions?: FormPresentationInstallOptions;
+}
+```
+
+While the collector is active, every added record has a non-null `element`.
+
+#### FormElementCollector Contract
+
+```ts
+class FormElementCollector {
+    constructor(domServices: IJivsDomServices);
+
+    readonly presentations: readonly FormElementInstallation[];
+
+    addPresentation(
+        element: IJivsDomElement,
+        role: ElementRole | string,
+        options?: FormPresentationInstallOptions
+    ): void;
+
+    dispose(): void;
+}
+```
+
+The collector does not require an `IValueHostsManager`. The manager is supplied later when `DomFormInstallerBase` invokes `IFormPresentationInstaller`.
+
+It preserves every added record without duplicate detection.
+
+Its consumer is responsible for calling `dispose()` when finished. At minimum, disposal nulls every retained `element` property.
+
+### IDomFormInstaller and DomFormInstallerBase
+
+`IDomFormInstaller` is the application-facing entry point.
+
+```ts
+interface IDomFormInstaller {
+    install(valueHostsManager: IValueHostsManager, root?: HTMLElement): void;
+}
+```
+
+A form is the logical DOM region managed by one `IValueHostsManager`. It does not need to be represented by an HTML `<form>` element.
+
+The application calls `install()` after constructing the manager. It may omit `root` for full installation or supply a root for a partial DOM region.
+
+`DomFormInstallerBase` implements this public operation. A subclass must supply the markup-specific portion by implementing `identifyFieldElements()` and `identifyFormElements()`.
+
+```ts
+abstract class DomFormInstallerBase implements IDomFormInstaller {
+    protected constructor(protected readonly domServices: IJivsDomServices) {
+    }
+
+    public install(valueHostsManager: IValueHostsManager, root?: HTMLElement): void;
+
+    protected abstract identifyFieldElements(
+        root: HTMLElement,
+        collector: FieldElementCollector
+    ): void;
+
+    protected abstract identifyFormElements(
+        root: HTMLElement,
+        collector: FormElementCollector
+    ): void;
+}
+```
+
+The public and protected responsibilities are distinct:
+
+* `install()` owns root resolution, collector construction, installer invocation, initial ARIA synchronization, and collector disposal.
+* `identifyFieldElements()` finds field elements and adds them to the field collector.
+* `identifyFormElements()` finds form-presentation elements and adds them to the form collector.
+
+A subclass does not invoke the editor or presentation installers itself.
+
+`DomFormInstallerBase` directly creates the standard collectors for every installation call. Collector factories and protected collector-creation hooks are not required.
+
+The base retains only `domServices`. It does not retain a manager, root, collectors, installation records, or installation state between calls.
+
+One installer instance may therefore be reused for multiple managers and repeated full or partial installations.
+
+`IJivsDomServices` does not expose or retain an `IDomFormInstaller`. Applications construct the appropriate concrete installer explicitly and supply its `IJivsDomServices`.
+
+### Developer Participation Workflow
+
+From the developer’s perspective, the public call and subclass responsibilities form this workflow:
+
+```mermaid
+flowchart TB
+    APP["Application calls install()"]
+    BASE["Base resolves the installation root"]
+    SUBCLASS["Subclass identifies field and form elements"]
+    COLLECTORS["Collectors align and retain records"]
+    COMPLETE["Base invokes installers and initial ARIA"]
+
+    APP --> BASE
+    BASE --> SUBCLASS
+    SUBCLASS --> COLLECTORS
+    COLLECTORS --> COMPLETE
+```
+
+`jivs-simpledom` supplies `SimpleDomFormInstaller`, whose discovery methods interpret the SimpleDom attribute convention.
+
+An application using `jivs-dom` directly may instead create a form-specific subclass. Such a subclass may explicitly locate each element and call the collector methods with either an Element Identifier or a known `IFieldValueHost`.
+
+### Installation Workflow
+
+The complete installation order is:
+
+```mermaid
+flowchart TB
+    ROOT["Resolve or accept root"]
+    DISCOVERY["Subclass populates field and form collectors"]
+    EDITORS["Process collected editor records"]
+    PRESENTATIONS["Process collected field and form presentation records"]
+    ARIA["Apply ARIA to distinct fields in the field collections"]
+
+    ROOT --> DISCOVERY
+    DISCOVERY --> EDITORS
+    EDITORS --> PRESENTATIONS
+    PRESENTATIONS --> ARIA
+```
+
+`install()` performs these operations:
+
+1. Uses the supplied root when present.
+2. Otherwise calls `domServices.resolveContainerElement(valueHostsManager)`.
+3. Logs and throws when the configured container cannot be resolved.
+4. Constructs a new `FieldElementCollector`.
+5. Constructs a new `FormElementCollector`.
+6. Calls both concrete discovery methods.
+7. Processes the collected editor records.
+8. Processes the collected presentation-only field records.
+9. Processes the collected form-presentation records.
+10. Obtains each distinct, non-null `IFieldValueHost` represented in the field collector’s two lists.
+11. Applies current validation-state ARIA for those fields.
+12. Disposes both collectors after consuming their records.
+
+Both discovery methods must return successfully before element installation begins.
+
+The supplied root participates in concrete discovery. Discovery examines both the root itself and its descendants.
+
+The first three installation categories have no dependency on one another. Their fixed order makes the implementation deterministic. Initial validation-state ARIA begins only after all element installation completes successfully.
+
+### Invoking the Element Installers
+
+For each usable editor record, the coordinator calls:
+
+```ts
+domServices.editorInstaller.install(
+    record.fieldValueHost,
+    record.element,
+    record.editorOptions
+);
+```
+
+A usable editor record has a non-null `element` and `fieldValueHost`.
+
+`EditorInstaller` also performs the editor’s field-presentation and static ARIA installation.
+
+For each usable presentation-only field record, the coordinator calls:
+
+```ts
+domServices.fieldPresentationInstaller.install(
+    record.fieldValueHost,
+    record.element,
+    record.role,
+    record.presentationOnlyOptions
+);
+```
+
+A usable presentation-only record has a non-null `element` and `fieldValueHost`.
+
+For each usable form-presentation record, the coordinator calls:
+
+```ts
+domServices.formPresentationInstaller.install(
+    valueHostsManager,
+    record.element,
+    record.role,
+    record.presentationOptions
+);
+```
+
+A usable form-presentation record has a non-null `element`.
+
+Field records whose `fieldValueHost` is `null` remain available from the collector but are skipped by the coordinator.
+
+The coordinator performs no duplicate detection. Each individual installer owns its element-level completed-installation guard.
+
+### Initial Validation-State ARIA
+
+Field and form presentation installers initialize their presentations from current validation state during their own installation work:
+
+```ts
+fieldPresentation.apply(
+    valueHost,
+    valueHost.currentValidationState
+);
+```
+
+```ts
+formPresentation.apply(
+    valueHostsManager,
+    valueHostsManager.currentValidationState(group)
+);
+```
+
+These calls allow each newly installed visual presentation to immediately reflect validation state that already exists.
+
+The presentation installers also perform static ARIA installation. They do not perform the final field-level validation-state ARIA pass.
+
+After every collected element has been processed, `DomFormInstallerBase` obtains each distinct, non-null `IFieldValueHost` represented in the editor and presentation-only collections. It then calls:
+
+```ts
+ariaService.applyValidationState(
+    root,
+    valueHost,
+    valueHost.currentValidationState
+);
+```
+
+This synchronizes all newly installed ARIA consumers for that field after its editor and other field elements are ready.
+
+The same root used for discovery limits the ARIA search. When the caller supplies a partial root, that root must contain all related elements needed for each collected field.
+
+Later validation-state changes are handled by `FieldValidationDispatcher`. The form installer performs only the initial synchronization.
+
+The form installer does not call `broadcastState()`.
+
+### Installation Effects
+
+The complete installation process produces these effects:
+
+| Installation effect                                                   | Responsible coordinator                                 | Current state consumed                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------- |
+| Select the Editor Adapter Definition and installation anchor          | `EditorInstaller`                                       | No                                                |
+| Create Text Value and Native Value adapters                           | `EditorInstaller`                                       | No                                                |
+| Attach DOM-to-Jivs event handling                                     | `EditorInstaller`                                       | No                                                |
+| Initialize the editor’s field presentation                            | `EditorInstaller`, through `FieldPresentationInstaller` | `valueHost.currentValidationState`                |
+| Initialize a presentation-only field element                          | `FieldPresentationInstaller`                            | `valueHost.currentValidationState`                |
+| Initialize a form presentation                                        | `FormPresentationInstaller`                             | `valueHostsManager.currentValidationState(group)` |
+| Apply static field ARIA and retain its validation-state updater       | `FieldPresentationInstaller`                            | No                                                |
+| Apply static form ARIA                                                | `FormPresentationInstaller`                             | No                                                |
+| Apply initial validation-state ARIA for each distinct collected field | `DomFormInstallerBase`, through `IDomAriaService`       | `valueHost.currentValidationState`                |
+| Record completed installation on each element                         | The applicable editor or presentation installer         | No                                                |
+
+### Failure Handling
+
+An unmatched Element Identifier is not an installation failure. The field collector logs it, retains the corresponding records with `fieldValueHost: null`, and allows discovery to continue.
+
+Other failures stop installation immediately.
+
+A failure from container resolution, concrete discovery, field resolution, collector processing, an individual installer, or initial ARIA processing is logged through:
+
+```ts
+this.domServices.jivsServices.loggingService
+```
+
+The original error is then rethrown.
+
+If either discovery method throws, no collected element is installed during that call because installation begins only after both discovery methods return successfully.
+
+Successful installation work is not rolled back. Element-owned completion state remains assigned for operations that completed before a later failure.
+
+A subsequent installation call may retry safely. Completed elements become no-ops, while incomplete elements are attempted again.
+
+The collectors must still be disposed when installation exits because of a failure.
+
+### Required Setup Order
+
+Applications use the DOM services in this order:
+
+1. Configure `DomServices`, registrations, and Dispatcher Creators.
+2. Attach dispatcher callbacks to `ValueHostsManagerConfig`.
+3. Construct the `ValueHostsManager`.
+4. Construct or obtain the concrete `IDomFormInstaller`.
+5. Call `install(valueHostsManager, root?)`.
+6. Perform any application-specific `broadcastState()` call separately.
+
+Dispatcher attachment does not discover or install DOM elements.
+
+### Repeated and Partial Installation
+
+Calling `install()` again is supported.
+
+When no root override is supplied, the coordinator resolves the manager’s configured container and processes the complete region.
+
+When a root override is supplied, discovery, element installation, and initial ARIA processing are limited to that root and its descendants. The root itself participates in discovery.
+
+The override does not need to equal the manager’s configured container. The caller owns its correctness. The coordinator does not validate that it belongs to the configured container.
+
+The collectors and their records belong only to the current installation call. The form installer disposes them after consuming their records.
+
+### DOM Replacement
+
+DOM replacement requires no uninstall or cleanup operation for detached elements.
+
+After replacing a DOM region, the application calls:
+
+```ts
+installer.install(valueHostsManager, replacementRoot);
+```
+
+Detached elements take their installed adapters, presentations, completion state, and event handlers with them. Services and installers do not retain those elements through the collectors.
+
+Unchanged elements remain protected by their completed-installation state. Replacement elements begin without that state and are installed normally.
+
+Existing dispatchers require no reattachment because they perform fresh consumer discovery during every dispatch.
