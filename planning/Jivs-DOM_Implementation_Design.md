@@ -4508,3 +4508,516 @@ Detached elements take their installed adapters, presentations, completion state
 Unchanged elements remain protected by their completed-installation state. Replacement elements begin without that state and are installed normally.
 
 Existing dispatchers require no reattachment because they perform fresh consumer discovery during every dispatch.
+
+## DomServices and Module Installation
+
+### Conceptual Role
+
+`IJivsDomServices` is the root service contract for `jivs-dom`. It provides the shared DOM services, factories, installers, and element-resolution operations used by dispatchers, form installers, presentations, and ARIA processing.
+
+The service object belongs to one `IJivsServices` instance. It does not belong to a `ValueHostsManager` or form and does not retain managers, fields, DOM elements, element collections, or DOM subtrees.
+
+Applications do not construct a concrete service supplied by `jivs-dom`. Instead:
+
+* `jivs-dom` supplies `IJivsDomServices` and the abstract `JivsDomServiceBase`;
+* `jivs-simpledom` supplies `SimpleDomServices`;
+* an application using another markup convention derives its own service class from `JivsDomServiceBase`.
+
+There is no concrete `DomServices` class.
+
+```mermaid
+classDiagram
+    class IJivsDomServices
+    class JivsDomServiceBase
+    class SimpleDomServices
+    class ApplicationDomServices
+
+    IJivsDomServices <|.. JivsDomServiceBase
+    JivsDomServiceBase <|-- SimpleDomServices
+    JivsDomServiceBase <|-- ApplicationDomServices
+```
+
+`SimpleDomServices` is the ready-to-use implementation supplied with Jivs. An application-defined subclass uses the reusable `jivs-dom` implementations while supplying the behavior that depends on its own markup and discovery convention.
+
+### Relationship with JivsServices
+
+`IJivsDomServices` participates in the existing Jivs service architecture. It includes the contracts implemented by `ServiceBase` and `ServiceWithAccessorBase`.
+
+Conceptually:
+
+```ts
+interface IJivsDomServices
+    extends IService, IServicesAccessor {
+    // DOM child services and element-resolution methods.
+}
+
+abstract class JivsDomServiceBase
+    extends ServiceWithAccessorBase
+    implements IJivsDomServices {
+}
+```
+
+The inherited property is:
+
+```ts
+services: IJivsServices;
+```
+
+There is no separate `jivsServices` property.
+
+The DOM service object may be created before its associated `JivsServices`. Assigning it to the `domServices` property of `JivsServices` supplies the inherited `services` reference using the established `IServicesAccessor` behavior.
+
+`JivsDomServiceBase` does not accept an `IJivsServices` constructor parameter. Its constructor establishes no form-specific or element-specific state.
+
+### Service Collection
+
+`IJivsDomServices` exposes the following replaceable child services and factories:
+
+```ts
+interface IJivsDomServices
+    extends IService, IServicesAccessor {
+
+    dispatchers: IDomDispatcherService;
+
+    editorAdapterFactory:
+        IDomEditorAdapterFactory;
+
+    fieldPresentationFactory:
+        IFieldPresentationFactory;
+
+    formPresentationFactory:
+        IFormPresentationFactory;
+
+    editorInstaller:
+        IEditorInstaller;
+
+    fieldPresentationInstaller:
+        IFieldPresentationInstaller;
+
+    formPresentationInstaller:
+        IFormPresentationInstaller;
+
+    ariaService:
+        IDomAriaService | null;
+
+    issuesFoundFormatter:
+        IIssuesFoundFormatterService;
+
+    resolveContainerElement(
+        valueHostsManager: IValueHostsManager
+    ): HTMLElement | null;
+
+    resolveFieldElement(
+        root: HTMLElement | null,
+        valueHost: IFieldValueHost,
+        role: ElementRole | string,
+        elementIdentifierTemplate?: string
+    ): HTMLElement | null;
+}
+```
+
+`IJivsDomServices` does not expose:
+
+* an `IDomFormInstaller`;
+* an element-resolver service;
+* separate Text Value or Native Value installers;
+* form-specific installation state.
+
+Applications construct the appropriate concrete `IDomFormInstaller` themselves.
+
+### Lazy Child-Service Construction
+
+The `JivsDomServiceBase` instance is the installed DOM service object. Its child-service properties are created lazily.
+
+Each property getter:
+
+1. returns the currently assigned implementation when one exists;
+2. otherwise calls the corresponding protected creation method;
+3. retains and returns the created implementation.
+
+Each setter replaces the implementation used by future operations.
+
+The non-nullable properties reject `null` and `undefined`. `ariaService` is intentionally nullable because assigning `null` disables Jivs-managed ARIA behavior.
+
+The `ariaService` backing state distinguishes:
+
+| State            | Meaning                                 |
+| ---------------- | --------------------------------------- |
+| `undefined`      | The property has not yet been resolved. |
+| `null`           | ARIA support is explicitly disabled.    |
+| Service instance | The resolved ARIA service.              |
+
+Replacing a child service affects later operations that retrieve that property. It does not alter adapters, presentations, callbacks, or other behavior already installed on DOM elements.
+
+Replacing a factory affects later creations. It does not replace objects already created by the earlier factory.
+
+### Protected Creation Methods
+
+`JivsDomServiceBase` supplies a protected creation method for each lazy child property.
+
+When `jivs-dom` has a complete markup-independent implementation, the base class provides a concrete creation method. When the required implementation depends on a DOM convention, the base class requires the concrete service subclass to supply it.
+
+The intended ownership is:
+
+| Property                     | Default ownership                                                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `dispatchers`                | `JivsDomServiceBase` creates `DomDispatcherService`; the subclass supplies its Dispatcher Creators.                  |
+| `editorAdapterFactory`       | `JivsDomServiceBase` creates and populates the standard factory from the editor definitions supplied by `jivs-dom`.  |
+| `fieldPresentationFactory`   | `JivsDomServiceBase` creates and populates the standard factory from the field presentations supplied by `jivs-dom`. |
+| `formPresentationFactory`    | `JivsDomServiceBase` creates and populates the standard factory from the form presentations supplied by `jivs-dom`.  |
+| `editorInstaller`            | `JivsDomServiceBase` creates the concrete `EditorInstaller`.                                                         |
+| `fieldPresentationInstaller` | `JivsDomServiceBase` creates the concrete `FieldPresentationInstaller`.                                              |
+| `formPresentationInstaller`  | `JivsDomServiceBase` creates the concrete `FormPresentationInstaller`.                                               |
+| `ariaService`                | The concrete service subclass supplies the discovery-aware implementation.                                           |
+| `issuesFoundFormatter`       | `JivsDomServiceBase` creates `IssuesFoundFormatterService`.                                                          |
+
+The protected methods remain override points even when the base class supplies a standard implementation. Applications may alternatively replace the resulting public property.
+
+### Dispatcher Service Construction
+
+`DomDispatcherService` is markup-independent. It owns Dispatcher Creator registration, callback composition, missing-creator handling, and creation of one dispatcher for each callback attachment.
+
+`JivsDomServiceBase` therefore creates the standard `DomDispatcherService`. It does not create concrete dispatchers because their consumer discovery depends on the selected DOM convention.
+
+The concrete DOM service subclass supplies creators for:
+
+* Text Value dispatch;
+* Native Value dispatch;
+* field validation dispatch;
+* form validation dispatch.
+
+Conceptually, the base construction performs:
+
+```ts
+protected createDispatcherService():
+    IDomDispatcherService {
+
+    const result =
+        new DomDispatcherService(this);
+
+    result.registerTextValueChangedDispatcher(
+        this.createTextValueDispatcher
+    );
+
+    result.registerValueChangedDispatcher(
+        this.createValueDispatcher
+    );
+
+    result.registerValueHostValidationStateChangedDispatcher(
+        this.createFieldValidationDispatcher
+    );
+
+    result.registerValidationStateChangedDispatcher(
+        this.createFormValidationDispatcher
+    );
+
+    return result;
+}
+```
+
+The exact protected creator signatures must preserve the established `DispatcherCreator<TDispatcher>` contract:
+
+```ts
+type DispatcherCreator<TDispatcher> = (
+    domServices: IJivsDomServices,
+    options?: unknown
+) => TDispatcher;
+```
+
+`SimpleDomServices` supplies creators that construct the four SimpleDom dispatcher classes. An application-defined service subclass supplies creators for its own discovery-aware dispatchers.
+
+A separate `SimpleDomDispatcherService` subclass is not required.
+
+### Factory Ownership
+
+The three public factories are owned by the DOM service collection because applications need access to their registration APIs.
+
+#### Editor Adapter Factory
+
+`editorAdapterFactory` contains the registered `IDomEditorAdapterDefinition` objects.
+
+The standard creation method constructs `DomEditorAdapterFactory` and registers the built-in definitions supplied by `jivs-dom`, including:
+
+* ordinary input definitions;
+* `CheckboxAdapterDefinition`;
+* `InputRadioGroupAdapterDefinition`;
+* `TextAreaAdapterDefinition`;
+* `SelectAdapterDefinition`;
+* `FileInputAdapterDefinition`.
+
+The registrations are markup-independent. They recognize native editor behavior rather than SimpleDom attributes.
+
+Applications may register additional definitions or replace built-in adapter keys through the public factory. A service subclass may override the protected factory-creation method when it needs a different initial registry.
+
+#### Field Presentation Factory
+
+`fieldPresentationFactory` contains field-presentation creators and role defaults.
+
+The standard creation method constructs the concrete field presentation factory and registers the presentations supplied by `jivs-dom`. It also establishes the standard role defaults defined by the field-presentation architecture.
+
+Applications may add or replace registrations after retrieving the factory.
+
+#### Form Presentation Factory
+
+`formPresentationFactory` contains form-presentation creators and role defaults.
+
+The standard creation method constructs the concrete form presentation factory and registers the form presentations supplied by `jivs-dom`. It establishes the standard Validation Summary default and leaves the submit role without a default, as defined by the form-presentation architecture.
+
+Applications may add or replace registrations after retrieving the factory.
+
+### Installer Ownership and Construction
+
+The three specialized element installers have complete, markup-independent implementations in `jivs-dom`. `JivsDomServiceBase` therefore creates their concrete implementations.
+
+#### Field Presentation Installer
+
+The default property value is a concrete `FieldPresentationInstaller`.
+
+It uses the current DOM service collection to obtain:
+
+* `fieldPresentationFactory`;
+* `ariaService`;
+* `services.loggingService`.
+
+It does not retain a field, element, presentation, or validation state between calls.
+
+#### Form Presentation Installer
+
+The default property value is a concrete `FormPresentationInstaller`.
+
+It uses the current DOM service collection to obtain:
+
+* `formPresentationFactory`;
+* `ariaService`;
+* `services.loggingService`.
+
+It does not retain a manager, element, presentation, or validation state between calls.
+
+#### Editor Installer
+
+The default property value is a concrete `EditorInstaller`.
+
+`JivsDomServiceBase` owns its construction because all editor-installation coordination is defined by `jivs-dom`. The concrete DOM convention discovers the editor and supplies its installation options; it does not replace the coordination algorithm.
+
+`EditorInstaller` uses the current DOM service collection to obtain:
+
+* `editorAdapterFactory`;
+* `fieldPresentationInstaller`;
+* `services.loggingService`.
+
+Retaining `IJivsDomServices` rather than captured child-service instances allows later replacement of the factory or field presentation installer to affect subsequent editor installations.
+
+Conceptually:
+
+```ts
+protected createEditorInstaller():
+    IEditorInstaller {
+
+    return new EditorInstaller(this);
+}
+```
+
+`EditorInstaller` does not perform element discovery and does not interpret SimpleDom attributes.
+
+### ARIA Service Construction
+
+ARIA discovery depends on the DOM convention. `JivsDomServiceBase` therefore cannot construct a complete default `IDomAriaService`.
+
+Its protected ARIA creation method is abstract and returns:
+
+```ts
+IDomAriaService | null
+```
+
+`SimpleDomServices` returns `SimpleDomAriaService`.
+
+An application-defined service subclass returns its own `AriaServiceBase` descendant or another complete `IDomAriaService` implementation. It may return `null` when the convention intentionally disables Jivs-managed ARIA behavior.
+
+The standard ARIA updater classes remain owned by `jivs-dom`. The concrete ARIA service registers the applicable standard updater instances during its construction.
+
+### Issues Found Formatter Construction
+
+`JivsDomServiceBase` creates `IssuesFoundFormatterService` as the default `issuesFoundFormatter`.
+
+The formatter is markup-independent and requires no SimpleDom behavior. Presentations, ARIA updaters, and applications obtain it through the DOM service collection.
+
+A replacement affects later formatting operations. Existing generated HTML and text are not revised.
+
+### Element Resolution
+
+Element resolution belongs directly to `IJivsDomServices`:
+
+```ts
+interface IJivsDomServices {
+    resolveContainerElement(
+        valueHostsManager: IValueHostsManager
+    ): HTMLElement | null;
+
+    resolveFieldElement(
+        root: HTMLElement | null,
+        valueHost: IFieldValueHost,
+        role: ElementRole | string,
+        elementIdentifierTemplate?: string
+    ): HTMLElement | null;
+}
+```
+
+These methods are implemented by `JivsDomServiceBase`. A subclass overrides them when its markup convention requires different resolution.
+
+There is no `IDomElementResolver`.
+
+#### Container Resolution
+
+`resolveContainerElement()` obtains the Container Identifier from the supplied manager.
+
+When no Container Identifier is configured, it returns:
+
+```ts
+document.body
+```
+
+Otherwise, the Container Identifier is passed to `document.querySelector()`. It must therefore be a valid selector that identifies an `HTMLElement`.
+
+A valid selector with no match returns `null`. An invalid selector throws normally. When multiple elements match, the first match is returned without duplicate detection.
+
+The method does not fall back to `document.body` when a configured selector has no match.
+
+#### Field Element Resolution
+
+When `root` is `null`, `resolveFieldElement()` obtains the field’s manager through `valueHost.valueHostsManager` and calls `resolveContainerElement()`.
+
+If container resolution returns `null`, field resolution also returns `null`.
+
+The `JivsDomServiceBase` implementation uses the supplied `elementIdentifierTemplate`, or the role-independent `{0}` template when none is supplied:
+
+```ts
+const selector =
+    valueHost.getElementIdentifier(
+        elementIdentifierTemplate ?? "{0}"
+    );
+```
+
+The resulting Element Identifier must be a valid selector.
+
+The supplied root participates in resolution. The method first tests the root itself and then searches its descendants:
+
+```ts
+if (root.matches(selector)) {
+    return root;
+}
+
+return root.querySelector<HTMLElement>(
+    selector
+);
+```
+
+A valid selector with no match returns `null` without logging. Individual field roles are optional, and a partial root may legitimately exclude most fields.
+
+When multiple elements match, the first match is returned without duplicate detection. Selector uniqueness is the developer’s responsibility.
+
+The base implementation does not interpret `role`. A subclass may use it to select a role-specific identifier template or selector convention.
+
+An explicitly supplied `elementIdentifierTemplate` overrides the subclass’s normal role-derived template and is passed to `valueHost.getElementIdentifier()`.
+
+### SimpleDomServices
+
+`SimpleDomServices` extends `JivsDomServiceBase`.
+
+It supplies the convention-dependent parts of the service graph:
+
+* the four SimpleDom Dispatcher Creators;
+* `SimpleDomAriaService`;
+* role-based field-element resolution using the SimpleDom attribute convention.
+
+It inherits the standard:
+
+* editor adapter factory and built-in definitions;
+* field presentation factory;
+* form presentation factory;
+* editor installer;
+* field presentation installer;
+* form presentation installer;
+* Issues Found formatter;
+* container-selector resolution.
+
+`SimpleDomServices` does not create or retain a `SimpleDomFormInstaller`. The application constructs that installer explicitly:
+
+```ts
+const formInstaller =
+    new SimpleDomFormInstaller(domServices);
+```
+
+### Installation into JivsServices
+
+The DOM module augments `IJivsServices` with:
+
+```ts
+interface IJivsServices {
+    domServices: IJivsDomServices;
+}
+```
+
+The service is installed using the existing Jivs module-service mechanism. Assignment of the service to `JivsServices` also assigns its inherited `services` accessor.
+
+Because `JivsDomServiceBase` is abstract, `@plblum/jivs-dom` does not install an instance of that class.
+
+`@plblum/jivs-simpledom` installs `SimpleDomServices` as the standard concrete `domServices` implementation. An application using another convention installs its own `JivsDomServiceBase` descendant instead.
+
+The installed DOM service object is available through:
+
+```ts
+const domServices =
+    jivsServices.domServices;
+```
+
+Its child services remain lazy and are created when their properties are first requested.
+
+### Package Initialization Responsibilities
+
+`@plblum/jivs-dom` is responsible for:
+
+* declaring the `IJivsServices.domServices` module augmentation;
+* exporting `IJivsDomServices`;
+* exporting `JivsDomServiceBase`;
+* exporting the reusable module-service installation support;
+* exporting the standard child-service, factory, installer, dispatcher, adapter, presentation, formatter, and ARIA types;
+* supplying all markup-independent default construction.
+
+`@plblum/jivs-simpledom` is responsible for:
+
+* exporting `SimpleDomServices`;
+* installing `SimpleDomServices` as the standard concrete DOM service;
+* supplying the four SimpleDom Dispatcher Creators;
+* supplying `SimpleDomAriaService`;
+* supplying SimpleDom role-based field-element resolution;
+* exporting `SimpleDomFormInstaller`.
+
+An application using `jivs-dom` without SimpleDom is responsible for:
+
+* deriving a concrete service from `JivsDomServiceBase`;
+* supplying its discovery-aware dispatchers;
+* supplying its ARIA service or explicitly disabling ARIA;
+* overriding field-element resolution when its convention needs role-specific behavior;
+* installing its concrete service into `JivsServices`;
+* constructing its concrete form installer.
+
+### Disposal
+
+`JivsDomServiceBase` participates in the existing `ServiceBase.dispose()` lifecycle.
+
+Its disposal implementation releases references to child services and factories that were created or assigned. It does not search the DOM, remove event handlers from installed elements, or dispose form-specific state.
+
+Installed DOM elements retain their installed behavior until they are removed or become unreachable.
+
+The exact child-disposal policy should follow the established Jivs service conventions: the service collection must not unexpectedly dispose a replacement object that may be owned elsewhere.
+
+### Required Consistency Changes
+
+The following settled sections require narrow terminology changes after this section is approved:
+
+* references to `DomServices` as the concrete root type become `IJivsDomServices` or `JivsDomServiceBase`, according to context;
+* `domServices.jivsServices.loggingService` becomes `domServices.services.loggingService`;
+* references to default `DomServices` construction are replaced by the abstract-base and concrete-service model;
+* the provisional service-retrieval line in Section 11 becomes `jivsServices.domServices`.
+
+No installer, dispatcher, presentation, ARIA, or form-installation behavior changes as a result.
