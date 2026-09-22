@@ -118,6 +118,8 @@ describe('constructor and initial property values', () => {
         expect(testItem!.onConfigChanged).toBeNull();
         let expectedBehaviors: Behaviors = createBehaviors(services);
         expect(testItem!.behaviors).toEqual(expectedBehaviors);
+        expect(testItem!.getContainerIdentifier()).toBeUndefined();
+        expect(testItem!.currentValidationState()).toBeDefined();
     });
     test('null setup parameter throws', () => {
         let testItem: Publicify_ValueHostsManager | null = null;
@@ -141,6 +143,16 @@ describe('constructor and initial property values', () => {
         let testItem: Publicify_ValueHostsManager | null = null;
         expect(() => testItem = new Publicify_ValueHostsManager(config)).not.toThrow();
         expect(testItem!.behaviors).toEqual(behaviors);
+    });
+    test('containerIdentifier is correctly returned', () => {
+        let config: ValueHostsManagerConfig = {
+            services: new MockJivsServices(false, false),
+            valueHostConfigs: [],
+            containerIdentifier: 'container-1'
+        };
+        let testItem: Publicify_ValueHostsManager | null = null;
+        expect(() => testItem = new Publicify_ValueHostsManager(config)).not.toThrow();
+        expect(testItem!.getContainerIdentifier()).toBe('container-1');
     });
 
     test('Config for 1 ValueHost supplied. Other parameters are null', () => {
@@ -1698,13 +1710,14 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
 // doNotSave: boolean
 // getIssuesForField(valueHostName: ValueHostName): Array<IssueFound>
 // getIssuesFound(group?: string): Array<IssueFound>
-describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound based on the results', () => {
+describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, currentValidationState based on the results', () => {
     test('Before calling validate with 0 fieldValueHosts, isValid=true, doNotSave=false, getIssuesForField=[], getIssuesFound=[]', () => {
         let setup = setupValueHostsManager();
         expect(setup.valueHostsManager.isValid).toBe(true);
         expect(setup.valueHostsManager.doNotSave).toBe(false);
         expect(setup.valueHostsManager.getIssuesForField('Anything')).toBeNull();
         expect(setup.valueHostsManager.getIssuesFound()).toBeNull();
+        expect(setup.valueHostsManager.currentValidationState().isValid).toBe(true);
     });
     test('isValid is true and doNotSave is false before calling validate with 1 fieldValueHosts', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -1713,6 +1726,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(setup.valueHostsManager.doNotSave).toBe(false);
         expect(setup.valueHostsManager.getIssuesForField(config.name)).toBeNull();
         expect(setup.valueHostsManager.getIssuesFound()).toBeNull();
+        expect(setup.valueHostsManager.currentValidationState().isValid).toBe(true);
     });
     test('With 1 fieldValueHost that is ValidationStatus.Valid, returns {isValid:true, doNotSave: false, issuesFound: null}', () => {
         let config = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
@@ -1720,12 +1734,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
-        });
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);  
 
         expect(setup.valueHostsManager.isValid).toBe(true);
         expect(setup.valueHostsManager.doNotSave).toBe(false);
@@ -1748,13 +1764,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: false,
             doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
-        });
-
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
         expect(setup.valueHostsManager.isValid).toBe(false);
         expect(setup.valueHostsManager.doNotSave).toBe(true);
@@ -1778,12 +1795,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: false,
             doNotSave: true,
             issuesFound: [expectedIssueFound],
             asyncProcessing: false
-        });
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
         expect(setup.valueHostsManager.isValid).toBe(false);
         expect(setup.valueHostsManager.doNotSave).toBe(true);
@@ -1801,12 +1820,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
-        });
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
         expect(setup.valueHostsManager.isValid).toBe(true);
         expect(setup.valueHostsManager.doNotSave).toBe(false);
@@ -1825,12 +1846,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
-        });
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
         expect(setup.valueHostsManager.isValid).toBe(true);
         expect(setup.valueHostsManager.doNotSave).toBe(false);
@@ -1863,12 +1886,14 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState: ValidationState | null = null;
         expect(() => validationState = setup.valueHostsManager.validate()).not.toThrow();
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: false,
             doNotSave: true,
             issuesFound: [expectedIssueFound, expectedIssueFound2],
             asyncProcessing: false
-        });
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
         expect(setup.valueHostsManager.isValid).toBe(false);
         expect(setup.valueHostsManager.doNotSave).toBe(true);
@@ -2427,6 +2452,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         expect(validationState.issuesFound).not.toBeNull();
         expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field1' && x.errorMessage === 'required A')).toBe(true);
         expect(validationState.issuesFound?.some((x) => x.valueHostName === 'Field2' && x.errorMessage === 'required B')).toBe(false);
+        expect(validationState.group).toBe('A');
+        expect(testItem.currentValidationState().group).toBe('A');
     });
 
     test('validate({ group }) reflects group specific isValid, doNotSave and asyncProcessing', () => {
@@ -2456,28 +2483,192 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
                 }
             }]
         });
-        // builder.field('Field1', LookupKey.String, { group: 'A' }).requireText('required A');
-        // builder.field('Field2', LookupKey.String, { group: 'B' }).requireText('required B');
-        // let valConfig = builder.complete();
+
 
         let testItem = new ValueHostsManager(vmConfig);
         testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
         testItem.getFieldValueHost('Field2')!.setValues('', '');
 
-        let validationState = testItem.validate({ group: 'A' });
-        let validationState2 = testItem.validate({ group: 'B' });
+        let validationStateA = testItem.validate({ group: 'A' });
+        let currentValidationStateA = testItem.currentValidationState({ group: 'A' });
+        let validationStateB = testItem.validate({ group: 'B' });
+        let currentValidationStateB = testItem.currentValidationState({ group: 'B' });
 
-        expect(validationState.issuesFound == null || validationState.issuesFound.length === 0).toBe(true);
-        expect(validationState.isValid).toBe(true);
-        expect(validationState.doNotSave).toBe(false);
-        expect(validationState.asyncProcessing).toBe(false);
-
-        expect(validationState2.issuesFound != null && validationState2.issuesFound.length === 1).toBe(true);
-        expect(validationState2.isValid).toBe(false);
-        expect(validationState2.doNotSave).toBe(true);
-        expect(validationState2.asyncProcessing).toBe(false);
+        expect(validationStateA).toEqual(currentValidationStateA);
+        expect(validationStateB).toEqual(currentValidationStateB);
+        expect(currentValidationStateA.group).toBe('A');
+        expect(currentValidationStateB.group).toBe('B');
+        // prove cached value is in each currentValidationState
+        expect(currentValidationStateA).toBe(validationStateA);
+        expect(currentValidationStateB).toBe(validationStateB);
     });
 
+    test('currentValidationState recalculates when group parameter changes', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate({ group: 'A' });
+        let currentValidationStateA = testItem.currentValidationState({ group: 'A' });  // must be identical
+        let currentValidationStateA2 = testItem.currentValidationState({ group: '' });  // must recalculate
+        
+        expect(currentValidationStateA).toBe(validationStateA);
+        expect(currentValidationStateA2).not.toBe(currentValidationStateA);
+        expect(currentValidationStateA.group).toBe('A');
+        expect(currentValidationStateA2.group).toBe('');
+    });
+    test('currentValidationState returns same instance if pass options = null', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate({ group: 'A' });
+        let currentValidationStateA = testItem.currentValidationState({ group: 'A' });  // must be identical
+        let currentValidationStateA2 = testItem.currentValidationState(null);  // no change
+
+        expect(currentValidationStateA).toBe(validationStateA);
+        expect(currentValidationStateA2).toBe(currentValidationStateA);
+        expect(currentValidationStateA2.group).toBe('A');
+    });    
+    test('currentValidationState returns same instance if pass same options', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate({ group: 'A' });
+        let currentValidationStateA = testItem.currentValidationState({ group: 'A' });  // must be identical
+        let currentValidationStateA2 = testItem.currentValidationState({ group: 'A' });  // no change
+
+        expect(currentValidationStateA).toBe(validationStateA);
+        expect(currentValidationStateA2).toBe(currentValidationStateA);
+        expect(currentValidationStateA2.group).toBe('A');
+    });        
+    test('currentValidationState returns new instance if pass options.duringEdit = true when validation did not', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate();
+        let currentValidationStateA = testItem.currentValidationState({ duringEdit: true });  // must be new instance
+
+        expect(currentValidationStateA).not.toBe(validationStateA);
+    });        
+    test('currentValidationState returns new instance if pass options.duringEdit = false when validation uses duringEdit = true', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate({ duringEdit: false });
+        let currentValidationStateA = testItem.currentValidationState({ duringEdit: true });  // different instance
+
+        expect(currentValidationStateA).not.toBe(validationStateA);
+    });            
+    test('currentValidationState returns same instance if pass duringEdit = true in both', () =>
+    {
+        let services = createJivsServicesForTesting();
+        let vmConfig = <ValueHostsManagerConfig> { services: services, valueHostConfigs: [] };
+        vmConfig.valueHostConfigs.push(<FieldValueHostConfig> {
+            valueHostType: ValueHostType.Field,
+            name: 'Field1',
+            dataType: LookupKey.String,
+            group: 'A',
+            validatorConfigs: [{
+                errorMessage: 'required A',
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }]
+        });
+
+
+        let testItem = new ValueHostsManager(vmConfig);
+        testItem.getFieldValueHost('Field1')!.setValues('ok', 'ok');
+
+        let validationStateA = testItem.validate({ duringEdit: true });
+        let currentValidationStateA = testItem.currentValidationState({ duringEdit: true });  // must be same instance
+
+        expect(currentValidationStateA).toBe(validationStateA);
+    });            
     test('validate() excludes disabled hosts from validation and aggregate state', () => {
         let services = createJivsServicesForTesting();
         let vmConfig = <ValueHostsManagerConfig>{ services: services, valueHostConfigs: [] };
@@ -2606,13 +2797,15 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
         // we must call it with a group that does not match.
 
         let validationState = setup.valueHostsManager.validate({ group: 'nonMatchingGroup' });
-        expect(vh.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationState: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
-            asyncProcessing: false
-        });
+            asyncProcessing: false,
+            group: 'nonMatchingGroup'
+        };
+        expect(validationState).toEqual(expectedValidationState);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationState);
 
     });
 
@@ -2629,14 +2822,16 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState = setup.valueHostsManager.validate({ group: 'B' });
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
-        expect(vhB.currentValidationState.status).toBe(ValidationStatus.Valid);
-
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationStateB: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
-            asyncProcessing: false
-        });
+            asyncProcessing: false,
+            group: 'B'
+        };
+
+        expect(validationState).toEqual(expectedValidationStateB);
+        expect(setup.valueHostsManager.currentValidationState()).toEqual(expectedValidationStateB);
 
     });
 
@@ -2653,9 +2848,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
 
         let validationState = setup.valueHostsManager.validate({ group: 'B' });
         expect(vhA.currentValidationState.status).toBe(ValidationStatus.NeedsValidation);
-        expect(vhB.currentValidationState.status).toBe(ValidationStatus.Invalid);
 
-        expect(validationState).toEqual(<ValidationState>{
+        let expectedValidationStateB = <ValidationState>{
             isValid: false,
             doNotSave: true,
             issuesFound: [
@@ -2668,8 +2862,12 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound ba
                     'summaryMessage': 'Summary 2: ' + NeverMatchesConditionType2,
                 }
             ],
-            asyncProcessing: false
-        });
+            asyncProcessing: false,
+            group: 'B'
+        };
+
+        expect(validationState).toEqual(expectedValidationStateB);
+        expect(setup.valueHostsManager.currentValidationState(null)).toEqual(expectedValidationStateB);
     });
     test('Two ValueHosts that have warning validators results with 2 issues but ValidationState.doNotSave=false', () => {
         let configA = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
@@ -2971,13 +3169,15 @@ describe('asyncProcessing', () => {
             isValid: true,
             doNotSave: true,
             issuesFound: null,
-            asyncProcessing: true
+            asyncProcessing: true,
+            group: 'A'
         });
         expect(validationStateB).toEqual(<ValidationState>{
             isValid: true,
             doNotSave: false,
             issuesFound: null,
-            asyncProcessing: false
+            asyncProcessing: false,
+            group: 'B'
         });
     });
 
@@ -3673,6 +3873,10 @@ describe('toIValueHostsManager function', () => {
             behaviors: <Behaviors> {
                 activeCultureId: 'en-US',
             },
+            currentValidationState: function(options?: ValidateOptions | null): ValidationState
+            {
+                throw new Error("Function not implemented.");
+            },
 
             getIssuesForField: function (valueHostName: string): IssueFound[] | null
             {
@@ -3776,6 +3980,10 @@ describe('toIValueHostsManager function', () => {
             broadcastState: function (): void
             {
                 throw new Error('Function not implemented.');
+            },
+            getContainerIdentifier: function (): string | undefined
+            {
+                throw new Error('Function not implemented.');
             }
         };
         expect(toIValueHostsManager(testItem)).toBe(testItem);
@@ -3874,6 +4082,10 @@ describe('toIValueHostsManagerAccessor function', () => {
                 },
                 isValid: false,
                 doNotSave: true,
+                currentValidationState: function (options?: ValidateOptions | null): ValidationState
+                {
+                    throw new Error("Function not implemented.");
+                },
                 getIssuesForField: function (valueHostName: string): IssueFound[] | null
                 {
                     throw new Error("Function not implemented.");
@@ -3901,7 +4113,11 @@ describe('toIValueHostsManagerAccessor function', () => {
                 broadcastState: function (): void
                 {
                     throw new Error('Function not implemented.');
-                }
+                },
+                getContainerIdentifier: function (): string | undefined
+                {
+                    throw new Error('Function not implemented.');
+                }                
             }
         };
         expect(toIValueHostsManagerAccessor(testItem)).toBe(testItem);

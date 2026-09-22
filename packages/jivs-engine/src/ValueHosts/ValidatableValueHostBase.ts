@@ -516,15 +516,21 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Exposes the current validation state for the ValueHost.
      * It combines other properties and all issuesFound from both validators and external sources.
      * The same value is delivered to the onValueHostValidationStateChanged callback.
+     * The value of the group will be the same as the FieldValueHost's group.
      */
-    public get currentValidationState(): ValueHostValidationState {
+    public get currentValidationState(): ValueHostValidationState
+    {
+        let group: string | undefined = undefined;
+        if (this.config.group)
+            group = Array.isArray(this.config.group) ? this.config.group.join(',') : this.config.group;
         return {
             issuesFound: this.getIssuesFound(),
             isValid: this.isValid,
             doNotSave: this.doNotSave,
             asyncProcessing: this.asyncProcessing,
             status: this.validationStatus,
-            corrected: this.corrected
+            corrected: this.corrected,
+            group: group
         };
     }
     

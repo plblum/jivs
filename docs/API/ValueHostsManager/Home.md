@@ -35,6 +35,7 @@ class ValueHostsManager {
     isValid: boolean;   // use doNotSave, not this if you are checking if the data can be saved
     doNotSave: boolean;
     asyncProcessing: boolean;
+    currentValidationState(options?: ValidateOptions): ValidationState;
     getIssuesForField(valueHostName): null | IssueFound[];
     getIssuesFound(group?): null | IssueFound[];
     addExternalIssuesFound(issuesFound: IssueFound[], developedLocally: boolean, options?: ValidateOptions): boolean;
@@ -115,6 +116,7 @@ Learn about [`IssueFound objects` here](../Validators/Validation_State.md#issuef
     > Always use `doNotSave` to prevent saving/submitting.
 - `doNotSave` - Any `IssueFound` that has its `doNotSave` property set ot true makes this true. Use this to determine if you can save or submit. The same value is provided in the `ValidationState.doNotSave` property passed in the `onValidationStateChanged` callback.
 - `asyncProcessing` - Any `IssueFound` that has its `asyncProcessing` property set to true makes this true. `doNotSave` will also be true to ensure you don't submit while an async process is running. The same value is provided in the `ValidationState.asyncProcessing` property passed in the `onValidationStateChanged` callback.
+- `currentValidationState(options)` - Retrieves an instance of ValidationState that reflects the last validation attempt. This can be slightly more performant when you need to retrieve several individual validation state properties through their exposed member of `ValueHostsManager` because each of those recalculate their value, while the first call to currentValidationState calculates and the rest use a cached value.
 - `getIssuesForField(valueHostName)` - Get the list of `IssueFound objects` currently on the specified `FieldValueHost`. If there are none, it returns null.
 - `getIssuesFound(groupName)` - Get the list of `IssueFound objects` across FieldValueHosts. If there are none, it returns null. Use the `groupName` parameter when using validation groups to limit to those within the group.
     ```ts

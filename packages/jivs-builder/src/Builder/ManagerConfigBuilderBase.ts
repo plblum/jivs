@@ -150,6 +150,22 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             this.baseConfig.behaviors = createBehaviors(this.services);
         return this.baseConfig.behaviors;
     }
+    /**
+     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
+     * The containerIdentifier helps distinguish between them.
+     * 
+     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
+     * They may assign a value associated with the form's containing element used to look up that form's element
+     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
+     * 
+     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     */
+    public get containerIdentifier(): string | undefined {
+        return this.baseConfig.containerIdentifier;
+    }
+    public set containerIdentifier(value: string | undefined) {
+        this.baseConfig.containerIdentifier = value;
+    }
     
     //#region logging
 

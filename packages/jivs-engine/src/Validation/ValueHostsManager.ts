@@ -680,14 +680,44 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
             this.notifyValidationStateChanged(null, options);
         return changed;
     }
+    /**
+     * Returns the current validation state of the ValueHost.
+     * Does not invoke the validate() method; it only returns the current state.
+     * Will return the cached validation state if it matches the requested options; otherwise, it recalculates the validation state.
+     * @param options - Provides guidance on which validators to include.
+     * Important to set options.preliminary to true if invoking validate() prior to submitting.
+     * @returns The current ValidationState object. Its value is calculated to get all of its properties.
+     */
+    public currentValidationState(options?: ValidateOptions | null): ValidationState
+    {
+        // the createValidationState method may have a heavy task with numerous issuesFound. So we don't recalculate it unless necessary.
+        if (this._cachedCurrentValidationState)
+        {
+            if (!options ||
+                (this._cachedCurrentValidationState.group === (options.group ?? undefined) && this._cachedDuringEdit === options.duringEdit))
+                return this._cachedCurrentValidationState;
+            this._cachedCurrentValidationState = undefined;
+            this._cachedDuringEdit = undefined;
+        }
+        this._cachedCurrentValidationState = this.createValidationState(options ?? undefined);
+        this._cachedDuringEdit = options?.duringEdit;
+        return this._cachedCurrentValidationState;
+    }
+    private _cachedCurrentValidationState: ValidationState | undefined = undefined;
+    private _cachedDuringEdit: boolean | undefined = undefined;
 
-    protected createValidationState(options?: ValidateOptions): ValidationState {
-        return {
+    protected createValidationState(options?: ValidateOptions): ValidationState
+    {
+        // Always refreshes the cache as this is the time we insist on recalculating the validation state.
+        this._cachedCurrentValidationState = {
             isValid: this.calculateIsValid(options),
             doNotSave: this.calculateDoNotSave(options),
             issuesFound: this.getIssuesFound(options ? options.group : undefined),
-            asyncProcessing: this.calculateAsyncProcessing(options)
+            asyncProcessing: this.calculateAsyncProcessing(options),
+            group: options ? options.group : undefined
         };
+        this._cachedDuringEdit = options?.duringEdit;
+        return this._cachedCurrentValidationState;
     }
 
     /**
@@ -1036,6 +1066,21 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     }
 
     //#endregion IValueHostsManagerCallbacks
+
+    /**
+     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
+     * The containerIdentifier helps distinguish between them.
+     * 
+     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
+     * They may assign a value associated with the form's containing element used to look up that form's element
+     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
+     * 
+     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     */
+    public getContainerIdentifier(): string | undefined
+    {
+        return this.config.containerIdentifier;
+    }
 }
 
 type notifyValidationStateChangedWorkerHandler = (validationState: ValidationState | null, options?: ValidateOptions) => void;

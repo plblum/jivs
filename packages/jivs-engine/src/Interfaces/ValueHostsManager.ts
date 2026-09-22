@@ -186,6 +186,15 @@ export interface IValueHostsManager extends IValueHostResolver {
      * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
+
+    /**
+     * Returns the current validation state of the ValueHost.
+     * Does not invoke the validate() method; it only returns the current state.
+     * @param options - Provides guidance on which validators to include.
+     * Important to set options.preliminary to true if invoking validate() prior to submitting.
+     * @returns The current ValidationState object. Its value is calculated to get all of its properties.
+     */
+    currentValidationState(options?: ValidateOptions | null): ValidationState;
     
     /**
      * For a list of external errors, meaning the developer's own code
@@ -337,7 +346,19 @@ export interface IValueHostsManager extends IValueHostResolver {
      * @param instanceState 
      */
     notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void;    
-//#endregion
+    //#endregion
+    
+    /**
+     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
+     * The containerIdentifier helps distinguish between them.
+     * 
+     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
+     * They may assign a value associated with the form's containing element used to look up that form's element
+     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
+     * 
+     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     */
+    getContainerIdentifier(): string | undefined;
 }
 
 /**
@@ -388,6 +409,18 @@ export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
      * It is also available in the ValueHostsManager.behaviors property.
      */
     behaviors?: Behaviors;
+
+    /**
+     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
+     * The containerIdentifier helps distinguish between them.
+     * 
+     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
+     * They may assign a value associated with the form's containing element used to look up that form's element
+     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
+     * 
+     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     */
+    containerIdentifier?: string;
 
     /**
      * The state previously captured by ValueHostsManager.captureState(). 

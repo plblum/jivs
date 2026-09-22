@@ -2455,6 +2455,163 @@ describe('clearValidation', () => {
     });        
 });
 
+describe('currentValidationState', () =>
+{
+    function setup(group?: string | string[] | null | undefined): { vhm: ValueHostsManager, vh: TestValidatorsValueHost; }
+    {
+        let vmConfig: ValueHostsManagerConfig = {
+            services: createJivsServicesForTesting(),
+            valueHostConfigs: []
+        };
+        supportTestValueHostInServices(vmConfig.services);
+        let vhm = new ValueHostsManager(vmConfig);
+        let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig> {
+            valueHostType: TestValueHostType,
+            name: 'Field1',
+            group: group,
+            validatorConfigs: [
+                {
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType
+                    },
+                    errorMessage: 'Error'
+                }
+            ]
+        }, null) as TestValidatorsValueHost;
+        return { vhm, vh };
+    }
+    // state when no validation has occurred. 
+    test('currentValidationState is status: ValidationStatus.NotAttempted when no validation has occurred', () =>
+    {
+        let { vhm, vh } = setup();
+        expect(vh.currentValidationState).not.toBeNull();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: true,
+            doNotSave: false,
+            issuesFound: null,
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.NotAttempted
+        });
+    });
+    test('currentValidationState is status: ValidationStatus.Invalid after validation due to validator involved', () =>
+    {
+        let { vhm, vh } = setup();
+        vh.validate();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                    errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Error',
+                    summaryMessage: 'Error',
+                    valueHostName: 'Field1',
+                    doNotSave: true,
+                    severity: ValidationSeverity.Error,
+                }
+            ],
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.Invalid
+        });
+    });
+    // validation group 'A' adds that to the current validation state
+    test('currentValidationState includes issues from validation group A', () =>
+    {
+        let { vhm, vh } = setup('A');
+        vh.validate();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                    errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Error',
+                    summaryMessage: 'Error',
+                    valueHostName: 'Field1',
+                    doNotSave: true,
+                    severity: ValidationSeverity.Error,
+                }
+            ],
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.Invalid,
+            group: 'A'
+        });
+    });
+    // group = null reports undefined 
+    test('fieldValueHost with group = null reports undefined', () =>
+    {
+        let { vhm, vh } = setup(null);
+        vh.validate();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                    errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Error',
+                    summaryMessage: 'Error',
+                    valueHostName: 'Field1',
+                    doNotSave: true,
+                    severity: ValidationSeverity.Error,
+                }
+            ],
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.Invalid
+        });
+    });
+    test('fieldValueHost with group = ["A"] reports "A"', () =>
+    {
+        let { vhm, vh } = setup(['A']);
+        vh.validate();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                    errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Error',
+                    summaryMessage: 'Error',
+                    valueHostName: 'Field1',
+                    doNotSave: true,
+                    severity: ValidationSeverity.Error,
+                }
+            ],
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.Invalid,
+            group: 'A'
+        });
+    });
+    test('fieldValueHost with group = ["A", "B"] reports "A,B"', () =>
+    {
+        let { vhm, vh } = setup(['A', 'B']);
+        vh.validate();
+        expect(vh.currentValidationState).toEqual(<ValueHostValidationState> {
+            isValid: false,
+            doNotSave: true,
+            issuesFound: [
+                {
+                    errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Error',
+                    summaryMessage: 'Error',
+                    valueHostName: 'Field1',
+                    doNotSave: true,
+                    severity: ValidationSeverity.Error,
+                }
+            ],
+            asyncProcessing: false,
+            corrected: false,
+            status: ValidationStatus.Invalid,
+            group: 'A,B'
+        });
+    });
+    
+});
+
 
 describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
     

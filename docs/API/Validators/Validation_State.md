@@ -7,6 +7,7 @@ It will receive a `ValueHostValidationState object` through its `onValueHostVali
 
 ## ValidationState
 The `ValidationState object` is associated with `ValueHostsManager.validate()`, covering the validation results across the form. You will receive it within the `onValidationStateChanged` callback and as the function result of `validate()`.
+It is also available from `ValueHostsManager.currentValidationState(options)`.
 
 ```ts
 interface ValidationState {
@@ -14,6 +15,7 @@ interface ValidationState {
     doNotSave: boolean;
     issuesFound: null | IssueFound[];
     asyncProcessing: boolean;
+    group?: string;
 }
 ```
 - `isValid` - When true, there is nothing known to block validation. However, there are other factors
@@ -29,6 +31,7 @@ interface ValidationState {
     - Validators that ran validation and identified an `IssueFound`, which includes when `severity=Warning`.
     - Added through the `ValueHostsManager.addExternalIssuesFound()` function.
 - `asyncProcessing` - When true, an asynchronous validation process is still running.
+- `group` - The validation group name that was passed into the `validate()` call. When undefined, none was used.
 
 ```ts
 config.onValidationStateChanged = formValidated;
@@ -66,7 +69,7 @@ interface ValueHostValidationState extends ValidationState
     status: ValidationStatus;
 }
 ```
-- `isValid`, `doNotSave`, `issuesFound`, and `asyncProcessing` are shown above.
+- `isValid`, `doNotSave`, `issuesFound`, `asyncProcessing`, and `group` are shown above.
 - `corrected` - Set to true when the user has fixed all invalid validators on this `FieldValueHost`.
 - `status` - Reports the current `ValidationStatus`.
     - `NotAttempted` - Indicates that `validate()` has yet to be attempted

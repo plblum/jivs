@@ -248,5 +248,11 @@ export interface ValidationState
      * When true, an async Validator is running
      */
     asyncProcessing: boolean;    
+
+    /**
+     * The validation group this state belongs to. It can be used to categorize or filter validation results.
+     * It is usually undefined/null if no specific validation group is being used.
+     */
+    group?: string;
 }
 
