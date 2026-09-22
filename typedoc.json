@@ -6,6 +6,7 @@
         "packages/jivs-engine/src/",
         "packages/jivs-builder/src/",
         "packages/jivs-configanalysis/src/",
+        "packages/jivs-dom/src/",
         "docs/Home.md",
         "docs/Terminology.md"
     ],

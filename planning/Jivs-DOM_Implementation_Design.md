@@ -82,7 +82,7 @@ flowchart TB
     DEFINITION["Selected IDomEditorAdapterDefinition"]
     PRESENTATION_INSTALLER["IFieldPresentationInstaller"]
 
-    subgraph FACTORY["IDomEditorAdapterFactory"]
+    subgraph FACTORY["IDomEditorAdapterDefinitionFactory"]
         direction LR
 
         REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, InputRadioGroupAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
@@ -534,7 +534,7 @@ Applications may replace installed adapter and presentation instances through th
 
 An Editor Adapter gives a specific editor widget the value-transfer functions needed by `jivs-dom`. Different widget behaviors require different adapter implementations. Initial implementations will support input, textarea, and select elements, with specialized implementations where their value semantics differ.
 
-Applications do not register adapters directly. They register an `IDomEditorAdapterDefinition` with `IDomEditorAdapterFactory`. The factory maintains and selects from those definitions. After a definition is selected for an element, the definition directly instantiates the appropriate adapters. There is no separate adapter registry or adapter lookup.
+Applications do not register adapters directly. They register an `IDomEditorAdapterDefinition` with `IDomEditorAdapterDefinitionFactory`. The factory maintains and selects from those definitions. After a definition is selected for an element, the definition directly instantiates the appropriate adapters. There is no separate adapter registry or adapter lookup.
 
 Editor adapters support two directions of communication:
 
@@ -656,20 +656,20 @@ interface IDomEditorAdapterDefinition {
         element: IJivsDomElement
     ): IJivsDomElement;
 
-    createTextValueAdapter?(
+    createTextValueAdapter(
         valueHost: IFieldValueHost,
         anchor: IJivsDomElement
     ): IDomTextValueAdapter | null;
 
-    createValueAdapter?(
+    createValueAdapter(
         valueHost: IFieldValueHost,
         anchor: IJivsDomElement
     ): IDomValueAdapter | null;
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getValidationStateAriaElementUpdater():
         IDomAriaValidationStateElementUpdater | null;
 
     attachToSendValues(
@@ -682,14 +682,14 @@ interface IDomEditorAdapterDefinition {
 
 The `IFieldValueHost` provides installation-time context to each operation. Neither the definition nor its returned adapters or ARIA updaters retain it.
 
-An omitted ARIA updater getter and a getter returning `null` both mean that the definition supplies no specialized updater of that kind. Returned updater instances are immutable and may be shared by every editor installed through the definition.
+A getter returning `null` means that the definition supplies no specialized updater of that kind. Returned updater instances are immutable and may be shared by every editor installed through the definition.
 
 #### Definition Selection
 
-`IDomEditorAdapterFactory` registers and selects editor adapter definitions. It does not register, create, or look up adapter instances. Once the factory selects a definition, the definition resolves the installation anchor and directly instantiates the adapters appropriate to that anchor.
+`IDomEditorAdapterDefinitionFactory` registers and selects editor adapter definitions. It does not register, create, or look up adapter instances. Once the factory selects a definition, the definition resolves the installation anchor and directly instantiates the adapters appropriate to that anchor.
 
 ```ts
-interface IDomEditorAdapterFactory {
+interface IDomEditorAdapterDefinitionFactory {
     register(
         definition: IDomEditorAdapterDefinition
     ): void;
@@ -1763,10 +1763,10 @@ interface IFieldPresentation {
         state: ValueHostValidationState
     ): void;
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getValidationStateAriaElementUpdater():
         IDomAriaValidationStateElementUpdater | null;
 }
 
@@ -1792,7 +1792,7 @@ The presentation retains its element but does not retain the `IFieldValueHost` o
 
 Applications may implement `IFieldPresentation` directly or derive from `FieldPresentationBase`.
 
-The optional ARIA getters allow a presentation whose generated HTML requires specialized accessibility behavior to supply immutable updater instances. An omitted getter and a getter returning `null` both mean that the presentation supplies no specialized updater of that kind. The presentation itself does not mutate ARIA attributes through these getters.
+The optional ARIA getters allow a presentation whose generated HTML requires specialized accessibility behavior to supply immutable updater instances. A getter returning `null` means that the presentation supplies no specialized updater of that kind. The presentation itself does not mutate ARIA attributes through these getters.
 
 #### Field Presentation Factory
 
@@ -2187,7 +2187,7 @@ interface IFormPresentation {
         state: ValidationState
     ): void;
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 }
 
@@ -2307,7 +2307,7 @@ The resulting group-specific state is passed intact to `applyCore()`. The base c
 
 Applications may implement `IFormPresentation` directly instead of deriving from `FormPresentationBase`. A direct implementation receives every state supplied by the dispatcher and is responsible for its own group-routing policy.
 
-The optional ARIA getter allows a form presentation whose generated HTML requires specialized accessibility behavior to supply an immutable static updater. An omitted getter and a getter returning `null` both mean that the presentation supplies no specialized updater. Form presentations do not supply field validation-state updaters.
+The optional ARIA getter allows a form presentation whose generated HTML requires specialized accessibility behavior to supply an immutable static updater. A getter returning `null` means that the presentation supplies no specialized updater. Form presentations do not supply field validation-state updaters.
 
 ### Form Presentation Factory
 
@@ -3243,32 +3243,32 @@ The existing Editor Adapter Definition and presentation contracts expose optiona
 interface IDomEditorAdapterDefinition {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getValidationStateAriaElementUpdater():
         IDomAriaValidationStateElementUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getValidationStateAriaElementUpdater():
         IDomAriaValidationStateElementUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaElementUpdater():
         IDomAriaStaticElementUpdater | null;
 }
 ```
 
-An omitted getter and a getter returning `null` both mean that the provider supplies no specialized updater of that kind.
+A getter returning `null` means that the provider supplies no specialized updater of that kind.
 
 Specialized-updater ownership is:
 
@@ -4579,8 +4579,8 @@ interface IJivsDomServices
 
     dispatchers: IDomDispatcherService;
 
-    editorAdapterFactory:
-        IDomEditorAdapterFactory;
+    editorAdapterDefinitionFactory:
+        IDomEditorAdapterDefinitionFactory;
 
     fieldPresentationFactory:
         IFieldPresentationFactory;

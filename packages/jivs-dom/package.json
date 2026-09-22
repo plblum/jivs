@@ -1,0 +1,33 @@
+{
+  "name": "@plblum/jivs-dom",
+  "type": "module",
+  "version": "0.23.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
+  "description": "Basic UI tooling around Jivs, designed for DOM manipulation",
+  "displayName": "Jivs DOM",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "compile": "tsc",
+    "test": "jest --silent",
+    "consoletest": "jest --silent --no-console --noStackTrace",
+    "clean": "gulp clean"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    }
+  },
+  "dependencies": {
+    "@plblum/jivs-engine": "file:../jivs-engine"
+  }
+}

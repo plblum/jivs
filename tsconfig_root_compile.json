@@ -20,7 +20,8 @@
     "include": [
       "packages/jivs-engine",
       "packages/jivs-builder",
-      "packages/jivs-configanalysis"
+      "packages/jivs-configanalysis",
+      "packages/jivs-dom"
     ],
     "exclude": [ 
         "./*.js", 
