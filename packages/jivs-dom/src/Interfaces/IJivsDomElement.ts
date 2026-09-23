@@ -14,8 +14,9 @@
  * @module jivs-dom/Types/IJivsDomElement
  */
 
-import { IDomEditorAdapterDefinition, IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
+import { IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
 import { IDomAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IEditorAdapterDefinition } from './EditorAdapterDefinitions';
 import { IFieldPresentation } from './FieldPresentations';
 import { IFormPresentation } from './FormPresentations';
 
@@ -33,10 +34,10 @@ export interface IJivsDomElement extends HTMLElement
      * - Installed: The definition has been successfully installed on the element.
      * - Uninstalled: The value is undefined
      */
-    jivsEditorAdapterDefinition?: IDomEditorAdapterDefinition;
+    jivsEditorAdapterDefinition?: IEditorAdapterDefinition;
 
     /**
-     * Handles onTextValueChange events specific to this editor. Its value is created from the IDomEditorAdapterDefinition.
+     * Handles onTextValueChange events specific to this editor. Its value is created from the IEditorAdapterDefinition.
      * The ITextValueDispatcher routes text value changes to this adapter.
      * Three states determined by the installation process.:
      * - Installed: The adapter has been successfully installed on the element.
@@ -46,7 +47,7 @@ export interface IJivsDomElement extends HTMLElement
     jivsTextValueAdapter?: IDomTextValueAdapter | null;
 
     /**
-     * Handles onValueChange events specific to this editor. Its value is created from the IDomEditorAdapterDefinition.
+     * Handles onValueChange events specific to this editor. Its value is created from the IEditorAdapterDefinition.
      * The IValueDispatcher routes native value changes to this adapter.
      * Three states determined by the installation process:
      * - Installed: The adapter has been successfully installed on the element.

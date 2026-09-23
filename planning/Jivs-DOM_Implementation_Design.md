@@ -79,10 +79,10 @@ The principal `jivs-engine` integration points are:
 ```mermaid
 flowchart TB
     INSTALLER["IEditorInstaller"]
-    DEFINITION["Selected IDomEditorAdapterDefinition"]
+    DEFINITION["Selected IEditorAdapterDefinition"]
     PRESENTATION_INSTALLER["IFieldPresentationInstaller"]
 
-    subgraph FACTORY["IDomEditorAdapterDefinitionFactory"]
+    subgraph FACTORY["IEditorAdapterDefinitionFactory"]
         direction LR
 
         REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, InputRadioGroupAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
@@ -401,7 +401,7 @@ It is a TypeScript contract, not a new runtime element class:
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsEditorAdapterDefinition?:
-        IDomEditorAdapterDefinition;
+        IEditorAdapterDefinition;
 
     jivsTextValueAdapter?:
         IDomTextValueAdapter | null;
@@ -429,7 +429,7 @@ interface IJivsDomElement extends HTMLElement {
 | Value                         | Meaning                                                                                                   |
 | ----------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `undefined`                   | Editor installation has not completed on this element.                                                    |
-| `IDomEditorAdapterDefinition` | Editor installation completed on this element using this definition. Later installation calls are no-ops. |
+| `IEditorAdapterDefinition` | Editor installation completed on this element using this definition. Later installation calls are no-ops. |
 
 `IEditorInstaller` assigns the definition only after installing the anchor’s adapter capabilities, DOM-to-Jivs event handling, field presentation, and ARIA behavior. The property therefore identifies both the installed definition and successful completion of editor installation.
 
@@ -534,12 +534,12 @@ Applications may replace installed adapter and presentation instances through th
 
 An Editor Adapter gives a specific editor widget the value-transfer functions needed by `jivs-dom`. Different widget behaviors require different adapter implementations. Initial implementations will support input, textarea, and select elements, with specialized implementations where their value semantics differ.
 
-Applications do not register adapters directly. They register an `IDomEditorAdapterDefinition` with `IDomEditorAdapterDefinitionFactory`. The factory maintains and selects from those definitions. After a definition is selected for an element, the definition directly instantiates the appropriate adapters. There is no separate adapter registry or adapter lookup.
+Applications do not register adapters directly. They register an `IEditorAdapterDefinition` with `IEditorAdapterDefinitionFactory`. The factory maintains and selects from those definitions. After a definition is selected for an element, the definition directly instantiates the appropriate adapters. There is no separate adapter registry or adapter lookup.
 
 Editor adapters support two directions of communication:
 
 * The write methods support Jivs-to-DOM callbacks. `onTextValueChanged` ultimately calls `writeTextValue()`, while `onValueChanged` ultimately calls `writeValue()`.
-* The read methods support DOM-to-Jivs event handling. An `IDomEditorAdapterDefinition` attaches the editor’s change events and uses the installed adapter to obtain the current value before sending it to the `IFieldValueHost`.
+* The read methods support DOM-to-Jivs event handling. An `IEditorAdapterDefinition` attaches the editor’s change events and uses the installed adapter to obtain the current value before sending it to the `IFieldValueHost`.
 
 > Without the DOM-to-Jivs event-handling requirement, the read methods would not be part of these adapter contracts. They exist so adapter definitions can reuse the same widget-specific value access used by callback dispatchers in the opposite direction.
 
@@ -639,7 +639,7 @@ A definition is responsible for:
 * optionally supplying specialized static and validation-state ARIA updaters for the widget.
 
 ```ts
-interface IDomEditorAdapterDefinition {
+interface IEditorAdapterDefinition {
     readonly adapterKey: string;
     readonly priority: number;
 
@@ -686,22 +686,22 @@ A getter returning `null` means that the definition supplies no specialized upda
 
 #### Definition Selection
 
-`IDomEditorAdapterDefinitionFactory` registers and selects editor adapter definitions. It does not register, create, or look up adapter instances. Once the factory selects a definition, the definition resolves the installation anchor and directly instantiates the adapters appropriate to that anchor.
+`IEditorAdapterDefinitionFactory` registers and selects editor adapter definitions. It does not register, create, or look up adapter instances. Once the factory selects a definition, the definition resolves the installation anchor and directly instantiates the adapters appropriate to that anchor.
 
 ```ts
-interface IDomEditorAdapterDefinitionFactory {
+interface IEditorAdapterDefinitionFactory {
     register(
-        definition: IDomEditorAdapterDefinition
+        definition: IEditorAdapterDefinition
     ): void;
 
     getDefinition(
         adapterKey: string
-    ): IDomEditorAdapterDefinition | null;
+    ): IEditorAdapterDefinition | null;
 
     findDefinition(
         valueHost: IFieldValueHost,
         element: HTMLElement
-    ): IDomEditorAdapterDefinition | null;
+    ): IEditorAdapterDefinition | null;
 }
 ```
 
@@ -728,7 +728,7 @@ The element supplied to `IEditorInstaller.install()` identifies the editor encou
 
 `resolveInstallationAnchor()` returns that element.
 
-For ordinary editors, the supplied element is also the installation anchor. `DomEditorAdapterDefinitionBase` implements this default behavior.
+For ordinary editors, the supplied element is also the installation anchor. `EditorAdapterDefinitionBase` implements this default behavior.
 
 A composite editor may use several DOM elements for one logical value. Its definition can override `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. The built-in `InputRadioGroupAdapterDefinition` instead requires the enclosing radio-group element to be supplied directly and uses the inherited default resolution.
 
@@ -758,13 +758,13 @@ The definition directly constructs the adapter. There is no adapter-instance reg
 
 #### Base Implementation
 
-`DomEditorAdapterDefinitionBase` implements shared definition behavior, default anchor resolution, diagnostic logging, and the standard DOM-to-Jivs submission paths.
+`EditorAdapterDefinitionBase` implements shared definition behavior, default anchor resolution, diagnostic logging, and the standard DOM-to-Jivs submission paths.
 
 Its constructor initializes the immutable definition properties:
 
 ```ts
-abstract class DomEditorAdapterDefinitionBase
-    implements IDomEditorAdapterDefinition {
+abstract class EditorAdapterDefinitionBase
+    implements IEditorAdapterDefinition {
 
     protected constructor(
         public readonly adapterKey: string,
@@ -867,7 +867,7 @@ valueHost.setTextValue(
 ##### Send a Native Value
 
 ```ts
-protected sendValue(
+protected sendNativeValue(
     valueHost: IFieldValueHost,
     anchor: IJivsDomElement
 ): void;
@@ -898,7 +898,7 @@ Applications may need to parse editor text outside Jivs while still preserving b
 
 ```ts
 abstract class ParsedTextEditorAdapterDefinition
-    extends DomEditorAdapterDefinitionBase {
+    extends EditorAdapterDefinitionBase {
 
     protected abstract parseTextValue(
         textValue: string | undefined,
@@ -954,7 +954,7 @@ The helper methods do not catch errors from adapters, parsing, or the `IFieldVal
 
 #### Built-in Definitions
 
-`jivs-dom` supplies these concrete descendants of `DomEditorAdapterDefinitionBase`:
+`jivs-dom` supplies these concrete descendants of `EditorAdapterDefinitionBase`:
 
 * `InputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `input:type` format;
 * `CheckboxAdapterDefinition` for checkbox inputs with `adapterKey="input:checkbox"`;
@@ -973,12 +973,12 @@ A registered definition instance is shared by every element that selects it. It 
 
 An editor element needs several related behaviors installed consistently:
 
-* one adapter definition must be selected;
-* one installation anchor must be resolved;
-* the definition’s Text Value and Native Value capabilities must be examined;
-* its DOM-to-Jivs event handlers must be attached;
-* its field presentation and ARIA behavior must be installed independently;
-* the completed installation must be recorded on the anchor element.
+- one adapter definition must be selected;
+- one installation anchor must be resolved;
+- the definition’s Text Value and Native Value capabilities must be examined;
+- its DOM-to-Jivs event handlers must be attached;
+- its field presentation and ARIA behavior must be installed independently;
+- the completed installation must be recorded on the anchor element.
 
 `IEditorInstaller` coordinates these operations for one supplied element and `IFieldValueHost`. It does not discover editor elements or interpret SimpleDom attributes.
 
@@ -1305,7 +1305,7 @@ All these definitions create `InputTextValueAdapter`. The adapter is type-agnost
 
 ```ts
 class InputAdapterDefinition
-    extends DomEditorAdapterDefinitionBase {
+    extends EditorAdapterDefinitionBase {
 
     private readonly inputType: string;
 
@@ -1472,7 +1472,7 @@ The enclosing element, rather than one of its radio inputs, is passed to `IEdito
 
 This container-based approach also illustrates how applications can implement other composite editors, such as a dynamic list of textboxes that produces one delimited Text Value.
 
-> If an application requires radio inputs without an enclosing installation element, it supplies its own Adapter Definition and Text Value adapter. `IDomEditorAdapterDefinition.resolveInstallationAnchor()` supports that use case, but `jivs-dom` does not provide the implementation.
+> If an application requires radio inputs without an enclosing installation element, it supplies its own Adapter Definition and Text Value adapter. `IEditorAdapterDefinition.resolveInstallationAnchor()` supports that use case, but `jivs-dom` does not provide the implementation.
 
 ##### Radio-Group Markup
 
@@ -1539,7 +1539,7 @@ The relevant definition behavior is:
 
 ```ts
 class InputRadioGroupAdapterDefinition
-    extends DomEditorAdapterDefinitionBase {
+    extends EditorAdapterDefinitionBase {
 
     private readonly matchingSelector: string;
 
@@ -1758,6 +1758,7 @@ Although `ValueHostValidationState` includes the group that caused validation, `
 
 ```ts
 interface IFieldPresentation {
+    init(): void;
     apply(
         valueHost: IFieldValueHost,
         state: ValueHostValidationState
@@ -1778,6 +1779,8 @@ abstract class FieldPresentationBase<
         protected readonly element: TElement
     ) {
     }
+
+    public init(): void {}
 
     public abstract apply(
         valueHost: IFieldValueHost,
@@ -1826,7 +1829,7 @@ Presentation names and roles are open-ended strings. The built-in `ElementRole` 
 
 `register()` associates a presentation name with a creator. Registering the same name again replaces its creator for future installations. Presentations already installed on elements are unaffected.
 
-`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. For editors, `IEditorInstaller` first considers `EditorInstallOptions.presentationName`, then `IDomEditorAdapterDefinition.defaultFieldPresentationName`. Only when neither supplies a value does it pass `undefined`, allowing the factory to use the default registered for `ElementRole.editor`.
+`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. For editors, `IEditorInstaller` first considers `EditorInstallOptions.presentationName`, then `IEditorAdapterDefinition.defaultFieldPresentationName`. Only when neither supplies a value does it pass `undefined`, allowing the factory to use the default registered for `ElementRole.editor`.
 
 Assigning another default for the same role replaces the earlier string. The method does not require the named presentation to be registered at that time, allowing defaults and creators to be configured in either order.
 
@@ -1837,7 +1840,9 @@ The factory does not provide an operation for removing a role default after it h
 1. When `presentationName` is supplied, use it directly.
 2. Otherwise, obtain the default presentation name registered for `role`.
 3. Resolve the creator registered under that name.
-4. Invoke the creator with `element` and return the resulting IFieldPresentation instance.
+4. Invoke the creator with `element`
+5. Invoke its init()
+6. Return the resulting IFieldPresentation instance.
 
 If an explicit name is not registered, or an omitted name has no role default, the factory logs the failure and throws. A role default that identifies an unregistered presentation also logs and throws when creation is attempted.
 
@@ -1897,16 +1902,17 @@ When presentation installation is required and `options.presentationName` is `nu
 Otherwise, when the presentation property is `undefined`, the installer:
 
 1. Calls `fieldPresentationFactory.create()` with the element, role, and requested presentation name.
-2. Applies the current field state:
+2. Executes init()
+3. Applies the current field state:
 
-```ts
-presentation.apply(
-    valueHost,
-    valueHost.currentValidationState
-);
-```
+    ```ts
+    presentation.apply(
+        valueHost,
+        valueHost.currentValidationState
+    );
+    ```
 
-3. Assigns the successfully initialized presentation to `element.jivsFieldPresentation`.
+4. Assigns the successfully initialized presentation to `element.jivsFieldPresentation`.
 
 Using `currentValidationState` allows presentation installation to occur before or after an application calls:
 
@@ -1965,7 +1971,7 @@ if (
         options?.staticAriaUpdater !== undefined
             ? options.staticAriaUpdater
             : presentation
-                ?.getStaticAriaElementUpdater?.()
+                ?.getStaticAriaElementUpdater()
                 ?? null;
 
     const validationStateAriaUpdater =
@@ -1973,7 +1979,7 @@ if (
             !== undefined
             ? options.validationStateAriaUpdater
             : presentation
-                ?.getValidationStateAriaElementUpdater?.()
+                ?.getValidationStateAriaElementUpdater()
                 ?? null;
 
     ariaService.applyStaticAttributes(
@@ -2182,6 +2188,7 @@ Form presentations are separate from field presentations because they receive an
 
 ```ts
 interface IFormPresentation {
+    init(): void;
     apply(
         valueHostsManager: IValueHostsManager,
         state: ValidationState
@@ -2202,6 +2209,10 @@ abstract class FormPresentationBase<
     public constructor(
         protected readonly element: TElement
     ) {
+    }
+    public init(): void
+    {
+        // nothing in the base
     }
 
     public apply(
@@ -3117,7 +3128,7 @@ The following existing contracts and classes require ARIA-related changes.
 | --- | --- |
 | `ElementRole` | Add `ariaError = "aria-error"`. |
 | `IJivsDomElement` | Add the `jivsAriaValidationStateUpdater` installation and completion property. |
-| `IDomEditorAdapterDefinition` | Add optional static and validation-state ARIA updater getters. |
+| `IEditorAdapterDefinition` | Add optional static and validation-state ARIA updater getters. |
 | `IFieldPresentation` | Add optional static and validation-state ARIA updater getters. |
 | `IFormPresentation` | Add the optional static ARIA updater getter. |
 | `IFieldPresentationInstaller` | Replace the presentation-name parameter with `FieldPresentationInstallOptions`. |
@@ -3240,7 +3251,7 @@ Registration methods accept updater instances rather than creator functions. Edi
 The existing Editor Adapter Definition and presentation contracts expose optional updater getters directly:
 
 ```ts
-interface IDomEditorAdapterDefinition {
+interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater():
@@ -4580,7 +4591,7 @@ interface IJivsDomServices
     dispatchers: IDomDispatcherService;
 
     editorAdapterDefinitionFactory:
-        IDomEditorAdapterDefinitionFactory;
+        IEditorAdapterDefinitionFactory;
 
     fieldPresentationFactory:
         IFieldPresentationFactory;
@@ -4734,9 +4745,9 @@ The three public factories are owned by the DOM service collection because appli
 
 #### Editor Adapter Factory
 
-`editorAdapterFactory` contains the registered `IDomEditorAdapterDefinition` objects.
+`editorAdapterFactory` contains the registered `IEditorAdapterDefinition` objects.
 
-The standard creation method constructs `DomEditorAdapterFactory` and registers the built-in definitions supplied by `jivs-dom`, including:
+The standard creation method constructs `EditorAdapterFactory` and registers the built-in definitions supplied by `jivs-dom`, including:
 
 * ordinary input definitions;
 * `CheckboxAdapterDefinition`;

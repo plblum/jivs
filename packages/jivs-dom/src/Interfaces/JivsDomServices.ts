@@ -9,7 +9,7 @@
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IService, IServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { IDomEditorAdapterDefinitionFactory } from './Adapters';
+import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { IDomAriaService } from './AriaService';
 import { IDomDispatcherService } from './Dispatchers';
 import { IEditorInstaller } from './EditorInstaller';
@@ -17,6 +17,7 @@ import { IFieldPresentationFactory, IFieldPresentationInstaller } from './FieldP
 import { IFormPresentationFactory, IFormPresentationInstaller } from './FormPresentations';
 import { IIssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { ElementRole } from './Types';
+import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
 
 
 /**
@@ -32,7 +33,10 @@ import { ElementRole } from './Types';
 export interface IJivsDomServices
     extends IService, IServicesAccessor
 {
-
+    /**
+     * Override services: IServices.
+     */
+    services: IJivsServices;
     /**
      * Gets the DOM dispatcher service responsible for handling DOM events 
      * and dispatching them to the appropriate handlers.
@@ -44,14 +48,14 @@ export interface IJivsDomServices
     dispatchers: IDomDispatcherService;
 
     /**
-     * Gets the factory responsible for creating IDomEditorAdapterDefinitions.
+     * Gets the factory responsible for creating IEditorAdapterDefinitions.
      * Use it to register editor adapter definitions.
      * ```ts
      * services.editorAdapterDefinitionFactory.register(new MyAdapterDefinition());
      * ```
      * Consumed by the IEditorInstaller to create editor adapters.
      */
-    editorAdapterDefinitionFactory: IDomEditorAdapterDefinitionFactory;
+    editorAdapterDefinitionFactory: IEditorAdapterDefinitionFactory;
 
     /**
      * Gets the factory responsible for creating IFieldPresentations.

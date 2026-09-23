@@ -42,9 +42,9 @@ class DomServices implements IDomServices {
     );
 
     public get editorAdapterFactory():
-        IDomEditorAdapterFactory;
+        IEditorAdapterFactory;
     public set editorAdapterFactory(
-        value: IDomEditorAdapterFactory
+        value: IEditorAdapterFactory
     );
 
     public get fieldPresentationInstaller():
@@ -126,7 +126,7 @@ This is a SimpleDom implementation detail, not a requirement of `IDomElementReso
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsEditorAdapterDefinition?:
-        IDomEditorAdapterDefinition;
+        IEditorAdapterDefinition;
 
     jivsTextValueAdapter?:
         IDomTextValueAdapter | null;
@@ -188,12 +188,12 @@ interface IDomValueAdapter {
     ): void;
 }
 ```
-> We would expect the writeTextValue function to support the onTextValueChanged callback, but why the readTextValue? Because that allows us to provide boilerplate code in our installer that handles the setTextValue() call by getting the value consistently using readTextValue. We'll see that in use in concrete implementations of `IDomEditorAdapterDefinition`.
+> We would expect the writeTextValue function to support the onTextValueChanged callback, but why the readTextValue? Because that allows us to provide boilerplate code in our installer that handles the setTextValue() call by getting the value consistently using readTextValue. We'll see that in use in concrete implementations of `IEditorAdapterDefinition`.
 
 The editor adapter factory recognizes an editor element and resolves one adapter definition. A definition owns all editor-specific behavior so that its text-value adapter, native-value adapter, and DOM-to-Jivs connection agree on the widget model:
 
 ```ts
-interface IDomEditorAdapterDefinition {
+interface IEditorAdapterDefinition {
     readonly adapterKey: string;
     readonly priority: number;
     readonly defaultFieldPresentationName?: string | null;
@@ -219,18 +219,18 @@ interface IDomEditorAdapterDefinition {
     ): void;
 }
 
-interface IDomEditorAdapterFactory {
+interface IEditorAdapterFactory {
     register(
-        definition: IDomEditorAdapterDefinition
+        definition: IEditorAdapterDefinition
     ): void;
 
     getDefinition(
         adapterKey: string
-    ): IDomEditorAdapterDefinition | null;
+    ): IEditorAdapterDefinition | null;
 
     findDefinition(
         element: HTMLElement
-    ): IDomEditorAdapterDefinition | null;
+    ): IEditorAdapterDefinition | null;
 }
 
 interface IDomAriaEditorDefinition {
@@ -253,7 +253,7 @@ The factory stores and returns the registered definition instance. A registered 
 
 For built-in native HTML editors, a definition's default `adapterKey` should be unique to the specific widget case, not just to the general element tag. This means values such as `input:text`, `input:number`, `input:date`, `input:checkbox`, `input:radio`, `textarea`, `select`, and `input:file` are distinct keys. This allows an application to override one specific native control variant without changing the behavior of other native input types that share the same tag.
 
-The `jivs-dom` library is expected to provide the following built-in `IDomEditorAdapterDefinition` implementations for native DOM elements:
+The `jivs-dom` library is expected to provide the following built-in `IEditorAdapterDefinition` implementations for native DOM elements:
 
 - `InputAdapterDefinition` for all ordinary `input` types except `radio` and `file`;
 - `RadioAdapterDefinition` for radio groups;
@@ -265,7 +265,7 @@ These are the public built-in definitions expected to ship in the library. Appli
 
 Adapters are per-element objects. The current Jivs context is supplied by the dispatcher or installer operation rather than retained as adapter state.
 
-`jivs-dom` supplies three abstract base implementations of `IDomEditorAdapterDefinition`. Each leaves `attachToSendValues()` trigger wiring to its concrete subclass, but provides a protected helper for the usual Jivs submission path:
+`jivs-dom` supplies three abstract base implementations of `IEditorAdapterDefinition`. Each leaves `attachToSendValues()` trigger wiring to its concrete subclass, but provides a protected helper for the usual Jivs submission path:
 
 ```text
 TextEditorAdapterDefinition
@@ -298,7 +298,7 @@ protected abstract parseTextValue(
 };
 ```
 
-Passing the `IFieldValueHost` and element lets application code select parser behavior from the field's configured data type or element-specific characteristics. `jivs-dom` provides no external-parser registry or data-type-to-parser factory; applications own that policy. A custom widget may extend the appropriate base class or implement `IDomEditorAdapterDefinition` directly when its behavior differs.
+Passing the `IFieldValueHost` and element lets application code select parser behavior from the field's configured data type or element-specific characteristics. `jivs-dom` provides no external-parser registry or data-type-to-parser factory; applications own that policy. A custom widget may extend the appropriate base class or implement `IEditorAdapterDefinition` directly when its behavior differs.
 
 The intended extension model is:
 
@@ -361,7 +361,7 @@ interface EditorInstallOptions {
 
 `presentationName` follows the same rule as the installed presentation state: `undefined` means no selection has been attempted yet and a fallback policy may still apply; `null` means this install site explicitly disables a presentation and should not fall back to a default. When the element is already bound, any conflicting explicit `adapterKey` is rejected.
 
-`editorInstaller` is used only for editors. It uses `editorAdapterFactory` to select one `IDomEditorAdapterDefinition`, which coordinates:
+`editorInstaller` is used only for editors. It uses `editorAdapterFactory` to select one `IEditorAdapterDefinition`, which coordinates:
 
 - text-value adapter creation;
 - native-value adapter creation;

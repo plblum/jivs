@@ -108,7 +108,7 @@ export interface IFieldPresentationFactory
     /**
      * Associates a role with the presentation name used when create() receives no explicit name. 
      * For editors, IEditorInstaller first considers EditorInstallOptions.presentationName, 
-     * then IDomEditorAdapterDefinition.defaultFieldPresentationName. 
+     * then IEditorAdapterDefinition.defaultFieldPresentationName. 
      * Only when neither supplies a value does it pass undefined, 
      * allowing the factory to use the default registered for ElementRole.editor.
      * @param role 
@@ -128,7 +128,7 @@ export interface IFieldPresentationFactory
      * to set its own properties and behavior. It can retain other data but should not
      * retain references to the element or Jivs objects.
      */
-    create(element: IJivsDomElement,role: ElementRole | string,presentationName?: string): IFieldPresentation;
+    create(element: IJivsDomElement,role: ElementRole | string, presentationName?: string | null): IFieldPresentation;
 }
 
 /**

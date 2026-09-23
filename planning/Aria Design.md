@@ -170,7 +170,7 @@ Role updater lookup occurs during each operation. Replacing a static role update
 The existing Adapter Definition and presentation contracts expose optional updater getters directly. An omitted getter and a getter returning `null` both indicate that the provider supplies no specialized updater of that kind.
 
 ```ts
-interface IDomEditorAdapterDefinition {
+interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater?():
