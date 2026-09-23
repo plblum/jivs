@@ -83,55 +83,6 @@ export interface IFieldPresentation
 }
 
 /**
- * Creator function used by FieldPresentationFactory to create instances of field presentations.
- */
-export type FieldPresentationCreator = (element: IJivsDomElement) => IFieldPresentation;
-
-/**
- * Factory that registers and creates IFieldPresentation instances.
- * Every registration connects a Presentation Name to an instance.
- * The same instance can be registered under multiple presentation names.
- * That name is used in lookups, either as an option parameter, or from a supplied default presentation name.
- * 
- * The factory is only used during the initialization phase.
- */
-export interface IFieldPresentationFactory
-{
-    /**
-     * Registers a new field presentation under the specified name.
-     * It will replace any existing registration under the same name.
-     * @param presentationName The name of the presentation to register.
-     * @param creator The creator function that will be used to create instances of the presentation.
-     */
-    register(presentationName: string, creator: FieldPresentationCreator): void;
-
-    /**
-     * Associates a role with the presentation name used when create() receives no explicit name. 
-     * For editors, IEditorInstaller first considers EditorInstallOptions.presentationName, 
-     * then IEditorAdapterDefinition.defaultFieldPresentationName. 
-     * Only when neither supplies a value does it pass undefined, 
-     * allowing the factory to use the default registered for ElementRole.editor.
-     * @param role 
-     * @param presentationName 
-     */
-    setDefaultPresentationName(role: ElementRole | string, presentationName: string): void;
-
-    /**
-     * Creates an instance of a field presentation for the specified element and role.
-     * If a presentation name is provided, it will be used; 
-     * otherwise, the default presentation for the role will be used.
-     * @param element The DOM element for which to create the field presentation.
-     * @param role The role of the element for which to create the field presentation.
-     * @param presentationName - The name of the presentation to use. 
-     * If not provided, the default for the role will be used.
-     * @returns An instance of the requested field presentation. It allows modification, especially 
-     * to set its own properties and behavior. It can retain other data but should not
-     * retain references to the element or Jivs objects.
-     */
-    create(element: IJivsDomElement,role: ElementRole | string, presentationName?: string | null): IFieldPresentation;
-}
-
-/**
  * Handles installation of IFieldPresentations to a specific element.
  * It uses the role and valueHost to determine how to install the field presentation.
  * ValueHost's field name from getElementIdentifier() and data type from getDataType() are often

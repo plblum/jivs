@@ -36,6 +36,14 @@ export interface IFormPresentation
      * When true, if the jivsFormPresentationGroup indicates a wildcard group, the presentation should respond to it.
      */
     readonly respondToWildcardGroup?: boolean;
+
+    /**
+     * Initializes the form presentation. 
+     * This method is called once after the presentation is created and 
+     * before it is applied to any validation state.
+     */
+    init(): void;
+
     /**
      * Applies the specified validation state to the form.
      * Its parameters match those of the ValueHostsManager.onValidationStateChanged callback
@@ -52,50 +60,6 @@ export interface IFormPresentation
      */
     getStaticAriaElementUpdater(): IDomAriaStaticElementUpdater | null;
 }
-
-/**
- * Used by IFormPresentationFactory to create IFormPresentation instances.
- */
-export type FormPresentationCreator = (element: IJivsDomElement) => IFormPresentation;
-
-/**
- * Factory that registers and creates IFormPresentation instances.
- * Every registration connects a Presentation Name to an instance.
- * The same instance can be registered under multiple presentation names.
- * That name is used in lookups, either as an option parameter, or from a supplied default presentation name.
- * 
- * The factory is only used during the initialization phase.
- */
-export interface IFormPresentationFactory
-{
-    /**
-     * Registers a presentation creator function under the specified presentation name.
-     * Replaces any previously registered creator function for the same presentation name.
-     * 
-     * @param presentationName The name of the presentation to register.
-     * @param creator The function that creates an IFormPresentation instance for the given element.
-     */
-    register(presentationName: string, creator: FormPresentationCreator): void;
-
-    /**
-     * Sets the default presentation name for a given role.
-     * 
-     * @param role The role for which to set the default presentation name.
-     * @param presentationName The default presentation name to associate with the role.
-     */
-    setDefaultPresentationName(role: ElementRole | string, presentationName: string): void;
-
-    /**
-     * Creates an IFormPresentation instance for the given element, role, and optional presentation name.
-     * 
-     * @param element The DOM element for which to create the presentation.
-     * @param role The role of the element for which to create the presentation.
-     * @param presentationName The optional presentation name to use for creating the presentation.
-     * When supplied, it overrides the default presentation name set for the role.
-     */
-    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string): IFormPresentation | null;
-}
-
 
 /**
  * Handles installation of IFormPresentations to a specific element.

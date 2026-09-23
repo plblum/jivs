@@ -13,11 +13,12 @@ import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices
 import { IDomAriaService } from './AriaService';
 import { IDomDispatcherService } from './Dispatchers';
 import { IEditorInstaller } from './EditorInstaller';
-import { IFieldPresentationFactory, IFieldPresentationInstaller } from './FieldPresentations';
-import { IFormPresentationFactory, IFormPresentationInstaller } from './FormPresentations';
+import { IFieldPresentation, IFieldPresentationInstaller } from './FieldPresentations';
+import { IFormPresentation, IFormPresentationInstaller } from './FormPresentations';
 import { IIssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { ElementRole } from './Types';
 import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
+import { IPresentationFactory } from './Presentations_common';
 
 
 /**
@@ -65,7 +66,7 @@ export interface IJivsDomServices
      * ```
      * Consumed by the IFieldPresentationInstaller to create field presentations.
      */
-    fieldPresentationFactory: IFieldPresentationFactory;
+    fieldPresentationFactory: IPresentationFactory<IFieldPresentation>;
 
     /**
      * Gets the factory responsible for creating IFormPresentations.
@@ -75,7 +76,7 @@ export interface IJivsDomServices
      * ```
      * Consumed by the IFormPresentationInstaller to create form presentations.
      */
-    formPresentationFactory: IFormPresentationFactory;
+    formPresentationFactory: IPresentationFactory<IFormPresentation>;
 
     /**
      * Gets the installer responsible for setting up one Editor widget.

@@ -2344,7 +2344,7 @@ interface IFormPresentationFactory {
         element: IJivsDomElement,
         role: ElementRole | string,
         presentationName?: string
-    ): IFormPresentation | null;
+    ): IFormPresentation;
 }
 ```
 
@@ -2433,9 +2433,10 @@ When the factory creates a presentation, the installer performs these steps:
 
 1. Assigns the requested group to `element.jivsFormPresentationGroup`.
 2. Obtains the manager’s current validation state for that group.
-3. Calls the presentation’s initial `apply()`.
-4. Assigns the successfully initialized presentation to `element.jivsFormPresentation`.
-5. Continues to static ARIA installation.
+3. Executes init().
+4. Calls the presentation’s initial `apply()`.
+5. Assigns the successfully initialized presentation to `element.jivsFormPresentation`.
+6. Continues to static ARIA installation.
 
 Conceptually:
 

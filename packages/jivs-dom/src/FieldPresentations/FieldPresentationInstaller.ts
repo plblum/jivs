@@ -1,3 +1,8 @@
+/**
+ * Installer class responsible for installing field presentations on DOM elements.
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/FieldPresentationInstaller
+ */
+
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { FieldPresentationInstallOptions, IFieldPresentation, IFieldPresentationInstaller } from '../Interfaces/FieldPresentations';
