@@ -28,7 +28,6 @@ export abstract class DomServiceBase
 
     /**
      * Provides an API for logging, sending entries to the loggingService.
-     * @param services 
      * @returns 
      */
     protected logger(): LoggingFacade

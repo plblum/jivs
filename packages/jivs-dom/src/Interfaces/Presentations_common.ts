@@ -1,3 +1,6 @@
+/**
+ * @module jivs-dom/Types/Presentations
+ */
 import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
 

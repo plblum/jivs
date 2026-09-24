@@ -11,6 +11,7 @@ import type { InjectedError } from '@plblum/jivs-engine/build/Interfaces/Validat
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Supports Applications that parse editor text into its native value prior to
@@ -72,7 +73,7 @@ export abstract class ParsedTextEditorAdapterDefinition
     {
         if (!anchor.jivsTextValueAdapter)
         {
-            this.logMessage(
+            this.log(
                 LoggingLevel.Warn,
                 `No TextValueAdapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
                 anchor as HTMLElement,

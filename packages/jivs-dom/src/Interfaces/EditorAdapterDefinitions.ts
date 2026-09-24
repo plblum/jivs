@@ -5,7 +5,6 @@
  * editor adapters, presenters, and aria updaters for a specific widget model.
  * 
  * @module jivs-dom/Types/EditorAdapterDefinitions
- * 
  */
 
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
@@ -13,6 +12,7 @@ import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } f
 import { EditorInstallOptions } from './EditorInstaller';
 import { IJivsDomElement } from "./IJivsDomElement";
 import { IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
+import { IJivsDomServices } from './JivsDomServices';
 
 
 /**
@@ -28,6 +28,9 @@ import { IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
  *  - attaching DOM event handlers that send edited values to the IFieldValueHost;
  *  - identifying the default field presentation associated with the widget, when applicable;
  *  - optionally supplying specialized static and validation-state ARIA updaters for the widget.
+ * 
+ * Instances are considered immutable. Once created, their properties should not be modified.
+ * The EditorAdapterDefinitionFactory shares its instances among multiple consumers to ensure consistency and avoid redundant definitions.
  * 
  * Every implementation gets assigned a unique adapterKey and a priority when registered
  * with the IJivsDomService's factory to determine its order of consideration among multiple adapter definitions.
@@ -54,6 +57,12 @@ export interface IEditorAdapterDefinition
      * It must have an associated IFieldPresentation registered with the IJivsDomService's factory.
      */
     readonly defaultFieldPresentationName?: string | null;
+
+    /**
+     * Get/set access to the IJivsDomServices instance associated with this adapter definition.
+     * The same object should own the factory that produces this adapter definition.
+     */
+    domServices: IJivsDomServices;
 
     /**
      * Used when searching the registry for a matching adapter definition.
@@ -131,26 +140,46 @@ export interface IEditorAdapterDefinition
      * @param anchor The DOM element serving as the installation anchor.
      * @param options The options for installing the editor.
      */
-    attachToSendValues(valueHost: IFieldValueHost, anchor: IJivsDomElement, options: EditorInstallOptions): void;
+    attachToSendValues(valueHost: IFieldValueHost, anchor: IJivsDomElement,
+        options: EditorInstallOptions): void;
 }
 
 /**
  * Registers and selects editor adapter definitions as part of running 
  * the IEditorInstaller.
  * IJivsDomService.editorAdapterFactory retains the sole instance.
+ * 
+ * Registered instances of IEditorAdapterDefinition must be treated as immutable.
  */
 export interface IEditorAdapterDefinitionFactory
 {
-    register(
-        definition: IEditorAdapterDefinition
-    ): void;
+    /**
+     * Registers the given editor adapter definition with the factory.
+     * The definition must be treated as immutable once registered.
+     * Each instance has a unique Adapter Key. Typically implementations allow
+     * passing the adapter key and priority into their constructors.
+     * ```ts
+     * const definition = new TextAreaAdapterDefinition('textarea', 10);
+     * factory.register(definition);
+     * ```
+     * @param definition The editor adapter definition to register with the factory.
+     */
+    register(definition: IEditorAdapterDefinition): void;
 
-    getDefinition(
-        adapterKey: string
-    ): IEditorAdapterDefinition | null;
+    /**
+     * Retrieves the editor adapter definition associated with the given adapter key, if any.
+     * @param adapterKey The unique adapter key of the editor adapter definition to retrieve.
+     * @returns The editor adapter definition associated with the given adapter key, or null if none is found.
+     */
+    getDefinition(adapterKey: string): IEditorAdapterDefinition | null;
 
-    findDefinition(
-        valueHost: IFieldValueHost,
-        element: HTMLElement
-    ): IEditorAdapterDefinition | null;
+    /**
+     * Finds an editor adapter definition that matches the given value host and element characteristics.
+     * Effectively each IEditorAdapterDefinition.matches() function is called in priority order until a match is found.
+     * 
+     * @param valueHost The field value host to match against.
+     * @param element The DOM element to match against.
+     * @returns The matching editor adapter definition, or null if none is found.
+     */
+    findDefinition(valueHost: IFieldValueHost, element: HTMLElement): IEditorAdapterDefinition | null;
 }

@@ -1,3 +1,6 @@
+/**
+ * @module jivs-dom/Presentations/AbstractClasses/PresentationFactoryBase
+ */
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { ElementRole } from '../Interfaces/Types';

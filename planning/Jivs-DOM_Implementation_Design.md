@@ -128,7 +128,7 @@ flowchart LR
         TEXT_EDITOR["Editor Text Value"]
 
         TEXT_CALLBACK -->|"supplies ValueHost"| TEXT_DISPATCHER
-        TEXT_DISPATCHER -->|"getTextValue(); findConsumers()"| TEXT_ELEMENT
+        TEXT_DISPATCHER -->|"getTextValue(); findElements()"| TEXT_ELEMENT
         TEXT_ELEMENT -->|"resolve jivsTextValueAdapter"| TEXT_ADAPTER
         TEXT_ADAPTER -->|"writeTextValue()"| TEXT_EDITOR
     end
@@ -143,7 +143,7 @@ flowchart LR
         VALUE_EDITOR["Editor Native Value"]
 
         VALUE_CALLBACK -->|"supplies ValueHost"| VALUE_DISPATCHER
-        VALUE_DISPATCHER -->|"getValue(); findConsumers()"| VALUE_ELEMENT
+        VALUE_DISPATCHER -->|"getValue(); findElements()"| VALUE_ELEMENT
         VALUE_ELEMENT -->|"resolve jivsValueAdapter"| VALUE_ADAPTER
         VALUE_ADAPTER -->|"writeValue()"| VALUE_EDITOR
     end
@@ -189,12 +189,12 @@ flowchart TB
     subgraph DISPATCHER["FieldValidationDispatcher"]
         direction TB
 
-        FIND["findConsumers()"]
+        FIND["findElements()"]
         APPLY["Apply installed field presentations"]
         ARIA["IDomAriaService.applyValidationState"]
         FIELD_UI["Updated field UI"]
 
-        FIND -->|"process every consumer"| APPLY
+        FIND -->|"process every element"| APPLY
         APPLY -->|"after all presentations"| ARIA
         ARIA --> FIELD_UI
     end
@@ -213,11 +213,11 @@ flowchart TB
     subgraph DISPATCHER["FormValidationDispatcher"]
         direction TB
 
-        FIND["findConsumers()"]
+        FIND["findElements()"]
         APPLY["IJivsDomElement.jivsFormPresentation.apply"]
         FORM_UI["Updated form UI"]
 
-        FIND -->|"for each consumer"| APPLY
+        FIND -->|"for each element"| APPLY
         APPLY --> FORM_UI
     end
 
@@ -233,7 +233,7 @@ flowchart TB
 
 * Shared services do not retain forms, elements, element collections, or DOM subtrees.
 
-* Dispatchers are created for a specific callback attachment. They may retain configuration and discovery policy, but they rediscover consumer elements during every dispatch and do not retain the elements they find.
+* Dispatchers are created for a specific callback attachment. They may retain configuration and discovery policy, but they rediscover elements during every dispatch and do not retain the elements they find.
 
 * The four callback capabilities remain independent: Text Value changes, Native Value changes, field validation changes, and form validation changes can be attached and replaced separately.
 
@@ -249,9 +249,9 @@ flowchart TB
 
 A page may contain more than one `ValueHostsManager`, each responsible for a different form or region of the DOM. Field identifiers, presentation roles, and other selector characteristics may be repeated between those regions.
 
-Dispatchers rediscover consumer elements whenever a callback occurs. If discovery always begins at the document level, a dispatcher may find and update elements belonging to another `ValueHostsManager`.
+Dispatchers rediscover elements whenever a callback occurs. If discovery always begins at the document level, a dispatcher may find and update elements belonging to another `ValueHostsManager`.
 
-The manager therefore needs an optional identifier for its containing DOM region. A dispatcher can resolve that container first and restrict all consumer discovery to the resulting subtree.
+The manager therefore needs an optional identifier for its containing DOM region. A dispatcher can resolve that container first and restrict all element discovery to the resulting subtree.
 
 `ValueHostsManagerConfig` adds:
 
@@ -1750,7 +1750,7 @@ A field presentation translates one field’s current validation state into chan
 
 Presentation installation occurs after the `ValueHostsManager` and its `IFieldValueHost` instances have been created. This allows installation to apply the field’s current validation state immediately, regardless of whether preliminary validation has already run.
 
-`FieldValidationDispatcher` locates each relevant consumer element, reads its installed `jivsFieldPresentation`, and invokes `apply()`. After all installed presentations have been processed, it invokes `IDomAriaService.applyValidationState()` once for the field when the ARIA service is available.
+`FieldValidationDispatcher` locates each relevant element, reads its installed `jivsFieldPresentation`, and invokes `apply()`. After all installed presentations have been processed, it invokes `IDomAriaService.applyValidationState()` once for the field when the ARIA service is available.
 
 Although `ValueHostValidationState` includes the group that caused validation, `FieldValidationDispatcher` does not perform group routing. A field presentation is already scoped to one `IFieldValueHost` and reflects that field's current state regardless of which validation group produced it.
 
@@ -2178,11 +2178,11 @@ The focused presentation-design work still needs to determine:
 
 ### Form Presentation Contracts
 
-A form presentation translates the `ValueHostsManager` validation state into changes to one form-level consumer. Typical consumers include Validation Summaries and submit controls.
+A form presentation translates the `ValueHostsManager` validation state into changes to one form-level element. Typical elements include Validation Summaries and submit controls.
 
 Form presentations are separate from field presentations because they receive an `IValueHostsManager` and `ValidationState` rather than an individual `IFieldValueHost` and `ValueHostValidationState`.
 
-`FormValidationDispatcher` locates each relevant consumer element, reads its installed `IJivsDomElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
+`FormValidationDispatcher` locates each relevant element, reads its installed `IJivsDomElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
 
 #### Form Presentation Interface and Base Class
 
@@ -2547,7 +2547,7 @@ Replacing the DOM element creates a new installation lifetime. The replacement e
 
 `FormValidationDispatcher` does not evaluate validation groups. Group-routing policy belongs to each form presentation.
 
-For every discovered form-level consumer, the dispatcher:
+For every discovered form-level element, the dispatcher:
 
 1. Reads `element.jivsFormPresentation`.
 2. Skips the element when the property is `undefined` or `null`.
@@ -2587,7 +2587,8 @@ Both Validation Summaries and submit-role elements use the same selection rules:
 * otherwise, the form presentation factory consults the default for that role;
 * when the role has no default, installation records `jivsFormPresentation = null`; registered static ARIA for the role may still modify the element.
 
-### Built-in Form Presentations
+## Built-in Form Presentations
+> PENDING: Detailed implementation design for the built-in Validation Summary and submit presentations is deferred.
 
 The built-in configuration:
 
@@ -2601,13 +2602,10 @@ The built-in `validationSummary` registration leaves `respondToWildcardGroup` at
 
 Applications may register additional form presentations and may assign their own default for either role. The detailed HTML, interaction, group-display policy, and CSS design of the initial Validation Summary and submit presentations remain part of the focused presentation-design work.
 
-## Built-in Form Presentations
-
-> PENDING: Detailed implementation design for the built-in Validation Summary and submit presentations is deferred.
 
 ## Issues Found Formatter Service
 
-`jivs-dom` provides reusable formatting of `IssueFound` objects through `IIssuesFoundFormatterService`. The service produces either prepared HTML for DOM presentations or plain text for consumers such as native browser tooltips and ARIA-only content.
+`jivs-dom` provides reusable formatting of `IssueFound` objects through `IIssuesFoundFormatterService`. The service produces either prepared HTML for DOM presentations or plain text for elements such as native browser tooltips and ARIA-only content.
 
 This service is distinct from the jivs-engine `ErrorMessagesService`. The engine service prepares an issue’s message, including message-token resolution. The DOM service formats already-prepared messages for presentation.
 
@@ -2616,19 +2614,25 @@ This service is distinct from the jivs-engine `ErrorMessagesService`. The engine
 ```ts
 interface IIssuesFoundFormatterService {
     buildAsHtml(
+        valueHostsManager: IValueHostsManager,
         issues: IssueFound[],
-        useSummaryMessage?: boolean
+        useSummaryMessage?: boolean, 
+        limit?: number
     ): string;
 
     buildAsText(
+        valueHostsManager: IValueHostsManager,
         issues: IssueFound[],
         useSummaryMessage?: boolean,
-        separator?: string
+        separator?: string, 
+        limit?: number
     ): string;
 }
 ```
 
 When `useSummaryMessage` is `false` or omitted, the formatter uses `IssueFound.errorMessage`. When it is `true`, the formatter uses `IssueFound.summaryMessage` when supplied and otherwise falls back to `IssueFound.errorMessage`.
+
+When `limit` is assigned to 1 or higher, this limits the total number of issues to include.
 
 The interface does not prescribe an HTML structure, issue ordering, filtering policy, metadata attributes, text separator, or internal conversion technique. Applications may replace the service with an implementation that constructs its content differently.
 
@@ -2647,14 +2651,18 @@ abstract class IssuesFoundFormatterServiceBase
     implements IIssuesFoundFormatterService {
 
     public abstract buildAsHtml(
+        valueHostsManager: IValueHostsManager,
         issues: IssueFound[],
-        useSummaryMessage?: boolean
+        useSummaryMessage?: boolean, 
+        limit?: number
     ): string;
 
     public abstract buildAsText(
+        valueHostsManager: IValueHostsManager,
         issues: IssueFound[],
         useSummaryMessage?: boolean,
-        separator?: string
+        separator?: string, 
+        limit?: number
     ): string;
 
     public static htmlToText(
@@ -2680,7 +2688,10 @@ abstract class IssuesFoundFormatterServiceBase
         issue: IssueFound,
         attributeName?: string
     ): string;
-
+    protected buildValueHostAttribute(
+        issue: IssueFound,
+        attributeName?: string
+    ): string;
     protected retrieveMessage(
         issue: IssueFound,
         useSummaryMessage: boolean
@@ -2724,10 +2735,11 @@ The standard formatter calls `orderIssuesFound()` before generating either HTML 
 
 #### Metadata Attributes
 
-`buildErrorCodeAttribute()` returns a complete HTML attribute without leading whitespace. Its default attribute name is `data-error-code`.
+`buildErrorCodeAttribute()` returns an attribute for the IssueFound.errorCode property.
+ It is complete HTML attribute without leading whitespace. Its default attribute name is `data-errorcode`.
 
 ```html
-data-error-code="RequireText"
+data-errorcode="RequireText"
 ```
 
 The method uses the `encodeHtml()` function supplied by jivs-engine to encode the attribute value. `jivs-dom` does not duplicate or re-export that function.
@@ -2735,12 +2747,13 @@ The method uses the `encodeHtml()` function supplied by jivs-engine to encode th
 When `IssueFound.errorCode` is missing, the attribute value is an empty string:
 
 ```html
-data-error-code=""
+data-errorcode=""
 ```
 
 A caller may supply another attribute name while retaining the prescribed value handling.
 
-`buildSeverityAttribute()` follows the same convention. Its default name is `data-severity`, and it delegates value selection to `retrieveSeverityName()`.
+`buildSeverityAttribute()` returns an attribute for the IssueFound.severity property.
+Its default name is `data-severity`, and it delegates value selection to `retrieveSeverityName()`.
 
 ```html
 data-severity="warning"
@@ -2757,6 +2770,16 @@ data-severity="warning"
 
 The lookup used by `retrieveSeverityName()` is a module-private readonly `severityNames` array. Subclasses can override the method without receiving a mutable lookup array.
 
+`buildValueHostAttribute()` returns an attribute based on IssueFound.valueHostName.
+It looks up the FieldValueHost and uses its Element Identifer.
+Its default attribute name is `data-identifier`.
+
+```html
+data-identifier="FirstName"
+```
+
+The value is html encoded.
+
 #### One-Issue HTML
 
 `buildIssueAsHtml()` combines the two metadata attributes with the selected message. The attribute builders return complete attribute strings without leading whitespace; `buildIssueAsHtml()` joins them using single spaces.
@@ -2764,7 +2787,7 @@ The lookup used by `retrieveSeverityName()` is a module-private readonly `severi
 For example:
 
 ```html
-<span data-error-code="RequireText" data-severity="error">The First name requires a value.</span>
+<span data-errorcode="RequireText" data-severity="error">The First name requires a value.</span>
 ```
 
 The selected message is inserted as prepared HTML rather than encoded as plain text. This preserves markup produced during message-token resolution, such as:
@@ -2828,7 +2851,7 @@ One issue produces:
 
 ```html
 <span
-    data-error-code="RequireText"
+    data-errorcode="RequireText"
     data-severity="error">
     The First name requires a value.
 </span>
@@ -2839,12 +2862,12 @@ Multiple issues produce:
 ```html
 <ul>
     <li
-        data-error-code="RequireText"
+        data-errorcode="RequireText"
         data-severity="error">
         The First name requires a value.
     </li>
     <li
-        data-error-code="UnusualValue"
+        data-errorcode="UnusualValue"
         data-severity="warning">
         This value is unusual.
     </li>
@@ -2936,7 +2959,7 @@ flowchart TB
     Service --> Elements
 ```
 
-The installers are installation-time consumers. They request static updater composition and record the specialized validation-state updater on each installed element.
+The installers are installation-time elements. They request static updater composition and record the specialized validation-state updater on each installed element.
 
 After all collected elements have been installed, `DomFormInstallerBase` initializes dynamic ARIA through `applyValidationState()` for each distinct non-null field represented in the field collector lists. `FieldValidationDispatcher` invokes the same operation after later validation changes.
 
@@ -3577,7 +3600,7 @@ The standard Text Value and Native Value dispatchers obtain the new current valu
 
 ### Shared Dispatcher Bases
 
-`jivs-dom` supplies abstract bases that implement root resolution, consumer iteration, failure handling, and access to DOM services. Concrete subclasses implement markup-specific consumer discovery.
+`jivs-dom` supplies abstract bases that implement root resolution, element iteration, failure handling, and access to DOM services. Concrete subclasses implement markup-specific element discovery.
 
 ```ts
 abstract class FieldDispatcherBase {
@@ -3587,14 +3610,14 @@ abstract class FieldDispatcherBase {
     ) {
     }
 
-    protected forEachConsumer(
+    protected forEachElement(
         valueHost: IFieldValueHost,
         operation: (
             element: IJivsDomElement
         ) => void
     ): HTMLElement | null;
 
-    protected abstract findConsumers(
+    protected abstract findElements(
         root: HTMLElement,
         valueHost: IFieldValueHost
     ): Iterable<IJivsDomElement>;
@@ -3607,14 +3630,14 @@ abstract class FormDispatcherBase {
     ) {
     }
 
-    protected forEachConsumer(
+    protected forEachElement(
         valueHostsManager: IValueHostsManager,
         operation: (
             element: IJivsDomElement
         ) => void
     ): HTMLElement | null;
 
-    protected abstract findConsumers(
+    protected abstract findElements(
         root: HTMLElement,
         valueHostsManager: IValueHostsManager
     ): Iterable<IJivsDomElement>;
@@ -3625,8 +3648,8 @@ The base operation:
 
 1. Resolves the manager’s DOM root.
 2. Abandons dispatch when a configured Container Identifier cannot be resolved.
-3. Calls `findConsumers()` for the current dispatch.
-4. Processes every returned consumer in discovery order.
+3. Calls `findElements()` for the current dispatch.
+4. Processes every returned element in discovery order.
 5. Does not retain the discovered elements after returning.
 6. Returns the resolved root when successful so field validation can perform ARIA processing after presentation.
 
@@ -3635,7 +3658,7 @@ Root resolution is defined with element resolution and installation coordination
 ### Text Value Dispatcher
 
 ```ts
-abstract class TextValueDispatcher
+abstract class TextValueDispatcherBase
     extends FieldDispatcherBase
     implements ITextValueDispatcher {
 
@@ -3652,7 +3675,7 @@ abstract class TextValueDispatcher
 valueHost.getTextValue()
 ```
 
-For each discovered consumer, it reads `jivsTextValueAdapter`. An adapter instance receives the current Text Value through `writeTextValue()`. Both `undefined` and `null` are skipped.
+For each discovered element, it reads `jivsTextValueAdapter`. An adapter instance receives the current Text Value through `writeTextValue()`. Both `undefined` and `null` are skipped.
 
 The standard implementation does not use `oldTextValue`. It remains part of the contract so subclasses and direct interface implementations receive the complete callback information.
 
@@ -3661,7 +3684,7 @@ Dispatch does not create or install an adapter.
 ### Native Value Dispatcher
 
 ```ts
-abstract class ValueDispatcher
+abstract class ValueDispatcherBase
     extends FieldDispatcherBase
     implements IValueDispatcher {
 
@@ -3678,7 +3701,7 @@ abstract class ValueDispatcher
 valueHost.getValue()
 ```
 
-For each discovered consumer, it reads `jivsValueAdapter`. An adapter instance receives the current Native Value through `writeValue()`. Both `undefined` and `null` are skipped.
+For each discovered element, it reads `jivsValueAdapter`. An adapter instance receives the current Native Value through `writeValue()`. Both `undefined` and `null` are skipped.
 
 The standard implementation does not use `oldValue`. It remains part of the contract so subclasses and direct interface implementations receive the complete callback information.
 
@@ -3687,7 +3710,7 @@ Dispatch does not create or install an adapter.
 ### Field Validation Dispatcher
 
 ```ts
-abstract class FieldValidationDispatcher
+abstract class FieldValidationDispatcherBase
     extends FieldDispatcherBase
     implements IFieldValidationDispatcher {
 
@@ -3698,7 +3721,7 @@ abstract class FieldValidationDispatcher
 }
 ```
 
-For each discovered consumer, `dispatch()` reads `jivsFieldPresentation`. A presentation instance receives the supplied ValueHost and state through `apply()`. Both `undefined` and `null` are skipped.
+For each discovered element, `dispatch()` reads `jivsFieldPresentation`. A presentation instance receives the supplied ValueHost and state through `apply()`. Both `undefined` and `null` are skipped.
 
 After all discovered field presentations have been processed, the dispatcher calls:
 
@@ -3716,7 +3739,7 @@ ARIA runs after every field presentation so presentation-owned error content is 
 ### Form Validation Dispatcher
 
 ```ts
-abstract class FormValidationDispatcher
+abstract class FormValidationDispatcherBase
     extends FormDispatcherBase
     implements IFormValidationDispatcher {
 
@@ -3727,15 +3750,15 @@ abstract class FormValidationDispatcher
 }
 ```
 
-For each discovered consumer, `dispatch()` reads `jivsFormPresentation`. A presentation instance receives the supplied manager and complete state through `apply()`. Both `undefined` and `null` are skipped.
+For each discovered element, `dispatch()` reads `jivsFormPresentation`. A presentation instance receives the supplied manager and complete state through `apply()`. Both `undefined` and `null` are skipped.
 
 The dispatcher does not interpret validation groups. Group routing belongs to the installed form presentation.
 
 Form dispatch does not invoke `IDomAriaService`. Form-role ARIA is static and is applied during installation.
 
-### Fresh Consumer Discovery
+### Fresh Element Discovery
 
-Every dispatch calls `findConsumers()` again. Dispatchers do not cache consumer elements.
+Every dispatch calls `findElements()` again. Dispatchers do not cache elements.
 
 Consequently:
 
@@ -3758,14 +3781,14 @@ this.domServices
 
 They do not propagate into Jivs or interrupt the end-user interaction.
 
-A missing consumer or missing installed capability is a normal no-op and does not require an error log.
+A missing element or missing installed capability is a normal no-op and does not require an error log.
 
 If an installed adapter or presentation throws:
 
-1. the dispatcher logs the consumer failure;
-2. processing continues with the next discovered consumer.
+1. the dispatcher logs the element failure;
+2. processing continues with the next discovered element.
 
-If root resolution or `findConsumers()` throws, the dispatcher logs the operation failure and abandons that dispatch.
+If root resolution or `findElements()` throws, the dispatcher logs the operation failure and abandons that dispatch.
 
 When a configured Container Identifier cannot be resolved, the dispatcher logs the failure and abandons dispatch. It does not fall back to `document.body`.
 
@@ -3777,82 +3800,89 @@ Logs identify the dispatcher operation, ValueHost or manager context, and failin
 
 ### Dispatcher Creators
 
+There can be one or more dispatchers supported in each dispatcher category.
+The DispatcherService allows supplying different values based on a selector string name.
+The select can be omitted to work with just one.
+
+Purpose for selectors:
+- jivs-simpledom does not need them. It supplies 1 dispatcher per category.
+- When the user want to supply elements to the dispatcher without jivs-simpledom,
+  they may elect to create unique dispatchers for each form, overriding its findElements()
+  function to gather form-specific elements. In this case, a selector can be assigned
+  to each form's dispatcher.
+
 A Dispatcher Creator constructs one dispatcher for one callback attachment:
 
 ```ts
 type DispatcherCreator<TDispatcher> = (
-    domServices: IJivsDomServices,
-    options?: unknown
+    selector?: string
 ) => TDispatcher;
 ```
 
 `IJivsDomServices` gives the new dispatcher access to the complete `jivs-dom` service scope and to its parent `IJivsServices`.
 
-The options argument is opaque to `IDomDispatcherService`. It is passed unchanged to the registered creator:
-
-- it is not inspected;
-- it is not cloned;
-- it is not merged;
-- it is not retained separately;
-- omission is passed as `undefined`.
-
-A concrete package may provide typed wrappers when it wants strongly typed creator options.
+The `variantIdentifier` argument allows the developer to ask for different Dispatchers,
+making the creator into a factory.
 
 ### Dispatcher Service
 
-`IDomDispatcherService` coordinates creator registration and callback attachment:
+`IDispatcherService` coordinates creator registration and callback attachment:
 
 ```ts
-interface IDomDispatcherService {
+interface IDispatcherService {
     registerTextValueChangedDispatcher(
         creator:
-            DispatcherCreator<ITextValueDispatcher>
+            DispatcherCreator<ITextValueDispatcher>, selector?: string
     ): void;
 
     registerValueChangedDispatcher(
         creator:
-            DispatcherCreator<IValueDispatcher>
+            DispatcherCreator<IValueDispatcher>, selector?: string
     ): void;
 
     registerValueHostValidationStateChangedDispatcher(
         creator:
             DispatcherCreator<
                 IFieldValidationDispatcher
-            >
+            >, selector?: string
     ): void;
 
     registerValidationStateChangedDispatcher(
         creator:
             DispatcherCreator<
                 IFormValidationDispatcher
-            >
+            >, selector?: string
     ): void;
+
+    attach(config: ValueHostsManagerConfig, addTextValueAdapter?: boolean, addValueAdapter?: boolean): void
 
     attachTextValueChanged(
         config: ValueHostsManagerConfig,
-        options?: unknown
+        selector?: string
     ): ITextValueDispatcher | null;
 
     attachValueChanged(
         config: ValueHostsManagerConfig,
-        options?: unknown
+        selector?: string
     ): IValueDispatcher | null;
 
     attachValueHostValidationStateChanged(
         config: ValueHostsManagerConfig,
-        options?: unknown
+        selector?: string
     ): IFieldValidationDispatcher | null;
 
     attachValidationStateChanged(
         config: ValueHostsManagerConfig,
-        options?: unknown
+        selector?: string
     ): IFormValidationDispatcher | null;
 }
 ```
 
-`DomDispatcherService` is the standard implementation.
+`DispatcherService` is the standard implementation.
 
-Each dispatcher category has zero or one registered creator. Registering another creator for the same category replaces the earlier creator for future attachments. Already attached dispatchers are unaffected.
+This class can serve as a factory or a one instance per dispatcher category.
+Use the select parameter to offer difference dispatchers.
+Omit it to use just one.
 
 `IJivsDomServices` exposes the replaceable service:
 
@@ -3891,10 +3921,7 @@ const previous =
     config.onTextValueChanged;
 
 const dispatcher =
-    creator(
-        this.domServices,
-        options
-    );
+    creator(selector);
 
 config.onTextValueChanged =
     function (...args): void {
@@ -3923,7 +3950,7 @@ Attaching different dispatcher categories to the same configuration is valid. At
 
 Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
 
-Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed consumers. `DomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
+Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed elements. `DomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
 
 ## Form Installation Coordination
 
@@ -4066,7 +4093,7 @@ Both approaches produce the same normalized installation records.
 
 Concrete discovery finds an element and calls `addEditor()` or `addPresentation()`. It supplies either an Element Identifier or an already-known `IFieldValueHost`. The collector resolves any required field alignment and stores the result in the appropriate collection.
 
-The collector does not install elements. Its consumer processes the collected records after discovery completes.
+The collector does not install elements. Its element processes the collected records after discovery completes.
 
 Its per-installation workflow is:
 
@@ -4185,7 +4212,7 @@ A missing field is logged at Warning level once for that Element Identifier. The
 fieldValueHost: null
 ```
 
-The public collections therefore preserve the complete discovery result. Consumers decide how to handle unresolved records. `DomFormInstallerBase` skips them during installation.
+The public collections therefore preserve the complete discovery result. Elements decide how to handle unresolved records. `DomFormInstallerBase` skips them during installation.
 
 #### Collection and Disposal Behavior
 
@@ -4193,7 +4220,7 @@ The collector preserves every added record without duplicate detection.
 
 The same DOM element may legitimately participate in more than one role. Installation completion and duplicate-call behavior remain the responsibility of the individual element installers.
 
-The collector owns installation records that reference DOM elements and FieldValueHosts. Its consumer is responsible for calling `dispose()` when finished with those records.
+The collector owns installation records that reference DOM elements and FieldValueHosts. Its element is responsible for calling `dispose()` when finished with those records.
 
 At minimum, `dispose()` nulls every retained `element` and `fieldValueHost` property. Other disposal mechanics are implementation details.
 
@@ -4241,7 +4268,7 @@ The collector does not require an `IValueHostsManager`. The manager is supplied 
 
 It preserves every added record without duplicate detection.
 
-Its consumer is responsible for calling `dispose()` when finished. At minimum, disposal nulls every retained `element` property.
+Its element is responsible for calling `dispose()` when finished. At minimum, disposal nulls every retained `element` property.
 
 ### IDomFormInstaller and DomFormInstallerBase
 
@@ -4433,7 +4460,7 @@ ariaService.applyValidationState(
 );
 ```
 
-This synchronizes all newly installed ARIA consumers for that field after its editor and other field elements are ready.
+This synchronizes all newly installed ARIA elements for that field after its editor and other field elements are ready.
 
 The same root used for discovery limits the ARIA search. When the caller supplies a partial root, that root must contain all related elements needed for each collected field.
 
@@ -4519,7 +4546,7 @@ Detached elements take their installed adapters, presentations, completion state
 
 Unchanged elements remain protected by their completed-installation state. Replacement elements begin without that state and are installed normally.
 
-Existing dispatchers require no reattachment because they perform fresh consumer discovery during every dispatch.
+Existing dispatchers require no reattachment because they perform fresh element discovery during every dispatch.
 
 ## DomServices and Module Installation
 
@@ -4589,7 +4616,7 @@ The DOM service object may be created before its associated `JivsServices`. Assi
 interface IJivsDomServices
     extends IService, IServicesAccessor {
 
-    dispatchers: IDomDispatcherService;
+    dispatchers: IDispatcherService;
 
     editorAdapterDefinitionFactory:
         IEditorAdapterDefinitionFactory;
@@ -4673,7 +4700,7 @@ The intended ownership is:
 
 | Property                     | Default ownership                                                                                                    |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `dispatchers`                | `JivsDomServiceBase` creates `DomDispatcherService`; the subclass supplies its Dispatcher Creators.                  |
+| `dispatchers`                | `JivsDomServiceBase` creates `DispatcherService`; the subclass supplies its Dispatcher Creators.                  |
 | `editorAdapterFactory`       | `JivsDomServiceBase` creates and populates the standard factory from the editor definitions supplied by `jivs-dom`.  |
 | `fieldPresentationFactory`   | `JivsDomServiceBase` creates and populates the standard factory from the field presentations supplied by `jivs-dom`. |
 | `formPresentationFactory`    | `JivsDomServiceBase` creates and populates the standard factory from the form presentations supplied by `jivs-dom`.  |
@@ -4687,9 +4714,9 @@ The protected methods remain override points even when the base class supplies a
 
 ### Dispatcher Service Construction
 
-`DomDispatcherService` is markup-independent. It owns Dispatcher Creator registration, callback composition, missing-creator handling, and creation of one dispatcher for each callback attachment.
+`DispatcherService` is markup-independent. It owns Dispatcher Creator registration, callback composition, missing-creator handling, and creation of one dispatcher for each callback attachment.
 
-`JivsDomServiceBase` therefore creates the standard `DomDispatcherService`. It does not create concrete dispatchers because their consumer discovery depends on the selected DOM convention.
+`JivsDomServiceBase` therefore creates the standard `DispatcherService`. It does not create concrete dispatchers because their element discovery depends on the selected DOM convention.
 
 The concrete DOM service subclass supplies creators for:
 
@@ -4702,10 +4729,10 @@ Conceptually, the base construction performs:
 
 ```ts
 protected createDispatcherService():
-    IDomDispatcherService {
+    IDispatcherService {
 
     const result =
-        new DomDispatcherService(this);
+        new DispatcherService(this);
 
     result.registerTextValueChangedDispatcher(
         this.createTextValueDispatcher
@@ -4738,7 +4765,7 @@ type DispatcherCreator<TDispatcher> = (
 
 `SimpleDomServices` supplies creators that construct the four SimpleDom dispatcher classes. An application-defined service subclass supplies creators for its own discovery-aware dispatchers.
 
-A separate `SimpleDomDispatcherService` subclass is not required.
+A separate `SimpleDispatcherService` subclass is not required.
 
 ### Factory Ownership
 
@@ -5181,7 +5208,7 @@ import "@plblum/jivs-simpledom/styles.css";
 
 The corresponding package `exports` maps must expose those CSS files.
 
-Avoid Vite aliases that point directly into sibling `src` directories. Such aliases can make development convenient while bypassing the package entry points that consumers actually receive.
+Avoid Vite aliases that point directly into sibling `src` directories. Such aliases can make development convenient while bypassing the package entry points that elements actually receive.
 
 When the repository’s normal package build produces JavaScript before consumption, the website build must run after its dependent libraries. During active development, the repository may use its existing watch orchestration to rebuild those packages while Vite serves the website.
 
@@ -5330,7 +5357,7 @@ JSDOM unit tests should verify observable logic, including:
 * bubbling behavior for composite editors;
 * presentation-created content and CSS classes;
 * ARIA attributes and dedicated error-message text;
-* dispatcher consumer discovery on every invocation;
+* dispatcher element discovery on every invocation;
 * behavior after removal or replacement of elements;
 * full and partial form installation;
 * installation idempotency;

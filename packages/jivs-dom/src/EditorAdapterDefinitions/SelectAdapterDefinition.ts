@@ -8,6 +8,7 @@ import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML select elements.
@@ -29,7 +30,8 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return element instanceof HTMLSelectElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, anchor: IJivsDomElement, options: EditorInstallOptions): void
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, anchor: IJivsDomElement,
+        options: EditorInstallOptions): void
     {
         let element = anchor as HTMLSelectElement;
         let self = this;

@@ -89,11 +89,9 @@ export class FormPresentationInstaller extends DomServiceBase
      * Updaters can come from several sources.
      * formPresentation.getStaticAriaElementUpdater() -> 
      *   ariaservice finds it based on role
-     * @param valueHostsManager - The manager for value hosts within the form.
-     * @param element - The DOM element to which the form presentation is applied.
+     * @param element - The DOM element to which the ARIA attributes will be applied.
      * @param role - The role of the element, which can be an ARIA role or a custom role string.
      * @param formPresentation - The form presentation instance being installed.
-     * @param options - Optional installation options, including ARIA updaters.
      */
     protected ariaInstaller(element: IJivsDomElement,
         role: ElementRole | string, formPresentation: IFormPresentation): void

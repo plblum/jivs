@@ -10,6 +10,7 @@ import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML textarea elements.
@@ -31,7 +32,8 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return element instanceof HTMLTextAreaElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, anchor: IJivsDomElement, options: EditorInstallOptions): void
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, anchor: IJivsDomElement,
+        options: EditorInstallOptions): void
     {
         let element = anchor as HTMLTextAreaElement;
         let self = this;

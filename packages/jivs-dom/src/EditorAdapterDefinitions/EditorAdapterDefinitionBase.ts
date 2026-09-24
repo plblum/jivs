@@ -1,23 +1,23 @@
 /**
- * @inheritdoc jivs-dom/Types/EditorAdapterDefinition
- * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/EditorAdapterDefinition
+ * @inheritdoc jivs-dom/Types/EditorAdapterDefinitions
+ * @module jivs-dom/EditorAdapterDefinitions/AbstractClasses/EditorAdapterDefinitionBase
  */
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { LoggingFacade } from '@plblum/jivs-engine/build/Utilities/LoggingFacade';
 import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
 import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Base class for editor adapter definitions.
+ * Always assign its domServices property after creation.
  * 
- * @inheritdoc jivs-dom/Types/EditorAdapterDefinition!IEditorAdapterDefinition
+ * @inheritdoc jivs-dom/Types/EditorAdapterDefinitions!IEditorAdapterDefinition
  */
 export abstract class EditorAdapterDefinitionBase
     implements IEditorAdapterDefinition
@@ -31,6 +31,20 @@ export abstract class EditorAdapterDefinitionBase
         this._priority = priority;
         this._defaultFieldPresentationName = defaultFieldPresentationName ?? null;
     }
+
+    /**
+     * Always set this after creating the instance of the adapter definition.
+     * Expect the IEditorAdapterDefinitionFactory to assign it during registration.
+     */
+    public get domServices(): IJivsDomServices
+    {
+        return this._domServices;
+    }
+    public set domServices(value: IJivsDomServices)
+    {
+        this._domServices = value;
+    }
+    private _domServices!: IJivsDomServices;
 
     /**
      * Uniquely identifies a registered definition within the 
@@ -69,54 +83,31 @@ export abstract class EditorAdapterDefinitionBase
     private _defaultFieldPresentationName?: string | null;
 
     /**
-     * Provides an API for logging, sending entries to the loggingService.
-     * @param services 
-     * @returns 
-     */
-    protected logger(services: IJivsServices): LoggingFacade
-    {
-        if (!this._logger)
-            this._logger = new LoggingFacade(services.loggingService, 'Dom', this, this.adapterKey);
-        return this._logger;
-    }
-    private _logger: LoggingFacade | null = null;
-
-    /**
-     * Utility to log a message that includes additional data about the source element and
-     * target FieldValueHost.
-     * The message can include placeholders `{element}` and `{valuehost}` 
-     * which will be replaced with the source element's identifier and 
-     * the target FieldValueHost's name, respectively.
-     * 
-     * It also reports the element's ID attribute and the value host's name in the log data.
-     * 
+     * Log wrapper around the Jivs logging service to prepare log details in addition
+     * to the message itself. The message supports tokens of `{element}` and `{valuehost}` 
+     * which will be replaced with the source element's identifier 
+     * and the target FieldValueHost's name, respectively.
+     * @param loggingLevel 
      * @param message 
-     * @param element 
+     * @param anchor 
      * @param valueHost 
      */
-    protected logMessage(messageLevel: LoggingLevel, message: string, element: HTMLElement, valueHost: IFieldValueHost) : void
+    protected log(loggingLevel: LoggingLevel,
+        message: string,
+        anchor: HTMLElement | null, valueHost: IFieldValueHost | null): void
     {
-        this.logger(valueHost.valueHostsManager.services).log(
-            messageLevel,
-            (options) =>
+        this._domServices.loggingFacade.log(
+            loggingLevel,
+            (facade) =>
             {
-                let elementIdAttribute = element.getAttribute('id') ??
-                    element.getAttribute('name') ??
-                    valueHost.getElementIdentifier();
-                let name = valueHost.getName();
-                message = message.replaceAll('{element}', elementIdAttribute)
-                    .replaceAll('{valuehost}', name);
-                return {
-                    message: message,
-                    data: options?.includeData ? {
-                        idAttribute: elementIdAttribute,
-                        valueHostName: name
-                    } : undefined
-
-                }
-                
-            }
-        );
+                return facade.prepareLogDetails(
+                    message,
+                    anchor as HTMLElement,
+                    valueHost,
+                    this,
+                    this.adapterKey
+                );
+            });
     }
 
     /**
@@ -167,11 +158,9 @@ export abstract class EditorAdapterDefinitionBase
             options = {};
         this.attachToSendValuesCore(valueHost, anchor, options);
 
-        this.logMessage(
-            LoggingLevel.Debug,
-            `Editor '{element}' can send values to ValueHost for '{valuehost}'.`,
-            anchor as HTMLElement,
-            valueHost);
+        this.log(LoggingLevel.Debug,
+            `Attaching editor to send values for element '{element}' and value host '{valuehost}'.`,
+            anchor as HTMLElement, valueHost);
     }
 
     /**
@@ -239,7 +228,7 @@ export abstract class EditorAdapterDefinitionBase
      * ```ts
      * let self = this;
      * element.addEventListener('change', () => {
-     *     self.sendTextValue(valueHost, anchor, false);
+     *     self.sendTextValue(valueHost, anchor, domServices, false);
      * });
      * ```
      * 
@@ -252,12 +241,10 @@ export abstract class EditorAdapterDefinitionBase
     {
         if (!anchor.jivsTextValueAdapter)
         {
-            this.logMessage(
-                LoggingLevel.Warn,
+            this.log(LoggingLevel.Warn,
                 `No text value adapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
                 anchor as HTMLElement,
-                valueHost
-            );
+                valueHost);
             return;
         }
 
@@ -282,7 +269,7 @@ export abstract class EditorAdapterDefinitionBase
      * ```ts
      * let self = this;
      * element.addEventListener('change', () => {
-     *     self.sendNativeValue(valueHost, anchor);
+     *     self.sendNativeValue(valueHost, anchor, domServices);
      * });
      * ```
      * @param valueHost - The value host to which the native value will be sent.
@@ -293,12 +280,10 @@ export abstract class EditorAdapterDefinitionBase
     {
         if (!anchor.jivsValueAdapter)
         {
-            this.logMessage(
-                LoggingLevel.Warn,
+            this.log(LoggingLevel.Warn,
                 `No native value adapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
                 anchor as HTMLElement,
-                valueHost
-            );
+                valueHost);
 
             return;
         }

@@ -85,9 +85,9 @@ interface IDomElementResolver {
     ): HTMLElement | null;
 }
 ```
-The resolver calls `valueHost.getElementIdentifier(elementIdentifierTemplate)` internally. The optional `elementIdentifierTemplate` is the template passed to `getElementIdentifier()`; it is not itself an Element Identifier. The resulting Element Identifier supplies the query syntax used by the resolver to find the appropriate consumer. The resolver returns the actual `HTMLElement`; the caller applies the optional `IJivsDomElement` contract when installing Jivs behavior.
+The resolver calls `valueHost.getElementIdentifier(elementIdentifierTemplate)` internally. The optional `elementIdentifierTemplate` is the template passed to `getElementIdentifier()`; it is not itself an Element Identifier. The resulting Element Identifier supplies the query syntax used by the resolver to find the appropriate element. The resolver returns the actual `HTMLElement`; the caller applies the optional `IJivsDomElement` contract when installing Jivs behavior.
 
-The default resolver uses `querySelector()` and the requested role to find the appropriate field consumer. `jivs-simpledom` supplies the role-specific selector convention. The resolver does not expose a separate `getElementIdentifier()` method because resolving the identifier and using it to find the element are one operation.
+The default resolver uses `querySelector()` and the requested role to find the appropriate field element. `jivs-simpledom` supplies the role-specific selector convention. The resolver does not expose a separate `getElementIdentifier()` method because resolving the identifier and using it to find the element are one operation.
 
 ```ts
 enum ElementRole {
@@ -105,7 +105,7 @@ The role vocabulary is standard and string-valued. Custom roles remain possible.
 
 ### SimpleDom implementation
 
-`jivs-simpledom` implements the resolver through its `data-field` and `data-jivs-role` conventions. It resolves the field identifier through `valueHost.getElementIdentifier(elementIdentifierTemplate)`, then finds the first matching consumer:
+`jivs-simpledom` implements the resolver through its `data-field` and `data-jivs-role` conventions. It resolves the field identifier through `valueHost.getElementIdentifier(elementIdentifierTemplate)`, then finds the first matching element:
 
 ```ts
 const elementIdentifier =
@@ -498,7 +498,7 @@ Each category has zero or one registered factory. A registration method accepts 
 
 Registration is setup-time configuration. If no factory is registered for a category, its attachment method logs that there is nothing to attach, leaves the existing callback unchanged, and returns `null`. The design does not require a default factory. Registration replacement and registration after attachment are not specified because each category is expected to have at most one setup-time registration. Disabling a category is normally done by not calling its attachment method.
 
-The service creates one dispatcher instance for each attachment call. That instance owns the options and any consumer-discovery state for that configuration. It must not be stored as a global singleton and must not retain a `ValueHostsManager`; the callback supplies the current `ValueHost`, `ValueHostsManager`, or validation state when it runs. A dispatcher may retain stateless services or discovery policy needed by its concrete `findConsumers()` implementation.
+The service creates one dispatcher instance for each attachment call. That instance owns the options and any element-discovery state for that configuration. It must not be stored as a global singleton and must not retain a `ValueHostsManager`; the callback supplies the current `ValueHost`, `ValueHostsManager`, or validation state when it runs. A dispatcher may retain stateless services or discovery policy needed by its concrete `findElements()` implementation.
 
 Dispatcher instances are configuration-scoped objects. They are not required to be immutable, but their constructor configuration should be treated as fixed after attachment. A custom dispatcher may retain state when that state belongs to the dispatcher or its callback attachment, such as counters, caches, or discovery policy. The default implementations should remain stateless after construction unless a concrete use case justifies such state. In either case, dispatcher state must not include references to individual DOM elements, element collections, or a `ValueHostsManager`.
 
@@ -583,26 +583,26 @@ interface IFormValidationDispatcher {
 }
 
 abstract class FieldDispatcherBase {
-    protected forEachConsumer(
+    protected forEachElement(
         root: HtmlElement,
         valueHost: IFieldValueHost,
         operation: (element: IJivsDomElement) => void
     ): void;
 
-    protected abstract findConsumers(
+    protected abstract findElements(
         root: HtmlElement,        
         valueHost: IFieldValueHost
     ): Iterable<IJivsDomElement>;
 }
 
 abstract class FormDispatcherBase {
-    protected forEachConsumer(
+    protected forEachElement(
         root: HtmlElement,
         valueHostsManager: IValueHostsManager,
         operation: (element: IJivsDomElement) => void
     ): void;
 
-    protected abstract findConsumers(
+    protected abstract findElements(
         root: HtmlElement,
         valueHostsManager: IValueHostsManager
     ): Iterable<IJivsDomElement>;
@@ -645,29 +645,29 @@ abstract class FormValidationDispatcher
 }
 ```
 
-`TextValueDispatcher`, `ValueDispatcher`, and `FieldValidationDispatcher` are field dispatchers. Each resolves the consumer elements associated with the callback's `IFieldValueHost`, then invokes only the corresponding installed capability on each element. The protected `forEachConsumer()` helper supplies the common iteration; the concrete dispatcher performs the capability-specific `undefined`/`null` check.
+`TextValueDispatcher`, `ValueDispatcher`, and `FieldValidationDispatcher` are field dispatchers. Each resolves the elements associated with the callback's `IFieldValueHost`, then invokes only the corresponding installed capability on each element. The protected `forEachElement()` helper supplies the common iteration; the concrete dispatcher performs the capability-specific `undefined`/`null` check.
 
 - `TextValueDispatcher` calls `jivsTextValueAdapter.writeTextValue(textValue)`;
 - `ValueDispatcher` calls `jivsValueAdapter.writeValue(value)`;
 - `FieldValidationDispatcher` calls `jivsFieldPresentation.apply(valueHost, state)`.
 
-`FormValidationDispatcher` resolves the form-level consumers associated with the `IValueHostsManager` and calls `jivsFormPresentation.apply(valueHostsManager, state)`.
+`FormValidationDispatcher` resolves the form-level elements associated with the `IValueHostsManager` and calls `jivsFormPresentation.apply(valueHostsManager, state)`.
 
 The concrete dispatcher interfaces do not expose the adapter or presentation properties as callback parameters. The dispatcher reads the installed public property from the resolved `IJivsDomElement`, which keeps installation state on the element and permits applications to replace an installed behavior. An `undefined` property means the capability was not installed and is skipped. A `null` property means the capability was examined and is intentionally unavailable and is also skipped. Dispatching never creates or installs an adapter or presentation.
 
 The field and form base classes own the common rules:
 
-- `findConsumers()` takes a containing element from which to run its query; it is the value of document unless ValueHostsManagerConfig.containerIdentifier supplies a way to find a root element.
-- enumerate every consumer returned by `findConsumers()`;
-- invoke the supplied operation once per consumer, in discovery order;
-- continue dispatching to other consumers when one consumer has no matching capability;
-- do not throw merely because no consumer or matching capability exists.
+- `findElements()` takes a containing element from which to run its query; it is the value of document unless ValueHostsManagerConfig.containerIdentifier supplies a way to find a root element.
+- enumerate every element returned by `findElements()`;
+- invoke the supplied operation once per element, in discovery order;
+- continue dispatching to other elements when one element has no matching capability;
+- do not throw merely because no element or matching capability exists.
 
-Concrete subclasses own element discovery. The base package does not provide a universal `findConsumers()` implementation. A direct `jivs-dom` user must implement that method according to the application's element-discovery convention. The default DOM package must not inspect `jivs-simpledom` attributes. A SimpleDom dispatcher supplies the SimpleDom-specific discovery implementation. A custom application can provide a dispatcher that resolves elements by any other convention.
+Concrete subclasses own element discovery. The base package does not provide a universal `findElements()` implementation. A direct `jivs-dom` user must implement that method according to the application's element-discovery convention. The default DOM package must not inspect `jivs-simpledom` attributes. A SimpleDom dispatcher supplies the SimpleDom-specific discovery implementation. A custom application can provide a dispatcher that resolves elements by any other convention.
 
-`jivs-simpledom` consumes these contracts by supplying concrete subclasses of the field and form dispatcher bases. For example, a SimpleDom text-value dispatcher can extend `TextValueDispatcher`, implement its consumer-discovery method using the SimpleDom field and role attributes, and let the inherited dispatch logic invoke `jivsTextValueAdapter` on each discovered editor. The corresponding SimpleDom validation dispatchers use the same attribute-based discovery for field or form presentation consumers. These subclasses belong to `jivs-simpledom`; the base package does not inspect or depend on those attributes.
+`jivs-simpledom` consumes these contracts by supplying concrete subclasses of the field and form dispatcher bases. For example, a SimpleDom text-value dispatcher can extend `TextValueDispatcher`, implement its element-discovery method using the SimpleDom field and role attributes, and let the inherited dispatch logic invoke `jivsTextValueAdapter` on each discovered editor. The corresponding SimpleDom validation dispatchers use the same attribute-based discovery for field or form presentation elements. These subclasses belong to `jivs-simpledom`; the base package does not inspect or depend on those attributes.
 
-For example, a text-value dispatcher can implement the capability check in its public dispatch operation while leaving consumer discovery to its subclass:
+For example, a text-value dispatcher can implement the capability check in its public dispatch operation while leaving element discovery to its subclass:
 
 ```ts
 abstract class TextValueDispatcher
@@ -676,14 +676,14 @@ abstract class TextValueDispatcher
         valueHost: IFieldValueHost,
         textValue: string
     ): void {
-        this.forEachConsumer(valueHost, element => {
+        this.forEachElement(valueHost, element => {
             const adapter = element.jivsTextValueAdapter;
             if (adapter !== undefined && adapter !== null) {
                 try {
                     adapter.writeTextValue(textValue);
                 }
                 catch (error) {
-                    // Log this consumer failure and continue with the next one.
+                    // Log this element failure and continue with the next one.
                 }
             }
         });
@@ -691,7 +691,7 @@ abstract class TextValueDispatcher
 }
 ```
 
-The subclass still must implement `findConsumers()`. If it returns no consumers, dispatch is a normal no-op. If `findConsumers()` itself throws, that is a discovery implementation failure rather than an installed-consumer failure; the base contract does not hide it.
+The subclass still must implement `findElements()`. If it returns no elements, dispatch is a normal no-op. If `findElements()` itself throws, that is a discovery implementation failure rather than an installed-element failure; the base contract does not hide it.
 
 Every dispatcher is detached from the elements it discovers. Element discovery occurs during each dispatch operation, and a dispatcher must not retain a discovered element, an element collection, or a DOM subtree between operations. Element-specific state belongs on the element through the installed `IJivsDomElement` properties or another element-owned mechanism. This allows elements to be removed, replaced, or added after attachment without recreating or reconfiguring the dispatcher. A dispatcher may retain only discovery policy and state that is independent of particular element identities.
 
@@ -741,13 +741,13 @@ An alternative is a module-owned `Symbol` property on the configuration, but tha
 
 The callback signatures used by the attachment methods must match the engine's `ValueHostsManagerConfig` declarations. The conceptual `dispatch()` signatures above show the values required by the DOM behavior; the implementation adapts the engine callback parameter object to those arguments rather than exposing engine callback details as a second public DOM contract. If an engine callback does not provide a required context, the corresponding dispatcher attachment is invalid and must log and throw during attachment, not fail later during callback execution.
 
-Exceptions thrown by an installed adapter or presentation are logged and do not stop dispatch to later consumers. A concrete `findConsumers()` implementation is responsible for its own discovery errors; those errors are not treated as individual consumer failures.
+Exceptions thrown by an installed adapter or presentation are logged and do not stop dispatch to later elements. A concrete `findElements()` implementation is responsible for its own discovery errors; those errors are not treated as individual element failures.
 
 The dispatcher instance is retained by the composed callback and requires no separate owner or disposal contract. The `WeakMap` shown above is optional implementation metadata for duplicate-attachment detection, not a required ownership mechanism. A dispatcher must not retain discovered elements, element collections, DOM subtrees, or a `ValueHostsManager`; element-specific state remains element-owned.
 
 ## D10 Error Message Tools
 
-`jivs-dom` provides reusable presentation tooling through its `issuesFoundFormatter` service. This is distinct from the engine's `ErrorMessagesService`: the DOM service formats `IssueFound` objects for DOM-oriented consumers.
+`jivs-dom` provides reusable presentation tooling through its `issuesFoundFormatter` service. This is distinct from the engine's `ErrorMessagesService`: the DOM service formats `IssueFound` objects for DOM-oriented elements.
 
 ```ts
 interface IIssuesFoundFormatterService {
@@ -791,7 +791,7 @@ HTML attributes
     -> assign the selected adapter or presentation instance, or null
 ```
 
-`jivs-simpledom` owns consumer discovery for its attribute convention. It supplies concrete subclasses of the `jivs-dom` dispatcher classes and implements their `findConsumers()` methods using `data-field`, `data-jivs-role`, and any other SimpleDom attributes needed to identify the current consumers. The dispatchers rediscover those consumers during each callback; they do not retain the elements found by an earlier dispatch.
+`jivs-simpledom` owns element discovery for its attribute convention. It supplies concrete subclasses of the `jivs-dom` dispatcher classes and implements their `findElements()` methods using `data-field`, `data-jivs-role`, and any other SimpleDom attributes needed to identify the current elements. The dispatchers rediscover those elements during each callback; they do not retain the elements found by an earlier dispatch.
 
 The SimpleDom workflow is:
 
@@ -801,14 +801,14 @@ identify field, role, and presentation attributes
     -> install the selected editor adapter or presentation
     -> attach the registered SimpleDom dispatchers to the ValueHostsManagerConfig
     -> construct or use the ValueHostsManager
-    -> callbacks rediscover current consumers and invoke installed behavior
+    -> callbacks rediscover current elements and invoke installed behavior
 ```
 
-Installers must run before callback notifications are expected. Attaching dispatcher callbacks does not screen-scrape, install adapters, or install presentations. A later DOM replacement can be handled by running the SimpleDom discovery and installation workflow for the replacement elements; the existing dispatchers remain usable because they discover consumers on each dispatch.
+Installers must run before callback notifications are expected. Attaching dispatcher callbacks does not screen-scrape, install adapters, or install presentations. A later DOM replacement can be handled by running the SimpleDom discovery and installation workflow for the replacement elements; the existing dispatchers remain usable because they discover elements on each dispatch.
 
-For editors, the screen-scraping workflow selects only elements with `data-jivs-role="editor"` and calls `editorInstaller`. Labels, error displays, and other field consumers call `fieldPresentationInstaller`; summaries, submit controls, and other form consumers call `formPresentationInstaller`. SimpleDom does not cause `editorInstaller` to run for a non-editor role.
+For editors, the screen-scraping workflow selects only elements with `data-jivs-role="editor"` and calls `editorInstaller`. Labels, error displays, and other field elements call `fieldPresentationInstaller`; summaries, submit controls, and other form elements call `formPresentationInstaller`. SimpleDom does not cause `editorInstaller` to run for a non-editor role.
 
-Applications using `jivs-dom` without `jivs-simpledom` must provide their own element-discovery and installation workflow. They must implement concrete dispatcher subclasses whose `findConsumers()` methods locate the appropriate elements according to the application's markup convention. `jivs-dom` supplies the reusable dispatch mechanics and contracts, but it cannot infer an application's element relationships or selector rules.
+Applications using `jivs-dom` without `jivs-simpledom` must provide their own element-discovery and installation workflow. They must implement concrete dispatcher subclasses whose `findElements()` methods locate the appropriate elements according to the application's markup convention. `jivs-dom` supplies the reusable dispatch mechanics and contracts, but it cannot infer an application's element relationships or selector rules.
 
 `jivs-dom` owns the reusable installers, adapters, factories, dispatchers, callback attachment, presentation utilities, and CSS that does not depend on SimpleDom selectors.
 
@@ -831,7 +831,7 @@ The implementation must provide focused tests for:
 - dispatcher factory registration, exact pass-through of options including omitted `undefined`, dispatcher creation, and preservation of existing callbacks;
 - callback composition order, original arguments and `this`, `void` return behavior, and propagation of an existing callback exception without dispatch;
 - duplicate attachment behavior and valid attachment of different callback categories;
-- consumer discovery on every dispatch, including replaced, removed, and newly added elements;
+- element discovery on every dispatch, including replaced, removed, and newly added elements;
 - logging and continuation after an installed adapter or presentation throws;
 - the requirement that dispatchers do not retain discovered elements or a `ValueHostsManager`;
 - native input, textarea, select, checkbox, radio-group, and limited file-input behavior;
@@ -867,7 +867,7 @@ The planned repository products have these architectural responsibilities:
 @plblum/jivs-simpledom
     attribute conventions, screen scraping, installation anchors,
     SimpleDom selectors, concrete dispatcher subclasses,
-    findConsumers() implementations, SimpleDom-specific initialization,
+    findElements() implementations, SimpleDom-specific initialization,
     and a fully registered IDomDispatcherService
 
 jivs-dom website
@@ -881,7 +881,7 @@ jivs-simpledom -> jivs-dom
 jivs-dom       -X-> jivs-simpledom
 ```
 
-`jivs-dom` must be usable without `jivs-simpledom`. `jivs-simpledom` consumes `jivs-dom`; it does not define the reusable DOM contracts. It supplies the concrete dispatcher subclasses, `findConsumers()` implementations, and fully registered dispatcher service needed for its attribute convention. `jivs-dom` must not depend on SimpleDom attributes, selectors, or dispatcher implementations.
+`jivs-dom` must be usable without `jivs-simpledom`. `jivs-simpledom` consumes `jivs-dom`; it does not define the reusable DOM contracts. It supplies the concrete dispatcher subclasses, `findElements()` implementations, and fully registered dispatcher service needed for its attribute convention. `jivs-dom` must not depend on SimpleDom attributes, selectors, or dispatcher implementations.
 
 The website consumes the public packages to demonstrate and exercise them. It is not the source of undocumented library behavior.
 
@@ -896,7 +896,7 @@ Supported extension points include:
 - replacing any `DomServices` child service;
 - replacing the complete `IDomDispatcherService`, including with a fully registered service such as the one supplied by `jivs-simpledom`;
 - registering alternate dispatcher factories;
-- implementing concrete dispatcher subclasses and `findConsumers()` methods for applications that do not use `jivs-simpledom`;
+- implementing concrete dispatcher subclasses and `findElements()` methods for applications that do not use `jivs-simpledom`;
 - supplying dispatcher-specific options through typed application wrappers while the core API keeps factory options opaque;
 - replacing installer-owned factories;
 - defining custom roles and presentation names;
@@ -1104,4 +1104,4 @@ We will introduce a new ValuehostsManagerConfig property, containerIdentifier, t
 
 The containerIdentifier will be resolved by the dispatcher.dispatch() function through ValueHostsManager.getContainerIdentifier(template). If it returns non-null, use that to query for fields. Otherwise, fields will be queried under document.
 
-dispatcher.findConsumer functions will require a parameter with the results, and findConsumer must use its element as the root of its searches.
+dispatcher.findElement functions will require a parameter with the results, and findElement must use its element as the root of its searches.

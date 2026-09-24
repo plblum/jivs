@@ -1,17 +1,18 @@
 /**
- * Top-level service container interface for jivs-dom.
- * Provides access to various DOM-related services, including dispatchers, editor and presentation installers, 
- * and ARIA support.
+ * Exposes various services specific to jivs-dom, including dispatchers, 
+ * editor and presentation installers, and ARIA support.
+ * One instance of this service container is expected to be installed into the IJivsServices instance.
  * 
  * @module jivs-dom/Types/JivsDomServices
  */
 
+import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { IService, IServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
 import { IDomAriaService } from './AriaService';
-import { IDomDispatcherService } from './Dispatchers';
+import { IDispatcherService } from './Dispatchers';
 import { IEditorInstaller } from './EditorInstaller';
 import { IFieldPresentation, IFieldPresentationInstaller } from './FieldPresentations';
 import { IFormPresentation, IFormPresentationInstaller } from './FormPresentations';
@@ -46,7 +47,7 @@ export interface IJivsDomServices
      * services.dispatchers.attach(config);
      * ```
      */
-    dispatchers: IDomDispatcherService;
+    dispatchers: IDispatcherService;
 
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.
@@ -126,6 +127,16 @@ export interface IJivsDomServices
     issuesFoundFormatter: IIssuesFoundFormatterService;
 
     /**
+     * Provides a logging facade for all services that retain IJivsDomServices.
+     * Generally do this:
+     * ```ts
+     * services.loggingFacade.log(LoggingLevel.Level, 
+     *      facade => facade.prepareLogDetails('Message', element, valueHost, this, 'identity'));
+     * ```
+     */
+    loggingFacade: DomLoggingFacade;
+
+    /**
      * Helper to align a ValueHostsManager with a specific form.
      * Returns an HTMLElement representing the container element such as the form
      * based on ValueHostsManager. ValueHostsManagerConfig.ContainerIdentifier
@@ -133,7 +144,7 @@ export interface IJivsDomServices
      * it will return document.body.
      * @param valueHostsManager 
      */
-    resolveContainerElement(valueHostsManager: IValueHostsManager): HTMLElement | null;
+    resolveContainerElement(valueHostsManager: IValueHostsManager): HTMLElement;
 
     /**
      * Helper to resolve the field element based on the FieldValueHost.

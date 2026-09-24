@@ -12,6 +12,7 @@ import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML input elements of a specific type.
