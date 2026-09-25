@@ -30,6 +30,20 @@ export interface IPresentationFactory<TResult>
     register(presentationName: string, creator: PresentationCreator<TResult>): void;
 
     /**
+     * A way to lazily register presentation creators with the factory.
+     * It is called automatically if nothing has been registered with the factory yet,
+     * but only when the factory is first accessed.
+     * ```ts
+     * factory.lazyRegistration((factory) => {
+     *     factory.register('textarea', (element) => new TextAreaPresentation(element));
+     * });
+     * ```
+     * @param registrationFunction The function that will be called to lazily register presentation creators with the factory.
+     */
+    lazyRegistration(registrationFunction: (factory: IPresentationFactory<TResult>) => void): void;
+
+
+    /**
      * Sets the default presentation name for a given role.
      * 
      * @param role The role for which to set the default presentation name.

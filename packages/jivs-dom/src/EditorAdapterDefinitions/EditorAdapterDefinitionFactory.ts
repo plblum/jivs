@@ -48,18 +48,45 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
      * The definition must be treated as immutable once registered.
      * Each instance has a unique Adapter Key. Typically implementations allow
      * passing the adapter key and priority into their constructors.
+     * If a definition with the same adapter key already exists, it will be replaced.
      * ```ts
-     * const definition = new TextAreaAdapterDefinition('textarea', 10);
-     * factory.register(definition);
+     * factory.register(new TextAreaAdapterDefinition('textarea', 10));
      * ```
      * @param definition The editor adapter definition to register with the factory.
      */
     public register(definition: IEditorAdapterDefinition): void
     {
+        this.ensureLazyRegistration();
+        // this should discard an existing definition with the same adapter key
+        this._registeredDefinitions = this._registeredDefinitions.filter(d => d.adapterKey !== definition.adapterKey);
         this._registeredDefinitions.push(definition);
         this._sortedDefinitions = undefined; // Invalidate the sorted cache
     }
 
+    /**
+     * A way to lazily register editor adapter definitions with the factory.
+     * It is called automatically if nothing has been registered with the factory yet,
+     * but only when the factory is first accessed.
+     * ```ts
+     * factory.lazyRegistration((factory) => {
+     *     factory.register(new TextAreaAdapterDefinition('textarea', 10));
+     * });
+     * ```
+     * @param registrationFunction The function that will be called to lazily register editor adapter definitions with the factory.
+     */
+    public lazyRegistration(registrationFunction: (factory: IEditorAdapterDefinitionFactory) => void): void
+    {
+        this._lazyRegistrationFunction = registrationFunction;
+    }
+    private _lazyRegistrationFunction: ((factory: IEditorAdapterDefinitionFactory) => void) | undefined = undefined;
+
+    protected ensureLazyRegistration(): void
+    {
+        if (this._lazyRegistrationFunction) {
+            this._lazyRegistrationFunction(this);
+            this._lazyRegistrationFunction = undefined;
+        }
+    }
     /**
      * Retrieves the editor adapter definition associated with the given adapter key, if any.
      * @param adapterKey The unique adapter key of the editor adapter definition to retrieve.
@@ -68,6 +95,7 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
      */
     public getDefinition(adapterKey: string): IEditorAdapterDefinition | null
     {
+        this.ensureLazyRegistration();
         for (const definition of this.registeredDefinitions) {
             if (definition.adapterKey === adapterKey) {
                 return definition;
@@ -86,6 +114,7 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
      */
     public findDefinition(valueHost: IFieldValueHost, element: HTMLElement): IEditorAdapterDefinition | null
     {
+        this.ensureLazyRegistration();
         if (!this.sortedDefinitions) {
             this._sortedDefinitions = [...this.registeredDefinitions].sort((a, b) => b.priority - a.priority);
         }

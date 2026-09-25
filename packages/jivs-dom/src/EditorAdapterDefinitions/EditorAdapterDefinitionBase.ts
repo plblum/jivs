@@ -199,7 +199,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Static Element Updater 
      * or null if the default one is sufficient.
      */
-    public getStaticAriaElementUpdater?(): IAriaStaticElementUpdater | null
+    public getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null
     {
         return null;
     }
@@ -211,7 +211,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Validation State Element Updater 
      * or null if the default one is sufficient.
      */
-    public getValidationStateAriaElementUpdater?(): IAriaValidationStateElementUpdater | null
+    public getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null
     {
         return null;
     }    

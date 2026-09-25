@@ -37,9 +37,35 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
     {
         assertNotNull(presentationName, 'presentationName');
         assertNotNull(creator, 'creator');
+        this.ensureLazyRegistration();
         presentationName = PresentationFactoryBase.normalizePresentationName(presentationName);
         this.registry.set(presentationName, creator);
     }
+
+    /**
+     * A way to lazily register presentation creators with the factory.
+     * It is called automatically if nothing has been registered with the factory yet,
+     * but only when the factory is first accessed.
+     * ```ts
+     * factory.lazyRegistration((factory) => {
+     *     factory.register('textarea', (element) => new TextAreaPresentation(element));
+     * });
+     * ```
+     * @param registrationFunction The function that will be called to lazily register presentation creators with the factory.
+     */
+    public lazyRegistration(registrationFunction: (factory: IPresentationFactory<TResult>) => void): void
+    {
+        this._lazyRegistrationFunction = registrationFunction;
+    }
+    private _lazyRegistrationFunction: ((factory: IPresentationFactory<TResult>) => void) | undefined = undefined;
+
+    protected ensureLazyRegistration(): void
+    {
+        if (this._lazyRegistrationFunction) {
+            this._lazyRegistrationFunction(this);
+            this._lazyRegistrationFunction = undefined;
+        }
+    }    
     /**
      * Adds or replaces a mapping between role and presentation name.
      * These are the default presentations for different element roles, only 
@@ -53,6 +79,7 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
     {
         assertNotNull(role, 'role');
         assertNotNull(presentationName, 'presentationName');
+        this.ensureLazyRegistration();
         presentationName = PresentationFactoryBase.normalizePresentationName(presentationName);
         this._defaultPresentations.set(role, presentationName);
     }
@@ -68,6 +95,7 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
      */
     public create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult
     {
+        this.ensureLazyRegistration();
         if (!presentationName)
         {
             presentationName = this._defaultPresentations.get(role);

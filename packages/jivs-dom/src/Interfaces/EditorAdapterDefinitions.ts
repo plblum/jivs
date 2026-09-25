@@ -119,7 +119,7 @@ export interface IEditorAdapterDefinition
      * This instance is considered immutable.
      * @returns An IAriaStaticElementUpdater instance, or null if none is available.
      */
-    getStaticAriaElementUpdater?(): IAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null;
 
     /**
      * Gets the validation state ARIA element updater associated with this adapter definition, if any.
@@ -129,7 +129,7 @@ export interface IEditorAdapterDefinition
      * This instance is considered immutable.
      * @returns An IAriaValidationStateElementUpdater instance, or null if none is available.
      */
-    getValidationStateAriaElementUpdater?(): IAriaValidationStateElementUpdater | null;
+    getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null;
 
     /**
      * The EditorInstaller uses this method to attach the editor to the send values mechanism
@@ -165,6 +165,19 @@ export interface IEditorAdapterDefinitionFactory
      * @param definition The editor adapter definition to register with the factory.
      */
     register(definition: IEditorAdapterDefinition): void;
+
+    /**
+     * A way to lazily register editor adapter definitions with the factory.
+     * It is called automatically if nothing has been registered with the factory yet,
+     * but only when the factory is first accessed.
+     * ```ts
+     * factory.lazyRegistration((factory) => {
+     *     factory.register(new TextAreaAdapterDefinition('textarea', 10));
+     * });
+     * ```
+     * @param registrationFunction The function that will be called to lazily register editor adapter definitions with the factory.
+     */
+    lazyRegistration(registrationFunction: (factory: IEditorAdapterDefinitionFactory)=>void): void;
 
     /**
      * Retrieves the editor adapter definition associated with the given adapter key, if any.
