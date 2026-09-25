@@ -4,7 +4,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/FileInputTextValueAdapter
  */
 
-import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
+import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
  * Adapter for HTML input elements using type='file'.
@@ -21,7 +21,7 @@ import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
  * Exposed by the FileInputEditorAdapterDefinition.
  */
 export class FileInputTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLInputElement>
+    extends TextValueAdapterBase<HTMLInputElement>
 {
 
     /**

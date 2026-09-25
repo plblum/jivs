@@ -11,8 +11,8 @@
  * The host element must have already installed the necessary editor adapters in its 
  * IJivsDomElement interface properties.
  * 
- * - onTextValueChanged -> ITextValueDispatcher -> IDomTextValueAdapters
- * - onValueChanged -> IValueDispatcher -> IDomValueAdapters
+ * - onTextValueChanged -> ITextValueDispatcher -> ITextValueAdapters
+ * - onValueChanged -> IValueDispatcher -> IValueAdapters
  * 
  * @module jivs-dom/Types/Adapters
  * 
@@ -24,7 +24,7 @@
  * Determined by IEditorAdapterDefinition, which only creates this if
  * the editor supports text value read/write operations.
  */
-export interface IDomTextValueAdapter
+export interface ITextValueAdapter
 {
     /**
      * Reads the current text value from the widget. Returns undefined if no value is present.
@@ -47,10 +47,10 @@ export interface IDomTextValueAdapter
  * Provides native value read/write capabilities for a specific widget.
  * Determined by IEditorAdapterDefinition, which only creates this if
  * the editor supports native value read/write operations.
- * It is less used than IDomTextValueAdapter because most widgets primarily deal with text values 
+ * It is less used than ITextValueAdapter because most widgets primarily deal with text values 
  * rather than native values. As a result, only create it if the widget truly requires native value handling.
  */
-export interface IDomValueAdapter
+export interface IValueAdapter
 {
     /**
      * Reads the current native value from the widget. Returns undefined if no value is present.

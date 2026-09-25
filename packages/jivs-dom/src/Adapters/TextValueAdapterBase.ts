@@ -4,17 +4,17 @@
  * A Text Value Adapter connects ValueHostsManager.onTextValueChanged callback 
  * an editor widget, allowing it to receive a new string value.
  * 
- * - onTextValueChanged -> ITextValueDispatcher -> IDomTextValueAdapters -> edited text value
+ * - onTextValueChanged -> ITextValueDispatcher -> ITextValueAdapters -> edited text value
  * 
- * @module jivs-dom/Adapters/AbstractClasses/DomTextValueAdapterBase
+ * @module jivs-dom/Adapters/AbstractClasses/TextValueAdapterBase
  */
 
 import { AdapterBase } from './AdapterBase';
 
 /**
- * Base class for IDomTextValueAdapter.
+ * Base class for ITextValueAdapter.
  */
-export abstract class DomTextValueAdapterBase<TElement extends HTMLElement = HTMLElement>
+export abstract class TextValueAdapterBase<TElement extends HTMLElement = HTMLElement>
     extends AdapterBase<TElement>
 {
 

@@ -6,8 +6,8 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
-import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -181,7 +181,7 @@ export abstract class EditorAdapterDefinitionBase
      * @param anchor - the installation anchor element for the editor.
      * @returns a new instance of the TextValueAdapter or null if not supported.
      */
-    public abstract createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomTextValueAdapter | null;       
+    public abstract createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): ITextValueAdapter | null;       
     /**
      * Provides a new instance of the ValueAdapter to assign to 
      * IJivsDomElement.jivsValueAdapter.
@@ -190,7 +190,7 @@ export abstract class EditorAdapterDefinitionBase
      * @param anchor - the installation anchor element for the editor.
      * @returns a new instance of the ValueAdapter or null if not supported.
      */
-    public abstract createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null;
+    public abstract createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null;
 
     /**
      * The Aria system uses a default Static Element Updater that may not
@@ -199,7 +199,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Static Element Updater 
      * or null if the default one is sufficient.
      */
-    public getStaticAriaElementUpdater?(): IDomAriaStaticElementUpdater | null
+    public getStaticAriaElementUpdater?(): IAriaStaticElementUpdater | null
     {
         return null;
     }
@@ -211,7 +211,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Validation State Element Updater 
      * or null if the default one is sufficient.
      */
-    public getValidationStateAriaElementUpdater?(): IDomAriaValidationStateElementUpdater | null
+    public getValidationStateAriaElementUpdater?(): IAriaValidationStateElementUpdater | null
     {
         return null;
     }    

@@ -13,7 +13,7 @@ import { ValidationState } from "@plblum/jivs-engine/build/Interfaces/Validation
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
-import { IDomAriaStaticElementUpdater } from './AriaUpdaters';
+import { IAriaStaticElementUpdater } from './AriaUpdaters';
 
 /**
  * Represents a form presentation, which can apply validation states to Validation Summary,
@@ -58,7 +58,7 @@ export interface IFormPresentation
      * Typically used when the element identified by this presentation uses another element
      * for its static ARIA attributes.
      */
-    getStaticAriaElementUpdater(): IDomAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null;
 }
 
 /**

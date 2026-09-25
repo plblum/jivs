@@ -4,7 +4,7 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/TextAreaAdapterDefinition
  */
 
-import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { TextAreaTextValueAdapter } from '../Adapters/TextAreaTextValueAdapter';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -47,11 +47,11 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
             });
         }
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomTextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): ITextValueAdapter | null
     {
         return new TextAreaTextValueAdapter(anchor as HTMLTextAreaElement);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }

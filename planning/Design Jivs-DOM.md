@@ -22,29 +22,29 @@ The design is intentionally framework-independent. `jivs-dom` supplies reusable 
 ```ts
 interface IDomServices { same members as in DomServices }
 class DomServices implements IDomServices {
-    public constructor(
-        public readonly jivsServices: IJivsServices
-    );
+    public constructor(services: IJivsServices);
 
-    public get elementResolver(): IDomElementResolver;
-    public set elementResolver(
-        value: IDomElementResolver
-    );
+    services: IJivsServices;
 
-    public get dispatchers(): IDomDispatcherService;
+
+    public get dispatchers(): IDispatcherService;
     public set dispatchers(
-        value: IDomDispatcherService
+        value: IDispatcherService
+    );
+    public get ariaService(): IAriaService | null;
+    public set ariaService(
+        value: IAriaService | null
+    );
+
+    public get issuesFoundFormatterService():
+        IIssuesFoundFormatterService;
+    public set issuesFoundFormatterService(
+        value: IIssuesFoundFormatterService
     );
 
     public get editorInstaller(): IEditorInstaller;
     public set editorInstaller(
         value: IEditorInstaller
-    );
-
-    public get editorAdapterFactory():
-        IEditorAdapterFactory;
-    public set editorAdapterFactory(
-        value: IEditorAdapterFactory
     );
 
     public get fieldPresentationInstaller():
@@ -59,16 +59,20 @@ class DomServices implements IDomServices {
         value: IFormPresentationInstaller
     );
 
-    public get aria(): IDomAriaService | null;
-    public set aria(
-        value: IDomAriaService | null
+    public get editorAdapterDefinitionFactory():
+        IEditorAdapterDefinitionFactory;
+    public set editorAdapterDefinitionFactory(
+        value: IEditorAdapterDefinitionFactory
     );
 
-    public get issuesFoundFormatter():
-        IIssuesFoundFormatterService;
-    public set issuesFoundFormatter(
-        value: IIssuesFoundFormatterService
-    );
+    fieldPresentationFactory: IPresentationFactory<IFieldPresentation>;
+    formPresentationFactory: IPresentationFactory<IFormPresentation>;
+
+    public loggingFacade: DomLoggingFacade;
+
+    resolveContainerElement(valueHostsManager: IValueHostsManager): HTMLElement;
+    resolveFieldElement(root: HTMLElement | null, valueHost: IFieldValueHost,
+        role: ElementRole | string, elementIdentifierTemplate?: string): HTMLElement | null;    
 }
 ```
 
@@ -129,10 +133,10 @@ interface IJivsDomElement extends HTMLElement {
         IEditorAdapterDefinition;
 
     jivsTextValueAdapter?:
-        IDomTextValueAdapter | null;
+        ITextValueAdapter | null;
 
     jivsValueAdapter?:
-        IDomValueAdapter | null;
+        IValueAdapter | null;
 
     jivsFieldPresentation?:
         IFieldPresentation | null;
@@ -171,8 +175,9 @@ An adapter instance is attached only to the element supplied to its installer. A
 
 ## D05 Adapter and Editor Factory Contracts
 
+### Adapters
 ```ts
-interface IDomTextValueAdapter {
+interface ITextValueAdapter {
     readTextValue(): string;
 
     writeTextValue(
@@ -180,7 +185,7 @@ interface IDomTextValueAdapter {
     ): void;
 }
 
-interface IDomValueAdapter {
+interface IValueAdapter {
     readValue(): unknown;
 
     writeValue(
@@ -188,9 +193,35 @@ interface IDomValueAdapter {
     ): void;
 }
 ```
+
 > We would expect the writeTextValue function to support the onTextValueChanged callback, but why the readTextValue? Because that allows us to provide boilerplate code in our installer that handles the setTextValue() call by getting the value consistently using readTextValue. We'll see that in use in concrete implementations of `IEditorAdapterDefinition`.
 
-The editor adapter factory recognizes an editor element and resolves one adapter definition. A definition owns all editor-specific behavior so that its text-value adapter, native-value adapter, and DOM-to-Jivs connection agree on the widget model:
+> There are no factories for TextValueAdapter or ValueAdapter because they are instantiated
+by Editor Adapter Definitions.
+
+### Editor Adapter Definitions
+An Editor Adapter Definition keeps the behaviors for one widget model together.
+Without this coordinating type, widget recognition, installation-anchor selection, 
+Jivs-to-DOM value transfer, and DOM-to-Jivs event handling could be implemented 
+independently and disagree about how the editor represents its value.
+
+A definition is responsible for:
+ - recognizing fields and elements that use its widget model;
+ - resolving the element that serves as the installation anchor;
+ - directly constructing the anchor’s Text Value and Native Value adapters;
+ - attaching DOM event handlers that send edited values to the IFieldValueHost;
+ - identifying the default field presentation associated with the widget, when applicable;
+ - optionally supplying specialized static and validation-state ARIA updaters for the widget.
+ 
+Instances are considered immutable. Once created, their properties should not be modified.
+The EditorAdapterDefinitionFactory shares its instances among multiple consumers to ensure consistency and avoid redundant definitions.
+
+Every implementation gets assigned a unique adapterKey and a priority when registered
+with the IJivsDomService's factory to determine its order of consideration among multiple adapter definitions.
+
+During installation by EditorInstaller, the matching instance registered with the IJivsDomService's factory
+is selected and retained with the IJivsDomElement.jivsEditorAdapterDefinition property,
+and its members create the adapters, presentations, and aria updaters for the widget.
 
 ```ts
 interface IEditorAdapterDefinition {
@@ -205,12 +236,12 @@ interface IEditorAdapterDefinition {
     createTextValueAdapter?(
         element: IJivsDomElement,
         valueHost: IFieldValueHost
-    ): IDomTextValueAdapter | null;
+    ): ITextValueAdapter | null;
 
     createValueAdapter?(
         element: IJivsDomElement,
         valueHost: IFieldValueHost
-    ): IDomValueAdapter | null;
+    ): IValueAdapter | null;
 
     attachToSendValues(
         element: IJivsDomElement,
@@ -218,8 +249,19 @@ interface IEditorAdapterDefinition {
         options: EditorInstallOptions
     ): void;
 }
+```
 
-interface IEditorAdapterFactory {
+`matches()` is a read-only predicate. The element's characteristics must be configured before editor installation; a definition must not modify an element while it is being considered for selection. `attachToSendValues()` is required, but may intentionally take no action for a known widget with no DOM-to-Jivs behavior.
+
+`adapterKey` is the identity of a registered definition and the explicit selection mechanism used by the installer. Each concrete adapter-definition class should accept an optional `adapterKey` constructor parameter with a class-appropriate default string, and expose that value through its readonly `adapterKey` property. This lets application code create an instance with an identity appropriate to its widget before registering it. A definition instance may recognize a widget through its element characteristics in `matches()`; applications that need a widget-specific class or attribute can register a definition whose `matches()` implementation recognizes it. Applications can use `bindAdapterKey()` or `EditorInstallOptions.adapterKey` when the widget cannot identify itself through its element characteristics.
+
+> During the design phase, we considered an additional EditorInstallerOption that would let the user specify more info for the matches() function to use. We abandoned that due to immutability. We want users to use EditorInstallerOption.adapterKey or bindAdapterKey() when they want to control which adapterdefinition to use.
+
+### Editor Adapter Definition Factory
+The factory stores and returns the registered definition instance. A registered definition is shared by every element that selects it and must be treated as immutable after registration. It must not retain or mutate element-specific, value-host-specific, or installation-specific state. Per-element state belongs in the adapters created by the definition or in private state associated with the installation operation. Because the definition instance is exposed through `IJivsDomElement.jivsEditorAdapterDefinition`, this immutability rule applies equally to library and application-defined definitions.
+
+```ts
+interface IEditorAdapterDefinitionFactory {
     register(
         definition: IEditorAdapterDefinition
     ): void;
@@ -233,7 +275,7 @@ interface IEditorAdapterFactory {
     ): IEditorAdapterDefinition | null;
 }
 
-interface IDomAriaEditorDefinition {
+interface IAriaEditorDefinition {
     findAriaEditors(
         root: HTMLElement,
         installationElement: IJivsDomElement
@@ -241,13 +283,6 @@ interface IDomAriaEditorDefinition {
 }
 ```
 
-`matches()` is a read-only predicate. The element's characteristics must be configured before editor installation; a definition must not modify an element while it is being considered for selection. `attachToSendValues()` is required, but may intentionally take no action for a known widget with no DOM-to-Jivs behavior.
-
-`adapterKey` is the identity of a registered definition and the explicit selection mechanism used by the installer. Each concrete adapter-definition class should accept an optional `adapterKey` constructor parameter with a class-appropriate default string, and expose that value through its readonly `adapterKey` property. This lets application code create an instance with an identity appropriate to its widget before registering it. A definition instance may recognize a widget through its element characteristics in `matches()`; applications that need a widget-specific class or attribute can register a definition whose `matches()` implementation recognizes it. Applications can use `bindAdapterKey()` or `EditorInstallOptions.adapterKey` when the widget cannot identify itself through its element characteristics.
-
-> During the design phase, we considered an additional EditorInstallerOption that would let the user specify more info for the matches() function to use. We abandoned that due to immutability. We want users to use EditorInstallerOption.adapterKey or bindAdapterKey() when they want to control which adapterdefinition to use.
-
-The factory stores and returns the registered definition instance. A registered definition is shared by every element that selects it and must be treated as immutable after registration. It must not retain or mutate element-specific, value-host-specific, or installation-specific state. Per-element state belongs in the adapters created by the definition or in private state associated with the installation operation. Because the definition instance is exposed through `IJivsDomElement.jivsEditorAdapterDefinition`, this immutability rule applies equally to library and application-defined definitions.
 
 `findDefinition()` evaluates definitions in descending numeric `priority` order and returns the first match. Priorities from 0 through 100 are the documented normal range, with greater numbers considered first; any numeric value, including negatives and values above 100, is valid. Registration order is retained among definitions with equal priority. Registering a definition with an existing `adapterKey` logs the override and replaces the registered definition for future selection and binding.
 
@@ -323,6 +358,59 @@ interface IFormPresentation {
         valueHostsManager: IValueHostsManager,
         state: ValidationState
     ): void;
+}
+```
+
+### PresentationFactories
+
+```ts
+interface IPresentationFactory<TResult>
+{
+    /**
+     * Registers a presentation creator function under the specified presentation name.
+     * Replaces any previously registered creator function for the same presentation name.
+     * 
+     * @param presentationName The name of the presentation to register.
+     * @param creator The function that creates a presentation instance for the given element.
+     */
+    register(presentationName: string, creator: PresentationCreator<TResult>): void;
+
+    /**
+     * Sets the default presentation name for a given role.
+     * 
+     * @param role The role for which to set the default presentation name.
+     * @param presentationName The default presentation name to associate with the role.
+     */
+    setDefaultPresentationName(role: ElementRole | string, presentationName: string): void;
+
+    /**
+     * Creates a presentation instance for the given element, role, and optional presentation name.
+     * 
+     * @param element The DOM element for which to create the presentation.
+     * @param role The role of the element for which to create the presentation.
+     * @param presentationName The optional presentation name to use for creating the presentation.
+     * When supplied, it overrides the default presentation name set for the role.
+     */
+    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult;
+}
+
+abstract class PresentationFactoryBase<TResult> extends DomServiceBase
+    implements IPresentationFactory<TResult>
+{
+    constructor(domServices: IJivsDomServices)
+    protected get registry(): Map<string, PresentationCreator<TResult>>
+    protected get defaultPresentations(): Map<ElementRole | string, string>
+    public register(presentationName: string, creator: PresentationCreator<TResult>): void
+    public setDefaultPresentationName(role: ElementRole | string, presentationName: string): void
+    public create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult
+}
+class FieldPresentationFactory extends PresentationFactoryBase<IFieldPresentation>
+{
+    constructor(domServices: IJivsDomServices)
+}
+class FormPresentationFactory extends PresentationFactoryBase<IFormPresentation>
+{
+    constructor(domServices: IJivsDomServices)
 }
 ```
 
@@ -483,7 +571,7 @@ Radio support includes three independent capabilities:
 
 ## D09 Dispatcher Service and Callback Attachment
 
-`IDomDispatcherService` is configured during application setup. Each category is expected to have at most one registered factory. The service does not retain dispatcher instances as a registry. It creates dispatchers and attaches composed callbacks to the corresponding `ValueHostsManagerConfig` callback hooks.
+`IDispatcherService` is configured during application setup. Each category is expected to have at most one registered factory. The service does not retain dispatcher instances as a registry. It creates dispatchers and attaches composed callbacks to the corresponding `ValueHostsManagerConfig` callback hooks.
 
 There are four dispatcher categories:
 
@@ -494,7 +582,7 @@ field validation state changed
 form validation state changed
 ```
 
-Each category has zero or one registered factory. A registration method accepts a factory that creates a dispatcher instance. Each attachment method accepts optional caller-supplied options, passes those options unchanged to the corresponding factory, preserves any callback already in the configuration, assigns the composed callback internally, and returns the created dispatcher. The factory is a creation strategy, not a dispatcher instance registry. `jivs-dom` does not prescribe the shape or meaning of these options. `jivs-simpledom` may provide its own fully registered `IDomDispatcherService` instance.
+Each category has zero or one registered factory. A registration method accepts a factory that creates a dispatcher instance. Each attachment method accepts optional caller-supplied options, passes those options unchanged to the corresponding factory, preserves any callback already in the configuration, assigns the composed callback internally, and returns the created dispatcher. The factory is a creation strategy, not a dispatcher instance registry. `jivs-dom` does not prescribe the shape or meaning of these options. `jivs-simpledom` may provide its own fully registered `IDispatcherService` instance.
 
 Registration is setup-time configuration. If no factory is registered for a category, its attachment method logs that there is nothing to attach, leaves the existing callback unchanged, and returns `null`. The design does not require a default factory. Registration replacement and registration after attachment are not specified because each category is expected to have at most one setup-time registration. Disabling a category is normally done by not calling its attachment method.
 
@@ -510,7 +598,7 @@ Conceptual API:
 type DispatcherFactory<TDispatcher> =
     (options?: unknown) => TDispatcher;
 
-interface IDomDispatcherService {
+interface IDispatcherService {
     registerTextValueChangedDispatcher(
         factory: DispatcherFactory<ITextValueDispatcher>
     ): void;
@@ -868,7 +956,7 @@ The planned repository products have these architectural responsibilities:
     attribute conventions, screen scraping, installation anchors,
     SimpleDom selectors, concrete dispatcher subclasses,
     findElements() implementations, SimpleDom-specific initialization,
-    and a fully registered IDomDispatcherService
+    and a fully registered IDispatcherService
 
 jivs-dom website
     end-user demonstration, learning examples, and integration coverage
@@ -894,7 +982,7 @@ The public design must support replacement and extension through interfaces, fac
 Supported extension points include:
 
 - replacing any `DomServices` child service;
-- replacing the complete `IDomDispatcherService`, including with a fully registered service such as the one supplied by `jivs-simpledom`;
+- replacing the complete `IDispatcherService`, including with a fully registered service such as the one supplied by `jivs-simpledom`;
 - registering alternate dispatcher factories;
 - implementing concrete dispatcher subclasses and `findElements()` methods for applications that do not use `jivs-simpledom`;
 - supplying dispatcher-specific options through typed application wrappers while the core API keeps factory options opaque;
@@ -931,7 +1019,7 @@ ARIA is independent of presentation. A field validation dispatcher first invokes
 ### D17.1 Public Service Contract
 
 ```ts
-interface IDomAriaService {
+interface IAriaService {
     applyFieldState(
         root: HTMLElement,
         valueHost: IFieldValueHost,
@@ -948,7 +1036,7 @@ The service is supplied IDomServices upon creation to provide access to relevant
 
 ### D17.2 AriaServiceBase
 
-`jivs-dom` exports `AriaServiceBase` as the standard reusable implementation and extension point. It implements `IDomAriaService`, the standard attribute-update policy, error handling, and use of sibling `DomServices` services. Its subclasses provide field discovery for their markup convention.
+`jivs-dom` exports `AriaServiceBase` as the standard reusable implementation and extension point. It implements `IAriaService`, the standard attribute-update policy, error handling, and use of sibling `DomServices` services. Its subclasses provide field discovery for their markup convention.
 
 ```ts
 interface IFieldAriaElementAnchors {
@@ -963,7 +1051,7 @@ interface IFieldAriaElementAnchors {
 }
 
 abstract class AriaServiceBase
-    implements IDomAriaService {
+    implements IAriaService {
     public applyFieldState(
         root: HTMLElement,
         valueHost: IFieldValueHost,
@@ -983,9 +1071,9 @@ abstract class AriaServiceBase
 
 The result of `findFieldElements()` identifies one editor anchor and at most one error host element. `errorMessageContentOwner` states whether the selected error host is populated by its visual presentation or by `AriaServiceBase`. When no error host exists, `errorMessageElement` and `errorMessageContentOwner` are both `null`.
 
-When `editorAnchor` is not null, `AriaServiceBase` reads its `jivsEditorAdapterDefinition`. When that definition also implements `IDomAriaEditorDefinition`, the base class uses `findAriaEditors(root, editorAnchor)` to find the actual accessibility control or controls. Otherwise, `editorAnchor` itself is the single ARIA editor target. This permits a widget to choose a native input, a role-bearing custom control, or every member of a radio group without requiring presentation and ARIA to share their element-discovery logic.
+When `editorAnchor` is not null, `AriaServiceBase` reads its `jivsEditorAdapterDefinition`. When that definition also implements `IAriaEditorDefinition`, the base class uses `findAriaEditors(root, editorAnchor)` to find the actual accessibility control or controls. Otherwise, `editorAnchor` itself is the single ARIA editor target. This permits a widget to choose a native input, a role-bearing custom control, or every member of a radio group without requiring presentation and ARIA to share their element-discovery logic.
 
-The built-in native editor definitions implement `IDomAriaEditorDefinition`. Standard input, textarea, select, and file definitions return their editor anchor. The radio definition returns every same-name radio in the group below `root`. The base class applies its field-state attributes, including required semantics, to every returned target.
+The built-in native editor definitions implement `IAriaEditorDefinition`. Standard input, textarea, select, and file definitions return their editor anchor. The radio definition returns every same-name radio in the group below `root`. The base class applies its field-state attributes, including required semantics, to every returned target.
 
 `AriaServiceBase` catches and logs failures in discovery, editor-target lookup, formatting, or individual element updates. It continues with later targets when possible and never allows an ARIA failure to interrupt Jivs validation or presentation.
 
@@ -1007,7 +1095,7 @@ The selected error-message element must have a unique, nonempty `id`. Applicatio
 
 When `errorMessageContentOwner` is `ariaService`, `AriaServiceBase` populates that element's `textContent` using `DomServices.issuesFoundFormatter.buildErrorMessagesText(state.issuesFound ?? [])`. When the field becomes valid, it clears the dedicated host's text. When the content owner is `presentation`, the ARIA service never writes or clears its content; the visual Error Display presentation remains its sole content owner.
 
-The standard service does not require an error-message host to apply `aria-invalid` or other supported editor state. A custom `IDomAriaService` may choose a stricter opt-in policy.
+The standard service does not require an error-message host to apply `aria-invalid` or other supported editor state. A custom `IAriaService` may choose a stricter opt-in policy.
 
 ### D17.4 Required State
 
@@ -1091,11 +1179,11 @@ An application that wants changed Validation Summary content announced may decla
 </div>
 ```
 
-`role="status"` supplies polite live-region behavior. `aria-atomic="true"` requests that the complete updated summary be announced. The summary presentation owns its content, and application code owns any deliberate focus movement after a failed submission. A future release may add form-level ARIA operations through a separate extension of `IDomAriaService`.
+`role="status"` supplies polite live-region behavior. `aria-atomic="true"` requests that the complete updated summary be announced. The summary presentation owns its content, and application code owns any deliberate focus movement after a failed submission. A future release may add form-level ARIA operations through a separate extension of `IAriaService`.
 
 ### D17.7 Custom DOM Conventions
 
-`jivs-simpledom` supplies the first concrete `AriaServiceBase` implementation because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions. An application that uses `jivs-dom` directly subclasses `AriaServiceBase` and implements `findFieldElements()` for its own markup, while retaining standard ARIA mutation behavior. It may instead replace the complete `IDomAriaService` when it needs a different policy.
+`jivs-simpledom` supplies the first concrete `AriaServiceBase` implementation because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions. An application that uses `jivs-dom` directly subclasses `AriaServiceBase` and implements `findFieldElements()` for its own markup, while retaining standard ARIA mutation behavior. It may instead replace the complete `IAriaService` when it needs a different policy.
 
 All discovery occurs below the dispatcher-supplied root during each operation. Implementations must not retain discovered elements, collections, or DOM subtrees between calls.
 

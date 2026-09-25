@@ -5,7 +5,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/InputTextValueAdapter
  */
 
-import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
+import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
  * Adapter for HTML input elements using its InputHtmlElement.value property
@@ -14,7 +14,7 @@ import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
  * Exposed by the InputEditorAdapterDefinition.
  */
 export class InputTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLInputElement> {
+    extends TextValueAdapterBase<HTMLInputElement> {
 
     public readTextValue(): string {
         return this.element.value;

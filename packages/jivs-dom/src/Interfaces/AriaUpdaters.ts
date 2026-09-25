@@ -18,7 +18,7 @@ import { ElementRole } from './Types';
 /**
  * Base interface for all ARIA element updaters.
  */
-export interface IDomAriaElementUpdaterBase
+export interface IAriaElementUpdaterBase
 {
     /**
      * When true, this updater should be run followed by the role updater.
@@ -33,7 +33,7 @@ export interface IDomAriaElementUpdaterBase
  * This updater is run by the PresentationInstallers.
  * Instances are immutable.
  */
-export interface IDomAriaStaticElementUpdater extends IDomAriaElementUpdaterBase
+export interface IAriaStaticElementUpdater extends IAriaElementUpdaterBase
 {
     /**
      * Applies static ARIA attributes to the specified DOM element if applicable.
@@ -57,7 +57,7 @@ export interface IDomAriaStaticElementUpdater extends IDomAriaElementUpdaterBase
  *
  * Instances are immutable.
  */
-export interface IDomAriaValidationStateElementUpdater extends IDomAriaElementUpdaterBase
+export interface IAriaValidationStateElementUpdater extends IAriaElementUpdaterBase
 {
 
     /**

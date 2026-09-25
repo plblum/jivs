@@ -14,7 +14,7 @@
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
 import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
 
@@ -25,7 +25,7 @@ import { ElementRole } from './Types';
  * IJivsDomService.ariaService provides access to this service, but that property
  * can be null to disable using arias.
  */
-export interface IDomAriaService
+export interface IAriaService
 {
     /**
      * Registers a static ARIA attribute updater for the specified role.
@@ -34,7 +34,7 @@ export interface IDomAriaService
      * @param updater The static ARIA attribute updater to register.
      * As it is an instance, it must be treated as immutable.
      */
-    registerStaticUpdater(role: ElementRole | string, updater: IDomAriaStaticElementUpdater): void;
+    registerStaticUpdater(role: ElementRole | string, updater: IAriaStaticElementUpdater): void;
 
     /**
      * Registers a validation state ARIA attribute updater for the specified role.
@@ -44,7 +44,7 @@ export interface IDomAriaService
      * As it is an instance, it must be treated as immutable.
      */
     registerValidationStateUpdater(role: ElementRole | string,
-        updater: IDomAriaValidationStateElementUpdater): void;
+        updater: IAriaValidationStateElementUpdater): void;
 
     /**
      * Applies the static ARIA attributes to the specified element using the provided updater.
@@ -59,7 +59,7 @@ export interface IDomAriaService
      */
     applyStaticAttributes(element: IJivsDomElement, role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
-        specializedUpdater: IDomAriaStaticElementUpdater | null): void;
+        specializedUpdater: IAriaStaticElementUpdater | null): void;
 
     /**
      * Applies the validation state ARIA attributes to the specified root element.

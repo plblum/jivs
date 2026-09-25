@@ -5,7 +5,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/SelectTextValueAdapter
  */
 
-import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
+import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
  * Adapter for HTML select elements using its HTMLSelectElement.value property
@@ -21,7 +21,7 @@ import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
  * Exposed by the SelectEditorAdapterDefinition.
  */
 export class SelectTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLSelectElement>
+    extends TextValueAdapterBase<HTMLSelectElement>
 {
 
     public readTextValue(): string

@@ -125,7 +125,7 @@ This gives developers discoverable values such as `ElementRole.editor` while sti
 An editor may support several independent connections to Jivs. Text values are used by `setTextValue()` and `onTextValueChanged`; native values are used by the corresponding value APIs and `onValueChanged`. These capabilities should have separate interfaces rather than one adapter with a growing collection of optional methods.
 
 ```ts
-interface IDomTextValueAdapter<TElement extends HTMLElement = HTMLElement> {
+interface ITextValueAdapter<TElement extends HTMLElement = HTMLElement> {
     readTextValue(element: TElement): string;
 
     writeTextValue(
@@ -134,7 +134,7 @@ interface IDomTextValueAdapter<TElement extends HTMLElement = HTMLElement> {
     ): void;
 }
 
-interface IDomValueAdapter<TElement extends HTMLElement = HTMLElement> {
+interface IValueAdapter<TElement extends HTMLElement = HTMLElement> {
     readValue(element: TElement): unknown;
 
     writeValue(
@@ -222,7 +222,7 @@ The installers remain stateless. They install the needed event handlers or Jivs 
 Each adapter instance is created for and attached to one element. The adapter may use `this` to access its bound element and may own state associated with that element. However, adapters should not retain a `ValueHostsManager` or `FieldValueHost`. Those are supplied as parameters to the operation that needs them:
 
 ```ts
-interface IDomTextValueAdapter {
+interface ITextValueAdapter {
     onTextValueChanged(
         valueHost: IFieldValueHost,
         oldTextValue: string
@@ -351,8 +351,8 @@ interface IFormPresentation {
 }
 
 interface IJivsDomElement extends HTMLElement {
-    jivsTextValueAdapter?: IDomTextValueAdapter | null;
-    jivsValueAdapter?: IDomValueAdapter | null;
+    jivsTextValueAdapter?: ITextValueAdapter | null;
+    jivsValueAdapter?: IValueAdapter | null;
     jivsFieldPresentation?: IFieldPresentation | null;
     jivsFormPresentation?: IFormPresentation | null;
 }
@@ -495,7 +495,7 @@ config.onValueHostValidationStateChanged = ...;
 config.onValidationStateChanged = ...;
 ```
 
-`IDomDispatcherService` should expose one explicit attachment method for each `ValueHostsManagerConfig` callback hook rather than one method that attaches everything:
+`IDispatcherService` should expose one explicit attachment method for each `ValueHostsManagerConfig` callback hook rather than one method that attaches everything:
 
 ```ts
 domServices.dispatchers.attachTextValueChanged(
@@ -573,7 +573,7 @@ class DomServices {
     ) {}
 
     public elementResolver: IDomElementResolver;
-    public dispatchers: IDomDispatcherService;
+    public dispatchers: IDispatcherService;
     public textValueInstaller: ITextValueInstaller;
     public valueInstaller: IValueInstaller;
     public fieldPresentationInstaller:
@@ -581,7 +581,7 @@ class DomServices {
     public formPresentationInstaller:
         IFormPresentationInstaller;
     public editorInstaller: IEditorInstaller;
-    public aria: IDomAriaService;
+    public aria: IAriaService;
     public errorMessages: IDomErrorMessageService;
 }
 ```
@@ -654,7 +654,7 @@ Jivs validation -> DOM presentation
 The next planning questions are:
 
 1. **Q09:** Which default presenters, ARIA helpers, and CSS are included in the first release? ARIA design itself remains deferred until the broader architecture is complete.
-2. **Q12:** Should `IDomDispatcherService` methods avoid `this`, or should they be bound so they can use sibling DOM services later?
+2. **Q12:** Should `IDispatcherService` methods avoid `this`, or should they be bound so they can use sibling DOM services later?
 3. **Q19:** Should adapter binding occur through the constructor or a separate method? This is intentionally deferred as an implementation detail.
 4. **Q57:** How should the optional composite editor installer coordinate the individual installers? This is intentionally deferred as a nice-to-have.
 5. **Q71:** Define and implement the Jivs `MultiSelect` data type, including array Native Value, semicolon-delimited Text Value, parser, formatter, data-type validation, and collection-aware validation before adding the multi-select DOM adapter.

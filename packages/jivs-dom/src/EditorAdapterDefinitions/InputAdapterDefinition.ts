@@ -8,7 +8,7 @@
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { InputTextValueAdapter } from '../Adapters/InputTextValueAdapter';
-import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
@@ -59,13 +59,13 @@ export class InputAdapterDefinition
             && element.type === this.inputType;
     }
 
-    public createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): IDomTextValueAdapter | null
+    public createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter | null
     {
         return new InputTextValueAdapter(
             this.requireInputElement(element)   // may throw
         );
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }

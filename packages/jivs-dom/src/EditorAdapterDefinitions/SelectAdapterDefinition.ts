@@ -2,7 +2,7 @@
  * Provides an editor adapter definition for HTML select elements.
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/SelectAdapterDefinition
  */
-import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { SelectTextValueAdapter } from '../Adapters/SelectTextValueAdapter';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -39,11 +39,11 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
             self.sendTextValue(valueHost, anchor, false);
         });
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomTextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): ITextValueAdapter | null
     {
         return new SelectTextValueAdapter(anchor as HTMLSelectElement);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }

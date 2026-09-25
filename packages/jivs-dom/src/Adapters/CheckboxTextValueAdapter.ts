@@ -6,7 +6,7 @@
  */
 
 
-import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
+import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
  * Adapter for HTML checkbox input elements using its InputHtmlElement.checked property
@@ -15,7 +15,7 @@ import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
  * Exposed by CheckboxEditorAdapterDefinition.
  */
 export class CheckboxTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLInputElement>
+    extends TextValueAdapterBase<HTMLInputElement>
 {
 
     public readTextValue(): string

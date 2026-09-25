@@ -2,7 +2,7 @@
  * Provides an editor adapter definition for HTML input type='file' elements.
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/FileInputAdapterDefinition
  */
-import { IDomTextValueAdapter, IDomValueAdapter } from '../Interfaces/Adapters';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { FileInputTextValueAdapter } from '../Adapters/FileInputTextValueAdapter';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -32,12 +32,12 @@ export class FileInputAdapterDefinition extends InputAdapterDefinition
     }
 
     public override createTextValueAdapter(
-        valueHost: IFieldValueHost, anchor: IJivsDomElement) : IDomTextValueAdapter | null
+        valueHost: IFieldValueHost, anchor: IJivsDomElement) : ITextValueAdapter | null
     {
         return new FileInputTextValueAdapter(this.requireInputElement(anchor));
     }
     public override createValueAdapter(
-        valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null
+        valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }

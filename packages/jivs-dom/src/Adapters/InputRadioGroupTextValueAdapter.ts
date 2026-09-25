@@ -6,7 +6,7 @@
  */
 
 
-import { IDomTextValueAdapter } from '../Interfaces/Adapters';
+import { ITextValueAdapter } from '../Interfaces/Adapters';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 /**
  * Adapter for a group of HTML radio input elements, using their checked property
@@ -23,7 +23,7 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * Exposed by InputRadioGroupAdapterDefinition.
  */
 export class InputRadioGroupTextValueAdapter
-    implements IDomTextValueAdapter
+    implements ITextValueAdapter
 {
 
     public constructor(private readonly anchor: IJivsDomElement

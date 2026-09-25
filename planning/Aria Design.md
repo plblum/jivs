@@ -43,7 +43,7 @@ flowchart TB
     FormInstaller["FormPresentationInstaller"]
     Coordinator["Root-aware installation coordinator"]
     Dispatcher["FieldValidationDispatcher"]
-    Service["IDomAriaService / AriaServiceBase"]
+    Service["IAriaService / AriaServiceBase"]
     Registry["Role updater registries"]
     Elements["Installed IJivsDomElement instances"]
 
@@ -61,12 +61,12 @@ The installers are installation-time consumers. They request static composition 
 
 ## Core Updater Contracts
 
-### `IDomAriaStaticElementUpdater`
+### `IAriaStaticElementUpdater`
 
 Applies fixed accessibility behavior during installation.
 
 ```ts
-interface IDomAriaStaticElementUpdater {
+interface IAriaStaticElementUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
@@ -79,12 +79,12 @@ interface IDomAriaStaticElementUpdater {
 
 `valueHost` is available for field roles and omitted for form roles.
 
-### `IDomAriaValidationStateElementUpdater`
+### `IAriaValidationStateElementUpdater`
 
 Synchronizes one installed field element with the current field state.
 
 ```ts
-interface IDomAriaValidationStateElementUpdater {
+interface IAriaValidationStateElementUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -127,20 +127,20 @@ All updater instances are immutable after construction.
 - Registration methods accept updater instances rather than creator functions.
 - Adapter Definitions and presentations may return a shared updater instance.
 
-## `IDomAriaService`
+## `IAriaService`
 
 The optional, replaceable `DomServices` child service that coordinates static and dynamic ARIA work.
 
 ```ts
-interface IDomAriaService {
+interface IAriaService {
     registerStaticUpdater(
         role: ElementRole | string,
-        updater: IDomAriaStaticElementUpdater
+        updater: IAriaStaticElementUpdater
     ): void;
 
     registerValidationStateUpdater(
         role: ElementRole | string,
-        updater: IDomAriaValidationStateElementUpdater
+        updater: IAriaValidationStateElementUpdater
     ): void;
 
     applyStaticAttributes(
@@ -148,7 +148,7 @@ interface IDomAriaService {
         role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
-            IDomAriaStaticElementUpdater | null
+            IAriaStaticElementUpdater | null
     ): void;
 
     applyValidationState(
@@ -174,31 +174,31 @@ interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater?():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater?():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 }
 ```
 
-There are no separate `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `IDomAriaFieldPresentation` capability interfaces.
+There are no separate `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFieldPresentation` capability interfaces.
 
 - Field and form presentations may supply static updaters.
 - Only field presentations may supply validation-state updaters.
@@ -221,7 +221,7 @@ There are no separate `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `ID
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 
     // Existing installed capabilities.
 }
@@ -253,10 +253,10 @@ interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     validationStateAriaUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 ```
 
@@ -272,7 +272,7 @@ The ARIA option values mean:
 
 1. Resolve, create, initially apply, and store the presentation when presentation installation is required.
 2. Resolve specialized ARIA updaters from the options or installed presentation.
-3. Apply static ARIA through `IDomAriaService.applyStaticAttributes()`.
+3. Apply static ARIA through `IAriaService.applyStaticAttributes()`.
 4. Store the specialized validation-state updater or `null`.
 
 A presentation result of `null` does not prevent ARIA installation. If ARIA installation fails after presentation installation succeeds, the presentation remains stored and ARIA remains `undefined` for retry.
@@ -284,7 +284,7 @@ A presentation result of `null` does not prevent ARIA installation. If ARIA inst
 `FormPresentationInstaller` completes presentation work independently from static ARIA installation. For each form-role element whose `jivsAriaValidationStateUpdater` is `undefined`, it:
 
 1. Obtains the specialized static updater from the installed form presentation, when one is supplied.
-2. Calls `IDomAriaService.applyStaticAttributes()` with `valueHost` set to `undefined`.
+2. Calls `IAriaService.applyStaticAttributes()` with `valueHost` set to `undefined`.
 3. Sets `jivsAriaValidationStateUpdater` to `null` only after static application succeeds.
 
 Form roles use the same installed-element property as their ARIA completion guard, but they do not participate in `applyValidationState()`.
@@ -333,7 +333,7 @@ The anchors determine which element is passed to each updater. Updaters do not r
 
 ```ts
 abstract class AriaServiceBase
-    implements IDomAriaService {
+    implements IAriaService {
 
     // Implements the public service operations.
 
@@ -354,11 +354,11 @@ It:
 - retrieves the selected error-message element's existing ID;
 - performs no role-specific attribute or content mutation itself.
 
-`SimpleDomAriaService` implements `findElements()` using SimpleDom attributes and selectors. It contains no role-specific ARIA mutation logic.
+`SimpleAriaService` implements `findElements()` using SimpleDom attributes and selectors. It contains no role-specific ARIA mutation logic.
 
 ## SimpleDom Error-Message Selection
 
-`SimpleDomAriaService.findElements()` performs fresh discovery beneath the supplied root and uses this precedence:
+`SimpleAriaService.findElements()` performs fresh discovery beneath the supplied root and uses this precedence:
 
 1. Select the field's `data-jivs-role="error"` element when it declares `data-aria-errormessage="true"`. Return `ElementRole.error`.
 2. Otherwise, select the field's `data-jivs-role="aria-error"` element. Return `ElementRole.ariaError`.

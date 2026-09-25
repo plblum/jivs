@@ -5,7 +5,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/TextAreaTextValueAdapter
  */
 
-import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
+import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
  * Adapter for HTML textarea elements using its HTMLTextAreaElement.value property
@@ -14,7 +14,7 @@ import { DomTextValueAdapterBase } from './DomTextValueAdapterBase';
  * Exposed by the TextAreaEditorAdapterDefinition.
  */
 export class TextAreaTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLTextAreaElement> {
+    extends TextValueAdapterBase<HTMLTextAreaElement> {
 
     public readTextValue(): string {
         return this.element.value;

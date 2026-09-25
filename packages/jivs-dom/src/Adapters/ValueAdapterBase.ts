@@ -4,19 +4,19 @@
  * A Value Adapter connects ValueHostsManager.onValueChanged callback 
  * an editor widget, allowing it to receive a new native value.
  * 
- * - onValueChanged -> IValueDispatcher -> IDomValueAdapters -> edited native value
+ * - onValueChanged -> IValueDispatcher -> IValueAdapters -> edited native value
  * 
- * @module jivs-dom/Adapters/AbstractClasses/DomValueAdapterBase
+ * @module jivs-dom/Adapters/AbstractClasses/ValueAdapterBase
  */
 
 import { AdapterBase } from './AdapterBase';
 
 /**
- * Base class for IDomValueAdapter.
+ * Base class for IValueAdapter.
  * 
  * This class ensures that the element is exposed to the derived adapter classes and can be safely accessed.
  */
-export abstract class DomValueAdapterBase<TElement extends HTMLElement = HTMLElement>
+export abstract class ValueAdapterBase<TElement extends HTMLElement = HTMLElement>
     extends AdapterBase<TElement>
 {
 

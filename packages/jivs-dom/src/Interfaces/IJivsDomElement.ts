@@ -14,8 +14,8 @@
  * @module jivs-dom/Types/IJivsDomElement
  */
 
-import { IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
-import { IDomAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { ITextValueAdapter, IValueAdapter } from './Adapters';
+import { IAriaValidationStateElementUpdater } from './AriaUpdaters';
 import { IEditorAdapterDefinition } from './EditorAdapterDefinitions';
 import { IFieldPresentation } from './FieldPresentations';
 import { IFormPresentation } from './FormPresentations';
@@ -44,7 +44,7 @@ export interface IJivsDomElement extends HTMLElement
      * - Uninstalled: undefined.
      * - Not used: null. 
      */
-    jivsTextValueAdapter?: IDomTextValueAdapter | null;
+    jivsTextValueAdapter?: ITextValueAdapter | null;
 
     /**
      * Handles onValueChange events specific to this editor. Its value is created from the IEditorAdapterDefinition.
@@ -55,7 +55,7 @@ export interface IJivsDomElement extends HTMLElement
      * - Not used: null. 
 
      */
-    jivsValueAdapter?: IDomValueAdapter | null;
+    jivsValueAdapter?: IValueAdapter | null;
 
     /**
      * Handles the onValidationStateChanged callback to provide visual feedback for the validation state of the field.
@@ -71,7 +71,7 @@ export interface IJivsDomElement extends HTMLElement
     /**
      * AriaService's own updater for the validation state of the element.
      */
-    jivsAriaValidationStateUpdater?: IDomAriaValidationStateElementUpdater | null;
+    jivsAriaValidationStateUpdater?: IAriaValidationStateElementUpdater | null;
 
     /**
      * Handles the presentation of the form containing this element.

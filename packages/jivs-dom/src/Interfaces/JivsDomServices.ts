@@ -11,7 +11,7 @@ import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValue
 import { IService, IServicesAccessor } from "@plblum/jivs-engine/build/Interfaces/Services";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
-import { IDomAriaService } from './AriaService';
+import { IAriaService } from './AriaService';
 import { IDispatcherService } from './Dispatchers';
 import { IEditorInstaller } from './EditorInstaller';
 import { IFieldPresentation, IFieldPresentationInstaller } from './FieldPresentations';
@@ -39,45 +39,6 @@ export interface IJivsDomServices
      * Override services: IServices.
      */
     services: IJivsServices;
-    /**
-     * Gets the DOM dispatcher service responsible for handling DOM events 
-     * and dispatching them to the appropriate handlers.
-     * Use it to attach the ValueHostsManager callbacks.
-     * ```ts
-     * services.dispatchers.attach(config);
-     * ```
-     */
-    dispatchers: IDispatcherService;
-
-    /**
-     * Gets the factory responsible for creating IEditorAdapterDefinitions.
-     * Use it to register editor adapter definitions.
-     * ```ts
-     * services.editorAdapterDefinitionFactory.register(new MyAdapterDefinition());
-     * ```
-     * Consumed by the IEditorInstaller to create editor adapters.
-     */
-    editorAdapterDefinitionFactory: IEditorAdapterDefinitionFactory;
-
-    /**
-     * Gets the factory responsible for creating IFieldPresentations.
-     * Use it to register your presentations, mapping a name to a creator function.
-     * ```ts
-     * services.fieldPresentationFactory.register("myPresentation", () => new MyFieldPresentation());
-     * ```
-     * Consumed by the IFieldPresentationInstaller to create field presentations.
-     */
-    fieldPresentationFactory: IPresentationFactory<IFieldPresentation>;
-
-    /**
-     * Gets the factory responsible for creating IFormPresentations.
-     * Use it to register your form presentations, mapping a name to a creator function.
-     * ```ts
-     * services.formPresentationFactory.register("myFormPresentation", () => new MyFormPresentation());
-     * ```
-     * Consumed by the IFormPresentationInstaller to create form presentations.
-     */
-    formPresentationFactory: IPresentationFactory<IFormPresentation>;
 
     /**
      * Gets the installer responsible for setting up one Editor widget.
@@ -112,10 +73,20 @@ export interface IJivsDomServices
     formPresentationInstaller: IFormPresentationInstaller;
 
     /**
+     * Gets the DOM dispatcher service responsible for handling DOM events 
+     * and dispatching them to the appropriate handlers.
+     * Use it to attach the ValueHostsManager callbacks.
+     * ```ts
+     * services.dispatchers.attach(config);
+     * ```
+     */
+    dispatchers: IDispatcherService;
+
+    /**
      * Gets the ARIA service responsible for managing ARIA attributes and roles.
      * Set it to null to disable ARIA attribute and role management.
      */
-    ariaService: IDomAriaService | null;
+    ariaService: IAriaService | null;
 
     /**
      * Gets the service responsible for creating either HTML or textual content
@@ -124,7 +95,7 @@ export interface IJivsDomServices
      * Built-in FieldPresentations and FormPresentations call upon this to get their 
      * error message content.
      */
-    issuesFoundFormatter: IIssuesFoundFormatterService;
+    issuesFoundFormatterService: IIssuesFoundFormatterService;
 
     /**
      * Provides a logging facade for all services that retain IJivsDomServices.
@@ -159,4 +130,36 @@ export interface IJivsDomServices
      */
     resolveFieldElement(root: HTMLElement | null, valueHost: IFieldValueHost,
         role: ElementRole | string, elementIdentifierTemplate?: string): HTMLElement | null;
+    
+    /**
+     * Gets the factory responsible for creating IEditorAdapterDefinitions.
+     * Use it to register editor adapter definitions.
+     * ```ts
+     * services.editorAdapterDefinitionFactory.register(new MyAdapterDefinition());
+     * ```
+     * Consumed by the IEditorInstaller to create editor adapters.
+     */
+    editorAdapterDefinitionFactory: IEditorAdapterDefinitionFactory;
+
+    /**
+     * Gets the factory responsible for creating IFieldPresentations.
+     * Use it to register your presentations, mapping a name to a creator function.
+     * ```ts
+     * services.fieldPresentationFactory.register("myPresentation", () => new MyFieldPresentation());
+     * ```
+     * Consumed by the IFieldPresentationInstaller to create field presentations.
+     */
+    fieldPresentationFactory: IPresentationFactory<IFieldPresentation>;
+
+    /**
+     * Gets the factory responsible for creating IFormPresentations.
+     * Use it to register your form presentations, mapping a name to a creator function.
+     * ```ts
+     * services.formPresentationFactory.register("myFormPresentation", () => new MyFormPresentation());
+     * ```
+     * Consumed by the IFormPresentationInstaller to create form presentations.
+     */
+    formPresentationFactory: IPresentationFactory<IFormPresentation>;
+
+
 }

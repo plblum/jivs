@@ -4,7 +4,7 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/CheckboxAdapterDefinition
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import type { IDomTextValueAdapter } from '../Interfaces/Adapters';
+import type { ITextValueAdapter } from '../Interfaces/Adapters';
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
 import { CheckboxTextValueAdapter } from '../Adapters/CheckboxTextValueAdapter';
@@ -22,7 +22,7 @@ export class CheckboxAdapterDefinition extends InputAdapterDefinition
         super('checkbox', adapterKey, priority, defaultFieldPresentationName);
     }
 
-    override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): IDomTextValueAdapter
+    override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter
     {
         return new CheckboxTextValueAdapter(
             this.requireInputElement(element)   // may throw

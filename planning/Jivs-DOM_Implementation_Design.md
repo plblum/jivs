@@ -60,8 +60,8 @@ The principal `jivs-engine` integration points are:
 
 | Jivs API                                                    | Use within `jivs-dom`                                                                                                                                                               |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ValueHostsManagerConfig.onTextValueChanged`                | Notifies a Text Value dispatcher. The dispatcher obtains the current Text Value from the supplied `IFieldValueHost` and writes it through installed `IDomTextValueAdapter` objects. |
-| `ValueHostsManagerConfig.onValueChanged`                    | Notifies a Native Value dispatcher. The dispatcher obtains the current Native Value from the supplied `IValueHost` and writes it through installed `IDomValueAdapter` objects.      |
+| `ValueHostsManagerConfig.onTextValueChanged`                | Notifies a Text Value dispatcher. The dispatcher obtains the current Text Value from the supplied `IFieldValueHost` and writes it through installed `ITextValueAdapter` objects. |
+| `ValueHostsManagerConfig.onValueChanged`                    | Notifies a Native Value dispatcher. The dispatcher obtains the current Native Value from the supplied `IValueHost` and writes it through installed `IValueAdapter` objects.      |
 | `ValueHostsManagerConfig.onValueHostValidationStateChanged` | Supplies the `ValueHostValidationState` used by installed field presentations and field-level ARIA behavior.                                                                        |
 | `ValueHostsManagerConfig.onValidationStateChanged`          | Supplies the `ValidationState` used by installed form presentations.                                                                                                                |
 | `IFieldValueHost.setTextValue()`                            | Accepts textual editor input and lets Jivs perform its configured parsing and validation.                                                                                           |
@@ -92,8 +92,8 @@ flowchart TB
     end
 
     ELEMENT["IJivsDomElement"]
-    TEXT_ADAPTER["IDomTextValueAdapter"]
-    VALUE_ADAPTER["IDomValueAdapter"]
+    TEXT_ADAPTER["ITextValueAdapter"]
+    VALUE_ADAPTER["IValueAdapter"]
     PRESENTATION["IFieldPresentation"]
 
     INSTALLER -->|"uses"| FACTORY
@@ -124,7 +124,7 @@ flowchart LR
         TEXT_CALLBACK["onTextValueChanged"]
         TEXT_DISPATCHER["TextValueDispatcher"]
         TEXT_ELEMENT["IJivsDomElement"]
-        TEXT_ADAPTER["IDomTextValueAdapter"]
+        TEXT_ADAPTER["ITextValueAdapter"]
         TEXT_EDITOR["Editor Text Value"]
 
         TEXT_CALLBACK -->|"supplies ValueHost"| TEXT_DISPATCHER
@@ -139,7 +139,7 @@ flowchart LR
         VALUE_CALLBACK["onValueChanged"]
         VALUE_DISPATCHER["ValueDispatcher"]
         VALUE_ELEMENT["IJivsDomElement"]
-        VALUE_ADAPTER["IDomValueAdapter"]
+        VALUE_ADAPTER["IValueAdapter"]
         VALUE_EDITOR["Editor Native Value"]
 
         VALUE_CALLBACK -->|"supplies ValueHost"| VALUE_DISPATCHER
@@ -191,7 +191,7 @@ flowchart TB
 
         FIND["findElements()"]
         APPLY["Apply installed field presentations"]
-        ARIA["IDomAriaService.applyValidationState"]
+        ARIA["IAriaService.applyValidationState"]
         FIELD_UI["Updated field UI"]
 
         FIND -->|"process every element"| APPLY
@@ -404,16 +404,16 @@ interface IJivsDomElement extends HTMLElement {
         IEditorAdapterDefinition;
 
     jivsTextValueAdapter?:
-        IDomTextValueAdapter | null;
+        ITextValueAdapter | null;
 
     jivsValueAdapter?:
-        IDomValueAdapter | null;
+        IValueAdapter | null;
 
     jivsFieldPresentation?:
         IFieldPresentation | null;
 
     jivsAriaValidationStateUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 
     jivsFormPresentation?:
         IFormPresentation | null;
@@ -470,10 +470,10 @@ interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     validationStateAriaUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 interface IFieldPresentationInstaller {
@@ -546,7 +546,7 @@ Editor adapters support two directions of communication:
 Text Value and Native Value support remain separate capabilities. An adapter definition may create a Text Value adapter, a Native Value adapter, or both:
 
 ```ts
-interface IDomTextValueAdapter {
+interface ITextValueAdapter {
     readTextValue(): string | undefined;
 
     writeTextValue(
@@ -554,7 +554,7 @@ interface IDomTextValueAdapter {
     ): void;
 }
 
-interface IDomValueAdapter {
+interface IValueAdapter {
     readValue(): unknown;
 
     writeValue(
@@ -568,9 +568,9 @@ interface IDomValueAdapter {
 Each adapter instance belongs to one element. The standard base classes give concrete implementations strongly typed access to that element while preserving normal class behavior:
 
 ```ts
-abstract class DomTextValueAdapterBase<
+abstract class TextValueAdapterBase<
     TElement extends HTMLElement = HTMLElement
-> implements IDomTextValueAdapter {
+> implements ITextValueAdapter {
 
     public constructor(
         protected readonly element: TElement
@@ -585,9 +585,9 @@ abstract class DomTextValueAdapterBase<
     ): void;
 }
 
-abstract class DomValueAdapterBase<
+abstract class ValueAdapterBase<
     TElement extends HTMLElement = HTMLElement
-> implements IDomValueAdapter {
+> implements IValueAdapter {
 
     public constructor(
         protected readonly element: TElement
@@ -606,7 +606,7 @@ Concrete adapters select the element type appropriate to their widget:
 
 ```ts
 class InputTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLInputElement> {
+    extends TextValueAdapterBase<HTMLInputElement> {
 
     public readTextValue(): string {
         return this.element.value;
@@ -659,18 +659,18 @@ interface IEditorAdapterDefinition {
     createTextValueAdapter(
         valueHost: IFieldValueHost,
         anchor: IJivsDomElement
-    ): IDomTextValueAdapter | null;
+    ): ITextValueAdapter | null;
 
     createValueAdapter(
         valueHost: IFieldValueHost,
         anchor: IJivsDomElement
-    ): IDomValueAdapter | null;
+    ): IValueAdapter | null;
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 
     attachToSendValues(
         valueHost: IFieldValueHost,
@@ -1241,7 +1241,7 @@ All initial built-in definitions use the Text Value path. They read strings from
 | Single-value `select`    | `SelectAdapterDefinition`          | `SelectTextValueAdapter`          | `change`                                            |
 | File `input`             | `FileInputAdapterDefinition`       | `FileInputTextValueAdapter`       | `change`                                            |
 
-None of these definitions creates an `IDomValueAdapter`. During installation, `jivsValueAdapter` is therefore set to `null`.
+None of these definitions creates an `IValueAdapter`. During installation, `jivsValueAdapter` is therefore set to `null`.
 
 #### Input Definition Registration
 
@@ -1340,7 +1340,7 @@ class InputAdapterDefinition
     public createTextValueAdapter(
         _valueHost: IFieldValueHost,
         element: IJivsDomElement
-    ): IDomTextValueAdapter {
+    ): ITextValueAdapter {
         return new InputTextValueAdapter(
             this.requireInputElement(element)
         );
@@ -1407,7 +1407,7 @@ A checkbox remains on the Text Value path because `jivs-dom` cannot assume that 
 
 ```ts
 class CheckboxTextValueAdapter
-    extends DomTextValueAdapterBase<HTMLInputElement> {
+    extends TextValueAdapterBase<HTMLInputElement> {
 
     public readTextValue(): string {
         return this.element.checked
@@ -1431,7 +1431,7 @@ This mapping is reciprocal:
 * writing `element.value` checks the checkbox;
 * writing another string or `undefined` clears it.
 
-Applications remain free to use a Native Value for checkboxes. For example, an application can register a higher-priority definition whose `matches()` requires both an `input[type="checkbox"]` and a Boolean field data type. That definition can create an `IDomValueAdapter` backed by `HTMLInputElement.checked` and submit through `setValue()`.
+Applications remain free to use a Native Value for checkboxes. For example, an application can register a higher-priority definition whose `matches()` requires both an `input[type="checkbox"]` and a Boolean field data type. That definition can create an `IValueAdapter` backed by `HTMLInputElement.checked` and submit through `setValue()`.
 
 #### Native Input Radio Groups
 
@@ -1580,20 +1580,20 @@ class InputRadioGroupAdapterDefinition
     public createTextValueAdapter(
         _valueHost: IFieldValueHost,
         element: IJivsDomElement
-    ): IDomTextValueAdapter {
+    ): ITextValueAdapter {
         return new InputRadioGroupTextValueAdapter(
             element
         );
     }
 
     public getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater {
+        IAriaStaticElementUpdater {
 
         return this.staticAriaUpdater;
     }
 
     public getValidationStateAriaElementUpdater():
-        IDomAriaValidationStateElementUpdater {
+        IAriaValidationStateElementUpdater {
 
         return this.validationStateAriaUpdater;
     }
@@ -1632,7 +1632,7 @@ The definition owns one immutable instance of each specialized ARIA updater and 
 
 ```ts
 class InputRadioGroupTextValueAdapter
-    implements IDomTextValueAdapter {
+    implements ITextValueAdapter {
 
     public constructor(
         private readonly anchor: IJivsDomElement
@@ -1750,7 +1750,7 @@ A field presentation translates one field’s current validation state into chan
 
 Presentation installation occurs after the `ValueHostsManager` and its `IFieldValueHost` instances have been created. This allows installation to apply the field’s current validation state immediately, regardless of whether preliminary validation has already run.
 
-`FieldValidationDispatcher` locates each relevant element, reads its installed `jivsFieldPresentation`, and invokes `apply()`. After all installed presentations have been processed, it invokes `IDomAriaService.applyValidationState()` once for the field when the ARIA service is available.
+`FieldValidationDispatcher` locates each relevant element, reads its installed `jivsFieldPresentation`, and invokes `apply()`. After all installed presentations have been processed, it invokes `IAriaService.applyValidationState()` once for the field when the ARIA service is available.
 
 Although `ValueHostValidationState` includes the group that caused validation, `FieldValidationDispatcher` does not perform group routing. A field presentation is already scoped to one `IFieldValueHost` and reflects that field's current state regardless of which validation group produced it.
 
@@ -1765,10 +1765,10 @@ interface IFieldPresentation {
     ): void;
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 abstract class FieldPresentationBase<
@@ -1802,26 +1802,43 @@ The optional ARIA getters allow a presentation whose generated HTML requires spe
 The field presentation factory creates element-bound presentation instances from registered presentation names. It is consumed by the Field Presentation Installer.
 
 ```ts
-type FieldPresentationCreator = (
+export interface IPresentationFactory<TResult>
+{
+    /**
+     * Registers a presentation creator function under the specified presentation name.
+     * Replaces any previously registered creator function for the same presentation name.
+     * 
+     * @param presentationName The name of the presentation to register.
+     * @param creator The function that creates a presentation instance for the given element.
+     */
+    register(presentationName: string, creator: PresentationCreator<TResult>): void;
+
+    /**
+     * Sets the default presentation name for a given role.
+     * 
+     * @param role The role for which to set the default presentation name.
+     * @param presentationName The default presentation name to associate with the role.
+     */
+    setDefaultPresentationName(role: ElementRole | string, presentationName: string): void;
+
+    /**
+     * Creates a presentation instance for the given element, role, and optional presentation name.
+     * 
+     * @param element The DOM element for which to create the presentation.
+     * @param role The role of the element for which to create the presentation.
+     * @param presentationName The optional presentation name to use for creating the presentation.
+     * When supplied, it overrides the default presentation name set for the role.
+     */
+    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult;
+}
+type PresentationCreator<TResult> = (
     element: IJivsDomElement
-) => IFieldPresentation;
+) => TResult;
+```
 
-interface IFieldPresentationFactory {
-    register(
-        presentationName: string,
-        creator: FieldPresentationCreator
-    ): void;
+```ts
+class FieldPresentationFactory implements IPresentationFactory<IFieldPresentation> {
 
-    setDefaultPresentationName(
-        role: ElementRole | string,
-        presentationName: string
-    ): void;
-
-    create(
-        element: IJivsDomElement,
-        role: ElementRole | string,
-        presentationName?: string
-    ): IFieldPresentation;
 }
 ```
 
@@ -1874,10 +1891,10 @@ interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     validationStateAriaUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 ```
 
@@ -1998,7 +2015,7 @@ return presentation;
 
 If specialized-updater resolution or static ARIA application throws after presentation installation succeeds, installation logs and propagates the failure. The presentation remains stored while `jivsAriaValidationStateUpdater` remains `undefined`, allowing a later installation call to retry only the incomplete ARIA work. Static updaters must therefore be idempotent.
 
-`FieldPresentationInstaller` does not perform initial validation-state ARIA application. `DomFormInstallerBase` calls `IDomAriaService.applyValidationState()` once for each distinct non-null field represented in the field collector lists, only after all collected elements have been installed and their presentations initialized.
+`FieldPresentationInstaller` does not perform initial validation-state ARIA application. `JivsDomFormInstallerBase` calls `IAriaService.applyValidationState()` once for each distinct non-null field represented in the field collector lists, only after all collected elements have been installed and their presentations initialized.
 
 Replacing the DOM element creates a new installation lifetime. The replacement element begins with both `jivsFieldPresentation` and `jivsAriaValidationStateUpdater` set to `undefined` and must be installed separately.
 
@@ -2007,7 +2024,7 @@ Replacing the DOM element creates a new installation lifetime. The replacement e
 
 `jivs-dom` supplies field presentations for common validation visualizations. Applications can replace their registrations, select another presentation explicitly, or derive from the exported base classes.
 
-Presentation code owns visual content and CSS state. A presentation may supply specialized ARIA updater objects when its generated HTML requires them, but the presentation itself does not assign ARIA attributes through its `apply()` method. All ARIA mutation remains the responsibility of registered or specialized updaters coordinated by `IDomAriaService`.
+Presentation code owns visual content and CSS state. A presentation may supply specialized ARIA updater objects when its generated HTML requires them, but the presentation itself does not assign ARIA attributes through its `apply()` method. All ARIA mutation remains the responsibility of registered or specialized updaters coordinated by `IAriaService`.
 
 The initial presentation CSS will be supplied in one file:
 
@@ -2195,7 +2212,7 @@ interface IFormPresentation {
     ): void;
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 }
 
 abstract class FormPresentationBase<
@@ -2325,26 +2342,8 @@ The optional ARIA getter allows a form presentation whose generated HTML require
 Form presentations use a factory separate from the field presentation factory.
 
 ```ts
-type FormPresentationCreator = (
-    element: IJivsDomElement
-) => IFormPresentation;
+class FormPresentationFactory implements IPresentationFactory<IFormPresentation> {
 
-interface IFormPresentationFactory {
-    register(
-        presentationName: string,
-        creator: FormPresentationCreator
-    ): void;
-
-    setDefaultPresentationName(
-        role: ElementRole | string,
-        presentationName: string
-    ): void;
-
-    create(
-        element: IJivsDomElement,
-        role: ElementRole | string,
-        presentationName?: string
-    ): IFormPresentation;
 }
 ```
 
@@ -2571,7 +2570,7 @@ The dispatcher does not compare group names, call `groupsMatch()`, filter `state
 
 Presentations derived from `FormPresentationBase` receive the standard routing behavior described earlier. Direct `IFormPresentation` implementations determine for themselves whether and how to respond.
 
-The dispatcher does not call `IDomAriaService`. Form roles use static ARIA only, which `FormPresentationInstaller` applies during installation. Dynamic validation-state ARIA uses the field-specific updater contract and does not apply to form roles.
+The dispatcher does not call `IAriaService`. Form roles use static ARIA only, which `FormPresentationInstaller` applies during installation. Dynamic validation-state ARIA uses the field-specific updater contract and does not apply to form roles.
 
 ### SimpleDom Form Presentation Selection
 
@@ -2943,9 +2942,9 @@ flowchart TB
     Providers["Adapter definitions and presentations"]
     FieldInstaller["FieldPresentationInstaller"]
     FormInstaller["FormPresentationInstaller"]
-    Coordinator["DomFormInstallerBase"]
+    Coordinator["JivsDomFormInstallerBase"]
     Dispatcher["FieldValidationDispatcher"]
-    Service["IDomAriaService / AriaServiceBase"]
+    Service["IAriaService / AriaServiceBase"]
     Registry["Role updater registries"]
     Elements["Installed IJivsDomElement instances"]
 
@@ -2961,7 +2960,7 @@ flowchart TB
 
 The installers are installation-time elements. They request static updater composition and record the specialized validation-state updater on each installed element.
 
-After all collected elements have been installed, `DomFormInstallerBase` initializes dynamic ARIA through `applyValidationState()` for each distinct non-null field represented in the field collector lists. `FieldValidationDispatcher` invokes the same operation after later validation changes.
+After all collected elements have been installed, `JivsDomFormInstallerBase` initializes dynamic ARIA through `applyValidationState()` for each distinct non-null field represented in the field collector lists. `FieldValidationDispatcher` invokes the same operation after later validation changes.
 
 ### Managed Accessibility Attributes
 
@@ -3030,9 +3029,9 @@ interface IFieldAriaElementAnchors {
 
 The anchors determine which element is passed to each updater. Updaters do not receive the complete anchors object.
 
-The concrete implementation supplied by `jivs-simpledom` is `SimpleDomAriaService`. Its `findElements()` method performs fresh queries below `root` using the field's Element Identifier.
+The concrete implementation supplied by `jivs-simpledom` is `SimpleAriaService`. Its `findElements()` method performs fresh queries below `root` using the field's Element Identifier.
 
-For the error-message element, `SimpleDomAriaService.findElements()` applies this precedence:
+For the error-message element, `SimpleAriaService.findElements()` applies this precedence:
 
 1. Select the field's `data-jivs-role="error"` element when it declares `data-aria-errormessage="true"`. Return `ElementRole.error`.
 2. Otherwise, select the field's `data-jivs-role="aria-error"` element. Return `ElementRole.ariaError`.
@@ -3129,9 +3128,9 @@ The ARIA implementation requires the following new public contracts and classes.
 
 | Type or class | Package | Kind | Purpose |
 | --- | --- | --- | --- |
-| `IDomAriaStaticElementUpdater` | `jivs-dom` | Interface | Defines installation-time accessibility work for one element. |
-| `IDomAriaValidationStateElementUpdater` | `jivs-dom` | Interface | Defines validation-state accessibility work for one field element. |
-| `IDomAriaService` | `jivs-dom` | Interface | Defines updater registration, static application, and validation-state orchestration. |
+| `IAriaStaticElementUpdater` | `jivs-dom` | Interface | Defines installation-time accessibility work for one element. |
+| `IAriaValidationStateElementUpdater` | `jivs-dom` | Interface | Defines validation-state accessibility work for one field element. |
+| `IAriaService` | `jivs-dom` | Interface | Defines updater registration, static application, and validation-state orchestration. |
 | `IFieldAriaElementAnchors` | `jivs-dom` | Interface | Returns the editor and selected error-message anchors from field discovery. |
 | `FieldPresentationInstallOptions` | `jivs-dom` | Interface | Supplies presentation selection and specialized ARIA updaters to `IFieldPresentationInstaller`. |
 | `AriaServiceBase` | `jivs-dom` | Abstract class | Implements registries, composition, static application, and validation-state orchestration. |
@@ -3142,7 +3141,7 @@ The ARIA implementation requires the following new public contracts and classes.
 | `NativeEditorAriaValidationStateElementUpdater` | `jivs-dom` | Exported class | Applies required and validation state to native editors. |
 | `AriaRequiredEditorValidationStateElementUpdater` | `jivs-dom` | Exported class | Applies ARIA required and validation state to editors without equivalent native semantics. |
 | `AriaErrorTextValidationStateElementUpdater` | `jivs-dom` | Exported class | Writes and clears plain-text error content in the dedicated `aria-error` element. |
-| `SimpleDomAriaService` | `jivs-simpledom` | Concrete class | Implements `findElements()` for SimpleDom markup conventions. |
+| `SimpleAriaService` | `jivs-simpledom` | Concrete class | Implements `findElements()` for SimpleDom markup conventions. |
 
 All seven concrete updater classes are publicly exported. Applications may instantiate them directly, return them from specialized-updater getters, or register them for additional roles.
 
@@ -3159,19 +3158,19 @@ The following existing contracts and classes require ARIA-related changes.
 | `FieldPresentationInstaller` | Perform presentation and ARIA installation independently and store the validation-state updater. |
 | `FormPresentationInstaller` | Apply static ARIA and use `jivsAriaValidationStateUpdater` as its completion guard. |
 | `EditorInstaller` | Pass the Editor Adapter Definition's specialized updaters to `FieldPresentationInstaller`. |
-| `InputRadioGroupAdapterDefinition` | Remove `IDomAriaEditorDefinition` and `findAriaEditors()`; return the radio-group updater instances through the new getters. |
+| `InputRadioGroupAdapterDefinition` | Remove `IAriaEditorDefinition` and `findAriaEditors()`; return the radio-group updater instances through the new getters. |
 | `FieldValidationDispatcher` | Call `applyValidationState()` after applying field presentations. |
 | `DomServices` and `IJivsDomServices` | Expose the nullable `ariaService` child service and provide the standard service during default construction. |
-| `DomFormInstallerBase` | Apply initial validation-state ARIA for each distinct non-null field represented in the field collector lists after all collected elements have been installed. |
+| `JivsDomFormInstallerBase` | Apply initial validation-state ARIA for each distinct non-null field represented in the field collector lists after all collected elements have been installed. |
 
-There are no `IDomAriaEditorDefinition`, `IDomAriaPresentation`, or `IDomAriaFieldPresentation` types.
+There are no `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFieldPresentation` types.
 
 ### Public Service Contract
 
 #### Static Updater
 
 ```ts
-interface IDomAriaStaticElementUpdater {
+interface IAriaStaticElementUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
@@ -3187,7 +3186,7 @@ interface IDomAriaStaticElementUpdater {
 #### Validation-State Updater
 
 ```ts
-interface IDomAriaValidationStateElementUpdater {
+interface IAriaValidationStateElementUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -3205,16 +3204,16 @@ interface IDomAriaValidationStateElementUpdater {
 #### ARIA Service
 
 ```ts
-interface IDomAriaService {
+interface IAriaService {
     registerStaticUpdater(
         role: ElementRole | string,
-        updater: IDomAriaStaticElementUpdater
+        updater: IAriaStaticElementUpdater
     ): void;
 
     registerValidationStateUpdater(
         role: ElementRole | string,
         updater:
-            IDomAriaValidationStateElementUpdater
+            IAriaValidationStateElementUpdater
     ): void;
 
     applyStaticAttributes(
@@ -3222,7 +3221,7 @@ interface IDomAriaService {
         role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
-            IDomAriaStaticElementUpdater | null
+            IAriaStaticElementUpdater | null
     ): void;
 
     applyValidationState(
@@ -3279,27 +3278,27 @@ interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 }
 ```
 
@@ -3321,7 +3320,7 @@ Specialized-updater ownership is:
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 
     // Existing installed capabilities.
 }
@@ -3357,10 +3356,10 @@ interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
-        IDomAriaStaticElementUpdater | null;
+        IAriaStaticElementUpdater | null;
 
     validationStateAriaUpdater?:
-        IDomAriaValidationStateElementUpdater | null;
+        IAriaValidationStateElementUpdater | null;
 }
 ```
 
@@ -3376,7 +3375,7 @@ The ARIA option values mean:
 
 1. Resolve, create, initially apply, and store the presentation when presentation installation is required.
 2. Resolve the specialized ARIA updaters from the options or installed presentation.
-3. Apply static ARIA through `IDomAriaService.applyStaticAttributes()`.
+3. Apply static ARIA through `IAriaService.applyStaticAttributes()`.
 4. Store the specialized validation-state updater or `null`.
 
 A presentation result of `null` does not prevent ARIA installation.
@@ -3392,7 +3391,7 @@ If ARIA installation fails after presentation installation succeeds, the present
 For each form-role element whose `jivsAriaValidationStateUpdater` is `undefined`, it:
 
 1. Gets the specialized static updater from the installed form presentation, when supplied.
-2. Calls `IDomAriaService.applyStaticAttributes()` with `valueHost` set to `undefined`.
+2. Calls `IAriaService.applyStaticAttributes()` with `valueHost` set to `undefined`.
 3. Sets `jivsAriaValidationStateUpdater` to `null` only after static application succeeds.
 
 Form roles use the same installed-element property as their ARIA completion guard, but they do not participate in `applyValidationState()`.
@@ -3416,7 +3415,7 @@ enum ElementRole {
 
 ```ts
 abstract class AriaServiceBase
-    implements IDomAriaService {
+    implements IAriaService {
 
     // Implements the public service operations.
 
@@ -3437,7 +3436,7 @@ abstract class AriaServiceBase
 - retrieves the selected error-message element's existing ID;
 - performs no role-specific attribute or content mutation itself.
 
-`SimpleDomAriaService` implements `findElements()` using SimpleDom attributes and selectors. It contains no role-specific ARIA mutation logic.
+`SimpleAriaService` implements `findElements()` using SimpleDom attributes and selectors. It contains no role-specific ARIA mutation logic.
 
 The service does not retain `root`, the `IFieldValueHost`, a `ValueHostsManager`, a discovered DOM element, or an element collection after an operation returns.
 
@@ -3463,7 +3462,7 @@ Required state comes from `IFieldValueHost.required`, not from `ValueHostValidat
 
 ### Initial and Later Validation-State Application
 
-`DomFormInstallerBase` performs the initial validation-state application after installing all collected elements. It calls the ARIA service once for each distinct non-null `IFieldValueHost` represented in the editor and field-presentation collector lists:
+`JivsDomFormInstallerBase` performs the initial validation-state application after installing all collected elements. It calls the ARIA service once for each distinct non-null `IFieldValueHost` represented in the editor and field-presentation collector lists:
 
 ```ts
 ariaService.applyValidationState(
@@ -3534,14 +3533,14 @@ Updater and discovery operations throw normally.
 `AriaServiceBase` does not catch or log their exceptions:
 
 - A registered-updater failure stops processing before the specialized updater for that element.
-- `DomFormInstallerBase` owns installation logging and rethrows installation failures.
+- `JivsDomFormInstallerBase` owns installation logging and rethrows installation failures.
 - Runtime validation dispatch follows the dispatcher's established failure policy.
 
-`jivs-simpledom` supplies `SimpleDomAriaService` because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions.
+`jivs-simpledom` supplies `SimpleAriaService` because it owns the `data-field`, `data-jivs-role`, and ARIA marker conventions.
 
 An application using `jivs-dom` directly can subclass `AriaServiceBase` and implement `findElements()` for its own markup while retaining the standard registry and orchestration behavior.
 
-An application may instead replace the complete `IDomAriaService` when it requires different coordination or policy.
+An application may instead replace the complete `IAriaService` when it requires different coordination or policy.
 
 The following implementation details remain deferred to later sections:
 
@@ -3754,7 +3753,7 @@ For each discovered element, `dispatch()` reads `jivsFormPresentation`. A presen
 
 The dispatcher does not interpret validation groups. Group routing belongs to the installed form presentation.
 
-Form dispatch does not invoke `IDomAriaService`. Form-role ARIA is static and is applied during installation.
+Form dispatch does not invoke `IAriaService`. Form-role ARIA is static and is applied during installation.
 
 ### Fresh Element Discovery
 
@@ -3792,7 +3791,7 @@ If root resolution or `findElements()` throws, the dispatcher logs the operation
 
 When a configured Container Identifier cannot be resolved, the dispatcher logs the failure and abandons dispatch. It does not fall back to `document.body`.
 
-If `IDomAriaService.applyValidationState()` throws, the field dispatcher logs the failure and returns without propagating it.
+If `IAriaService.applyValidationState()` throws, the field dispatcher logs the failure and returns without propagating it.
 
 This policy applies to dispatcher-owned behavior. An exception thrown by an application callback composed ahead of the dispatcher remains observable and prevents DOM dispatch for that callback invocation.
 
@@ -3950,7 +3949,7 @@ Attaching different dispatcher categories to the same configuration is valid. At
 
 Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
 
-Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed elements. `DomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
+Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed elements. `JivsDomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
 
 ## Form Installation Coordination
 
@@ -3958,7 +3957,7 @@ Creating an `IValueHostsManager` establishes the Jivs fields and their validatio
 
 Form installation bridges that gap.
 
-The application calls one public `install()` operation after creating the manager. A concrete form installer identifies the field and form elements represented by its markup. Shared collectors normalize those discoveries and align field elements with their `IFieldValueHost`. `DomFormInstallerBase` then invokes the editor and presentation installers and performs the initial validation-state ARIA pass.
+The application calls one public `install()` operation after creating the manager. A concrete form installer identifies the field and form elements represented by its markup. Shared collectors normalize those discoveries and align field elements with their `IFieldValueHost`. `JivsDomFormInstallerBase` then invokes the editor and presentation installers and performs the initial validation-state ARIA pass.
 
 This separates two responsibilities:
 
@@ -3984,7 +3983,7 @@ domServices.dispatchers.attachValueHostValidationStateChanged(config);
 domServices.dispatchers.attachValidationStateChanged(config);
 
 const valueHostsManager = new ValueHostsManager(config);
-const formInstaller = new SimpleDomFormInstaller(domServices);
+const formInstaller = new SimpleJivsDomFormInstaller(domServices);
 
 formInstaller.install(valueHostsManager);
 ```
@@ -3993,48 +3992,48 @@ Section 12 will replace the provisional `domServices` line after defining how `I
 
 ### Architecture
 
-`IDomFormInstaller` defines the public operation used by the application. `DomFormInstallerBase` implements the coordination algorithm.
+`IJivsDomFormInstaller` defines the public operation used by the application. `JivsDomFormInstallerBase` implements the coordination algorithm.
 
 A concrete subclass supplies only the two markup-specific discovery methods. Those methods populate the collectors created by the base class. The base class consumes the collected records and performs the installation work.
 
 ```mermaid
 classDiagram
-    class IDomFormInstaller {
+    class IJivsDomFormInstaller {
         +install(valueHostsManager, root)
     }
 
-    class DomFormInstallerBase {
+    class JivsDomFormInstallerBase {
         #domServices
         +install(valueHostsManager, root)
         #identifyFieldElements(root, collector)
         #identifyFormElements(root, collector)
     }
 
-    class ConcreteDomFormInstaller
+    class ConcreteJivsDomFormInstaller
     class FieldElementCollector
     class FormElementCollector
     class IJivsDomServices
 
-    IDomFormInstaller <|.. DomFormInstallerBase
-    DomFormInstallerBase <|-- ConcreteDomFormInstaller
-    DomFormInstallerBase --> IJivsDomServices : uses
-    ConcreteDomFormInstaller ..> FieldElementCollector : populates
-    DomFormInstallerBase ..> FieldElementCollector : creates and consumes
-    DomFormInstallerBase ..> FormElementCollector : creates and consumes
-    ConcreteDomFormInstaller ..> FormElementCollector : populates
+    IJivsDomFormInstaller <|.. JivsDomFormInstallerBase
+    JivsDomFormInstallerBase <|-- ConcreteJivsDomFormInstaller
+    JivsDomFormInstallerBase --> IJivsDomServices : uses
+    ConcreteJivsDomFormInstaller ..> FieldElementCollector : populates
+    JivsDomFormInstallerBase ..> FieldElementCollector : creates and consumes
+    JivsDomFormInstallerBase ..> FormElementCollector : creates and consumes
+    ConcreteJivsDomFormInstaller ..> FormElementCollector : populates
 ```
 
-`ConcreteDomFormInstaller` represents either `SimpleDomFormInstaller` or an application-defined subclass.
+`ConcreteJivsDomFormInstaller` represents either `SimpleJivsDomFormInstaller` or an application-defined subclass.
 
 ### Coordination After Discovery
 
-The architecture continues after the concrete subclass finishes populating both collectors. `DomFormInstallerBase` consumes their records and coordinates the specialized installers and ARIA service.
+The architecture continues after the concrete subclass finishes populating both collectors. `JivsDomFormInstallerBase` consumes their records and coordinates the specialized installers and ARIA service.
 
 ```mermaid
 flowchart TB
     FIELD["Populated FieldElementCollector"]
     FORM["Populated FormElementCollector"]
-    BASE["DomFormInstallerBase"]
+    BASE["JivsDomFormInstallerBase"]
     EDITOR["EditorInstaller"]
     PRESENTATION["Field and Form Presentation Installers"]
     ARIA["ARIA Service"]
@@ -4052,16 +4051,16 @@ The concrete subclass does not invoke these installers itself.
 
 | Type or class                          | Package          | Kind           | Purpose                                                                                             |
 | -------------------------------------- | ---------------- | -------------- | --------------------------------------------------------------------------------------------------- |
-| `IDomFormInstaller`                    | `jivs-dom`       | Interface      | Defines the public operation that installs one manager into a DOM region.                           |
-| `DomFormInstallerBase`                 | `jivs-dom`       | Abstract class | Coordinates discovery, element installation, and initial validation-state ARIA.                     |
+| `IJivsDomFormInstaller`                    | `jivs-dom`       | Interface      | Defines the public operation that installs one manager into a DOM region.                           |
+| `JivsDomFormInstallerBase`                 | `jivs-dom`       | Abstract class | Coordinates discovery, element installation, and initial validation-state ARIA.                     |
 | `FieldElementCollector`                | `jivs-dom`       | Class          | Aligns discovered field elements with FieldValueHosts and collects normalized installation records. |
 | `FormElementCollector`                 | `jivs-dom`       | Class          | Collects normalized form-presentation installation records.                                         |
 | `EditorElementInstallation`            | `jivs-dom`       | Interface      | Describes one discovered editor and its resolved field and options.                                 |
 | `FieldPresentationElementInstallation` | `jivs-dom`       | Interface      | Describes one discovered presentation-only field element.                                           |
 | `FormElementInstallation`              | `jivs-dom`       | Interface      | Describes one discovered form-presentation element.                                                 |
-| `SimpleDomFormInstaller`               | `jivs-simpledom` | Concrete class | Discovers elements using the SimpleDom markup convention.                                           |
+| `SimpleJivsDomFormInstaller`               | `jivs-simpledom` | Concrete class | Discovers elements using the SimpleDom markup convention.                                           |
 
-The three installation-record interfaces and both collectors are public. Applications may use the collectors without using `DomFormInstallerBase`.
+The three installation-record interfaces and both collectors are public. Applications may use the collectors without using `JivsDomFormInstallerBase`.
 
 ### Supported Field-Discovery Approaches
 
@@ -4212,7 +4211,7 @@ A missing field is logged at Warning level once for that Element Identifier. The
 fieldValueHost: null
 ```
 
-The public collections therefore preserve the complete discovery result. Elements decide how to handle unresolved records. `DomFormInstallerBase` skips them during installation.
+The public collections therefore preserve the complete discovery result. Elements decide how to handle unresolved records. `JivsDomFormInstallerBase` skips them during installation.
 
 #### Collection and Disposal Behavior
 
@@ -4224,7 +4223,7 @@ The collector owns installation records that reference DOM elements and FieldVal
 
 At minimum, `dispose()` nulls every retained `element` and `fieldValueHost` property. Other disposal mechanics are implementation details.
 
-`DomFormInstallerBase` is responsible for disposing the collectors it creates. An application using a collector independently assumes that responsibility itself.
+`JivsDomFormInstallerBase` is responsible for disposing the collectors it creates. An application using a collector independently assumes that responsibility itself.
 
 ### FormElementCollector
 
@@ -4264,18 +4263,18 @@ class FormElementCollector {
 }
 ```
 
-The collector does not require an `IValueHostsManager`. The manager is supplied later when `DomFormInstallerBase` invokes `IFormPresentationInstaller`.
+The collector does not require an `IValueHostsManager`. The manager is supplied later when `JivsDomFormInstallerBase` invokes `IFormPresentationInstaller`.
 
 It preserves every added record without duplicate detection.
 
 Its element is responsible for calling `dispose()` when finished. At minimum, disposal nulls every retained `element` property.
 
-### IDomFormInstaller and DomFormInstallerBase
+### IJivsDomFormInstaller and JivsDomFormInstallerBase
 
-`IDomFormInstaller` is the application-facing entry point.
+`IJivsDomFormInstaller` is the application-facing entry point.
 
 ```ts
-interface IDomFormInstaller {
+interface IJivsDomFormInstaller {
     install(valueHostsManager: IValueHostsManager, root?: HTMLElement): void;
 }
 ```
@@ -4284,10 +4283,10 @@ A form is the logical DOM region managed by one `IValueHostsManager`. It does no
 
 The application calls `install()` after constructing the manager. It may omit `root` for full installation or supply a root for a partial DOM region.
 
-`DomFormInstallerBase` implements this public operation. A subclass must supply the markup-specific portion by implementing `identifyFieldElements()` and `identifyFormElements()`.
+`JivsDomFormInstallerBase` implements this public operation. A subclass must supply the markup-specific portion by implementing `identifyFieldElements()` and `identifyFormElements()`.
 
 ```ts
-abstract class DomFormInstallerBase implements IDomFormInstaller {
+abstract class JivsDomFormInstallerBase implements IJivsDomFormInstaller {
     protected constructor(protected readonly domServices: IJivsDomServices) {
     }
 
@@ -4313,13 +4312,13 @@ The public and protected responsibilities are distinct:
 
 A subclass does not invoke the editor or presentation installers itself.
 
-`DomFormInstallerBase` directly creates the standard collectors for every installation call. Collector factories and protected collector-creation hooks are not required.
+`JivsDomFormInstallerBase` directly creates the standard collectors for every installation call. Collector factories and protected collector-creation hooks are not required.
 
 The base retains only `domServices`. It does not retain a manager, root, collectors, installation records, or installation state between calls.
 
 One installer instance may therefore be reused for multiple managers and repeated full or partial installations.
 
-`IJivsDomServices` does not expose or retain an `IDomFormInstaller`. Applications construct the appropriate concrete installer explicitly and supply its `IJivsDomServices`.
+`IJivsDomServices` does not expose or retain an `IJivsDomFormInstaller`. Applications construct the appropriate concrete installer explicitly and supply its `IJivsDomServices`.
 
 ### Developer Participation Workflow
 
@@ -4339,7 +4338,7 @@ flowchart TB
     COLLECTORS --> COMPLETE
 ```
 
-`jivs-simpledom` supplies `SimpleDomFormInstaller`, whose discovery methods interpret the SimpleDom attribute convention.
+`jivs-simpledom` supplies `SimpleJivsDomFormInstaller`, whose discovery methods interpret the SimpleDom attribute convention.
 
 An application using `jivs-dom` directly may instead create a form-specific subclass. Such a subclass may explicitly locate each element and call the collector methods with either an Element Identifier or a known `IFieldValueHost`.
 
@@ -4450,7 +4449,7 @@ These calls allow each newly installed visual presentation to immediately reflec
 
 The presentation installers also perform static ARIA installation. They do not perform the final field-level validation-state ARIA pass.
 
-After every collected element has been processed, `DomFormInstallerBase` obtains each distinct, non-null `IFieldValueHost` represented in the editor and presentation-only collections. It then calls:
+After every collected element has been processed, `JivsDomFormInstallerBase` obtains each distinct, non-null `IFieldValueHost` represented in the editor and presentation-only collections. It then calls:
 
 ```ts
 ariaService.applyValidationState(
@@ -4482,7 +4481,7 @@ The complete installation process produces these effects:
 | Initialize a form presentation                                        | `FormPresentationInstaller`                             | `valueHostsManager.currentValidationState(group)` |
 | Apply static field ARIA and retain its validation-state updater       | `FieldPresentationInstaller`                            | No                                                |
 | Apply static form ARIA                                                | `FormPresentationInstaller`                             | No                                                |
-| Apply initial validation-state ARIA for each distinct collected field | `DomFormInstallerBase`, through `IDomAriaService`       | `valueHost.currentValidationState`                |
+| Apply initial validation-state ARIA for each distinct collected field | `JivsDomFormInstallerBase`, through `IAriaService`       | `valueHost.currentValidationState`                |
 | Record completed installation on each element                         | The applicable editor or presentation installer         | No                                                |
 
 ### Failure Handling
@@ -4514,7 +4513,7 @@ Applications use the DOM services in this order:
 1. Configure `DomServices`, registrations, and Dispatcher Creators.
 2. Attach dispatcher callbacks to `ValueHostsManagerConfig`.
 3. Construct the `ValueHostsManager`.
-4. Construct or obtain the concrete `IDomFormInstaller`.
+4. Construct or obtain the concrete `IJivsDomFormInstaller`.
 5. Call `install(valueHostsManager, root?)`.
 6. Perform any application-specific `broadcastState()` call separately.
 
@@ -4622,10 +4621,10 @@ interface IJivsDomServices
         IEditorAdapterDefinitionFactory;
 
     fieldPresentationFactory:
-        IFieldPresentationFactory;
+        IPresentationFactory<IFieldPresentation>;
 
     formPresentationFactory:
-        IFormPresentationFactory;
+        IPresentationFactory<IFormPresentation>;
 
     editorInstaller:
         IEditorInstaller;
@@ -4637,7 +4636,7 @@ interface IJivsDomServices
         IFormPresentationInstaller;
 
     ariaService:
-        IDomAriaService | null;
+        IAriaService | null;
 
     issuesFoundFormatter:
         IIssuesFoundFormatterService;
@@ -4657,12 +4656,12 @@ interface IJivsDomServices
 
 `IJivsDomServices` does not expose:
 
-* an `IDomFormInstaller`;
+* an `IJivsDomFormInstaller`;
 * an element-resolver service;
 * separate Text Value or Native Value installers;
 * form-specific installation state.
 
-Applications construct the appropriate concrete `IDomFormInstaller` themselves.
+Applications construct the appropriate concrete `IJivsDomFormInstaller` themselves.
 
 ### Lazy Child-Service Construction
 
@@ -4860,17 +4859,17 @@ protected createEditorInstaller():
 
 ### ARIA Service Construction
 
-ARIA discovery depends on the DOM convention. `JivsDomServiceBase` therefore cannot construct a complete default `IDomAriaService`.
+ARIA discovery depends on the DOM convention. `JivsDomServiceBase` therefore cannot construct a complete default `IAriaService`.
 
 Its protected ARIA creation method is abstract and returns:
 
 ```ts
-IDomAriaService | null
+IAriaService | null
 ```
 
-`SimpleDomServices` returns `SimpleDomAriaService`.
+`SimpleDomServices` returns `SimpleAriaService`.
 
-An application-defined service subclass returns its own `AriaServiceBase` descendant or another complete `IDomAriaService` implementation. It may return `null` when the convention intentionally disables Jivs-managed ARIA behavior.
+An application-defined service subclass returns its own `AriaServiceBase` descendant or another complete `IAriaService` implementation. It may return `null` when the convention intentionally disables Jivs-managed ARIA behavior.
 
 The standard ARIA updater classes remain owned by `jivs-dom`. The concrete ARIA service registers the applicable standard updater instances during its construction.
 
@@ -4902,8 +4901,6 @@ interface IJivsDomServices {
 ```
 
 These methods are implemented by `JivsDomServiceBase`. A subclass overrides them when its markup convention requires different resolution.
-
-There is no `IDomElementResolver`.
 
 #### Container Resolution
 
@@ -4965,7 +4962,7 @@ An explicitly supplied `elementIdentifierTemplate` overrides the subclass’s no
 It supplies the convention-dependent parts of the service graph:
 
 * the four SimpleDom Dispatcher Creators;
-* `SimpleDomAriaService`;
+* `SimpleAriaService`;
 * role-based field-element resolution using the SimpleDom attribute convention.
 
 It inherits the standard:
@@ -4979,11 +4976,11 @@ It inherits the standard:
 * Issues Found formatter;
 * container-selector resolution.
 
-`SimpleDomServices` does not create or retain a `SimpleDomFormInstaller`. The application constructs that installer explicitly:
+`SimpleDomServices` does not create or retain a `SimpleJivsDomFormInstaller`. The application constructs that installer explicitly:
 
 ```ts
 const formInstaller =
-    new SimpleDomFormInstaller(domServices);
+    new SimpleJivsDomFormInstaller(domServices);
 ```
 
 ### Installation into JivsServices
@@ -5027,9 +5024,9 @@ Its child services remain lazy and are created when their properties are first r
 * exporting `SimpleDomServices`;
 * installing `SimpleDomServices` as the standard concrete DOM service;
 * supplying the four SimpleDom Dispatcher Creators;
-* supplying `SimpleDomAriaService`;
+* supplying `SimpleAriaService`;
 * supplying SimpleDom role-based field-element resolution;
-* exporting `SimpleDomFormInstaller`.
+* exporting `SimpleJivsDomFormInstaller`.
 
 An application using `jivs-dom` without SimpleDom is responsible for:
 
@@ -5195,7 +5192,7 @@ import {
 } from "@plblum/jivs-dom";
 
 import {
-    SimpleDomFormInstaller
+    SimpleJivsDomFormInstaller
 } from "@plblum/jivs-simpledom";
 ```
 
@@ -5421,9 +5418,9 @@ Recommended `jivs-simpledom` test areas include:
 * role discovery;
 * collector population;
 * SimpleDom dispatcher discovery;
-* `SimpleDomAriaService`;
+* `SimpleAriaService`;
 * `SimpleDomServices`;
-* `SimpleDomFormInstaller`;
+* `SimpleJivsDomFormInstaller`;
 * repeated and partial installation;
 * installation after DOM replacement.
 
@@ -5437,9 +5434,9 @@ Tests for `jivs-dom` must not use SimpleDom attributes unless the test is verify
 
 * SimpleDom attribute-name constants;
 * `SimpleDomServices`;
-* `SimpleDomFormInstaller`;
+* `SimpleJivsDomFormInstaller`;
 * concrete SimpleDom dispatcher classes;
-* `SimpleDomAriaService`;
+* `SimpleAriaService`;
 * public SimpleDom option types;
 * its CSS entry point.
 

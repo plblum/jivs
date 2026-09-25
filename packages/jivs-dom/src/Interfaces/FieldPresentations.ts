@@ -14,7 +14,7 @@ import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValue
 import { ValueHostValidationState } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
 import { IJivsDomElement } from "./IJivsDomElement";
 import { ElementRole } from './Types';
-import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
 
 /**
  * A field presentation translates one field’s current validation state into changes to one widget. 
@@ -71,7 +71,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getStaticAriaElementUpdater(): IDomAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null;
 
     /**
      * Allows a presentation whose generated HTML requires specialized accessibility behavior 
@@ -79,7 +79,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getValidationStateAriaElementUpdater(): IDomAriaValidationStateElementUpdater | null;
+    getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null;
 }
 
 /**
@@ -117,11 +117,11 @@ export interface FieldPresentationInstallOptions
      * The static ARIA updater to be used for the field presentation. 
      * If not specified, a default static ARIA updater will be used.
      */
-    staticAriaUpdater?: IDomAriaStaticElementUpdater | null;
+    staticAriaUpdater?: IAriaStaticElementUpdater | null;
 
     /**
      * The validation state ARIA updater to be used for the field presentation.
      * If not specified, a default validation state ARIA updater will be used.
      */
-    validationStateAriaUpdater?: IDomAriaValidationStateElementUpdater | null;
+    validationStateAriaUpdater?: IAriaValidationStateElementUpdater | null;
 }

@@ -8,10 +8,10 @@
  */
 
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IDomAriaStaticElementUpdater, IDomAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
 import { EditorInstallOptions } from './EditorInstaller';
 import { IJivsDomElement } from "./IJivsDomElement";
-import { IDomTextValueAdapter, IDomValueAdapter } from './Adapters';
+import { ITextValueAdapter, IValueAdapter } from './Adapters';
 import { IJivsDomServices } from './JivsDomServices';
 
 
@@ -96,30 +96,30 @@ export interface IEditorAdapterDefinition
     resolveInstallationAnchor(valueHost: IFieldValueHost, element: IJivsDomElement): IJivsDomElement;
 
     /**
-     * Creates a suitable IDomTextValueAdapter for the given value host and installation anchor.
+     * Creates a suitable ITextValueAdapter for the given value host and installation anchor.
      * @param valueHost The field value host associated with the installation.
      * @param anchor The DOM element serving as the installation anchor.
-     * @returns A suitable IDomTextValueAdapter instance, or null if none can be created.
+     * @returns A suitable ITextValueAdapter instance, or null if none can be created.
      * This method may return null if no suitable adapter can be created for the given value host and anchor.
      */
-    createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomTextValueAdapter | null;
+    createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): ITextValueAdapter | null;
 
     /**
-     * Creates a suitable IDomValueAdapter for the given value host and installation anchor.
+     * Creates a suitable IValueAdapter for the given value host and installation anchor.
      * @param valueHost The field value host associated with the installation.
      * @param anchor The DOM element serving as the installation anchor.
-     * @returns A suitable IDomValueAdapter instance, or null if none can be created.
+     * @returns A suitable IValueAdapter instance, or null if none can be created.
      */
-    createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IDomValueAdapter | null;
+    createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null;
 
     /**
      * Gets the static ARIA element updater associated with this adapter definition, if any.
      * The static ARIA element updater is responsible for managing ARIA attributes on the associated DOM element
      * without regard to validation state. Its run once, during installation of the editor.
      * This instance is considered immutable.
-     * @returns An IDomAriaStaticElementUpdater instance, or null if none is available.
+     * @returns An IAriaStaticElementUpdater instance, or null if none is available.
      */
-    getStaticAriaElementUpdater?(): IDomAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater?(): IAriaStaticElementUpdater | null;
 
     /**
      * Gets the validation state ARIA element updater associated with this adapter definition, if any.
@@ -127,9 +127,9 @@ export interface IEditorAdapterDefinition
      * on the associated DOM element
      * based on the validation state of the editor.
      * This instance is considered immutable.
-     * @returns An IDomAriaValidationStateElementUpdater instance, or null if none is available.
+     * @returns An IAriaValidationStateElementUpdater instance, or null if none is available.
      */
-    getValidationStateAriaElementUpdater?(): IDomAriaValidationStateElementUpdater | null;
+    getValidationStateAriaElementUpdater?(): IAriaValidationStateElementUpdater | null;
 
     /**
      * The EditorInstaller uses this method to attach the editor to the send values mechanism

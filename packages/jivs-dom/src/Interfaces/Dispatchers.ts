@@ -3,8 +3,8 @@
  * Each is an intermediary between the ValueHostManager and either an Adapter or Presentation object,
  * already attached to the element in their IJivsDomElement interface properties.
  * 
- * - onTextValueChanged -> ITextValueDispatcher -> IDomTextValueAdapters
- * - onValueChanged -> IValueDispatcher -> IDomValueAdapters
+ * - onTextValueChanged -> ITextValueDispatcher -> ITextValueAdapters
+ * - onValueChanged -> IValueDispatcher -> IValueAdapters
  * - onValueHostValidationStateChanged -> IFieldValidationDispatcher -> IFieldPresentation
  * - onValidationStateChanged -> IFormValidationDispatcher -> IFormPresentation
  * 
@@ -28,7 +28,7 @@ import { IValueHostsManager, ValueHostsManagerConfig } from "@plblum/jivs-engine
 /**
  * Connected to ValueHostsManager.onTextValueChanged handler to route
  * the change to elements associated with the valueHost.
- * Its destination are IDomTextValueAdapters. 
+ * Its destination are ITextValueAdapters. 
  * Each element it finds must have its IJivsDomElement.jivsTextValueAdapter assigned
  * if it gets dispatched to.
  * 
@@ -40,7 +40,7 @@ export interface ITextValueDispatcher
 {
     /**
      * Handles the onTextValueChanged callback directly, routing the change to
-     * IDomTextValueAdapters. An element found must also have its 
+     * ITextValueAdapters. An element found must also have its 
      * IJivsDomElement.jivsTextValueAdapter assigned, and that adapter will be run.
      * @param valueHost 
      * @param oldTextValue 
@@ -51,7 +51,7 @@ export interface ITextValueDispatcher
 /**
  * Connected to ValueHostsManager.onValueChanged handler to route
  * the change to elements associated with the valueHost.
- * Its destination are IDomValueAdapters. 
+ * Its destination are IValueAdapters. 
  * Each element it finds must have its IJivsDomElement.jivsValueAdapter assigned
  * if it gets dispatched to.
  *
@@ -63,7 +63,7 @@ export interface IValueDispatcher
 {
     /**
      * Handles the onValueChanged callback directly, routing the change to
-     * IDomValueAdapters. An element found must also have its 
+     * IValueAdapters. An element found must also have its 
      * IJivsDomElement.jivsValueAdapter assigned, and that adapter will be run.
      * @param valueHost The host object containing the field's value.
      * @param oldValue The previous value of the field.
@@ -92,7 +92,7 @@ export interface IFieldValidationDispatcher
      * The dispatcher does not interpret validation groups. Group routing belongs 
      * to the installed form presentation.
      * 
-     * Form dispatch does not invoke `IDomAriaService`. 
+     * Form dispatch does not invoke `IAriaService`. 
      * Form-role ARIA is static and is applied during installation.
      * 
      * @param valueHost The host object containing the field's value.

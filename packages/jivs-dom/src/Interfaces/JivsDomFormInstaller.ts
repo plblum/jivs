@@ -25,15 +25,15 @@ import { ElementRole } from './Types';
  * then calls either the IEditorInstaller, IFieldPresentationInstaller, or 
  * IFormPresentationInstaller depending on the specified role.
  */
-export interface IDomFormInstaller
+export interface IJivsDomFormInstaller
 {
     install(valueHostsManager: IValueHostsManager, root?: HTMLElement): void;
 }
 
 
 /**
- * Used by IDomFormInstaller to collect field-related DOM elements for editors and presentations.
- * It builds two lists, editors and presentations. The IDomFormInstaller determines
+ * Used by IJivsDomFormInstaller to collect field-related DOM elements for editors and presentations.
+ * It builds two lists, editors and presentations. The IJivsDomFormInstaller determines
  * how to consume them.
  */
 export interface IFieldElementCollector
@@ -79,8 +79,8 @@ export interface FieldPresentationElementInstallation
 }
 
 /**
- * Used by IDomFormInstaller to collect form-related DOM elements for presentations.
- * The IDomFormInstaller determines how to consume them.
+ * Used by IJivsDomFormInstaller to collect form-related DOM elements for presentations.
+ * The IJivsDomFormInstaller determines how to consume them.
  */
 export interface IFormElementCollector
 {
