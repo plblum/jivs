@@ -30,11 +30,9 @@ export type FormDispatcher = (
 It is attached to the `ValueHostsManager` through its `onValidationStateChanged` callback:
 
 ```ts
-config.onValidationStateChanged = yourFormDispatcher;
-
 const vhm = new ValueHostsManager(config);
+vhm.onValidationStateChanged = yourFormDispatcher;
 ```
-
 This Form Dispatcher Function locates every Jivs SimpleDom form validation consumer and calls its `onFormValidationStateChanged` Presentation Function:
 
 ```ts

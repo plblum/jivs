@@ -77,7 +77,7 @@ import { ValueHostConfigBuilder } from './ValueHostConfigBuilder';
  * builder.field('birthdate', LookupKey.Date, { label: 'Birth date' })
  *        .lessThan(valueHost('today'));
  * builder.static('today', LookupKey.Date, { initialValue: new Date() });
- * let vhm = new ValueHostsManager(builder); // consider builder disposed at this point
+ * let vhm = new ValueHostsManager(builder.complete()); // consider builder disposed at this point
  * ```
  */
 export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig>

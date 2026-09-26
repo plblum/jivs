@@ -145,13 +145,10 @@ They are wired onto the configuration before the `ValueHostsManager` is created:
 
 ```ts
 const config = rules.configure();
-
-config.onTextValueChanged = onTextValueChanged;
-config.onValueHostValidationStateChanged =
-    onValueHostValidationStateChanged;
-config.onValidationStateChanged = onValidationStateChanged;
-
 const vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = your_onTextValueChanged_handler;
+vhm.onValueHostValidationStateChanged = your_onValueHostValidationStateChanged_handler;
+vhm.onValidationStateChanged = your_onValidationStateChanged_handler;
 ```
 
 The examples below keep the application code intentionally lightweight. They show how Jivs communicates with the UI, not how the final presentation should look.

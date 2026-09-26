@@ -9,7 +9,7 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
 import { IValidatableValueHost, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
-import { IValueHostsManager, ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { DispatcherCreator, IDispatcherService, IFieldValidationDispatcher, IFormValidationDispatcher, ITextValueDispatcher, IValueDispatcher } from '../Interfaces/Dispatchers';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { DomServiceBase } from '../Services/DomServiceBase';
@@ -116,29 +116,29 @@ export class DispatcherService extends DomServiceBase
      * through to the dispatcher. It always assumes selector = undefined.
      * If selector is needed, use the dispatcher-specific attach functions instead.
      */
-    public attach(config: ValueHostsManagerConfig, addTextValueChanged?: boolean, addValueChanged?: boolean): void
+    public attach(valueHostsManager: IValueHostsManager, addTextValueChanged?: boolean, addValueChanged?: boolean): void
     {
-        this.attachValueHostValidationStateChanged(config);
-        this.attachValidationStateChanged(config);
+        this.attachValueHostValidationStateChanged(valueHostsManager);
+        this.attachValidationStateChanged(valueHostsManager);
         if (addTextValueChanged)
         {
-            this.attachTextValueChanged(config);
+            this.attachTextValueChanged(valueHostsManager);
         }
         if (addValueChanged)
         {
-            this.attachValueChanged(config);
+            this.attachValueChanged(valueHostsManager);
         }
     }
 
     /**
-     * Attaches a ITextValueDispatcher to ValueHostsManagerConfig.onTextValueChanged callback.
-     * This allows the dispatcher to respond to text value changes in the value hosts managed by the configuration.
+     * Attaches a ITextValueDispatcher to IValueHostsManager.onTextValueChanged callback.
+     * This allows the dispatcher to respond to text value changes in the value hosts managed by the value hosts manager.
      * If onTextValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached ITextValueDispatcher instance, or null if none could be attached.
      */
-    public attachTextValueChanged(config: ValueHostsManagerConfig, selector?: string): ITextValueDispatcher | null
+    public attachTextValueChanged(valueHostsManager: IValueHostsManager, selector?: string): ITextValueDispatcher | null
     {
         let dispatcherCreator = this.textValueDispatcherRegistry.get(selector ?? '');
         if (!dispatcherCreator)
@@ -146,9 +146,9 @@ export class DispatcherService extends DomServiceBase
             this.logger().message(LoggingLevel.Warn, ()=> `No ITextValueDispatcher registered for selector: '${selector ?? ''}'`);
             return null;
         }
-        let savedOnTextValueChanged = config.onTextValueChanged;
+        let savedOnTextValueChanged = valueHostsManager.onTextValueChanged;
         let dispatcher = dispatcherCreator();
-        config.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue?: string | null) =>
+        valueHostsManager.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue?: string | null) =>
         {
             savedOnTextValueChanged?.apply(this, [valueHost, oldValue]);
             dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
@@ -158,14 +158,14 @@ export class DispatcherService extends DomServiceBase
     }
 
     /**
-     * Attaches a IValueDispatcher to ValueHostsManagerConfig.onValueChanged callback.
-     * This allows the dispatcher to respond to value changes in the value hosts managed by the configuration.
+     * Attaches a IValueDispatcher to IValueHostsManager.onValueChanged callback.
+     * This allows the dispatcher to respond to value changes in the value hosts managed by the value hosts manager.
      * If onValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IValueDispatcher instance, or null if none could be attached.
      */
-    public attachValueChanged(config: ValueHostsManagerConfig, selector?: string): IValueDispatcher | null
+    public attachValueChanged(valueHostsManager: IValueHostsManager, selector?: string): IValueDispatcher | null
     {
         let dispatcherCreator = this.valueDispatcherRegistry.get(selector ?? '');
         if (!dispatcherCreator)
@@ -173,9 +173,9 @@ export class DispatcherService extends DomServiceBase
             this.logger().message(LoggingLevel.Warn, ()=> `No IValueDispatcher registered for selector: '${selector ?? ''}'`);
             return null;
         }
-        let savedOnValueChanged = config.onValueChanged;
+        let savedOnValueChanged = valueHostsManager.onValueChanged;
         let dispatcher = dispatcherCreator();
-        config.onValueChanged = (valueHost: IValueHost, oldValue?: any) =>
+        valueHostsManager.onValueChanged = (valueHost: IValueHost, oldValue?: any) =>
         {
             savedOnValueChanged?.apply(this, [valueHost, oldValue]);
             dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
@@ -185,14 +185,14 @@ export class DispatcherService extends DomServiceBase
     
 
     /**
-     * Attaches a IFieldValidationDispatcher to ValueHostsManagerConfig.onValueHostValidationStateChanged callback.
-     * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the configuration.
+     * Attaches a IFieldValidationDispatcher to IValueHostsManager.onValueHostValidationStateChanged callback.
+     * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the value hosts manager.
      * If onValueHostValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFieldValidationDispatcher instance, or null if none could be attached.
      */
-    public attachValueHostValidationStateChanged(config: ValueHostsManagerConfig, selector?: string): IFieldValidationDispatcher | null
+    public attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFieldValidationDispatcher | null
     {
         let dispatcherCreator = this.fieldValidationDispatcherRegistry.get(selector ?? '');
         if (!dispatcherCreator)
@@ -200,9 +200,9 @@ export class DispatcherService extends DomServiceBase
             this.logger().message(LoggingLevel.Warn, ()=> `No IFieldValidationDispatcher registered for selector: '${selector ?? ''}'`);
             return null;
         }
-        let savedOnValueHostValidationStateChanged = config.onValueHostValidationStateChanged;
+        let savedOnValueHostValidationStateChanged = valueHostsManager.onValueHostValidationStateChanged;
         let dispatcher = dispatcherCreator();
-        config.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, state: ValueHostValidationState) =>
+        valueHostsManager.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, state: ValueHostValidationState) =>
         {
             savedOnValueHostValidationStateChanged?.apply(this, [valueHost, state]);
             dispatcher.dispatch(valueHost as IFieldValueHost, state);
@@ -211,14 +211,14 @@ export class DispatcherService extends DomServiceBase
     }
 
     /**
-     * Attaches a IFormValidationDispatcher to ValueHostsManagerConfig.onValidationStateChanged callback.
-     * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the configuration.
+     * Attaches a IFormValidationDispatcher to IValueHostsManager.onValidationStateChanged callback.
+     * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the value hosts manager.
      * If onValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFormValidationDispatcher instance, or null if none could be attached.
      */
-    public attachValidationStateChanged(config: ValueHostsManagerConfig, selector?: string): IFormValidationDispatcher | null
+    public attachValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFormValidationDispatcher | null
     {
         let dispatcherCreator = this.formValidationDispatcherRegistry.get(selector ?? '');
         if (!dispatcherCreator)
@@ -226,9 +226,9 @@ export class DispatcherService extends DomServiceBase
             this.logger().message(LoggingLevel.Warn, ()=> `No IFormValidationDispatcher registered for selector: '${selector ?? ''}'`);
             return null;
         }
-        let savedOnValidationStateChanged = config.onValidationStateChanged;
+        let savedOnValidationStateChanged = valueHostsManager.onValidationStateChanged;
         let dispatcher = dispatcherCreator();
-        config.onValidationStateChanged = (valueHostsManager: IValueHostsManager, state: ValidationState) =>
+        valueHostsManager.onValidationStateChanged = (valueHostsManager: IValueHostsManager, state: ValidationState) =>
         {
             savedOnValidationStateChanged?.apply(this, [valueHostsManager, state]);
             dispatcher.dispatch(valueHostsManager, state);

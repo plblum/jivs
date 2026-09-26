@@ -18,10 +18,8 @@ The examples assume that the application has configured its ValueHost Rules. Eac
 const services = createJivsServices('en-US');
 const rules = new SomeRulesObject(services);
 const config = rules.configure();
-
-// Assign any callbacks required by the initialization flow.
-
 const vhm = new ValueHostsManager(config);
+// set up ValueHostsManager callbacks and establish UI behaviors
 ```
 
 For more, see [Intro to Creating a ValueHostsManager](Intro_to_Creating_a_ValueHostsManager.md).

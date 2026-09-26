@@ -1,28 +1,32 @@
 import { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostRulesBase } from '@plblum/jivs-builder/build/ValueHostRules/ValueHostRules';
-import {
-  RequireTextCondition, RequireTextConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import {
-  LessThanOrEqualCondition,
-  LessThanOrEqualConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        LessThanCondition,
+        LessThanConditionConfig,
+        LessThanOrEqualCondition,
+        LessThanOrEqualConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        RequireTextCondition, RequireTextConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { UTCDateOnlyConverter } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { ShortDatePatternParser } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import {
-  DateRangeFormRules,
-  example_hasErrors_report_to_log, example_throwOnErrors,
-  example_throwOnErrors_And_Write_To_Console, example_throwOnErrors_And_Write_To_Log, reportToConsole
-} from '../../examples/Using_ConfigAnalysis';
+import
+    {
+        DateRangeFormRules,
+        example_hasErrors_report_to_log, example_throwOnErrors,
+        example_throwOnErrors_And_Write_To_Console, example_throwOnErrors_And_Write_To_Log, reportToConsole
+    } from '../../examples/Using_ConfigAnalysis';
 import { createMinimalJivsServices } from '../../examples/support';
 import { installConfigAnalysisService } from '../../src/ConfigAnalysisService';
 import { JsonConsoleConfigAnalysisOutputter } from '../../src/Explorer/Outputters/ConfigAnalysisOutputterClasses';
 import { CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
-import { LessThanConditionConfig, LessThanCondition } from '@plblum/jivs-engine/src/Conditions/ComparisonCondition_classes';
 
 
 /**

@@ -86,7 +86,7 @@ import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
  */
 
 export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = ValueHostsManagerInstanceState>
-    implements IValueHostsManager, IValueHostsManagerCallbacks {
+    implements IValueHostsManager {
     /**
      * Constructor
      * @param config - Provides ValueHostsManager with numerous configuration settings.
@@ -102,11 +102,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      *     // to the ValueHostsManager
      *      ],
      *   capturedState?: string,
-     *   onValidationStateChanged: (valueHostsManager, validationState)=> { },
-     *   onValueHostValidationStateChanged: (valueHost, valueHostValidationState) => { },
-     *   onValueChanged: (valueHost, oldValue) => { },
-     *   onTextValueChanged: (valueHost, oldValue) => { }
-     *   onConfigChanged: (valueHost, valueHostConfig) => { }
      * }
      * ```
      */
@@ -129,12 +124,9 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
         const configs = internalConfig.valueHostConfigs ?? [];
 
-        const saveOnChangeConfig = this.onConfigChanged;
-        this._config.onConfigChanged = null;
         for (const item of configs) {
             this.addValueHost(item as ValueHostConfig, null);   // will get its instance state from _lastValueHostInstanceStates
         }
-        this._config.onConfigChanged = saveOnChangeConfig;
     }
 
     public static safeConfigClone(config: ValueHostsManagerConfig): ValueHostsManagerConfig {
@@ -548,14 +540,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     //#region IValueHostsManagerCallbacks
     protected resolveCallback<T>(callback: T | null | undefined, name: string): T | null {
         if (callback) {
-            this.logger.message(LoggingLevel.Info, () => name);
+            this.logger.message(LoggingLevel.Debug, () => name);
             return callback;
         }
         return null;
     }
     /**
-     * Use this when caching the configuration for a later creation of ValueHostsManager.
-     * 
      * Called when the configuration of ValueHosts has been changed by these members
      * of ValueHostsManager: addValueHost, addOrUpdateValueHost, addOrMergeValueHost,
      * discardValueHost.
@@ -563,8 +553,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      */
     public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
 
-        return this.resolveCallback<ValueHostsManagerConfigChangedHandler>(this.config.onConfigChanged, 'onConfigChanged');
+        return this.resolveCallback<ValueHostsManagerConfigChangedHandler>(this._onConfigChanged, 'onConfigChanged');
     }
+    public set onConfigChanged(callback: ValueHostsManagerConfigChangedHandler | null) {
+        this._onConfigChanged = callback;
+    }
+    private _onConfigChanged: ValueHostsManagerConfigChangedHandler | null = null;
 
     /**
      * Called when the ValueHost's Value property has changed.
@@ -574,8 +568,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Here, it aggregates all ValueHost notifications.
      */
     public get onValueChanged(): ValueChangedHandler | null {
-        return this.resolveCallback<ValueChangedHandler>(this.config.onValueChanged, 'onValueChanged');
+        return this.resolveCallback<ValueChangedHandler>(this._onValueChanged, 'onValueChanged');
     }
+    public set onValueChanged(callback: ValueChangedHandler | null) {
+        this._onValueChanged = callback;
+    }
+    private _onValueChanged: ValueChangedHandler | null = null;
+
+
     /**
      * Called when the FieldValueHost's text value has changed.
      * If setup, you can prevent it from being fired with the options parameter of setValue()
@@ -584,8 +584,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Here, it aggregates all FieldValueHost notifications.
      */
     public get onTextValueChanged(): TextValueChangedHandler | null {
-        return this.resolveCallback<TextValueChangedHandler>(this.config.onTextValueChanged, 'onTextValueChanged');
+        return this.resolveCallback<TextValueChangedHandler>(this._onTextValueChanged, 'onTextValueChanged');
     }
+    public set onTextValueChanged(callback: TextValueChangedHandler | null) {
+        this._onTextValueChanged = callback;
+    }
+    private _onTextValueChanged: TextValueChangedHandler | null = null;
+
     //#endregion IValueHostsManagerCallbacks
     /**
      * Retrieves the ValidatorsValueHostBase of the identified by valueHostName
@@ -735,11 +740,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
             return;
 
         if (!this._debounceVHValidated) {
-            const delay = this.config.notifyValidationStateChangedDelay ?? DefaultNotifyValidationStateChangedDelay;
+            const delay = this.notifyValidationStateChangedDelay;
             if (delay && !force)
                 this._debounceVHValidated = new Debouncer<notifyValidationStateChangedWorkerHandler>(
-                    this.notifyValidationStateChangedWorker.bind(this),
-                    delay);
+                    this.notifyValidationStateChangedWorker.bind(this), delay);
             else {
                 this.notifyValidationStateChangedWorker(validationState, options);
                 return;
@@ -753,6 +757,27 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     }
 
     private _debounceVHValidated: Debouncer<notifyValidationStateChangedWorkerHandler> | null = null;
+
+    /**
+     * Provides a debounce delay for onValidationStateChanged notifications. The delay is in milliseconds.
+     * 
+     * onValidationStateChanged runs after each valueHost.validate() call, even though onValueHostValidationStateChanged also runs.
+     * Some features need to know about the general change to the validation state, not just
+     * on the individual field. So they expect onValidationStateChanged to run after valueHost.validate() runs.
+     * A call by ValueHostsManager.validate() will validate a list of valueHosts, and
+     * all of them will try to invoke onValidationStateChanged. That's too many in a short period.
+     * This debounces them so ValueHostsManager.validated() generally has one call.
+     * 
+     * Leave undefined to use the default of defaultNotifyValidationStateChangedDelay.
+     * Set to 0 to disable the debounce.
+     */    
+    public get notifyValidationStateChangedDelay(): number {
+        return this._notifyValidationStateChangedDelay ?? DefaultNotifyValidationStateChangedDelay;
+    }
+    public set notifyValidationStateChangedDelay(value: number) {
+        this._notifyValidationStateChangedDelay = value;
+    }
+    private _notifyValidationStateChangedDelay: number | null = null;
 
     /**
      * When true, the current state of validation does not know of any errors. 
@@ -1048,8 +1073,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Use to change the disabled state of the submit button based on validity.
      */
     public get onValidationStateChanged(): ValidationStateChangedHandler | null {
-        return this.resolveCallback<ValidationStateChangedHandler>(this.config.onValidationStateChanged, 'onValidationStateChanged');
+        return this.resolveCallback<ValidationStateChangedHandler>(this._onValidationStateChanged, 'onValidationStateChanged');
     }
+    public set onValidationStateChanged(value: ValidationStateChangedHandler | null) {
+        this._onValidationStateChanged = value;
+    }
+    private _onValidationStateChanged: ValidationStateChangedHandler | null = null;
 
     /**
      * Called when ValueHost's validate() function has returned.
@@ -1062,8 +1091,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Here, it aggregates all ValueHost notifications.
      */
     public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
-        return this.resolveCallback<ValueHostValidationStateChangedHandler>(this.config.onValueHostValidationStateChanged, 'onValueHostValidationStateChanged');
+        return this.resolveCallback<ValueHostValidationStateChangedHandler>(this._onValueHostValidationStateChanged, 'onValueHostValidationStateChanged');
     }
+    public set onValueHostValidationStateChanged(value: ValueHostValidationStateChangedHandler | null) {
+        this._onValueHostValidationStateChanged = value;
+    }
+    private _onValueHostValidationStateChanged: ValueHostValidationStateChangedHandler | null = null;
 
     //#endregion IValueHostsManagerCallbacks
 

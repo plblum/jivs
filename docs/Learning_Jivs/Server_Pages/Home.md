@@ -252,11 +252,10 @@ const config = rules.configure();
 
 // A restoring workflow assigns config.capturedState here.
 
-config.onTextValueChanged = onTextValueChanged; // optional
-config.onValueHostValidationStateChanged = fieldValidated;
-config.onValidationStateChanged = formValidated;
-
 const vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = onTextValueChanged; // optional
+vhm.onValueHostValidationStateChanged = fieldValidated;
+vhm.onValidationStateChanged = formValidated;
 
 // Some workflows call reconcileValueHostsWithEditors(vhm, options) here
 

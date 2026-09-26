@@ -2530,11 +2530,11 @@ export class JivsForm implements IJivsForm {
         this._services = services;
         this._valueHostsManager = new ValueHostsManager(config);
 
-        config.onValidationStateChanged =
+        this._valueHostsManager.onValidationStateChanged =
             (valueHostsManager: IValueHostsManager, validationState: ValidationState) : void => {
             this._validationStateSubject.next(validationState);
         };
-        config.onValueHostValidationStateChanged =
+        this._valueHostsManager.onValueHostValidationStateChanged =
             (valueHost: IValueHost, validationState: ValueHostValidationState) : void => {
             this._valueHostValidationStateSubject.next({ valueHostName: valueHost.getName(), validationState });
         };

@@ -146,12 +146,12 @@ Your `ValueHost` configuration determines if formatting will happen.
         elementIdentifier: 'idForBirthdate'  // hold the id attribute value of the input if different from the ValueHost name
     });
     let config = builder.completed();
-    config.onTextValueChanged = (fieldValueHost, oldValue)=>{
+    let vhm = new ValueHostsManager(config);
+    vhm.onTextValueChanged = (fieldValueHost, oldValue)=>{
         let newTextValue = fieldValueHost.getTextValue();
         // assign it to the input's value attribute
         document.getElementById(fieldValueHost.getElementIdentifier()).value = newTextValue;
     };
-    let vhm = new ValueHostsManager(config);
     // suppose your have a model object with a 'BirthDate' property
     vhm.getValueHost('BirthDate').setValue(model.BirthDate);  // triggers onTextValueChanged
     ```
@@ -163,7 +163,7 @@ Your `ValueHost` configuration determines if formatting will happen.
 ### setTextValue() function
 Set the text value on a `FieldValueHost`. 
 - Optionally applies a `DataTypeParser` and sets the native value from the result.
-- Optionally reformats the text value and calls `onTextValueChanged` callback hook
+- Optionally reformats the text value and invokes `ValueHostsManager.onTextValueChanged` callback hook
 so you can direct it to the editor.
 
 _Use Cases:_
@@ -343,7 +343,7 @@ interface FieldValueHostSetValueOptions extends SetValueOptions
 These properties are all related to validation:
 - `validate` - When true, invoke validation but only if the value changed. Only supported by validatable `ValueHosts`.
 - `reset` - When true, change the state of the `ValueHost` to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
-- `skipValueChangedCallback` - When true, the `onValueChanged` and `onTextValueChanged` callbacks will not be invoked.
+- `skipValueChangedCallback` - When true, the `ValueHostsManager.onValueChanged` and `ValueHostsManager.onTextValueChanged` callbacks will not be invoked.
 - `duringEdit` - Set to true for an intermediate edit activity rather than a completed change.
      For example, on the client side this may be used for an HTMLInputElement.oninput event,
      where the user is still editing. In this mode, only validators intended for in-progress

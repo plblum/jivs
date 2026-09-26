@@ -383,11 +383,12 @@ describe('ModelReader', () =>
                         modelReaderRule: { when: 'null', then: 'skip'}
                     }
                 ],
-                onTextValueChanged: (valueHost, newValue) => { onTextValueChangedCounter++; },
-                onValueChanged: (valueHost, newValue) => { onValueChangedCounter++; }
             };
 
             let valueHostsManager = new ValueHostsManager(config);
+            valueHostsManager.onTextValueChanged = (valueHost, newValue) => { onTextValueChangedCounter++; };
+            valueHostsManager.onValueChanged = (valueHost, newValue) => { onValueChangedCounter++; };
+
             let valueHost = valueHostsManager.getFieldValueHost('prop1')!;
 
             let reader = new PublicifyModelReader(valueHostsManager, model, options);
@@ -692,11 +693,11 @@ describe('FormReader', () =>
                     dataType: LookupKey.Number
                 }
             ],
-            onTextValueChanged: (valueHost, newValue) => { onTextValueChangedCounter++; },
-            onValueChanged: (valueHost, newValue) => { onValueChangedCounter++; }
         };
 
         let valueHostsManager = new ValueHostsManager(config);
+        valueHostsManager.onTextValueChanged = (valueHost, newValue) => { onTextValueChangedCounter++; };
+        valueHostsManager.onValueChanged = (valueHost, newValue) => { onValueChangedCounter++; };
         let valueHost = valueHostsManager.getFieldValueHost('prop1')!;
 
         let reader = new FormReader(valueHostsManager, model, options);

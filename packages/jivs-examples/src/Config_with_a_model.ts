@@ -13,7 +13,7 @@
      from within its adaptToForm() method.
   Phase 3
      Create the ValueHostsManager through the class from Phase 2.
-     Wire up any callbacks from the ValueHostsManagerConfig object to your UI layer.
+     Wire up any callbacks from the ValueHostsManager object to your UI layer.
  
   You will see all three phases in this example.
 */
@@ -96,8 +96,8 @@ export function configPersonEditFormRules(): ValueHostsManager
     let services = createJivsServices('en');
     let rules = new PersonEditFormRules(services);
     let config = rules.configure();
-    config.onValueChanged = onValueChangedHandler; 
     let vhm = new ValueHostsManager(config);
+    vhm.onValueChanged = onValueChangedHandler; 
 
     // at this point, use the ValueHostsManager to validate your model.
     return vhm;

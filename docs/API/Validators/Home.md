@@ -41,11 +41,9 @@ export class PersonModelRules extends ValueHostRulesBase {
 const services = createJivsServices('en-US');
 const rules = new PersonModelRules(services);
 const config = rules.configure();
-
-config.onValueHostsValidationStateChanged = fieldValidated; // your function
-config.onValidationStateChanged = formValidated; // your function
-
 const vhm = new ValueHostsManager(config);
+vhm.onValueHostsValidationStateChanged = fieldValidated; // your function
+vhm.onValidationStateChanged = formValidated; // your function
 // user submits the form
 vhm.validate(); // will invoke both callbacks, which is how the UI knows to show Validation State
 

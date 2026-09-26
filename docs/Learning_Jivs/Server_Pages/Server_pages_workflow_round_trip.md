@@ -99,11 +99,10 @@ const config = rules.configure();
 
 config.capturedState = capturedStateInput.value;
 
-config.onTextValueChanged = onTextValueChanged;
-config.onValueHostValidationStateChanged = fieldValidated;
-config.onValidationStateChanged = formValidated;
-
 const vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = onTextValueChanged;
+vhm.onValueHostValidationStateChanged = fieldValidated;
+vhm.onValidationStateChanged = formValidated;
 ```
 
 The constructor restores the state available for the configured ValueHosts. This is not initial Page Load, so do not initialize the `ValueHostsManager` from the form elements.

@@ -118,11 +118,10 @@ const config = rules.configure();
 
 config.capturedState = capturedStateInput.value;
 
-config.onTextValueChanged = onTextValueChanged; // optional
-config.onValueHostValidationStateChanged = fieldValidated;
-config.onValidationStateChanged = formValidated;
-
 const vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = onTextValueChanged; // optional
+vhm.onValueHostValidationStateChanged = fieldValidated;
+vhm.onValidationStateChanged = formValidated;
 
 attachEditorEventHandlers(vhm);
 attachPresentationHandlers(vhm);

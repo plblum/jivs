@@ -38,7 +38,7 @@ import { IValueHostResolver } from './ValueHostResolver';
 /**
  * Interface from which to implement a ValueHostsManager.
  */
-export interface IValueHostsManager extends IValueHostResolver {
+export interface IValueHostsManager extends IValueHostResolver, IValueHostsManagerCallbacks {
     /**
      * Provides access to JivsServices (override IServices).
      */
@@ -382,7 +382,7 @@ export interface ValueHostsManagerInstanceState {
 /**
  * Provides the configuration for the ValueHostsManager constructor
  */
-export interface ValueHostsManagerConfig extends IValueHostsManagerCallbacks
+export interface ValueHostsManagerConfig
 {
 
     /**

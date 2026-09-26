@@ -291,16 +291,15 @@ describe('constructor and initial property values', () => {
     test('Callbacks supplied. Other parameters are null', () => {
         let setup: ValueHostsManagerConfig = {
             services: new MockJivsServices(false, false),
-            valueHostConfigs: [],
-            onValidationStateChanged: (valueHostsManager: IValueHostsManager, validationState: ValidationState) => { },
-            onValueHostValidationStateChanged: (valueHost: IValidatableValueHost, snapshot: ValueHostValidationState) => { },
-            onValueChanged: (valueHost: IValueHost, oldValue: any) => { },
-            onTextValueChanged: (valueHost: IValidatableValueHost, oldValue: any) => { },
-            onConfigChanged: (manager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>) => { }
+            valueHostConfigs: []
         };
 
-        let testItem: Publicify_ValueHostsManager | null = null;
-        expect(() => testItem = new Publicify_ValueHostsManager(setup)).not.toThrow();
+        let testItem: Publicify_ValueHostsManager = new Publicify_ValueHostsManager(setup);
+        testItem.onValidationStateChanged = (valueHostsManager: IValueHostsManager, validationState: ValidationState) => { };
+        testItem.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, snapshot: ValueHostValidationState) => { };
+        testItem.onValueChanged = (valueHost: IValueHost, oldValue: any) => { };
+        testItem.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue: any) => { };
+        testItem.onConfigChanged = (manager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>) => { };
 
         // other tests will confirm that the function correctly runs
         expect(testItem!.onValidationStateChanged).not.toBeNull();
@@ -401,9 +400,14 @@ function setupValueHostsManager(configs?: Array<FieldValueHostConfig> | null,
         valueHostConfigs: configs!,
         capturedState: savedState
     };
-    if (callbacks)
-        setup = { ...callbacks, ...setup } as ValueHostsManagerConfig;
     let vhm = new Publicify_ValueHostsManager(setup);
+    vhm.onConfigChanged = callbacks?.onConfigChanged ?? null;
+    vhm.onValueHostValidationStateChanged = callbacks?.onValueHostValidationStateChanged ?? null;
+    vhm.onTextValueChanged = callbacks?.onTextValueChanged ?? null;
+    vhm.onValueChanged = callbacks?.onValueChanged ?? null;
+    vhm.onValidationStateChanged = callbacks?.onValidationStateChanged ?? null;
+    if (callbacks?.notifyValidationStateChangedDelay !== undefined)
+        vhm.notifyValidationStateChangedDelay = callbacks?.notifyValidationStateChangedDelay ?? 0;
 
     return {
         services: services,
@@ -2352,8 +2356,6 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
         let vmConfig = <ValueHostsManagerConfig>{
             services: services,
             valueHostConfigs: [],
-            onValidationStateChanged:
-                (valueHostsManager: IValueHostsManager, validationState: ValidationState) => callbackValidationState = validationState
         };
         vmConfig.valueHostConfigs.push(<FieldValueHostConfig>{
             valueHostType: ValueHostType.Field,
@@ -2367,14 +2369,10 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             }]
         });
 
-        // let vmConfig = { services: services, valueHostConfigs: [] };
-        // builder.onValidationStateChanged = 
-        //     (valueHostsManager: IValueHostsManager, validationState: ValidationState) => callbackValidationState = validationState;
-        // builder.field('Field1', LookupKey.String).requireText('required');
-        // let valConfig = builder.complete();
-
         let callbackValidationState: ValidationState | null = null;
         let testItem = new ValueHostsManager(vmConfig);
+        testItem.onValidationStateChanged =
+            (valueHostsManager: IValueHostsManager, validationState: ValidationState) => callbackValidationState = validationState;
         testItem.getFieldValueHost('Field1')!.setValues('', '');
 
         let validationState = testItem.validate();
@@ -3418,10 +3416,10 @@ describe('invokeOnConfigChanged', () => {
         let configsReceived: Array<ValueHostConfig> | undefined = undefined;
         let vmConfig: ValueHostsManagerConfig = {
             services: new MockJivsServices(true, false),
-            valueHostConfigs: configs,
-            onConfigChanged: handler
+            valueHostConfigs: configs
         };
         let testItem = new Publicify_ValueHostsManager(vmConfig);
+        testItem.onConfigChanged = handler;
         testItem.publicify_invokeOnConfigChanged();
         expect(configsReceived).toEqual(configs);
         // confirm all configs are not the same instances as those that are held in Manager
@@ -3451,30 +3449,6 @@ describe('invokeOnConfigChanged', () => {
         }
         ]);
     });
-    test('ValueHostManager constructor does not invoke when it adds ValueHosts from ValueHostsConfig', () => {
-        function handler(manager: IValueHostsManager, configs: Array<ValueHostConfig>): void {
-            configsReceived = configs;
-        }
-        let configsReceived: Array<ValueHostConfig> | undefined = undefined;
-        let config1: StaticValueHostConfig = {
-            valueHostType: ValueHostType.Static,
-            name: 'Field1'
-        };
-        let config2: StaticValueHostConfig = {
-            valueHostType: ValueHostType.Static,
-            name: 'Field2',
-            dataType: LookupKey.String,
-            label: 'Field 2'
-        };
-        let vmConfig: ValueHostsManagerConfig = {
-            services: new MockJivsServices(true, false),
-            valueHostConfigs: [config1, config2],
-            onConfigChanged: handler
-        };
-        let testItem = new Publicify_ValueHostsManager(vmConfig);
-
-        expect(configsReceived).toBeUndefined();
-    });
     test('Use addValueHost to invoke', () => {
         function handler(manager: IValueHostsManager, configs: Array<ValueHostConfig>): void {
             configsReceived = configs;
@@ -3482,10 +3456,10 @@ describe('invokeOnConfigChanged', () => {
         let configsReceived: Array<ValueHostConfig> | undefined = undefined;
         let vmConfig: ValueHostsManagerConfig = {
             services: new MockJivsServices(true, false),
-            valueHostConfigs: [],
-            onConfigChanged: handler
+            valueHostConfigs: []
         };
         let testItem = new Publicify_ValueHostsManager(vmConfig);
+        testItem.onConfigChanged = handler;
         let config1: StaticValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'Field1'
@@ -3506,10 +3480,10 @@ describe('invokeOnConfigChanged', () => {
         let configsReceived: Array<ValueHostConfig> | undefined = undefined;
         let vmConfig: ValueHostsManagerConfig = {
             services: new MockJivsServices(true, false),
-            valueHostConfigs: [],
-            onConfigChanged: handler
+            valueHostConfigs: []
         };
         let testItem = new Publicify_ValueHostsManager(vmConfig);
+        testItem.onConfigChanged = handler;
         let config1: StaticValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'Field1'
@@ -3532,10 +3506,10 @@ describe('invokeOnConfigChanged', () => {
         let configsReceived: Array<ValueHostConfig> | undefined = undefined;
         let vmConfig: ValueHostsManagerConfig = {
             services: new MockJivsServices(true, false),
-            valueHostConfigs: [],
-            onConfigChanged: handler
+            valueHostConfigs: []
         };
         let testItem = new Publicify_ValueHostsManager(vmConfig);
+        testItem.onConfigChanged = handler;
         let config1: StaticValueHostConfig = {
             valueHostType: ValueHostType.Static,
             name: 'Field1',
@@ -3573,10 +3547,10 @@ describe('invokeOnConfigChanged', () => {
         };
         let vmConfig: ValueHostsManagerConfig = {
             services: new MockJivsServices(true, false),
-            valueHostConfigs: [config1, config2],
-            onConfigChanged: handler
+            valueHostConfigs: [config1, config2]
         };
         let testItem = new Publicify_ValueHostsManager(vmConfig);
+        testItem.onConfigChanged = handler;
 
         testItem.discardValueHost('Field1');
         expect(configsReceived).toEqual([config2]);
@@ -3616,37 +3590,25 @@ describe('broadcastState', () =>
         initialVHM.validate();
 
         let capturedState = initialVHM.captureState();
-/*
-        let fvhState = createFieldValueHostInstanceState(1);
-        fvhState.textValue = 'ABC';
-        fvhState.status = ValidationStatus.Invalid;
-        fvhState.issuesFound = [
-            {
-                errorCode: ConditionType.RegExp,
-                errorMessage: 'Some error',
-                valueHostName: 'Field1',
-                doNotSave: true
-            }
-        ];
 
-        let capturedState = createCapturedStateAsString([fvhState]);
-*/
         let vhConfig: ValueHostsManagerConfig = {
             services: services,
             valueHostConfigs: [fvhConfig],
             capturedState: capturedState
         };
 
+
+
+        let testItem = new Publicify_ValueHostsManager(vhConfig);
         let textValChangedInvoked = 0;
         let replacedTextValue: any;
-        vhConfig.onTextValueChanged = (valueHost, oldValue) =>
+        testItem.onTextValueChanged = (valueHost, oldValue) =>
         {
             textValChangedInvoked++;
             replacedTextValue = (<IFieldValueHost> valueHost).getTextValue();
         };
-
         let valChangedInvoked = 0;  // should NOT be invoked
-        vhConfig.onValueChanged = (valueHost, oldValue) =>
+        testItem.onValueChanged = (valueHost, oldValue) =>
         {
             valChangedInvoked++;
         };
@@ -3659,25 +3621,25 @@ describe('broadcastState', () =>
             asyncProcessing: false,
             corrected: false
         };
-        vhConfig.onValueHostValidationStateChanged = (valueHost, valState) =>
+        testItem.onValueHostValidationStateChanged = (valueHost, valState) =>
         {
             vhValStateChangedInvoked++;
             replacedStatus = valState;
         };
-        let valStateChangedInvoked = 0; 
+        let valStateChangedInvoked = 0;
         let managerState: ValidationState = {
             isValid: true,
             doNotSave: false,
             issuesFound: null,
             asyncProcessing: false
         };
-        vhConfig.onValidationStateChanged = (valueHost, valState) =>
+        testItem.onValidationStateChanged = (valueHost, valState) =>
         {
             valStateChangedInvoked++;
             managerState = valState;
         };
 
-        let testItem = new Publicify_ValueHostsManager(vhConfig);
+
         testItem.broadcastState();
         expect(textValChangedInvoked).toBe(1);
         expect(valChangedInvoked).toBe(0);
@@ -3792,24 +3754,25 @@ describe('toIValueHostsManagerCallbacks function', () => {
         let testItem = new ValueHostsManager({
             services: new JivsServices(),
             valueHostConfigs: [],
-            onValueChanged: (vh: IValueHost, old: any) => { },
-            onTextValueChanged: (vh: IValidatableValueHost, old: any) => { },
-            onValueHostValidationStateChanged: (vh: IValidatableValueHost, snapshot: ValueHostValidationState) => { },
-            onValidationStateChanged: (vhm, results) => { },
-            onConfigChanged: (vhm, config) => { }
+
         });
+        testItem.onValueChanged = (vh: IValueHost, old: any) => { };
+        testItem.onTextValueChanged = (vh: IValidatableValueHost, old: any) => { };
+        testItem.onValueHostValidationStateChanged = (vh: IValidatableValueHost, snapshot: ValueHostValidationState) => { };
+        testItem.onValidationStateChanged = (vhm, results) => { };
+        testItem.onConfigChanged = (vhm, config) => { };
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
     });
     test('ValueHostsManager with callbacks=null defined returns itself.', () => {
         let testItem = new ValueHostsManager({
             services: new JivsServices(),
             valueHostConfigs: [],
-            onValueChanged: null,
-            onTextValueChanged: null,
-            onValueHostValidationStateChanged: null,
-            onValidationStateChanged: null,
-            onConfigChanged: null
         });
+        testItem.onValueChanged = null;
+        testItem.onTextValueChanged = null;
+        testItem.onValueHostValidationStateChanged = null;
+        testItem.onValidationStateChanged = null;
+        testItem.onConfigChanged = null;
         expect(toIValueHostsManagerCallbacks(testItem)).toBe(testItem);
     });
     test('Non-matching interface returns null.', () => {

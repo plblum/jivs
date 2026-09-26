@@ -15,8 +15,9 @@
     ```ts
     const rules = new PersonEditFormRules(services);
     const config = rules.configure();
-    config.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     const vhm = new ValueHostsManager(config);
+    vhm.onValidationStateChanged = (parms)=> {}; 
+    // various callbacks hooked up
     ```
  * @module jivs-builder/ValueHostRules/Types
  */

@@ -69,7 +69,7 @@ flowchart TB
 
 - [`ValueHost rules`](./ValueHost_Rules/Home.md) – Package reusable `ValueHostsManager` configuration for a model or form. It generates a `ValueHostsManagerConfig object tree`.Create a `ValueHostRulesBase subclass` to describe its `ValueHosts` and validation rules. 
 - [`Builder API`](../ValueHostsManager_Configuration_Guide.md) – Provides a fluent API for constructing the `ValueHostsManagerConfig object tree` within your `ValueHostRulesBase subclass`.
-- `ValueHostsManagerConfig object tree` – The configuration object tree used to create a `ValueHostsManager`. It contains the nested `ValueHostConfig`, `ValidatorConfig`, and `ConditionConfig` objects, along with manager-level settings such as services and callbacks.
+- `ValueHostsManagerConfig object tree` – The configuration object tree used to create a `ValueHostsManager`. It contains the nested `ValueHostConfig`, `ValidatorConfig`, and `ConditionConfig` objects, along with manager-level settings.
 
 ## Customizing through JivsServices
 

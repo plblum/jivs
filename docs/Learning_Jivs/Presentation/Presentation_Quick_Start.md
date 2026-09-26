@@ -134,11 +134,8 @@ To have form validation control the Submit button, add:
 Use the supplied Dispatcher Functions as the `ValueHostsManager` callbacks:
 
 ```ts
-config.onValueHostValidationStateChanged =
-    fieldValidated;
-
-config.onValidationStateChanged =
-    formValidated;
+vhm.onValueHostValidationStateChanged = fieldValidated;
+vhm.onValidationStateChanged = formValidated;
 ```
 
 - [The Jivs SimpleDom Approach](The_Jivs_SimpleDom_Approach.md) for the Jivs SimpleDom conventions

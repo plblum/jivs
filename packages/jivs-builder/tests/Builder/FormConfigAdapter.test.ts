@@ -1,25 +1,25 @@
-import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 import { RequireTextConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';
+import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { TestingLoggingService } from '@plblum/jivs-engine/build/Support/TestingLoggingService';
 import { FormConfigAdapter, createFormConfigAdapter } from '../../src/Builder/FormConfigAdapter';
 import { BuilderState } from '../../src/Builder/ManagerConfigBuilderBase';
-import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from '../../src/Builder/ValidatorBuilder';
+import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
-import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
 
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
@@ -93,14 +93,7 @@ describe('constructor', () => {
             valueHostConfigs: []
         });
         let testItem = new FormConfigAdapter(state);
-        expect(testItem.onConfigChanged).toBeNull();
-        expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.capturedState).toBeUndefined();
-        expect(testItem.onTextValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
-        expect(testItem.onValidationStateChanged).toBeNull();
-        expect(testItem.onValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });
 
     // confirm constructor uses favorUIMessages option to set favorUIMessagesCount

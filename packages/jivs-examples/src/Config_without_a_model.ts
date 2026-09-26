@@ -10,7 +10,7 @@
      This class allows a nice testing experience too, independent of actual UI code.
   Phase 2
      Create the ValueHostsManager through your ValueHostRulesBase subclass.
-     Wire up any callbacks from the ValueHostsManagerConfig object to your UI layer.
+     Wire up any callbacks from the ValueHostsManager object to your UI layer.
 
   To accomplish our goal, we will setup the ValueHostsManager with the following
   ValueHosts and validators:
@@ -81,8 +81,8 @@ export function configUsingDateRangeFormRules(): ValueHostsManager
     let services = createJivsServices('en');
     let rules = new DateRangeFormRules(services);
     let config = rules.configure();
-    config.onValueChanged = onValueChangedHandler;
     let vhm = new ValueHostsManager(config);
+    vhm.onValueChanged = onValueChangedHandler;
 
     // at this point, use the ValueHostsManager to validate your model.
 

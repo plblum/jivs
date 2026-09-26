@@ -56,14 +56,7 @@ describe('constructor', () => {
     test('Creates a ValueHostsManagerConfigBuilder with the supplied JivsServices', () => {
         let services = createJivsServicesForTesting();
         let testItem = new ValueHostsManagerConfigBuilder(services);
-        expect(testItem.onConfigChanged).toBeNull();
-        expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.capturedState).toBeUndefined();
-        expect(testItem.onTextValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
-        expect(testItem.onValidationStateChanged).toBeNull();
-        expect(testItem.onValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });
     test('Creates a ValueHostsManagerConfigBuilder with the supplied ValueHostsManagerConfig', () => {
         let services = createJivsServicesForTesting();
@@ -72,14 +65,7 @@ describe('constructor', () => {
             valueHostConfigs: []
         };
         let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onConfigChanged).toBeNull();
-        expect(testItem.notifyValidationStateChangedDelay).toBe(0);
         expect(testItem.capturedState).toBeUndefined();
-        expect(testItem.onTextValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
-        expect(testItem.onValidationStateChanged).toBeNull();
-        expect(testItem.onValueChanged).toBeNull();
-        expect(testItem.onValueHostValidationStateChanged).toBeNull();
     });    
 });
 
@@ -93,14 +79,7 @@ describe('function build()', () => {
         expect(result.services).toBe(services);
         expect(result.valueHostConfigs).toEqual([]);
 
-        expect(result.onConfigChanged).toBeUndefined();
-        expect(result.notifyValidationStateChangedDelay).toBeUndefined();
         expect(result.capturedState).toBeUndefined();
-        expect(result.onTextValueChanged).toBeUndefined();
-        expect(result.onValueHostValidationStateChanged).toBeUndefined();
-        expect(result.onValidationStateChanged).toBeUndefined();
-        expect(result.onValueChanged).toBeUndefined();
-        expect(result.onValueHostValidationStateChanged).toBeUndefined();        
     });
     test('Creates a ValueHostsManagerConfigBuilder with the supplied ValueHostsManagerConfig', () => {
         let services = createJivsServicesForTesting();
@@ -114,14 +93,7 @@ describe('function build()', () => {
         let result = testItem!.complete();
         expect(result.services).toBe(services);   
         expect(result.valueHostConfigs).toEqual([]);
-        expect(result.onConfigChanged).toBeUndefined();
-        expect(result.notifyValidationStateChangedDelay).toBeUndefined();
         expect(result.capturedState).toBeUndefined();
-        expect(result.onTextValueChanged).toBeUndefined();
-        expect(result.onValueHostValidationStateChanged).toBeUndefined();
-        expect(result.onValidationStateChanged).toBeUndefined();
-        expect(result.onValueChanged).toBeUndefined();
-        expect(result.onValueHostValidationStateChanged).toBeUndefined();               
     });
 });
 describe('instance state properties', () => {
@@ -171,139 +143,6 @@ describe('instance state properties', () => {
         let result = testItem.complete();
         expect(result.capturedState).toBe(replacementSC);
     });    
-    
-});
-describe('Callbacks get and set', () => {
-    test('onValueChanged', () => {
-        function handler(valueHost: IValueHost, oldValue: any): void
-        {
-            
-        }
-        function replacementHandler(valueHost: IValueHost, oldValue: any): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onValueChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onValueChanged).toBe(handler);
-        testItem.onValueChanged = replacementHandler;
-        expect(testItem.onValueChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onValueChanged).toBe(replacementHandler);
-    });
-    
-    test('onTextValueChanged', () => {
-        function handler(valueHost: IValueHost, oldValue: any): void
-        {
-            
-        }
-        function replacementHandler(valueHost: IValueHost, oldValue: any): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onTextValueChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onTextValueChanged).toBe(handler);
-        testItem.onTextValueChanged = replacementHandler;
-        expect(testItem.onTextValueChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onTextValueChanged).toBe(replacementHandler);
-    });
-    
-    test('onConfigChanged', () => {
-        function handler(valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
-        {
-            
-        }
-        function replacementHandler(valueHostsManager: IValueHostsManager, valueHostConfigs: Array<ValueHostConfig>): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onConfigChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onConfigChanged).toBe(handler);
-        testItem.onConfigChanged = replacementHandler;
-        expect(testItem.onConfigChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onConfigChanged).toBe(replacementHandler);
-    });    
-    test('onValueHostValidationStateChanged', () => {
-        function handler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
-        {
-            
-        }
-        function replacementHandler(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onValueHostValidationStateChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onValueHostValidationStateChanged).toBe(handler);
-        testItem.onValueHostValidationStateChanged = replacementHandler;
-        expect(testItem.onValueHostValidationStateChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onValueHostValidationStateChanged).toBe(replacementHandler);
-    });
-    
-    test('onValidationStateChanged', () => {
-        function handler(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
-        {
-            
-        }
-        function replacementHandler(valueHostsManager: IValueHostsManager, validationState: ValidationState): void
-        {
-            
-        }
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            onValidationStateChanged: handler
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.onValidationStateChanged).toBe(handler);
-        testItem.onValidationStateChanged = replacementHandler;
-        expect(testItem.onValidationStateChanged).toBe(replacementHandler);
-        let result = testItem.complete();
-        expect(result.onValidationStateChanged).toBe(replacementHandler);
-    });
-    
-    
-    test('notifyValidationStateChangedDelay', () => {
-
-        let services = createJivsServicesForTesting();
-        let vmConfig: ValueHostsManagerConfig = {
-            services: services,
-            valueHostConfigs: [],
-            notifyValidationStateChangedDelay: 5
-        };
-        let testItem = new ValueHostsManagerConfigBuilder(vmConfig);
-        expect(testItem.notifyValidationStateChangedDelay).toBe(5);
-        testItem.notifyValidationStateChangedDelay = 10;
-        expect(testItem.notifyValidationStateChangedDelay).toBe(10);
-        let result = testItem.complete();
-        expect(result.notifyValidationStateChangedDelay).toBe(10);
-    });
     
 });
 

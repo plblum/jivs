@@ -26,7 +26,6 @@ Expect to write this code each time you need a `ValueHostsManager`:
 const services = createJivsServices('en-US');
 const rules = new YourRulesClass(services);
 const config = rules.configure();
-
 const vhm = new ValueHostsManager(config);
 ```
 
@@ -162,7 +161,6 @@ Creating its `ValueHostsManager` uses the same pattern:
 const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
-
 const vhm = new ValueHostsManager(config);
 ```
 
@@ -203,7 +201,6 @@ Now use the standard creation pattern:
 const services = createJivsServices('en-US');
 const rules = new SearchFormRules(services);
 const config = rules.configure();
-
 const vhm = new ValueHostsManager(config);
 ```
 

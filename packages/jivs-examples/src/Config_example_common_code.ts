@@ -164,15 +164,6 @@ export function createJivsServices(cultureID: string): IJivsServices {
     return services;
 }
 
-// Callback functions used by ValueHostsManager.
-
-// Builder.onValueChanged is called each time any ValueHost's value changes.
-export function onValueChangedHandler(vh: IValueHost, oldValue: any) : void {
-    if (vh.getName() === 'timeZone')
-    {
-        // do something
-    }
-}
 
 export class MockHTMLSelectElement {
     constructor(id: string, initiaValue: string = 'UTC+1') {

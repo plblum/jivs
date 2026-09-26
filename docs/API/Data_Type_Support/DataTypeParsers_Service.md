@@ -46,10 +46,10 @@ const birthDate = vhm.vh.field('BirthDate');
 birthDate.setTextValue('05/31/2002'); // parser -> new Date(2002, 4, 31) -> native value
 ```
 
-When the native value changes, the `onValueChanged` callback can pass the native value to application code:
+When the native value changes, the `ValueHostsManager.onValueChanged` callback can pass the native value to application code:
 
 ```ts
-config.onValueChanged = (fieldValueHost, oldValue) => {
+vhm.onValueChanged = (fieldValueHost, oldValue) => {
     let newValue = fieldValueHost.getValue();
     // use newValue
 };

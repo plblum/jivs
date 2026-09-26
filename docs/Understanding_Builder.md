@@ -110,7 +110,7 @@ The Builders and ValueHost Rules work together to prepare the complete object tr
 
 ### Configuration builders
 
-* `ValueHostsManagerConfigBuilder` is the starting point of the **Builder API**. It handles the top-level properties of `ValueHostsManagerConfig`, including callback properties like `onValueChanged`. Its main functions add ValueHosts.
+* `ValueHostsManagerConfigBuilder` is the starting point of the **Builder API**. It handles the top-level properties of `ValueHostsManagerConfig`.
 * `ValueHostConfigBuilder` is used internally by `ValueHostsManagerConfigBuilder` when adding `ValueHosts`. It creates and configures `ValueHostConfig` subclasses, including `FieldValueHostConfig`, `StaticValueHostConfig`, and `CalcValueHostConfig`.
 * `ValidatorBuilder` attaches validators to a `FieldValueHostConfig` through its `validatorConfigs` property. `ValueHostsManagerConfigBuilder.field()` returns a `ValidatorBuilder` to start the fluent syntax, and each validator function on `ValidatorBuilder` returns the same builder to continue the chain. If you add a new validator function for a condition, you'll add it here too.
 
@@ -141,7 +141,7 @@ This section connects the fluent syntax to the classes that build each part of t
 
 The top-level object looks like this:
 
-```ts id="bsxub1"
+```ts
 let config: ValueHostsManagerConfig = {
     services: services,
 
@@ -150,11 +150,6 @@ let config: ValueHostsManagerConfig = {
         // FieldValueHostConfig, StaticValueHostConfig, CalcValueHostConfig
     ],
 
-    // ValueHostsManagerConfigBuilder also handles callback properties.
-    onValueChanged: (valueHost, oldValue) => {
-        // your callback here
-    }
-};
 ```
 
 `ValueHostsManagerConfigBuilder` works at this top level. Its `ValueHost` functions delegate to `ValueHostConfigBuilder`, while other functions and properties configure `ValueHostsManagerConfig` itself.
@@ -173,7 +168,7 @@ Fluent syntax starts with:
 
 Those functions create configs shaped like these:
 
-```ts id="yvyx0g"
+```ts
 let fieldConfig: FieldValueHostConfig = {
     valueHostType: ValueHostType.Field,
     name: 'productName',
@@ -214,7 +209,7 @@ Some usage patterns:
 
 For example:
 
-```ts id="pfo2my"
+```ts
 let builder = new ValueHostsManagerConfigBuilder(services);
 builder.static('productVisible', LookupKey.Boolean);
 builder.field('productName', LookupKey.String, { label: 'Name' }).requireText().regExp('^\w[\s\w]*$');
@@ -231,7 +226,7 @@ let vhm = new ValueHostsManager(builder.complete());
 
 A `ValidatorConfig` contains validator-specific properties, such as error messages, summary messages, severity, error code, and enabling. It also contains a `conditionConfig` object that describes the condition to evaluate.
 
-```ts id="izw5h6"
+```ts
 let valConfig: ValidatorConfig = {
     errorMessage: 'error message',
     summaryMessage: 'summaryMessage',
@@ -285,7 +280,7 @@ All `StartConditionBuilder` classes provide a short fluent syntax where the next
 
 For example, a `requireText()` validator creates a condition config shaped like this:
 
-```ts id="aq2kg3"
+```ts
 let conditionConfig: RequireTextConditionConfig = {
     conditionType: ConditionType.RequireText
     // condition-specific properties...
@@ -294,7 +289,7 @@ let conditionConfig: RequireTextConditionConfig = {
 
 If `StartConditionBuilder` uses `fieldValue('valueHostName')`, the config also includes the `valueHostName` property:
 
-```ts id="6nxe5q"
+```ts
 let conditionConfig: RequireTextConditionConfig = {
     conditionType: ConditionType.RequireText,
     valueHostName: 'valueHostName'
@@ -459,7 +454,7 @@ Since Builders and ValueHost Rules are part of the general setup for `ValueHosts
 
 Let's suppose that you like to work with a light footprint. You can create code like this:
 
-```ts id="ej8d12"
+```ts
 let builder = new ValueHostsManagerConfigBuilder(services);
 let rules = new myRules();
 rules.configure(builder);
@@ -474,12 +469,11 @@ Using Node.js, you could have an API call that executes the above code, returnin
 
 On the client side, suppose you call your API with something like this.
 
-```ts id="y3kook"
+```ts
 let valueHostConfigs = await OurApi.getMyRules();
 let config: ValueHostsManagerConfig = {
     services: services,
     valueHostConfigs: valueHostConfigs,
-    ... attach any callbacks here ...
 }
 let vhm = new ValueHostsManager(config);
 ```
@@ -490,7 +484,7 @@ Instead of generating the configuration each time an API call is made, you can g
 
 For example, suppose you have a `PersonModelRules` class:
 
-```ts id="8mi8qf"
+```ts
 import { mkdir, writeFile } from "node:fs/promises";
 
 let builder = new ValueHostsManagerConfigBuilder(services);
@@ -531,16 +525,16 @@ An application with many models could generate one file for each model or rules 
 
 Once the JSON file is available to the client, for example served from `/generated-rules/Person.json`, the browser can retrieve and use it to configure validation.
 
-```ts id="i3ktsd"
+```ts
 let response = await fetch("/generated-rules/Person.json");
 let valueHostConfigs = await response.json();
 
 let config: ValueHostsManagerConfig = {
    services: services,
    valueHostConfigs: valueHostConfigs,
-   // wire up any callbacks
 };
 let vhm = new ValueHostsManager(config);
+// set up ValueHostsManager callbacks and establish UI behaviors
 ```
 
 Depending on your application, you might:

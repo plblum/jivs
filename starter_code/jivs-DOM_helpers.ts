@@ -383,8 +383,8 @@ export function errorMessageToText(
  * update the text value of the associated HTML form control element.
  * ```ts
  * const config = rules.configure();
- * config.onTextValueChanged = onTextValueChanged;
  * const vhm = new ValueHostsManager(config);
+ * vhm.onTextValueChanged = onTextValueChanged;
  * ```
  * Called in these two cases:
  * - When FieldValueHost.setValue is called, and it uses a formatter to update its own text value.

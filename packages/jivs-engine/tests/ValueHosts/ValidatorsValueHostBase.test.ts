@@ -1074,12 +1074,12 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -1119,12 +1119,12 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -1697,12 +1697,12 @@ describe('corrected property', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -1849,9 +1849,9 @@ function testValidateFunctionWithPromise(
     services.messageTokenResolverService = new MessageTokenResolverService();
     let vhm = new Publicify_ValueHostsManager({
         services: services,
-        valueHostConfigs: [],
-        onValueHostValidationStateChanged: onValidationStateChanged
+        valueHostConfigs: []
     });
+    vhm.onValueHostValidationStateChanged = onValidationStateChanged;
     let vh = vhm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
     // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState);
@@ -2357,12 +2357,12 @@ describe('clearValidation', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -2412,12 +2412,12 @@ describe('clearValidation', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -2621,12 +2621,12 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
@@ -2693,12 +2693,12 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         supportTestValueHostInServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',

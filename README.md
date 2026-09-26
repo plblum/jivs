@@ -259,6 +259,9 @@ const services = createJivsServices('en-US');
 const rules = new YourRules(services);
 const config = rules.configure();
 const vhm = new ValueHostsManager(config);
+// setup UI side: ValueHostsManager callbacks to handle 
+// 1. editor value changes
+// 2. validation state changes
 ```
 Initially, you can leave its configuration unchanged. Customize the file
 later as described in the documentation.

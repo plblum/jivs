@@ -610,13 +610,12 @@ export class MockJivsServices implements IJivsServices
  * child ValueHosts.
  */
 export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerInstanceState>
-    implements IValueHostsManager, IValueHostsManagerCallbacks
+    implements IValueHostsManager
 {
     constructor(services: IJivsServices)
     {
         super({ services: services, valueHostConfigs: [] });
     }
-    notifyValidationStateChangedDelay?: number | undefined;
 
     public override get config(): ValueHostsManagerConfig
     {
@@ -718,42 +717,6 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
      */
     public onNotifyValueHostInstanceStateChanged?: (valueHost: IValueHost, instanceState: ValueHostInstanceState) => void;
     
-    public override get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
-        return this.config.onConfigChanged ?? null;
-    }
-
-
-    public override get onValidationStateChanged(): ValidationStateChangedHandler | null {
-        return this.config.onValidationStateChanged ?? null;
-    }
-    public override set onValidationStateChanged(fn: ValidationStateChangedHandler) {
-        this.config.onValidationStateChanged = fn;
-    }
-
-
-    public override get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
-        return this.config.onValueHostValidationStateChanged ?? null;
-    }
-    public override set onValueHostValidationStateChanged(fn: ValueHostValidationStateChangedHandler) {
-        this.config.onValueHostValidationStateChanged = fn;
-    }
-
-    
-
-    public override get onValueChanged(): ValueChangedHandler | null {
-        return this.config.onValueChanged ?? null;
-    }
-    public override set onValueChanged(fn: ValueChangedHandler) {
-        this.config.onValueChanged = fn;
-    }
-
-
-    public override get onTextValueChanged(): TextValueChangedHandler | null {
-        return this.config.onTextValueChanged ?? null;
-    }    
-    public override set onTextValueChanged(fn: TextValueChangedHandler) {
-        this.config.onTextValueChanged = fn;
-    }    
 
     public getValueHostConfig(valueHostName: string): ValueHostConfig | null
     {

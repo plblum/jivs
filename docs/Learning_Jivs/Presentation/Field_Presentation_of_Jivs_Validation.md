@@ -30,9 +30,8 @@ export type FieldDispatcher = (
 It is attached to the `ValueHostsManager` through its `onValueHostValidationStateChanged` callback:
 
 ```ts
-config.onValueHostValidationStateChanged = yourFieldDispatcher;
-
 const vhm = new ValueHostsManager(config);
+vhm.onValueHostValidationStateChanged = yourFieldDispatcher;
 ```
 
 This Field Dispatcher Function locates every validation consumer associated with that field and calls its `onFieldValidationStateChanged` Presentation Function:

@@ -53,8 +53,8 @@ saveMyModel(model); // your code
 
 If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [Decisions around Formatting](../ValueHosts/Getting_and_Setting_Values.md#decisions-around-jivs-built-in-formatting).
 ```ts
-config.onTextValueChanged = myFunctionToUpdateInputs;
 let vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = myFunctionToUpdateInputs;
 ```
 
 ## Available operations on ModelReader, DictionaryReader, and FormReader

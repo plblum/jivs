@@ -58,7 +58,7 @@ birthDate.setValue(new Date(2000, 0, 15));  // formatter -> '01/15/2000'
 When the text value changes, the `onTextValueChanged` callback can pass the formatted value to application code:
 
 ```ts
-config.onTextValueChanged = (fieldValueHost, oldValue) => {
+vhm.onTextValueChanged = (fieldValueHost, oldValue) => {
     let newTextValue = fieldValueHost.getTextValue();
     // assign it to the input's value attribute
     document.getElementById(fieldValueHost.getElementIdentifier()).value = newTextValue;

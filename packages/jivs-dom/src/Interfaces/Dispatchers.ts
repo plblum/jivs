@@ -22,7 +22,7 @@
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { ValueHostValidationState } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
 import { ValidationState } from "@plblum/jivs-engine/build/Interfaces/Validation";
-import { IValueHostsManager, ValueHostsManagerConfig } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
+import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 
 
 /**
@@ -133,7 +133,7 @@ export type DispatcherCreator<TDispatcher> = (selector?: string) => TDispatcher;
 
 /**
  * This service ensures that the correct dispatcher is attached to the appropriate DOM elements 
- * based on the configuration provided.
+ * based on the ValueHostsManager provided.
  * Handles registration, creation, and ValueHostsManager callback assignment of Dispatchers.
  * IJivsDomServices.dispatcherService holds the one instance of this service.
  * 
@@ -189,45 +189,45 @@ export interface IDispatcherService
      * through to the dispatcher. It always assumes selector = undefined.
      * If selector is needed, use the dispatcher-specific attach functions instead.
      */
-    attach(config: ValueHostsManagerConfig, addTextValueChanged?: boolean, addValueChanged?: boolean): void;
+    attach(valueHostsManager: IValueHostsManager, addTextValueChanged?: boolean, addValueChanged?: boolean): void;
 
     /**
-     * Attaches a ITextValueDispatcher to ValueHostsManagerConfig.onTextValueChanged callback.
-     * This allows the dispatcher to respond to text value changes in the value hosts managed by the configuration.
+     * Attaches a ITextValueDispatcher to IValueHostsManager.onTextValueChanged callback.
+     * This allows the dispatcher to respond to text value changes in the value hosts managed by the value hosts manager.
      * If onTextValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached ITextValueDispatcher instance, or null if none could be attached.
      */
-    attachTextValueChanged(config: ValueHostsManagerConfig, selector?: string): ITextValueDispatcher | null;
+    attachTextValueChanged(valueHostsManager: IValueHostsManager, selector?: string): ITextValueDispatcher | null;
 
     /**
-     * Attaches a IValueDispatcher to ValueHostsManagerConfig.onValueChanged callback.
-     * This allows the dispatcher to respond to value changes in the value hosts managed by the configuration.
+     * Attaches a IValueDispatcher to IValueHostsManager.onValueChanged callback.
+     * This allows the dispatcher to respond to value changes in the value hosts managed by the value hosts manager.
      * If onValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IValueDispatcher instance, or null if none could be attached.
      */
-    attachValueChanged(config: ValueHostsManagerConfig, selector?: string): IValueDispatcher | null;
+    attachValueChanged(valueHostsManager: IValueHostsManager, selector?: string): IValueDispatcher | null;
 
     /**
-     * Attaches a IFieldValidationDispatcher to ValueHostsManagerConfig.onValueHostValidationStateChanged callback.
-     * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the configuration.
+     * Attaches a IFieldValidationDispatcher to IValueHostsManager.onValueHostValidationStateChanged callback.
+     * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the value hosts manager.
      * If onValueHostValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFieldValidationDispatcher instance, or null if none could be attached.
      */
-    attachValueHostValidationStateChanged(config: ValueHostsManagerConfig, selector?: string): IFieldValidationDispatcher | null;
+    attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFieldValidationDispatcher | null;
 
     /**
-     * Attaches a IFormValidationDispatcher to ValueHostsManagerConfig.onValidationStateChanged callback.
-     * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the configuration.
+     * Attaches a IFormValidationDispatcher to IValueHostsManager.onValidationStateChanged callback.
+     * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the value hosts manager.
      * If onValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
-     * @param config The configuration for the value hosts manager.
+     * @param valueHostsManager The value hosts manager instance.
      * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFormValidationDispatcher instance, or null if none could be attached.
      */
-    attachValidationStateChanged(config: ValueHostsManagerConfig, selector?: string): IFormValidationDispatcher | null;
+    attachValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFormValidationDispatcher | null;
 }

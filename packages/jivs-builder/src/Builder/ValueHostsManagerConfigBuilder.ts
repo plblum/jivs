@@ -165,68 +165,6 @@ export class ValueHostsManagerConfigBuilder<T extends ValueHostsManagerConfig = 
     }
 
     //#endregion validation oriented ValueHost support
-
-
-    //#region IValueHostsManagerCallbacks
-    /**
-     * @inheritDoc jivs-engine/ValueHosts/Types/ValueHost!IValueHostCallbacks.onValueChanged
-     */
-    public get onValueChanged(): ValueChangedHandler | null {
-        return this.baseConfig.onValueChanged ?? null;
-    }
-    public set onValueChanged(value: ValueChangedHandler | null) {
-        this.baseConfig.onValueChanged = value;
-    }
-
-    /**
-     * @inheritDoc jivs-engine/ValueHosts/Types/ValidatableValueHostBase!IValidatableValueHostCallbacks.onValueHostValidationStateChanged
-     */
-    public get onValueHostValidationStateChanged(): ValueHostValidationStateChangedHandler | null {
-        return this.baseConfig.onValueHostValidationStateChanged ?? null;
-    }
-    public set onValueHostValidationStateChanged(value: ValueHostValidationStateChangedHandler | null) {
-        this.baseConfig.onValueHostValidationStateChanged = value;
-    }
-
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onValidationStateChanged
-     */
-    public get onValidationStateChanged(): ValidationStateChangedHandler | null {
-        return this.baseConfig.onValidationStateChanged ?? null;
-    }
-    public set onValidationStateChanged(value: ValidationStateChangedHandler | null) {
-        this.baseConfig.onValidationStateChanged = value;
-    }
-    /**
-     * @inheritDoc jivs-engine/ValueHosts/Types/FieldValueHost!IFieldValueHostChangedCallback.onTextValueChanged
-     */
-    public get onTextValueChanged(): TextValueChangedHandler | null {
-        return this.baseConfig.onTextValueChanged ?? null;
-    }
-    public set onTextValueChanged(value: TextValueChangedHandler | null) {
-        this.baseConfig.onTextValueChanged = value;
-    }
-
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.onConfigChanged
-     */
-    public get onConfigChanged(): ValueHostsManagerConfigChangedHandler | null {
-        return this.baseConfig.onConfigChanged ?? null;
-    }
-    public set onConfigChanged(value: ValueHostsManagerConfigChangedHandler | null) {
-        this.baseConfig.onConfigChanged = value;
-    }
-  
-    /**
-     * @inheritDoc jivs-engine/ValueHostsManager/Types!IValueHostsManagerCallbacks.notifyValidationStateChangedDelay
-     */
-    public get notifyValidationStateChangedDelay(): number {
-        return this.baseConfig.notifyValidationStateChangedDelay ?? 0;
-    }
-    public set notifyValidationStateChangedDelay(value: number) {
-        this.baseConfig.notifyValidationStateChangedDelay = value;
-    }
-    //#endregion IValueHostsManagerCallbacks
 }
 
 

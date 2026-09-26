@@ -626,13 +626,13 @@ describe('addExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
 
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1'
@@ -675,13 +675,13 @@ describe('addExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
 
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1'
@@ -1031,13 +1031,13 @@ describe('addExternalIssueFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
 
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1'
@@ -1059,13 +1059,13 @@ describe('addExternalIssueFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
 
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1'
@@ -1207,12 +1207,12 @@ describe('clearExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1',
@@ -1251,12 +1251,12 @@ describe('clearExternalIssuesFound', () => {
         let vmConfig: ValueHostsManagerConfig = {
             services: createJivsServicesForTesting(),
             valueHostConfigs: [],
-            onValueHostValidationStateChanged: (vh, vr) => {
-                onValidateResult = vr;
-            }
         };
         addTestValidatableValueHostGeneratorToServices(vmConfig.services);
         let vhm = new ValueHostsManager(vmConfig);
+        vhm.onValueHostValidationStateChanged = (vh, vr) => {
+            onValidateResult = vr;
+        };
         let vh = vhm.addValueHost(<ValidatableValueHostBaseConfig>{
             valueHostType: 'TestValidatableValueHost',
             name: 'Field1',

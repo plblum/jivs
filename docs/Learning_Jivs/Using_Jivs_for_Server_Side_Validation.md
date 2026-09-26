@@ -55,7 +55,6 @@ Server-side code uses the same creation pattern introduced earlier:
 const services = createJivsServices('en-US');
 const rules = new PersonModelRules(services);
 const config = rules.configure();
-
 const vhm = new ValueHostsManager(config);
 ```
 

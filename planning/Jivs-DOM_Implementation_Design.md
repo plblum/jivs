@@ -60,10 +60,10 @@ The principal `jivs-engine` integration points are:
 
 | Jivs API                                                    | Use within `jivs-dom`                                                                                                                                                               |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ValueHostsManagerConfig.onTextValueChanged`                | Notifies a Text Value dispatcher. The dispatcher obtains the current Text Value from the supplied `IFieldValueHost` and writes it through installed `ITextValueAdapter` objects. |
-| `ValueHostsManagerConfig.onValueChanged`                    | Notifies a Native Value dispatcher. The dispatcher obtains the current Native Value from the supplied `IValueHost` and writes it through installed `IValueAdapter` objects.      |
-| `ValueHostsManagerConfig.onValueHostValidationStateChanged` | Supplies the `ValueHostValidationState` used by installed field presentations and field-level ARIA behavior.                                                                        |
-| `ValueHostsManagerConfig.onValidationStateChanged`          | Supplies the `ValidationState` used by installed form presentations.                                                                                                                |
+| `ValueHostsManager.onTextValueChanged`                | Notifies a Text Value dispatcher. The dispatcher obtains the current Text Value from the supplied `IFieldValueHost` and writes it through installed `ITextValueAdapter` objects. |
+| `ValueHostsManager.onValueChanged`                    | Notifies a Native Value dispatcher. The dispatcher obtains the current Native Value from the supplied `IValueHost` and writes it through installed `IValueAdapter` objects.      |
+| `ValueHostsManager.onValueHostValidationStateChanged` | Supplies the `ValueHostValidationState` used by installed field presentations and field-level ARIA behavior.                                                                        |
+| `ValueHostsManager.onValidationStateChanged`          | Supplies the `ValidationState` used by installed form presentations.                                                                                                                |
 | `IFieldValueHost.setTextValue()`                            | Accepts textual editor input and lets Jivs perform its configured parsing and validation.                                                                                           |
 | `IFieldValueHost.setValue()`                                | Accepts a Native Value from an editor that exposes non-textual or structured data.                                                                                                  |
 | `IFieldValueHost.setValues()`                               | Accepts related Text and Native Values when parsing is performed outside Jivs. It can also receive an `InjectedError` when that parsing fails.                                      |
@@ -3550,7 +3550,7 @@ The following implementation details remain deferred to later sections:
 
 ## Dispatchers and Callback Attachment
 
-DOM dispatchers connect the four `ValueHostsManagerConfig` callbacks to capabilities installed on DOM elements.
+DOM dispatchers connect the four `ValueHostsManager` callbacks to capabilities installed on DOM elements.
 
 | Callback | Dispatcher | Installed capability |
 | --- | --- | --- |
@@ -3853,25 +3853,25 @@ interface IDispatcherService {
             >, selector?: string
     ): void;
 
-    attach(config: ValueHostsManagerConfig, addTextValueAdapter?: boolean, addValueAdapter?: boolean): void
+    attach(valueHostsManager: IValueHostsManager, addTextValueAdapter?: boolean, addValueAdapter?: boolean): void
 
     attachTextValueChanged(
-        config: ValueHostsManagerConfig,
+        valueHostsManager: IValueHostsManager,
         selector?: string
     ): ITextValueDispatcher | null;
 
     attachValueChanged(
-        config: ValueHostsManagerConfig,
+        valueHostsManager: IValueHostsManager,
         selector?: string
     ): IValueDispatcher | null;
 
     attachValueHostValidationStateChanged(
-        config: ValueHostsManagerConfig,
+        valueHostsManager: IValueHostsManager,
         selector?: string
     ): IFieldValidationDispatcher | null;
 
     attachValidationStateChanged(
-        config: ValueHostsManagerConfig,
+        valueHostsManager: IValueHostsManager,
         selector?: string
     ): IFormValidationDispatcher | null;
 }
@@ -3896,7 +3896,7 @@ The standard `jivs-dom` service does not assume an element-discovery convention.
 When an attachment method has no registered creator for its category, it:
 
 1. logs that no dispatcher can be attached;
-2. leaves the existing configuration callback unchanged;
+2. leaves the existing callback unchanged;
 3. returns `null`.
 
 A missing creator is not an exception because applications may intentionally omit any of the four integrations.
@@ -3907,7 +3907,7 @@ Each attachment method:
 
 1. obtains the registered creator;
 2. creates one dispatcher with `IJivsDomServices` and the supplied options;
-3. captures the callback currently assigned to the corresponding configuration property;
+3. captures the callback currently assigned to the corresponding ValueHostsManager property;
 4. assigns a composed callback;
 5. returns the created dispatcher.
 
@@ -3917,12 +3917,12 @@ Conceptually:
 
 ```ts
 const previous =
-    config.onTextValueChanged;
+    vhm.onTextValueChanged;
 
 const dispatcher =
     creator(selector);
 
-config.onTextValueChanged =
+vhm.onTextValueChanged =
     function (...args): void {
         previous?.apply(this, args);
         dispatcher.dispatch(...args);
@@ -3947,7 +3947,7 @@ When the configuration, manager, and callback become unreachable, the dispatcher
 
 Attaching different dispatcher categories to the same configuration is valid. Attaching the same category more than once is unsupported caller misuse. The service does not track or detect duplicate attachment; another attachment naturally composes another callback and may cause duplicate DOM dispatch.
 
-Attachment changes only the `ValueHostsManagerConfig`. It does not discover or install elements.
+Attachment changes only the `ValueHostsManager`. It does not discover or install elements.
 
 Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed elements. `JivsDomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
 
@@ -3972,17 +3972,13 @@ A typical application follows this sequence:
 
 ```ts
 const jivsServices = createJivsServices('en-US');
-const domServices = /* Section 12 retrieval API */;
+const domServices = jivsServices.domServices;
 
 const rules = new PersonFormRules(jivsServices);
 const config = rules.configure();
-
-domServices.dispatchers.attachTextValueChanged(config);
-domServices.dispatchers.attachValueChanged(config);
-domServices.dispatchers.attachValueHostValidationStateChanged(config);
-domServices.dispatchers.attachValidationStateChanged(config);
-
 const valueHostsManager = new ValueHostsManager(config);
+domServices.dispatchers.attach(valueHostsManager);
+
 const formInstaller = new SimpleJivsDomFormInstaller(domServices);
 
 formInstaller.install(valueHostsManager);
@@ -4511,7 +4507,7 @@ The collectors must still be disposed when installation exits because of a failu
 Applications use the DOM services in this order:
 
 1. Configure `DomServices`, registrations, and Dispatcher Creators.
-2. Attach dispatcher callbacks to `ValueHostsManagerConfig`.
+2. Attach dispatcher callbacks to `ValueHostsManager`.
 3. Construct the `ValueHostsManager`.
 4. Construct or obtain the concrete `IJivsDomFormInstaller`.
 5. Call `install(valueHostsManager, root?)`.

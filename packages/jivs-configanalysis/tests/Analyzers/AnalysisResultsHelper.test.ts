@@ -29,7 +29,7 @@ import {
     checkSyntaxError, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService,
     checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService
 } from '../TestSupport/support';
-import { DataTypeFormatterBase } from '@plblum/jivs-engine/src/DataTypes/DataTypeFormatterBase';
+import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatterBase';
 
 interface IAnalysisResultsHelperCommon {
     publicify_results: IConfigAnalysisResults;

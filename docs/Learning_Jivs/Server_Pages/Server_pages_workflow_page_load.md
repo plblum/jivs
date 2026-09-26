@@ -21,12 +21,10 @@ The following code brings those responsibilities together. It assumes that the g
 const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
 const config = rules.configure();
-
-config.onTextValueChanged = onTextValueChanged; // optional
-config.onValueHostValidationStateChanged = fieldValidated;
-config.onValidationStateChanged = formValidated;
-
 const vhm = new ValueHostsManager(config);
+vhm.onTextValueChanged = onTextValueChanged; // optional
+vhm.onValueHostValidationStateChanged = fieldValidated;
+vhm.onValidationStateChanged = formValidated;
 
 reconcileValueHostsWithEditors(vhm);
 attachEditorEventHandlers(vhm);

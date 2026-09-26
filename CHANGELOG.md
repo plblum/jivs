@@ -1,6 +1,9 @@
 **Alert**: Due to this software being actively developed to finalize the architecture, please expect breaking changes along the way.
 The intent is to deliver a production release that will limit breaking changes, and communicate them within the versioning
 by bumping the major version number. [here].0.0.
+## 0.24.0
+- **Breaking API change** - Relocated callbacks around ValueHostsManager from ValueHostsManagerConfig and the Builder
+to ValueHostsManager itself. Now wiring up callbacks occurs after creating ValueHostsManager, not before.
 
 ## 0.23.0
 - **Breaking API change** - Replaced state management. Callbacks have been replaced by ValueHostsManager.getCapturedState()

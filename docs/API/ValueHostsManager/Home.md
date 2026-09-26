@@ -5,8 +5,8 @@ The `ValueHostsManager` is the central object you use in Jivs. It has an extensi
 let services = createJivsServices(); 
 let rules = new PersonModelRules(services);
 let config = rules.configure();
-// apply optional callbacks to config here
 let vhm = new ValueHostsManager(config);
+// set up ValueHostsManager callbacks and establish UI behaviors
 ```
 All of these actions are covered in the [ValueHostsManager Configuration Guide](../../ValueHostsManager_Configuration_Guide.md). This document will introduce the members of `ValueHostsManager`.
 
@@ -185,13 +185,19 @@ interface ValidateOptions
 ## Callbacks
 Callbacks are how Jivs lets the UI know to take an action. They are an essential part of working with an UI. If you are working on server side validation, they are not often used.
 
-All callbacks must be setup on the `builder` or `config` object prior to creating `ValueHostsManager`. 
+All callbacks must be setup on `ValueHostsManager` after its creation, before the form is used. 
+
+```ts
+let vhm = new ValueHostsManager(config);
+vhm.onCallbackName = your_function;
+```
+
 - `onValueChanged` notifies you when a `ValueHost` had its value changed. On a `FieldValueHost`, this is the native value, not the text value.
     ```ts
     type ValueChangedHandler = (valueHost: IValueHost, oldValue: any) => void;
     ```
     ```ts
-    config.onValueChanged = (valueHost: IValueHost, oldValue: any) => {
+    vhm.onValueChanged = (valueHost: IValueHost, oldValue: any) => {
         // take some action on valueHost.getValue()
         // if desired, check the new against the old using oldValue
     }
@@ -210,7 +216,7 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
         (valueHost: IValidatableValueHost, oldValue?: string | null) => void;
     ```
     ```ts
-    config.onTextValueChanged = 
+    vhm.onTextValueChanged = 
         (valueHost: IValidatableValueHost, oldValue?: string | null) => {
         // take some action on valueHost.getTextValue()
         // if desired, check the new against the old using oldValue
@@ -223,7 +229,7 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
         (valueHostsManager: IValueHostsManager, validationState: ValidationState) => void;
     ```
     ```ts
-    config.onValidationStateChanged = 
+    vmh.onValidationStateChanged = 
         (valueHostsManager: IValueHostsManager, validationState: ValidationState) => {
         // Use the validationState extensively.
         // Its doNotSave should be used to block submitting/saving
@@ -236,7 +242,7 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
         (valueHost: IValidatableValueHost, validationState: ValueHostValidationState) => void;
     ```
     ```ts
-    config.onValueHostValidationStateChanged = 
+    vhm.onValueHostValidationStateChanged = 
         (valueHost: IValidatableValueHost, validationState: ValueHostValidationState) {
         // Use the validationState extensively.
         // Its isValid property is not always ideal, because it can be true when IssuesFound has an entry.
@@ -244,15 +250,14 @@ All callbacks must be setup on the `builder` or `config` object prior to creatin
         // Its IssuesFound array contains all error messages to display in a Field Error Display widget
     }
     ```
-- `notifyValidationStateChangedDelay` - _This property can only be found on the ValueHostsManagerConfig object. Set it prior to creating ValueHostsManager._
-    Adjusts a debounce delay for `onValidationStateChanged` notifications. The delay is in milliseconds. The default is 100 ms. Set to 0 to disable the debounce.
+- `notifyValidationStateChangedDelay` - Adjusts a debounce delay for `onValidationStateChanged` notifications. The delay is in milliseconds. The default is 100 ms. Set to 0 to disable the debounce.
 
     `onValidationStateChanged` runs after each `valueHost.validate()` call, even though `onValueHostValidationStateChanged` also runs.
     A call by `ValueHostsManager.validate()` will invoke validation on multiple FieldValueHosts
     resulting in numerous calls to onValidationStateChanged.
     This debounces them so `ValueHostsManager.validate()` generally results in one call.
     ```ts
-    config.notifyValidationStateChangedDelay = 500;
+    vhm.notifyValidationStateChangedDelay = 500;
     ```    
 ## API References
 - [ValueHostsManager class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHostsManager_ConcreteClasses.ValueHostsManager.html)
