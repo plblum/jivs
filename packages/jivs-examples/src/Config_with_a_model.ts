@@ -95,8 +95,7 @@ export function configPersonEditFormRules(): ValueHostsManager
     // Step 2: Configure and create the ValueHostsManager.
     let services = createJivsServices('en');
     let rules = new PersonEditFormRules(services);
-    let config = rules.configure();
-    let vhm = new ValueHostsManager(config);
+    let vhm = new ValueHostsManager(rules.configure());
     vhm.onValueChanged = onValueChangedHandler; 
 
     // at this point, use the ValueHostsManager to validate your model.

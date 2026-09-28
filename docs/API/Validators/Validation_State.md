@@ -34,7 +34,7 @@ interface ValidationState {
 - `group` - The validation group name that was passed into the `validate()` call. When undefined, none was used.
 
 ```ts
-let vhm = new ValueHostsManager(config); // assume fully setup with validators
+let vhm = new ValueHostsManager(rules.configure()); // assume fully setup with validators
 vhm.onValidationStateChanged = formValidated;
 ...
 let valState = vhm.validate();

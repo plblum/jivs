@@ -41,8 +41,8 @@ Each time its created, `ValueHostsManager` inherits the default culture from the
 Use this to override that default:
 ```ts
 // prior to creating the ValueHostsManager
-config.behaviors.activeCultureId = 'en';
-let vhm = new ValueHostsManager(config);
+let rules = new MyValueHostRules(services); // your implementation does this: builder.behaviors.activeCultureId = 'en';  
+let vhm = new ValueHostsManager(rules.configure());
 // once the ValueHostsManager exists, change it at will
 vhm.behaviors.activeCultureId = 'es-MX';
 ```

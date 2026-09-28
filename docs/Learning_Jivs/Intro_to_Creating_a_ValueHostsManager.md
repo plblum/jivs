@@ -24,9 +24,8 @@ Expect to write this code each time you need a `ValueHostsManager`:
 
 ```ts
 const services = createJivsServices('en-US');
-const rules = new YourRulesClass(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const rules = new MyValueHostRules(services);
+const vhm = new ValueHostsManager(rules.configure());
 ```
 
 There are four steps:
@@ -160,8 +159,7 @@ Creating its `ValueHostsManager` uses the same pattern:
 ```ts
 const services = createJivsServices('en-US');
 const rules = new PersonFormRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 ```
 
 At this point, the `ValueHostsManager` contains the `ValueHosts` and validation rules needed by this form. Nothing has been connected to the HTML yet.
@@ -200,8 +198,7 @@ Now use the standard creation pattern:
 ```ts
 const services = createJivsServices('en-US');
 const rules = new SearchFormRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(conrules.configure()fig);
 ```
 
 The resulting `ValueHostsManager` contains a `FieldValueHost` named `SearchText` with the data type and validation rules defined by `SearchFormRules`.

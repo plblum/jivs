@@ -14,8 +14,7 @@
  * 
     ```ts
     const rules = new PersonEditFormRules(services);
-    const config = rules.configure();
-    const vhm = new ValueHostsManager(config);
+    const vhm = new ValueHostsManager(rules.configure());
     vhm.onValidationStateChanged = (parms)=> {}; // various callbacks hooked up
     ```
  * @module jivs-builder/ValueHostRules/ConcreteClasses

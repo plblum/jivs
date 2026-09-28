@@ -38,7 +38,7 @@ ValueHost.getValue → adapt the value to any requirements of the model property
 ## Basic setup
 The actual transfer process is pretty simple, but requires configuration described below.
 ```ts
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 let model = getMyModel(); // your code
 let reader = new ModelReader(vhm, model, {});   // various options available in third parameter
 reader.readFromModel();  // data is now in the ValueHosts
@@ -53,7 +53,7 @@ saveMyModel(model); // your code
 
 If you want to have it also update the text value of your inputs, wire up the `ValueHostsManager.onTextValueChanged` callback hook to receive that text. As the `ModelReader` works, it will trigger `onTextValueChanged` so long as the `ValueHost` is setup to format the value. See [Decisions around Formatting](../ValueHosts/Getting_and_Setting_Values.md#decisions-around-jivs-built-in-formatting).
 ```ts
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 vhm.onTextValueChanged = myFunctionToUpdateInputs;
 ```
 

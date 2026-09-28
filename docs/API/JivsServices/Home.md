@@ -6,8 +6,7 @@ This class is essential to anything you do in Jivs. You must have an instance of
 ```ts
 let services = createJivsServices('en-US'); // creates JivsServices. We'll see this function below
 let rules = new SomeValueHostRules(services);
-let config = rules.configure();
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 ```
 As a result, it is essential that you have a `createJivsServices()` function, and gone through it to ensure it configures dependency injection according to your needs. 
 

@@ -178,6 +178,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         if (this._debounceVHValidated)
             this._debounceVHValidated.dispose();
         this._debounceVHValidated = null;
+        this._onConfigChanged = null;
+        this._onValueHostValidationStateChanged = null;
+        this._onTextValueChanged = null;
+        this._onValidationStateChanged = null;
+        this._onValueChanged = null;
+
     }
     /**
      * Provides an API for logging, sending entries to the loggingService.
@@ -730,7 +736,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
      * at the valueHostsManager level to know.
      * This function is optionally debounced with a delay in ms coming from
-     * ValueHostsManagerConfig.notifyValidationStateChangedDelay
+     * ValueHostsManager.notifyValidationStateChangedDelay
      * @param validationState
      * @param options
      * @param force - when true, override the debouncer and execute immediately.

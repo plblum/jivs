@@ -40,8 +40,7 @@ export class PersonModelRules extends ValueHostRulesBase {
 // create the ValueHostsManager
 const services = createJivsServices('en-US');
 const rules = new PersonModelRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 vhm.onValueHostsValidationStateChanged = fieldValidated; // your function
 vhm.onValidationStateChanged = formValidated; // your function
 // user submits the form

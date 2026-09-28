@@ -382,8 +382,7 @@ export function errorMessageToText(
  * Callback function for ValueHostsManager.onTextValueChanged to 
  * update the text value of the associated HTML form control element.
  * ```ts
- * const config = rules.configure();
- * const vhm = new ValueHostsManager(config);
+ * const vhm = new ValueHostsManager(rules.configure());
  * vhm.onTextValueChanged = onTextValueChanged;
  * ```
  * Called in these two cases:

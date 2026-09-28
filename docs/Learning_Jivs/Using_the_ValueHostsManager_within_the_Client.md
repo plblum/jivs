@@ -144,8 +144,7 @@ We'll focus on three callbacks:
 They are wired onto the configuration before the `ValueHostsManager` is created:
 
 ```ts
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 vhm.onTextValueChanged = your_onTextValueChanged_handler;
 vhm.onValueHostValidationStateChanged = your_onValueHostValidationStateChanged_handler;
 vhm.onValidationStateChanged = your_onValidationStateChanged_handler;

@@ -84,8 +84,7 @@ Then use it to create the `ValueHostsManager`.
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
+const vhm = new ValueHostsManager(rules.configure());   // 'vhm' will be used to handle validation
 // set up ValueHostsManager callbacks and establish UI behaviors
 ```
 
@@ -136,8 +135,7 @@ but not in the UI. Here's what the code for the server side looks like.
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonModelRules(services); 
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
+const vhm = new ValueHostsManager(rules.configure());   // 'vhm' will be used to handle validation
 ```
 
 ## IAdaptModelRulesToForm interface: Adapt the model rules for the form
@@ -222,8 +220,7 @@ class PersonEditFormRules
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new PersonEditFormRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
+const vhm = new ValueHostsManager(rules.configure());   // 'vhm' will be used to handle validation
 // typical callbacks for browser-based code
 vhm.onValidationStateChanged = myValidationStateChangedFn;
 vhm.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;
@@ -282,8 +279,7 @@ class DateRangeFormRules extends ValueHostRulesBase {
 ```ts
 const services = createJivsServices('en-US'); // see "Installing Jivs"
 const rules = new DateRangeFormRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);   // 'vhm' will be used to handle validation
+const vhm = new ValueHostsManager(rules.configure());   // 'vhm' will be used to handle validation
 // typical callbacks for browser-based code
 vhm.onValidationStateChanged = myValidationStateChangedFn;
 vhm.onValueHostValidationStateChanged = myValueHostValidationStateChangedFn;

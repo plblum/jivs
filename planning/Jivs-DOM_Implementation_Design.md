@@ -39,7 +39,7 @@ flowchart TB
     subgraph ENGINE["jivs-engine"]
         direction TB
 
-        CONFIG["ValueHostsManagerConfig"]
+        CONFIG["ValueHostsManager"]
         FIELD["IFieldValueHost"]
         TYPES["Validation and error types"]
 
@@ -3943,13 +3943,11 @@ If the existing callback throws, the exception propagates and DOM dispatch does 
 
 The composed callback retains the dispatcher instance. No separate dispatcher registry or disposal contract is required.
 
-When the configuration, manager, and callback become unreachable, the dispatcher can also be collected.
+When the manager and callback become unreachable, the dispatcher can also be collected.
 
-Attaching different dispatcher categories to the same configuration is valid. Attaching the same category more than once is unsupported caller misuse. The service does not track or detect duplicate attachment; another attachment naturally composes another callback and may cause duplicate DOM dispatch.
+Attaching different dispatcher categories to the same ValueHostsManager is valid. Attaching the same category more than once is unsupported caller misuse. The service does not track or detect duplicate attachment; another attachment naturally composes another callback and may cause duplicate DOM dispatch.
 
 Attachment changes only the `ValueHostsManager`. It does not discover or install elements.
-
-Because callbacks must be attached before constructing the `ValueHostsManager`, some initialization callbacks may occur before DOM installation. Those dispatches safely find no installed elements. `JivsDomFormInstallerBase` performs initial presentation and ARIA application, and `ValueHostsManager.broadcastState()` can republish current callback state when required.
 
 ## Form Installation Coordination
 
@@ -4507,8 +4505,8 @@ The collectors must still be disposed when installation exits because of a failu
 Applications use the DOM services in this order:
 
 1. Configure `DomServices`, registrations, and Dispatcher Creators.
-2. Attach dispatcher callbacks to `ValueHostsManager`.
-3. Construct the `ValueHostsManager`.
+2. Construct the `ValueHostsManager`.
+3. Attach dispatcher callbacks to `ValueHostsManager`.
 4. Construct or obtain the concrete `IJivsDomFormInstaller`.
 5. Call `install(valueHostsManager, root?)`.
 6. Perform any application-specific `broadcastState()` call separately.

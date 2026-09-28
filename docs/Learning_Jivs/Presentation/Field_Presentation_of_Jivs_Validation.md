@@ -30,7 +30,7 @@ export type FieldDispatcher = (
 It is attached to the `ValueHostsManager` through its `onValueHostValidationStateChanged` callback:
 
 ```ts
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 vhm.onValueHostValidationStateChanged = yourFieldDispatcher;
 ```
 

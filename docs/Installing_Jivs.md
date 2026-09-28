@@ -30,8 +30,7 @@ You will use this pattern as you work with Jivs:
 ```ts
 const services = createJivsServices('en-US');
 const rules = new YourRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 // setup UI side: ValueHostsManager callbacks to handle 
 // 1. editor value changes
 // 2. validation state changes

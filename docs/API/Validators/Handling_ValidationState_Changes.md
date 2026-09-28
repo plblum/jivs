@@ -37,7 +37,7 @@ Let's look at the basics for these callbacks to work with your UI.
     - We recommend using a style sheet class to hide a valid element with display:none instead of a class to show the invalid element.
 
 ```ts
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 vhm.onValueHostValidationStateChanged = fieldValidated;
 
 function fieldValidated(valueHost: IValidatableValueHost, validationState: ValueHostValidationState): void
@@ -113,7 +113,7 @@ function fieldValidated(valueHost: IValidatableValueHost, validationState: Value
     - See [jivs-DOM_helpers.ts](../../../starter_code/jivs-DOM_helpers.ts) for our error message building helper: `buildErrorMessagesHtml()`.
     - We recommend using a style sheet class to hide a valid element with `display:none` instead of a class to show the invalid element.
 ```ts
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 vhm.onValidationStateChanged = formValidated;
 
 function formValidated(valueHostsManager: IValueHostsManager, validationState: ValidationState): void

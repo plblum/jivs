@@ -105,8 +105,7 @@ function createJivsServicesForThisExample(): IJivsServices {
 export function configureVMForDifferenceBetweenDates(): IValueHostsManager {
     let services = createJivsServicesForThisExample();
     let rules = new DateRangeFormRules(services);
-    let config = rules.configure();
-    return new ValueHostsManager(config);
+    return new ValueHostsManager(rules.configure());
 }
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.

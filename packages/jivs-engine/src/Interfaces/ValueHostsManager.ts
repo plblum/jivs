@@ -324,7 +324,7 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * fire onValueHostValidationStateChanged. This allows systems that observe validation changes 
      * at the valueHostsManager level to know.
      * This function is optionally debounced with a delay in ms coming from
-     * ValueHostsManagerConfig.notifyValidationStateChangedDelay
+     * ValueHostsManager.notifyValidationStateChangedDelay
      * @param validationState
      * @param options
      * @param force - when true, override the debouncer and execute immediately.
@@ -439,7 +439,6 @@ export type ValueHostsManagerConfigChangedHandler
  
 /**
  * Provides callback hooks for the consuming system to supply to ValueHostsManager.
- * This instance is supplied in the constructor of ValueHostsManager.
  */
 export interface IValueHostsManagerCallbacks
     extends IValueHostCallbacks,

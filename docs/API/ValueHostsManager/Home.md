@@ -4,8 +4,7 @@ The `ValueHostsManager` is the central object you use in Jivs. It has an extensi
 ```ts
 let services = createJivsServices(); 
 let rules = new PersonModelRules(services);
-let config = rules.configure();
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 // set up ValueHostsManager callbacks and establish UI behaviors
 ```
 All of these actions are covered in the [ValueHostsManager Configuration Guide](../../ValueHostsManager_Configuration_Guide.md). This document will introduce the members of `ValueHostsManager`.
@@ -58,8 +57,11 @@ class ValueHostsManager {
     - `disableParsingOnValueChange` turns off parsing when `setTextValue()` is used. Alternative, use 
     `setTextValue(value, { disableParser: true });` to selectively turn off parsing. Defaults to false.
     ```ts
-    config.activeCultureID = 'de-DE';
-    let vhm = new ValueHostsManager(config);
+    // this is within your ValueHostsRules subclass...
+    builder.behaviors.activeCultureID = 'de-DE';
+    // now consume it
+    let rules = new MyValueHostsRules(services);
+    let vhm = new ValueHostsManager(rules.configure());
     ```
 ### Getting ValueHosts
 See [Naming ValueHosts](../ValueHosts/Naming_ValueHosts.md) to understand the parameters `valueHostName`, `elementIdentifier`, and `propertyName`.
@@ -188,7 +190,7 @@ Callbacks are how Jivs lets the UI know to take an action. They are an essential
 All callbacks must be setup on `ValueHostsManager` after its creation, before the form is used. 
 
 ```ts
-let vhm = new ValueHostsManager(config);
+let vhm = new ValueHostsManager(rules.configure());
 vhm.onCallbackName = your_function;
 ```
 

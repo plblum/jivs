@@ -142,11 +142,13 @@ Your `ValueHost` configuration determines if formatting will happen.
     ```
 - Use the resulting text value in your user interface element
     ```ts
+    // inside of MyValueHostsRules
     builder.field('BirthDate', LookupKey.Date, { // will use DateFormatter
         elementIdentifier: 'idForBirthdate'  // hold the id attribute value of the input if different from the ValueHost name
     });
-    let config = builder.completed();
-    let vhm = new ValueHostsManager(config);
+
+    let rules = new MyValueHostsRules(services); // contains the builder code above
+    let vhm = new ValueHostsManager(rules.configure());
     vhm.onTextValueChanged = (fieldValueHost, oldValue)=>{
         let newTextValue = fieldValueHost.getTextValue();
         // assign it to the input's value attribute

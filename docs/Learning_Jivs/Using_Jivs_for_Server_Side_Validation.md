@@ -54,8 +54,7 @@ Server-side code uses the same creation pattern introduced earlier:
 ```ts
 const services = createJivsServices('en-US');
 const rules = new PersonModelRules(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure());
 ```
 
 The important difference from a client-side form is which rules class is used.
@@ -378,8 +377,7 @@ async function processPersonRequest(
 ): Promise<SavePersonResponse> {
     const services = createJivsServices('en-US');
     const rules = new PersonModelRules(services);
-    const config = rules.configure();
-    const vhm = new ValueHostsManager(config);
+    const vhm = new ValueHostsManager(rules.configure());
 
     const reader = new ModelReader(vhm, requestData);
     reader.readFromModel();

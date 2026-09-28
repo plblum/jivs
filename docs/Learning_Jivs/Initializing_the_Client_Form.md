@@ -16,9 +16,8 @@ The examples assume that the application has configured its ValueHost Rules. Eac
 
 ```ts
 const services = createJivsServices('en-US');
-const rules = new SomeRulesObject(services);
-const config = rules.configure();
-const vhm = new ValueHostsManager(config);
+const rules = new MyValueHostRules(services);
+const vhm = new ValueHostsManager(rules.configure());
 // set up ValueHostsManager callbacks and establish UI behaviors
 ```
 

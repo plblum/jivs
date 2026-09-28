@@ -123,8 +123,7 @@ The `Adapter` has these features:
 ```ts
 const services = createJivsServices('en-US');
 const rules = new YourValueHostRules(services);
-const config = rules.configure();   // takes ValueHostRulesOptions. See below
-const vhm = new ValueHostsManager(config);
+const vhm = new ValueHostsManager(rules.configure()); // configure() takes ValueHostRulesOptions. See below
 ```
 `configure()` converts your rules into the `ValueHostsManagerConfig object` tree. Use its `options` parameter when you need to influence how the rules are prepared.
 
