@@ -1675,6 +1675,14 @@ describe('getValueHost, getValidatorsValueHost, getFieldValueHost, getCalcValueH
         // no match returns null
         let vh3: IFieldValueHost | null = testItem.getFieldByElementIdentifier('C');
         expect(vh3).toBeNull();
+        // case-insensitive match
+        let vh4: IFieldValueHost | null = testItem.getFieldByElementIdentifier('a');
+        // empty string returns null
+        let vh5: IFieldValueHost | null = testItem.getFieldByElementIdentifier('');
+        expect(vh5).toBeNull();
+        // null returns null
+        let vh6: IFieldValueHost | null = testItem.getFieldByElementIdentifier(null as any);
+        expect(vh6).toBeNull();
     });
     // getFieldByPropertyName(propertyName: string): IFieldValueHost | null
     test('getFieldByPropertyName returns the expected FieldValueHost when both have propertyName established', () =>
@@ -3560,6 +3568,49 @@ describe('invokeOnConfigChanged', () => {
         expect(configsReceived).toBeUndefined();
     });
 });
+describe('getMetadata and setMetadata', () =>
+{
+    test('Set and get metadata', () => {
+        let testItem = new Publicify_ValueHostsManager({
+            services: new MockJivsServices(true, false),
+            valueHostConfigs: []
+        });
+        expect(testItem.getMetadata('key1')).toBeUndefined();
+        testItem.setMetadata('key1', 'value1');
+        expect(testItem.getMetadata('key1')).toBe('value1');
+    });
+    test('Delete metadata with undefined', () =>
+    {
+        let testItem = new Publicify_ValueHostsManager({
+            services: new MockJivsServices(true, false),
+            valueHostConfigs: []
+        });
+        testItem.setMetadata('key1', 'value1');
+        expect(testItem.getMetadata('key1')).toBe('value1');
+        testItem.setMetadata('key1', undefined);
+        expect(testItem.getMetadata('key1')).toBeUndefined();
+    });    
+    // case sensitive test
+    test('Metadata keys are case sensitive', () => {
+        let testItem = new Publicify_ValueHostsManager({
+            services: new MockJivsServices(true, false),
+            valueHostConfigs: []
+        });
+        testItem.setMetadata('key1', 'value1');
+        expect(testItem.getMetadata('Key1')).toBeUndefined();
+        expect(testItem.getMetadata('key1')).toBe('value1');
+    });
+    // assert when null
+    test('Asserts when key is null', () => {
+        let testItem = new Publicify_ValueHostsManager({
+            services: new MockJivsServices(true, false),
+            valueHostConfigs: []
+        });
+        expect(() => testItem.getMetadata(null as any)).toThrow();
+        expect(() => testItem.setMetadata(null as any, 'value')).toThrow();
+    });
+
+});
 describe('broadcastState', () =>
 {
     // hook up all callbacks supported by broadcastState and call broadcastState
@@ -3947,6 +3998,14 @@ describe('toIValueHostsManager function', () => {
             getContainerIdentifier: function (): string | undefined
             {
                 throw new Error('Function not implemented.');
+            },
+            getMetadata: function (key: string): unknown | undefined
+            {
+                throw new Error('Function not implemented.');
+            },
+            setMetadata: function (key: string, value: unknown | undefined): void
+            {
+                throw new Error('Function not implemented.');
             }
         };
         expect(toIValueHostsManager(testItem)).toBe(testItem);
@@ -4078,6 +4137,14 @@ describe('toIValueHostsManagerAccessor function', () => {
                     throw new Error('Function not implemented.');
                 },
                 getContainerIdentifier: function (): string | undefined
+                {
+                    throw new Error('Function not implemented.');
+                },
+                getMetadata: function (key: string): unknown | undefined
+                {
+                    throw new Error('Function not implemented.');
+                },
+                setMetadata: function (key: string, value: unknown | undefined): void
                 {
                     throw new Error('Function not implemented.');
                 }                

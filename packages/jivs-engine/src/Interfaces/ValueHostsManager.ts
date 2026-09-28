@@ -359,6 +359,24 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
      */
     getContainerIdentifier(): string | undefined;
+
+    /**
+     * Metadata allows storing arbitrary key-value pairs associated with the ValueHostsManager instance.
+     * 
+     * Retrieve the metadata item associated with the given key. Returns undefined if the key does not exist.
+     * @param key The key of the metadata item to retrieve.
+     * @returns
+     */
+    getMetadata(key: string): unknown | undefined;
+
+    /**
+     * Metadata allows storing and retrieving arbitrary key-value pairs associated with the ValueHostsManager instance.
+     * Store or discard a metadata item associated with the given key. 
+     * If the value is undefined, the metadata item is discarded.
+     * @param key The key of the metadata to store or discard
+     * @param value The value to store or if undefined, discard.
+     */
+    setMetadata(key: string, value: unknown | undefined): void;
 }
 
 /**

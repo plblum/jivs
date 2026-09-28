@@ -618,15 +618,21 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Retrieves the FieldValueHost identified by the element identifier.
      * Element Identifier is either from FieldValueHostConfig.elementIdentifier, setElementIdentifer(), or falls back to FieldValueHostConfig.name.
      * @param elementIdentifier - The unique element identifier associated with the FieldValueHost.
+     * The comparison is case-insensitive.
      * @returns The FieldValueHost instance or null if not found or found a different type of value host.
      */
     public getFieldByElementIdentifier(elementIdentifier: string): IFieldValueHost | null
     {
+        if (elementIdentifier === '' || elementIdentifier === null)
+        {
+            return null;
+        }
+        elementIdentifier = elementIdentifier.toLowerCase();
         const generator = this.enumerateValueHosts();
         for (let vh of generator)
         {
             let fieldVh = toIFieldValueHost(vh);
-            if (fieldVh && (fieldVh.getElementIdentifier() === elementIdentifier)) {
+            if (fieldVh && (fieldVh.getElementIdentifier()?.toLowerCase() === elementIdentifier)) {
                 return fieldVh;
             }
         }
@@ -1120,6 +1126,42 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     {
         return this.config.containerIdentifier;
     }
+
+    //#region Metadata
+    /**
+ * Metadata allows storing arbitrary key-value pairs associated with the ValueHostsManager instance.
+ * 
+ * Retrieve the metadata item associated with the given key. Returns undefined if the key does not exist.
+ * @param key The key of the metadata item to retrieve.
+ * @returns
+ */
+    public getMetadata(key: string): unknown | undefined
+    {
+        assertNotNull(key, 'key');
+        return this._metadata?.[key];
+    }
+
+    /**
+     * Metadata allows storing and retrieving arbitrary key-value pairs associated with the ValueHostsManager instance.
+     * Store or discard a metadata item associated with the given key. 
+     * If the value is undefined, the metadata item is discarded.
+     * @param key The key of the metadata to store or discard
+     * @param value The value to store or if undefined, discard.
+     */
+    public setMetadata(key: string, value: unknown | undefined): void
+    {
+        assertNotNull(key, 'key');
+        if (!this._metadata) {
+            this._metadata = {};
+        }
+        if (value === undefined) {
+            delete this._metadata[key];
+        } else {
+            this._metadata[key] = value;
+        }
+    }
+    private _metadata: Record<string, unknown> | undefined;
+//#endregion Metadata    
 }
 
 type notifyValidationStateChangedWorkerHandler = (validationState: ValidationState | null, options?: ValidateOptions) => void;

@@ -20,6 +20,7 @@ import { IIssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { ElementRole } from './Types';
 import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
 import { IPresentationFactory } from './Presentations_common';
+import { IElementRegistry } from './ElementRegistry';
 
 
 /**
@@ -130,6 +131,14 @@ export interface IJivsDomServices
      */
     resolveFieldElement(root: HTMLElement | null, valueHost: IFieldValueHost,
         role: ElementRole | string, elementIdentifierTemplate?: string): HTMLElement | null;
+    
+    /**
+     * Retrieves the element registry associated with the specified ValueHostsManager instance.
+     * ValueHostsManager retains it in metadata under the key 'elementRegistry'.
+     * If not there, this function must create it and store it under the same key.
+     * @param valueHostsManager The ValueHostsManager instance for which to retrieve the element registry.
+     */
+    getElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
     
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.

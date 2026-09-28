@@ -5,7 +5,6 @@
  */
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { IValidatableValueHost, ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
@@ -144,18 +143,28 @@ export class DispatcherService extends DomServiceBase
      * Attaches a ITextValueDispatcher to IValueHostsManager.onTextValueChanged callback.
      * This allows the dispatcher to respond to text value changes in the value hosts managed by the value hosts manager.
      * If onTextValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
+     * Multiple attempts will not replace existing dispatcher. The original is returned.
      * @param valueHostsManager The value hosts manager instance.
      * @returns The attached ITextValueDispatcher instance, or null if none could be attached.
      */
     public attachTextValueChanged(valueHostsManager: IValueHostsManager): ITextValueDispatcher | null
     {
+        // ValueHostsManager.metadata['onTextValueChanged'] is a flag that this has been installed
+        // It retains the dispatcher that was previously attached, if any, and calls it before the new dispatcher.
+        let dispatcher: ITextValueDispatcher | null =
+            valueHostsManager.getMetadata('onTextValueChanged') as ITextValueDispatcher ?? null;
+        if (dispatcher)
+            return dispatcher;
+
         let savedOnTextValueChanged = valueHostsManager.onTextValueChanged;
-        let dispatcher = this.textValueDispatcherRegistry();
+        dispatcher = this.textValueDispatcherRegistry();
         valueHostsManager.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue?: string | null) =>
         {
             savedOnTextValueChanged?.apply(this, [valueHost, oldValue]);
             dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
         };
+
+        valueHostsManager.setMetadata('onTextValueChanged', dispatcher);
         return dispatcher;
 
     }
@@ -164,18 +173,28 @@ export class DispatcherService extends DomServiceBase
      * Attaches a IValueDispatcher to IValueHostsManager.onValueChanged callback.
      * This allows the dispatcher to respond to value changes in the value hosts managed by the value hosts manager.
      * If onValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
+     * Multiple attempts will not replace existing dispatcher. The original is returned.
      * @param valueHostsManager The value hosts manager instance.
      * @returns The attached IValueDispatcher instance, or null if none could be attached.
      */
     public attachValueChanged(valueHostsManager: IValueHostsManager): IValueDispatcher | null
     {
+        // ValueHostsManager.metadata['onValueChanged'] is a flag that this has been installed
+        // It retains the dispatcher that was previously attached, if any, and calls it before the new dispatcher.
+        let dispatcher: IValueDispatcher | null =
+            valueHostsManager.getMetadata('onValueChanged') as IValueDispatcher ?? null;
+        if (dispatcher)
+            return dispatcher;
+
         let savedOnValueChanged = valueHostsManager.onValueChanged;
-        let dispatcher = this.valueDispatcherRegistry();
+        dispatcher = this.valueDispatcherRegistry();
         valueHostsManager.onValueChanged = (valueHost: IValueHost, oldValue?: any) =>
         {
             savedOnValueChanged?.apply(this, [valueHost, oldValue]);
             dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
         };
+
+        valueHostsManager.setMetadata('onValueChanged', dispatcher);
         return dispatcher;
     }
     
@@ -184,18 +203,27 @@ export class DispatcherService extends DomServiceBase
      * Attaches a IFieldValidationDispatcher to IValueHostsManager.onValueHostValidationStateChanged callback.
      * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the value hosts manager.
      * If onValueHostValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
+     * Multiple attempts will not replace existing dispatcher. The original is returned.
      * @param valueHostsManager The value hosts manager instance.
      * @returns The attached IFieldValidationDispatcher instance, or null if none could be attached.
      */
     public attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager): IFieldValidationDispatcher | null
     {
+        // ValueHostsManager.metadata['onValueHostValidationStateChanged'] retains the previously attached dispatcher, if any.
+        let dispatcher: IFieldValidationDispatcher | null =
+            valueHostsManager.getMetadata('onValueHostValidationStateChanged') as IFieldValidationDispatcher ?? null;
+        if (dispatcher)
+            return dispatcher;
+
         let savedOnValueHostValidationStateChanged = valueHostsManager.onValueHostValidationStateChanged;
-        let dispatcher = this.fieldValidationDispatcherRegistry();
+        dispatcher = this.fieldValidationDispatcherRegistry();
         valueHostsManager.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, state: ValueHostValidationState) =>
         {
             savedOnValueHostValidationStateChanged?.apply(this, [valueHost, state]);
             dispatcher.dispatch(valueHost as IFieldValueHost, state);
         };
+
+        valueHostsManager.setMetadata('onValueHostValidationStateChanged', dispatcher);
         return dispatcher;
     }
 
@@ -203,18 +231,27 @@ export class DispatcherService extends DomServiceBase
      * Attaches a IFormValidationDispatcher to IValueHostsManager.onValidationStateChanged callback.
      * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the value hosts manager.
      * If onValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
+     * Multiple attempts will not replace existing dispatcher. The original is returned.
      * @param valueHostsManager The value hosts manager instance.
      * @returns The attached IFormValidationDispatcher instance, or null if none could be attached.
      */
     public attachValidationStateChanged(valueHostsManager: IValueHostsManager): IFormValidationDispatcher | null
     {
+        // ValueHostsManager.metadata['onValidationStateChanged'] retains the previously attached dispatcher, if any.
+        let dispatcher: IFormValidationDispatcher | null =
+            valueHostsManager.getMetadata('onValidationStateChanged') as IFormValidationDispatcher ?? null;
+        if (dispatcher)
+            return dispatcher;
+
         let savedOnValidationStateChanged = valueHostsManager.onValidationStateChanged;
-        let dispatcher = this.formValidationDispatcherRegistry();
+        dispatcher = this.formValidationDispatcherRegistry();
         valueHostsManager.onValidationStateChanged = (valueHostsManager: IValueHostsManager, state: ValidationState) =>
         {
             savedOnValidationStateChanged?.apply(this, [valueHostsManager, state]);
             dispatcher.dispatch(valueHostsManager, state);
         };
+
+        valueHostsManager.setMetadata('onValidationStateChanged', dispatcher);
         return dispatcher;
     }
 

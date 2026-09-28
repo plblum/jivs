@@ -28,8 +28,10 @@ import { IPresentationFactory } from '../Interfaces/Presentations_common';
 import { ElementRole } from '../Interfaces/Types';
 import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
 import { IssuesFoundFormatterService } from './IssuesFoundFormatterService';
+import { IElementRegistry } from '../Interfaces/ElementRegistry';
+import { ElementRegistry } from '../FormInstaller/EditorRegistry';
 /**
- * @inheritdoc jivs-dom/Types/IJivsDomServices
+ * @inheritdoc jivs-dom/Types/JivsDomServices
  */
 export class JivsDomServices extends ServiceWithAccessorBase
     implements IJivsDomServices
@@ -254,7 +256,26 @@ export class JivsDomServices extends ServiceWithAccessorBase
         }
         return element instanceof HTMLElement ? element : null;
     }
-    
+
+    /**
+     * Retrieves the element registry associated with the specified ValueHostsManager instance.
+     * ValueHostsManager retains it in metadata under the key 'elementRegistry'.
+     * If not there, this function must create it and store it under the same key.
+     * @param valueHostsManager The ValueHostsManager instance for which to retrieve the element registry.
+     */
+    public getElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry
+    {
+        let elementRegistry = valueHostsManager.getMetadata('elementRegistry') as IElementRegistry | null;
+        if (!elementRegistry) {
+            elementRegistry = this.createElementRegistry(valueHostsManager);
+            valueHostsManager.setMetadata('elementRegistry', elementRegistry);
+        }
+        return elementRegistry;
+    }
+    protected createElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry
+    {
+        return new ElementRegistry(valueHostsManager);
+    }
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.
      * Use it to register editor adapter definitions.

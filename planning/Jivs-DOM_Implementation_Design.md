@@ -3999,12 +3999,12 @@ One Registry belongs to one manager. It is stored in manager metadata and is dis
 
 ```ts
 interface IEditorElementRegistryRecord {
-    readonly kind: 'editor';
+    readonly kind: 'field';
     readonly role: 'editor';
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
     readonly element: IJivsDomElement | null;
-    readonly anchorElement: IJivsDomElement | null;
+    readonly anchorElement: IJivsDomElement;
     readonly editorOptions: EditorInstallOptions | null;
 }
 
@@ -4013,7 +4013,7 @@ interface IFieldElementRegistryRecord {
     readonly role: ElementRole | string;
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
-    readonly element: IJivsDomElement | null;
+    readonly element: IJivsDomElement;
     readonly presentationOptions: FieldPresentationInstallOptions | null;
 }
 
@@ -4022,7 +4022,7 @@ interface IFormElementRegistryRecord {
     readonly role: ElementRole | string;
     readonly elementIdentifier: null;
     readonly fieldValueHost: null;
-    readonly element: IJivsDomElement | null;
+    readonly element: IJivsDomElement;
     readonly presentationOptions: FormPresentationInstallOptions | null;
 }
 
@@ -4128,9 +4128,9 @@ ARIA uses:
 
 ```ts
 interface IFieldAriaElementAnchors {
-    readonly editorAnchor: IJivsDomElement | null;
-    readonly errorMessageElement: IJivsDomElement | null;
-    readonly errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
+    editorAnchor: IJivsDomElement | null;
+    errorMessageElement: IJivsDomElement | null;
+    errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
 }
 
 getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;
@@ -4161,7 +4161,7 @@ getElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
 `JivsDomServiceBase` provides:
 
 ```ts
-protected createDefaultElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
+protected createElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
 ```
 
 The public method returns the Registry stored in manager metadata or creates, stores, and returns the default. DOM services remain stateless with respect to forms and do not retain a Collector or FormInstaller.
