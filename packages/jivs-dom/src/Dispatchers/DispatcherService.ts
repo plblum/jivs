@@ -13,12 +13,13 @@ import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHo
 import { DispatcherCreator, IDispatcherService, IFieldValidationDispatcher, IFormValidationDispatcher, ITextValueDispatcher, IValueDispatcher } from '../Interfaces/Dispatchers';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { DomServiceBase } from '../Services/DomServiceBase';
+import { FieldValidationDispatcher } from './FieldValidationDispatcher';
+import { FormValidationDispatcher } from './FormValidationDispatcher';
+import { TextValueDispatcher } from './TextValueDispatcher';
+import { ValueDispatcher } from './ValueDispatcher';
 
 /**
  * @inheritdoc jivs-dom/Types/Dispatchers!IDispatcherService
- * 
- * This class is setup like a factory for each of the 4 dispatcher types.
- * It has a default, which uses selector = undefined in its attach functions.
  */
 export class DispatcherService extends DomServiceBase
     implements IDispatcherService
@@ -28,83 +29,95 @@ export class DispatcherService extends DomServiceBase
         super(domServices);
     }
 
-    protected get textValueDispatcherRegistry(): Map<string, DispatcherCreator<ITextValueDispatcher>> {
+    protected get textValueDispatcherRegistry(): DispatcherCreator<ITextValueDispatcher> {
         if (!this._textValueDispatcherRegistry) {
-            this._textValueDispatcherRegistry = new Map<string, DispatcherCreator<ITextValueDispatcher>>();
+            this._textValueDispatcherRegistry = ()=> this.createTextValueDispatcher();
         }
         return this._textValueDispatcherRegistry;
     }
-    private _textValueDispatcherRegistry?: Map<string, DispatcherCreator<ITextValueDispatcher>>;
-    protected get valueDispatcherRegistry(): Map<string, DispatcherCreator<IValueDispatcher>> {
+    protected createTextValueDispatcher(): ITextValueDispatcher
+    {
+        return new TextValueDispatcher(this.domServices);
+    }
+    protected get valueDispatcherRegistry(): DispatcherCreator<IValueDispatcher> {
         if (!this._valueDispatcherRegistry) {
-            this._valueDispatcherRegistry = new Map<string, DispatcherCreator<IValueDispatcher>>();
+            this._valueDispatcherRegistry = ()=> this.createValueDispatcher();
         }
         return this._valueDispatcherRegistry;
     }
+    protected createValueDispatcher(): IValueDispatcher
+    {
+        return new ValueDispatcher(this.domServices);
+    }
 
-    protected get fieldValidationDispatcherRegistry(): Map<string, DispatcherCreator<IFieldValidationDispatcher>> {
+    protected get fieldValidationDispatcherRegistry(): DispatcherCreator<IFieldValidationDispatcher> {
         if (!this._fieldValidationDispatcherRegistry) {
-            this._fieldValidationDispatcherRegistry = new Map<string, DispatcherCreator<IFieldValidationDispatcher>>();
+            this._fieldValidationDispatcherRegistry = ()=> this.createFieldValidationDispatcher();
         }
         return this._fieldValidationDispatcherRegistry;
     }
+    protected createFieldValidationDispatcher(): IFieldValidationDispatcher
+    {
+        return new FieldValidationDispatcher(this.domServices);
+    }
 
-    protected get formValidationDispatcherRegistry(): Map<string, DispatcherCreator<IFormValidationDispatcher>> {
+    protected get formValidationDispatcherRegistry(): DispatcherCreator<IFormValidationDispatcher> {
         if (!this._formValidationDispatcherRegistry) {
-            this._formValidationDispatcherRegistry = new Map<string, DispatcherCreator<IFormValidationDispatcher>>();
+            this._formValidationDispatcherRegistry = ()=> this.createFormValidationDispatcher();
         }
         return this._formValidationDispatcherRegistry;
     }
-    private _valueDispatcherRegistry?: Map<string, DispatcherCreator<IValueDispatcher>>;
-    private _fieldValidationDispatcherRegistry?: Map<string, DispatcherCreator<IFieldValidationDispatcher>>;
-    private _formValidationDispatcherRegistry?: Map<string, DispatcherCreator<IFormValidationDispatcher>>;
+    protected createFormValidationDispatcher(): IFormValidationDispatcher
+    {
+        return new FormValidationDispatcher(this.domServices);
+    }
+    private _textValueDispatcherRegistry?: DispatcherCreator<ITextValueDispatcher>;
+    private _valueDispatcherRegistry?: DispatcherCreator<IValueDispatcher>;
+    private _fieldValidationDispatcherRegistry?: DispatcherCreator<IFieldValidationDispatcher>;
+    private _formValidationDispatcherRegistry?: DispatcherCreator<IFormValidationDispatcher>;
 
     /**
      * Registers a factory function for creating text value changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     public registerTextValueChangedDispatcher(
-        creator: DispatcherCreator<ITextValueDispatcher>, selector?: string): void
+        creator: DispatcherCreator<ITextValueDispatcher>): void
     {
-        this.textValueDispatcherRegistry.set(selector ?? '', creator);
+        this._textValueDispatcherRegistry = creator;
     }
 
     /**
      * Registers a factory function for creating value changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     public registerValueChangedDispatcher(
-        creator: DispatcherCreator<IValueDispatcher>, selector?: string): void
+        creator: DispatcherCreator<IValueDispatcher>): void
     {
-        this.valueDispatcherRegistry.set(selector ?? '', creator);
+        this._valueDispatcherRegistry = creator;
     }
 
     /**
      * Registers a factory function for creating value host validation state changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     public registerValueHostValidationStateChangedDispatcher(
-        creator: DispatcherCreator<IFieldValidationDispatcher>, selector?: string): void
+        creator: DispatcherCreator<IFieldValidationDispatcher>): void
     {
-        this.fieldValidationDispatcherRegistry.set(selector ?? '', creator);
+        this._fieldValidationDispatcherRegistry = creator;
     }
 
     /**
      * Registers a factory function for creating form validation state changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     public registerValidationStateChangedDispatcher(
-        creator: DispatcherCreator<IFormValidationDispatcher>, selector?: string): void
+        creator: DispatcherCreator<IFormValidationDispatcher>): void
     {
-        this.formValidationDispatcherRegistry.set(selector ?? '', creator);
+        this._formValidationDispatcherRegistry = creator;
     }
 
     /**
@@ -112,19 +125,16 @@ export class DispatcherService extends DomServiceBase
      * solution to attachment. It always attaches onValidationState and onValueHostValidationState
      * because those are fundamental to the operation of the value hosts manager.
      * The decision of using onTextValueChanged and onValueChanged attachments is left to the caller.
-     * Unlike the other attach functions, this does not offer an selector parameter that is passed
-     * through to the dispatcher. It always assumes selector = undefined.
-     * If selector is needed, use the dispatcher-specific attach functions instead.
      */
-    public attach(valueHostsManager: IValueHostsManager, addTextValueChanged?: boolean, addValueChanged?: boolean): void
+    public attach(valueHostsManager: IValueHostsManager, useTextValue?: boolean, useNativeValue?: boolean): void
     {
         this.attachValueHostValidationStateChanged(valueHostsManager);
         this.attachValidationStateChanged(valueHostsManager);
-        if (addTextValueChanged)
+        if (useTextValue)
         {
             this.attachTextValueChanged(valueHostsManager);
         }
-        if (addValueChanged)
+        if (useNativeValue)
         {
             this.attachValueChanged(valueHostsManager);
         }
@@ -135,19 +145,12 @@ export class DispatcherService extends DomServiceBase
      * This allows the dispatcher to respond to text value changes in the value hosts managed by the value hosts manager.
      * If onTextValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached ITextValueDispatcher instance, or null if none could be attached.
      */
-    public attachTextValueChanged(valueHostsManager: IValueHostsManager, selector?: string): ITextValueDispatcher | null
+    public attachTextValueChanged(valueHostsManager: IValueHostsManager): ITextValueDispatcher | null
     {
-        let dispatcherCreator = this.textValueDispatcherRegistry.get(selector ?? '');
-        if (!dispatcherCreator)
-        {
-            this.logger().message(LoggingLevel.Warn, ()=> `No ITextValueDispatcher registered for selector: '${selector ?? ''}'`);
-            return null;
-        }
         let savedOnTextValueChanged = valueHostsManager.onTextValueChanged;
-        let dispatcher = dispatcherCreator();
+        let dispatcher = this.textValueDispatcherRegistry();
         valueHostsManager.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue?: string | null) =>
         {
             savedOnTextValueChanged?.apply(this, [valueHost, oldValue]);
@@ -162,19 +165,12 @@ export class DispatcherService extends DomServiceBase
      * This allows the dispatcher to respond to value changes in the value hosts managed by the value hosts manager.
      * If onValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IValueDispatcher instance, or null if none could be attached.
      */
-    public attachValueChanged(valueHostsManager: IValueHostsManager, selector?: string): IValueDispatcher | null
+    public attachValueChanged(valueHostsManager: IValueHostsManager): IValueDispatcher | null
     {
-        let dispatcherCreator = this.valueDispatcherRegistry.get(selector ?? '');
-        if (!dispatcherCreator)
-        {
-            this.logger().message(LoggingLevel.Warn, ()=> `No IValueDispatcher registered for selector: '${selector ?? ''}'`);
-            return null;
-        }
         let savedOnValueChanged = valueHostsManager.onValueChanged;
-        let dispatcher = dispatcherCreator();
+        let dispatcher = this.valueDispatcherRegistry();
         valueHostsManager.onValueChanged = (valueHost: IValueHost, oldValue?: any) =>
         {
             savedOnValueChanged?.apply(this, [valueHost, oldValue]);
@@ -189,19 +185,12 @@ export class DispatcherService extends DomServiceBase
      * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the value hosts manager.
      * If onValueHostValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFieldValidationDispatcher instance, or null if none could be attached.
      */
-    public attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFieldValidationDispatcher | null
+    public attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager): IFieldValidationDispatcher | null
     {
-        let dispatcherCreator = this.fieldValidationDispatcherRegistry.get(selector ?? '');
-        if (!dispatcherCreator)
-        {
-            this.logger().message(LoggingLevel.Warn, ()=> `No IFieldValidationDispatcher registered for selector: '${selector ?? ''}'`);
-            return null;
-        }
         let savedOnValueHostValidationStateChanged = valueHostsManager.onValueHostValidationStateChanged;
-        let dispatcher = dispatcherCreator();
+        let dispatcher = this.fieldValidationDispatcherRegistry();
         valueHostsManager.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, state: ValueHostValidationState) =>
         {
             savedOnValueHostValidationStateChanged?.apply(this, [valueHost, state]);
@@ -215,19 +204,12 @@ export class DispatcherService extends DomServiceBase
      * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the value hosts manager.
      * If onValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFormValidationDispatcher instance, or null if none could be attached.
      */
-    public attachValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFormValidationDispatcher | null
+    public attachValidationStateChanged(valueHostsManager: IValueHostsManager): IFormValidationDispatcher | null
     {
-        let dispatcherCreator = this.formValidationDispatcherRegistry.get(selector ?? '');
-        if (!dispatcherCreator)
-        {
-            this.logger().message(LoggingLevel.Warn, ()=> `No IFormValidationDispatcher registered for selector: '${selector ?? ''}'`);
-            return null;
-        }
         let savedOnValidationStateChanged = valueHostsManager.onValidationStateChanged;
-        let dispatcher = dispatcherCreator();
+        let dispatcher = this.formValidationDispatcherRegistry();
         valueHostsManager.onValidationStateChanged = (valueHostsManager: IValueHostsManager, state: ValidationState) =>
         {
             savedOnValidationStateChanged?.apply(this, [valueHostsManager, state]);

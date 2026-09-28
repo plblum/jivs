@@ -33,7 +33,7 @@ export interface IEditorInstaller
      * @param element The DOM element serving as the installation anchor.
      * @param options The options for installing the editor.
      */
-    install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): void;
+    install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): IJivsDomElement;
 }
 
 /**

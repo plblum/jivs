@@ -1,29 +1,27 @@
 /**
- * Abstract base class for native value dispatchers in the DOM.
-  * 
- * Subclasses are expected to implement the `findElements` method to locate 
- * the relevant DOM elements for a given field value host.
+ * Implementation for native value dispatchers.
  * 
- * @module jivs-dom/Dispatchers/AbstractClasses/ValueDispatcherBase
+ * @module jivs-dom/Dispatchers/ConcreteClasses/ValueDispatcher
  */
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IValueDispatcher } from '../Interfaces/Dispatchers';
 import { FieldDispatcherBase } from './FieldDispatcherBase';
-
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * @inheritdoc jivs-dom/Types/Dispatchers!IValueDispatcher
- * 
- * Requires a concrete implementation of the `findElements` method to locate all relevant DOM elements 
- * for the given field value host.
  */
-export abstract class ValueDispatcherBase extends FieldDispatcherBase 
+export class ValueDispatcher extends FieldDispatcherBase 
     implements IValueDispatcher
 {
+    constructor(domServices: IJivsDomServices)
+    {
+        super(domServices);
+    }
     /**
      * ValueHostsManager.onValueChanged callback invokes this method 
      * when the native value of the field changes.
-     * It targets all elements returned by findElements(), which is supplied by subclassing.
+     * It targets all elements returned by findElements().
      * Executes an operation that retrieves IJivsDomElement.jivsValueAdapter 
      * and calls its apply function. If none is attached, the operation is skipped.
      * @param valueHost - from onValueChanged callback. findElements must limit 

@@ -33,7 +33,7 @@ export class EditorInstaller extends DomServiceBase
      * @param element The DOM element serving as the installation anchor.
      * @param options The options for installing the editor.
      */
-    public install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): void
+    public install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): IJivsDomElement
     {
         if (!options) {
             options = {};
@@ -44,7 +44,7 @@ export class EditorInstaller extends DomServiceBase
         // already installed? Done!
         if (anchor.jivsEditorAdapterDefinition !== undefined)
         {
-            return;
+            return anchor;
         }
 
         anchor.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, anchor);
@@ -69,6 +69,7 @@ export class EditorInstaller extends DomServiceBase
 
         // declare it as installed to prevent multiple installations
         anchor.jivsEditorAdapterDefinition = definition;
+        return anchor;
     }
 
     /**

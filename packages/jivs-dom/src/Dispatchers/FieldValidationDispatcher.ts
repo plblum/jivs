@@ -1,10 +1,7 @@
 /**
- * Abstract base class for text value dispatchers in the DOM.
-  * 
- * Subclasses are expected to implement the `findElements` method to locate 
- * the relevant DOM elements for a given field value host.
+ * Text value dispatcher implementation for handling field validation in the DOM.
  * 
- * @module jivs-dom/Dispatchers/AbstractClasses/FieldValidationDispatcherBase
+ * @module jivs-dom/Dispatchers/ConcreteClasses/FieldValidationDispatcher
  */
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
@@ -14,11 +11,8 @@ import { FieldDispatcherBase } from './FieldDispatcherBase';
 
 /**
  * @inheritdoc jivs-dom/Types/Dispatchers!IFieldValidationDispatcher
- * 
- * Requires a concrete implementation of the `findElements` method to locate all relevant DOM elements 
- * for the given field value host.
  */
-export abstract class FieldValidationDispatcherBase extends FieldDispatcherBase 
+export class FieldValidationDispatcher extends FieldDispatcherBase 
     implements IFieldValidationDispatcher
 {
     /**

@@ -1007,7 +1007,7 @@ interface IEditorInstaller {
         valueHost: IFieldValueHost,
         element: IJivsDomElement,
         options?: EditorInstallOptions
-    ): void;
+    ): IJivsDomElement;
 }
 
 interface EditorInstallOptions {

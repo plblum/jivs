@@ -21,7 +21,7 @@ import { DispatcherBase } from './DispatcherBase';
  * For example, FormPresenters will be attached to the Validation Summary widget.
  * That element's IJivsDomElement.jivsFormPresenter property will hold the attached FormPresenter instance.
  * 
- * Concrete subclasses implement the `findElements` method to locate those elements in the DOM.
+ * Uses the ElementRegistry to locate and manage the relevant DOM elements for each form-level component.
  */
 export abstract class FormDispatcherBase extends DispatcherBase
 {
@@ -63,12 +63,12 @@ export abstract class FormDispatcherBase extends DispatcherBase
     }
 
     /**
-     * Concrete implementation uses this to gather relevant elements associated witih a ValueHostsManager.
-     * Implementations can take several forms:
-     * - perform a "screen scrape" of the DOM to locate elements. jivs-simpledom uses this approach.
-     * - use a pre-defined mapping of value hosts to elements if available.
+     * Uses the ElementRegistry to locate all relevant DOM elements for the given ValueHostsManager.
      * @param root 
      * @param valueHostsManager 
      */
-    protected abstract findElements(root: HTMLElement, valueHostsManager: IValueHostsManager): Iterable<IJivsDomElement>;
+    protected findElements(root: HTMLElement, valueHostsManager: IValueHostsManager): Iterable<IJivsDomElement>
+    {
+        throw new Error('Not implemented');
+    }
 }

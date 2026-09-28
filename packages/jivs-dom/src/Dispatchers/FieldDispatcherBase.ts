@@ -24,7 +24,7 @@ import { DispatcherBase } from './DispatcherBase';
  * That element's IJivsDomElement.jivsTextValueAdapter property will hold 
  * the attached TextValueAdapter instance.
  * 
- * Concrete subclasses implement the `findElements` method to locate those elements in the DOM.
+ * Uses the ElementRegistry to locate and manage the relevant DOM elements for each field value host.
  */
 export abstract class FieldDispatcherBase extends DispatcherBase
 {
@@ -66,12 +66,12 @@ export abstract class FieldDispatcherBase extends DispatcherBase
     }
 
     /**
-     * Concrete implementation uses this to gather all elements for the given field value host.
-     * Implementations can take several forms:
-     * - perform a "screen scrape" of the DOM to locate elements. jivs-simpledom uses this approach.
-     * - use a pre-defined mapping of value hosts to elements if available.
+     * Uses the ElementRegistry to locate all relevant DOM elements for the given field value host.
      * @param root 
      * @param valueHost 
      */
-    protected abstract findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsDomElement>;
+    protected findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsDomElement>
+    {
+        throw new Error('Not implemented');
+    }
 }

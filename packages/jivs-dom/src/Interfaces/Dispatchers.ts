@@ -10,13 +10,9 @@
  * 
  * ## Dispatcher strategies
  * - Always use DispatcherService to create instances of the various dispatchers.
- *   It is a factory for each category of dispatcher.
- * - Libraries like jivs-simpledom use "screen scraping" techniques to find and update DOM elements.
- *   They get direction from attributes on the DOM elements. They only need one dispatcher per category
- *   as a result.
- * - Otherwise, you might create one Dispatcher per form, each providing form-specific list of elements
- *   through the dispatcher's findElements function. Each form gets one Dispatcher class and a selector
- *   name. They get registered together with the DispatcherService.
+ *   It is a Creator for each category of dispatcher.
+ * - Each Dispatcher depends on the IElementRegistry to locate the elements it needs to update.
+ *   There should not be dispatchers trying to discover DOM elements on their own.
  * @module jivs-dom/Types/Dispatchers
  */
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
@@ -124,23 +120,17 @@ export interface IFormValidationDispatcher
     dispatch(valueHostsManager: IValueHostsManager, state: ValidationState): void;
 }
 /**
- * A factory function type for creating dispatcher instances.
+ * A Creator function type for creating dispatcher instances.
  * Used by IDispatcherService.
- * @param selector An optional selector to support a traditional factory pattern.
  * @template TDispatcher The type of dispatcher the factory will create.
  */
-export type DispatcherCreator<TDispatcher> = (selector?: string) => TDispatcher;
+export type DispatcherCreator<TDispatcher> = () => TDispatcher;
 
 /**
  * This service ensures that the correct dispatcher is attached to the appropriate DOM elements 
  * based on the ValueHostsManager provided.
  * Handles registration, creation, and ValueHostsManager callback assignment of Dispatchers.
  * IJivsDomServices.dispatcherService holds the one instance of this service.
- * 
- * This service can provide a single Dispatcher instance or many, for each dispatcher category.
- * jivs-simpledom only needs one. 
- * However, your own implementation may offer instances for each form.
- * The selector parameter allows distinguishing between different instances if multiple are provided.
  */
 export interface IDispatcherService
 {
@@ -148,86 +138,77 @@ export interface IDispatcherService
      * Registers a factory function for creating text value changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     registerTextValueChangedDispatcher(
-        creator: DispatcherCreator<ITextValueDispatcher>, selector?: string): void;
+        creator: DispatcherCreator<ITextValueDispatcher>): void;
 
     /**
      * Registers a factory function for creating value changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     registerValueChangedDispatcher(
-        creator: DispatcherCreator<IValueDispatcher>, selector?: string): void;
+        creator: DispatcherCreator<IValueDispatcher>): void;
 
     /**
      * Registers a factory function for creating value host validation state changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     registerValueHostValidationStateChangedDispatcher(
-        creator: DispatcherCreator<IFieldValidationDispatcher>, selector?: string): void;
+        creator: DispatcherCreator<IFieldValidationDispatcher>): void;
 
     /**
      * Registers a factory function for creating form validation state changed dispatchers.
      * Replaces any previously registered factory function for this type of dispatcher.
      * @param creator The factory function used to create the dispatcher instance.
-     * @param selector An optional selector to support a traditional factory pattern.
      */
     registerValidationStateChangedDispatcher(
-        creator: DispatcherCreator<IFormValidationDispatcher>, selector?: string): void;
+        creator: DispatcherCreator<IFormValidationDispatcher>): void;
 
     /**
      * Composite of using individual attach functions so you can have a one-call
      * solution to attachment. It always attaches onValidationState and onValueHostValidationState
      * because those are fundamental to the operation of the value hosts manager.
      * The decision of using onTextValueChanged and onValueChanged attachments is left to the caller.
-     * Unlike the other attach functions, this does not offer an selector parameter that is passed
-     * through to the dispatcher. It always assumes selector = undefined.
-     * If selector is needed, use the dispatcher-specific attach functions instead.
+     * @param useTextValue Whether to attach the text value changed dispatcher.
+     * @param useNativeValue Whether to attach the native value changed dispatcher.
      */
-    attach(valueHostsManager: IValueHostsManager, addTextValueChanged?: boolean, addValueChanged?: boolean): void;
+    attach(valueHostsManager: IValueHostsManager, useTextValue?: boolean, useNativeValue?: boolean): void;
 
     /**
      * Attaches a ITextValueDispatcher to IValueHostsManager.onTextValueChanged callback.
      * This allows the dispatcher to respond to text value changes in the value hosts managed by the value hosts manager.
      * If onTextValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached ITextValueDispatcher instance, or null if none could be attached.
      */
-    attachTextValueChanged(valueHostsManager: IValueHostsManager, selector?: string): ITextValueDispatcher | null;
+    attachTextValueChanged(valueHostsManager: IValueHostsManager): ITextValueDispatcher | null;
 
     /**
      * Attaches a IValueDispatcher to IValueHostsManager.onValueChanged callback.
      * This allows the dispatcher to respond to value changes in the value hosts managed by the value hosts manager.
      * If onValueChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IValueDispatcher instance, or null if none could be attached.
      */
-    attachValueChanged(valueHostsManager: IValueHostsManager, selector?: string): IValueDispatcher | null;
+    attachValueChanged(valueHostsManager: IValueHostsManager): IValueDispatcher | null;
 
     /**
      * Attaches a IFieldValidationDispatcher to IValueHostsManager.onValueHostValidationStateChanged callback.
      * This allows the dispatcher to respond to value host validation state changes in the value hosts managed by the value hosts manager.
      * If onValueHostValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFieldValidationDispatcher instance, or null if none could be attached.
      */
-    attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFieldValidationDispatcher | null;
+    attachValueHostValidationStateChanged(valueHostsManager: IValueHostsManager): IFieldValidationDispatcher | null;
 
     /**
      * Attaches a IFormValidationDispatcher to IValueHostsManager.onValidationStateChanged callback.
      * This allows the dispatcher to respond to form validation state changes in the value hosts managed by the value hosts manager.
      * If onValidationStateChanged already has a value, it will be retained and called before the newly attached dispatcher.
      * @param valueHostsManager The value hosts manager instance.
-     * @param selector Optional selector to distinguish between different dispatcher instances.
      * @returns The attached IFormValidationDispatcher instance, or null if none could be attached.
      */
-    attachValidationStateChanged(valueHostsManager: IValueHostsManager, selector?: string): IFormValidationDispatcher | null;
+    attachValidationStateChanged(valueHostsManager: IValueHostsManager): IFormValidationDispatcher | null;
 }
