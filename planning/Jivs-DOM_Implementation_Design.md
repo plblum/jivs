@@ -2920,6 +2920,8 @@ The separator is already plain text and is not passed through `htmlToText()`. An
 
 ## ARIA Service
 
+ARIA Service applies ARIA attributes to relevant editor and error message widgets.
+
 ARIA support is an optional, replaceable `DomServices` child service. Setting `DomServices.ariaService` to `null` disables all Jivs-managed ARIA work. Installers and validation dispatchers skip ARIA processing, and installers do not assign an ARIA completion value to an element. Jivs does not provide a late-assignment or replay lifecycle for assigning an ARIA service after `DomServices` construction.
 
 The ARIA service coordinates accessibility work but contains very little element-specific behavior. Immutable updater objects perform the work required by a role, editor widget, or presentation.
@@ -2955,6 +2957,13 @@ An element may receive behavior from two sources:
 - An Editor Adapter Definition or presentation may supply one specialized updater for its widget or markup.
 
 A specialized updater uses `alsoRunRoleUpdater` to determine whether the registered role updater runs first. `AriaServiceBase` coordinates this composition but delegates all role-specific and widget-specific mutation to the updater objects.
+
+#### Updater interactions
+|Type|Source|When|Description|
+|----|-----|----|---------|
+|Static|AriaService|install()|Gathers all Static updaters and executes each|
+|Validation|AriaService|install()|Gathers all Validation Updaters, attaches each to IJivsDomElement.jivsAriaValidationStateUpdater, and executes with current validation state to establish initial presentation|
+|Validation|FieldValidationDispatcher|onValueHostsValidationStateChanged|Executes Validation updater|
 
 ### Architecture
 
@@ -3236,6 +3245,14 @@ interface IAriaService {
         updater:
             IAriaValidationStateElementUpdater
     ): void;
+
+    /**
+     * Call during initialization phase to apply all static updaters,
+     * assign IJivsDomElement.jivsAriaValidationStateUpdater if possible,
+     * and apply initial validation state to validation state updaters.
+     * @param registry 
+     */
+    install(registry: IElementRegistry): void;
 
     applyStaticAttributes(
         element: IJivsDomElement,
@@ -3985,6 +4002,20 @@ reader.readFromModel();
 
 The static operation attaches validation dispatchers and Text Value dispatching by default. Native Value dispatching remains disabled unless requested. Applications requiring separate control may instead construct `FormInstaller` and call `DispatcherService.attach()` independently. There is no expectation that the application retain the Collector or installer afterward.
 
+
+The static operation is the recommended convenience API. The same work can be controlled separately when needed:
+
+```ts
+const collector = new PersonFormElementCollector();
+const installer = new FormInstaller(valueHostsManager, collector);
+installer.install();
+
+valueHostsManager.services.domServices.dispatchers.attach(
+    valueHostsManager,
+    true,
+    false
+);
+```
 ### ElementRegistry
 
 #### Purpose and Ownership
@@ -4141,7 +4172,7 @@ The query selects the first editor anchor. It prefers the first `aria-error` rec
 The index also supplies distinct resolved fields in first-Identifier order:
 
 ```ts
-getResolvedFieldValueHosts(): IFieldValueHost[];
+getResolvedElementIdentifiers(): IFieldValueHost[];
 ```
 
 #### Clear and Dispose
@@ -4176,11 +4207,7 @@ interface IElementCollector {
 }
 
 abstract class ElementCollectorBase implements IElementCollector {
-    public collect(root: HTMLElement, registry: IElementRegistry): void {
-        this.collectElements(root, registry);
-    }
-
-    protected abstract collectElements(root: HTMLElement, registry: IElementRegistry): void;
+    public abstract collect(root: HTMLElement, registry: IElementRegistry): void;
 }
 ```
 
@@ -4245,7 +4272,7 @@ ARIA uses the editor's resolved anchor. Field and Form Presentation Installers d
 Initial dynamic ARIA follows:
 
 ```ts
-for (const fieldValueHost of elementRegistry.getResolvedFieldValueHosts()) {
+for (const fieldValueHost of elementRegistry.getResolvedElementIdentifiers()) {
     domServices.ariaService?.applyValidationState(
         fieldValueHost,
         fieldValueHost.currentValidationState
@@ -4299,11 +4326,9 @@ The service object belongs to one `IJivsServices` instance. It does not belong t
 
 Applications do not construct a concrete service supplied by `jivs-dom`. Instead:
 
-* `jivs-dom` supplies `IJivsDomServices` and the abstract `JivsDomServiceBase`;
-* `jivs-simpledom` supplies `SimpleDomServices`;
-* an application using another markup convention derives its own service class from `JivsDomServiceBase`.
+* `jivs-dom` supplies `IJivsDomServices` and `JivsDomService`;
+* `jivs-simpledom` supplies `SimpleDomServices` which is a subclass of JivsDomService;
 
-There is no concrete `DomServices` class.
 
 ```mermaid
 classDiagram
@@ -4348,6 +4373,28 @@ There is no separate `jivsServices` property.
 The DOM service object may be created before its associated `JivsServices`. Assigning it to the `domServices` property of `JivsServices` supplies the inherited `services` reference using the established `IServicesAccessor` behavior.
 
 `JivsDomServiceBase` does not accept an `IJivsServices` constructor parameter. Its constructor establishes no form-specific or element-specific state.
+
+#### Hooking JivsDomServices as a property on JivsServices
+Uses the ModuleServicesInstaller and its guidance to expose a new property on IJivsServices interface:
+```ts
+declare module "@plblum/jivs-engine/build/Interfaces/JivsServices"
+{
+    export interface IJivsServices
+    {
+        domServices: IJivsDomServices;
+    }
+}
+
+class JivsDomServicesInstaller
+    extends ModuleServicesInstaller<IJivsDomServices> { }
+const jivsDomServicesInstaller = new JivsDomServicesInstaller();
+```
+The consumer app must execute include the file with JivsDomServicesInstaller through an import
+in the create_JivsServices() function like this:
+```ts
+import { JivsDomServicesInstaller } from '@plblum/jivs-dom/build/Services/JivsDomServicesInstaller';
+new JivsDomServicesInstaller();  // install the buildersFactory service property on JivsServices
+```
 
 ### Service Collection
 
