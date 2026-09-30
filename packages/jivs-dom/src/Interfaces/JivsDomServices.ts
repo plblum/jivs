@@ -169,6 +169,18 @@ export interface IJivsDomServices
      * Consumed by the IFormPresentationInstaller to create form presentations.
      */
     formPresentationFactory: IPresentationFactory<IFormPresentation>;
+}
 
-
+/**
+ * Extends the IJivsServices interface to include domServices, 
+ * providing access to the DOM-related services within the Jivs framework.
+ * However, it only works at runtime after calling JivsDomServicesInstaller()
+ * where the service is actually installed and made available.
+ */
+declare module "@plblum/jivs-engine/build/Interfaces/JivsServices"
+{
+    export interface IJivsServices
+    {
+        domServices: IJivsDomServices;
+    }
 }

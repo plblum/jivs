@@ -437,12 +437,12 @@ In particular, `savePerson()` can remain independent of Jivs and return the appl
 
 The server sends the Jivs Validation Payload as an opaque string. On the client, pass that string directly to the form's `ValueHostsManager`.
 
-When transferred validation messages will be displayed in HTML, use the supplied `htmlEncoder`:
+When transferred validation messages will be displayed in HTML, use the supplied `encodeHtml`:
 
 ```ts
 vhm.fromValidationPayload(
     response.validationPayload,
-    htmlEncoder
+    encodeHtml
 );
 ```
 

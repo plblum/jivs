@@ -292,7 +292,7 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * @param payload - Validation data from server
      * @param encode - Targets HTML encoding. When supplied, the function takes the 
      original errorMessage and returns a revised one. We will supply a function
-     called htmlEncoder(string): string so the user just drops that name in as the parameter.
+     called encodeHtml(string): string so the user just drops that name in as the parameter.
     * @returns true if state changed
     */
     fromValidationPayload(payload: string, encode?: null | ((text: string) => string)): boolean;    

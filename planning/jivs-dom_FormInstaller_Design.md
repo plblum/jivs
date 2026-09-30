@@ -438,7 +438,7 @@ Additional matching `error` elements remain available to presentation dispatcher
 The Element Identifier index also provides the fields represented by the current Registry:
 
 ```ts
-getResolvedFieldValueHosts(): IFieldValueHost[];
+getResolvedElementIdentifiers(): IFieldValueHost[];
 ```
 
 It returns the non-null entry values in first-Identifier insertion order.
@@ -819,13 +819,13 @@ Form records are unaffected because their null `fieldValueHost` is expected.
 After ARIA installation completes, `FormInstaller` obtains:
 
 ```ts
-elementRegistry.getResolvedFieldValueHosts()
+elementRegistry.getResolvedElementIdentifiers()
 ```
 
 It then requests initial validation-state synchronization:
 
 ```ts
-for (const fieldValueHost of elementRegistry.getResolvedFieldValueHosts()) {
+for (const fieldValueHost of elementRegistry.getResolvedElementIdentifiers()) {
     domServices.ariaService?.applyValidationState(
         fieldValueHost,
         fieldValueHost.currentValidationState

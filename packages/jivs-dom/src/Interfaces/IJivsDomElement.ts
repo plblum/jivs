@@ -19,6 +19,7 @@ import { IAriaValidationStateElementUpdater } from './AriaUpdaters';
 import { IEditorAdapterDefinition } from './EditorAdapterDefinitions';
 import { IFieldPresentation } from './FieldPresentations';
 import { IFormPresentation } from './FormPresentations';
+import { ElementRole } from './Types';
 
 /**
  * Augments an ordinary HTMLElement with the Jivs behavior installed for that element.
@@ -26,6 +27,12 @@ import { IFormPresentation } from './FormPresentations';
  */
 export interface IJivsDomElement extends HTMLElement
 {
+    /**
+     * The role of the element within the Jivs framework. 
+     * This is used by the AriaService and other components 
+     * to determine the appropriate behavior and presentation for the element.
+     */
+    jivsElementRole?: ElementRole | string;
     /**
      * Describes the requirements for a specific editor widget upon installation.
      * The installed definition is shared and immutable. 
@@ -89,4 +96,14 @@ export interface IJivsDomElement extends HTMLElement
      * Use jivs-engine's matchGroups() utility to determine if the element belongs to the specified validation group.
      */
     jivsFormPresentationGroup?: string;
+
+    /**
+     * Retains the ID of the selected error-message element on an editor anchor.
+     * AriaService passes this value to the editor's Validation State Updater
+     * when synchronizing aria-errormessage.
+     *
+     * Undefined when the element is not an editor or no eligible error-message
+     * element has a usable ID.
+     */
+    jivsErrorMessageId?: string;
 }

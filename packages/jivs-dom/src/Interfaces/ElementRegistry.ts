@@ -117,9 +117,10 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
     getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;   
     
     /**
-     * Returns each unique FieldValueHost associated with the registered elements.
+     * Returns each unique Element Identifier associated with the registered elements
+     * so long as they have a matching FieldValueHost.
      */
-    getResolvedFieldValueHosts(): IFieldValueHost[];
+    getResolvedElementIdentifiers(): ElementIdentifierRegistryEntry[];
 
     /**
      * Clears all registered elements from the registry.
@@ -227,4 +228,14 @@ export interface IFieldAriaElementAnchors
     editorAnchor: IJivsDomElement | null;
     errorMessageElement: IJivsDomElement | null;
     errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
+    elementIdentifier: string;
+}
+
+/**
+ * Maintains a map between each Element Identifier and its associated records.
+ */
+export interface ElementIdentifierRegistryEntry
+{
+    readonly fieldValueHost: IFieldValueHost | null;
+    readonly records: (IEditorElementRegistryRecord | IFieldElementRegistryRecord)[];
 }

@@ -40,13 +40,11 @@ export class FormPresentationInstaller extends DomServiceBase
     }
 
     /**
-     * Handles installation of FormPresentation and ARIA attributes for a given DOM element.
+     * Handles installation of FormPresentation for a given DOM element.
      * Executes FormPresentation.init() and apply(using currentValidationState).
-     * Executes AriaService.applyStaticAttributes but not applyValidationState,
-     * which are handled separately by the ARIA validation state updater.
      * @param valueHostsManager - The manager responsible for handling value hosts and their validation states.
      * @param element - The DOM element to which the form presentation is applied.
-     * @param role - The role of the element, which can be an ARIA role or a custom role string.
+     * @param role - The role of the element, which can be a custom role string.
      * @param options - Optional installation options, including ARIA updaters.
      * @returns The installed form presentation instance, or null if installation does not need
      * a FormPresentation.
@@ -66,6 +64,7 @@ export class FormPresentationInstaller extends DomServiceBase
             return element.jivsFormPresentation;
         }
 
+        element.jivsElementRole = role;
         let formPresentation: IFormPresentation =
             this.domServices.formPresentationFactory.create(element, role, options.presentationName);
         formPresentation.init();
@@ -74,35 +73,6 @@ export class FormPresentationInstaller extends DomServiceBase
         }));
         element.jivsFormPresentation = formPresentation;
         element.jivsFormPresentationGroup = options.group;
-
-        this.ariaInstaller(element, role, formPresentation);
-
         return formPresentation;
     }
-    /**
-     * FormPresentations impact ARIA attributes for accessibility. 
-     * This method ensures that the appropriate
-     * ARIA attributes are applied to the element based on the form presentation.
-     * ARIA static updater is run immediately.
-     * There is no support for ARIA in validation state changes at the form level.
-     * 
-     * Updaters can come from several sources.
-     * formPresentation.getStaticAriaElementUpdater() -> 
-     *   ariaservice finds it based on role
-     * @param element - The DOM element to which the ARIA attributes will be applied.
-     * @param role - The role of the element, which can be an ARIA role or a custom role string.
-     * @param formPresentation - The form presentation instance being installed.
-     */
-    protected ariaInstaller(element: IJivsDomElement,
-        role: ElementRole | string, formPresentation: IFormPresentation): void
-    {
-        const ariaService = this.domServices.ariaService;
-
-        if (ariaService)
-        {
-            const staticAriaUpdater = formPresentation.getStaticAriaElementUpdater() ?? null;
-
-            ariaService.applyStaticAttributes(element, role, undefined, staticAriaUpdater);
-        }
-    }    
 }

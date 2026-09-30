@@ -17,6 +17,7 @@ import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/V
 import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
 import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
+import { IElementRegistry } from './ElementRegistry';
 
 
 /**
@@ -45,6 +46,14 @@ export interface IAriaService
      */
     registerValidationStateUpdater(role: ElementRole | string,
         updater: IAriaValidationStateElementUpdater): void;
+    
+    /**
+     * Call during initialization phase to apply all static updaters,
+     * assign IJivsDomElement.jivsAriaValidationStateUpdater if possible,
+     * and apply initial validation state to validation state updaters.
+     * @param registry 
+     */
+    install(registry: IElementRegistry): void;
 
     /**
      * Applies the static ARIA attributes to the specified element using the provided updater.
@@ -66,11 +75,12 @@ export interface IAriaService
      * It always uses IJivsDomElement.jivsAriaValidationStateUpdater which is setup
      * during the installation phase and does not require a specialized updater to be passed in.
      * 
-     * @param root The root DOM element to which the validation state should be applied.
+     * @param element The DOM element to which the validation state should be applied.
      * @param valueHost The value host associated with the element, if any.
      * @param state The validation state to apply.
      */
-    applyValidationState(root: HTMLElement, valueHost: IFieldValueHost, state: ValueHostValidationState): void;
+    applyValidationState(element: IJivsDomElement, 
+        valueHost: IFieldValueHost, state: ValueHostValidationState): void;
 }
 
 /**

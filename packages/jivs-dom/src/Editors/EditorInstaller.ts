@@ -14,6 +14,8 @@ import { ElementRole } from '../Interfaces/Types';
  * - the definition’s Text Value and Native Value capabilities must be examined;
  * - its DOM-to-Jivs event handlers must be attached;
  * - its field presentation and ARIA behavior must be installed independently;
+ *      - Calls FieldPresentationInstaller.install() from within.
+ *      - Requires another task to invoke AriaService.install().
  * - the completed installation must be recorded on the anchor element.
  * 
  * It should be used both initially and after the form's elements have been replaced.
@@ -46,7 +48,7 @@ export class EditorInstaller extends DomServiceBase
         {
             return anchor;
         }
-
+        anchor.jivsElementRole = ElementRole.editor;
         anchor.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, anchor);
         anchor.jivsValueAdapter = definition.createValueAdapter(valueHost, anchor);
 
@@ -61,9 +63,7 @@ export class EditorInstaller extends DomServiceBase
 
         this.domServices.fieldPresentationInstaller.install(valueHost, anchor, ElementRole.editor,
             {
-                presentationName,   // if null, the role specific default will be used
-                staticAriaUpdater: definition.getStaticAriaElementUpdater(),
-                validationStateAriaUpdater: definition.getValidationStateAriaElementUpdater()
+                presentationName   // if null, the role specific default will be used
             }
         );  // may throw
 

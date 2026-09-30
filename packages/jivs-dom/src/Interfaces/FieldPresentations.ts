@@ -103,7 +103,7 @@ export interface IFieldPresentationInstaller
 }
 
 /**
- * Options for installing a field presentation, including the presentation name and ARIA updaters.
+ * Options for installing a field presentation.
  */
 export interface FieldPresentationInstallOptions
 {
@@ -112,16 +112,4 @@ export interface FieldPresentationInstallOptions
      * If not specified, the default presentation for the role will be used.
      */
     presentationName?: string | null;
-
-    /**
-     * The static ARIA updater to be used for the field presentation. 
-     * If not specified, a default static ARIA updater will be used.
-     */
-    staticAriaUpdater?: IAriaStaticElementUpdater | null;
-
-    /**
-     * The validation state ARIA updater to be used for the field presentation.
-     * If not specified, a default validation state ARIA updater will be used.
-     */
-    validationStateAriaUpdater?: IAriaValidationStateElementUpdater | null;
 }

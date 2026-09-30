@@ -34,8 +34,8 @@ export class FieldValidationDispatcher extends FieldDispatcherBase
             if (adapter) {
                 adapter.apply(valueHost, state);
             }
+            this.domServices.ariaService?.applyValidationState(
+                element, valueHost, state);
         });
-        let root = this.domServices.resolveContainerElement(valueHost.valueHostsManager);
-        this.domServices.ariaService?.applyValidationState(root, valueHost, state);
     }
 }

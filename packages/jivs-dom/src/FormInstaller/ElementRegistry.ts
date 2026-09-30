@@ -5,7 +5,7 @@
  */
 
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
+import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { FieldPresentationInstallOptions } from '../Interfaces/FieldPresentations';
 import { FormPresentationInstallOptions } from '../Interfaces/FormPresentations';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -239,7 +239,8 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         let result: IFieldAriaElementAnchors = {
             editorAnchor: null,
             errorMessageElement: null,
-            errorMessageRole: null
+            errorMessageRole: null,
+            elementIdentifier: elementIdentifier,
         };
         if (!entry) return result;
         for (let record of entry.records)
@@ -268,14 +269,15 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
     }
     
     /**
-     * Returns each unique FieldValueHost associated with the registered elements.
+     * Returns each unique Element Identifier associated with the registered elements
+     * so long as they have a matching FieldValueHost.
      */
-    public getResolvedFieldValueHosts(): IFieldValueHost[]
+    public getResolvedElementIdentifiers(): ElementIdentifierRegistryEntry[]
     {
-        let result: IFieldValueHost[] = [];
+        let result: ElementIdentifierRegistryEntry[] = [];
         for (let entry of this.entriesByElementIdentifier.values()) {
             if (entry.fieldValueHost) {
-                result.push(entry.fieldValueHost);
+                result.push(entry);
             }
         }
         return result;
@@ -323,14 +325,4 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         (this.entriesByElementIdentifier as any) = null;
         (this.records as any) = null;
     }
-}
-
-/**
- * Internal data for ElementRegistry to maintain a map between
- * each Element Identifier and its associated records.
- */
-interface ElementIdentifierRegistryEntry
-{
-    readonly fieldValueHost: IFieldValueHost | null;
-    readonly records: (IEditorElementRegistryRecord | IFieldElementRegistryRecord)[];
 }

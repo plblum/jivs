@@ -29,7 +29,7 @@ import { ElementRole } from '../Interfaces/Types';
 import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
 import { IssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
-import { ElementRegistry } from '../FormInstaller/EditorRegistry';
+import { ElementRegistry } from '../FormInstaller/ElementRegistry';
 /**
  * @inheritdoc jivs-dom/Types/JivsDomServices
  */

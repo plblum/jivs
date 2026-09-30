@@ -41,14 +41,12 @@ export class FieldPresentationInstaller extends DomServiceBase
     }
 
     /**
-     * Handles installation of FieldPresentation and ARIA attributes for a given DOM element.
+     * Handles installation of FieldPresentation for a given DOM element.
      * Executes FieldPresentation.init() and apply(using currentValidationState).
-     * Executes AriaService.applyStaticAttributes but not applyValidationState,
-     * which are handled separately by the ARIA validation state updater.
      * @param valueHost - The host object that contains the field value and its current validation state.
      * @param element - The DOM element to which the field presentation is applied.
      * @param role - The role of the element, which can be an ARIA role or a custom role string.
-     * @param options - Optional installation options, including ARIA updaters.
+     * @param options - Optional installation options
      * @returns The installed field presentation instance, or null if installation does not need
      * a FieldPresentation.
      */
@@ -66,6 +64,7 @@ export class FieldPresentationInstaller extends DomServiceBase
         {
             return element.jivsFieldPresentation;
         }
+        element.jivsElementRole = role;
 
         let fieldPresentation: IFieldPresentation =
             this.domServices.fieldPresentationFactory.create(element, role, options.presentationName);
@@ -73,60 +72,59 @@ export class FieldPresentationInstaller extends DomServiceBase
         fieldPresentation.apply(valueHost, valueHost.currentValidationState);
         element.jivsFieldPresentation = fieldPresentation;
 
-        this.ariaInstaller(valueHost, element, role, fieldPresentation, options);
-
         return fieldPresentation;
     }
 
-    /**
-     * FieldPresentations impact ARIA attributes for accessibility. This method ensures that the appropriate
-     * ARIA attributes are applied to the element based on the field presentation 
-     * and the current validation state.
-     * The goal is to establish an ARIA validation state updater on the element's
-     * IJivsDomElement.jivsAriaValidationStateUpdater property
-     * and to get an ARIA static updater to run immediately.
-     * 
-     * Both updaters can come from several sources.
-     * options.staticAriaUpdater -> 
-     *  fieldPresentation.getStaticAriaElementUpdater() -> 
-     *      ariaservice finds it based on role
-     * options.validationStateAriaUpdater -> 
-     *      fieldPresentation.getValidationStateAriaElementUpdater() -> 
-     *          ariaservice finds it based on role
-     * @param valueHost - The host object that contains the field value and its current validation state.
-     * @param element - The DOM element to which the field presentation is applied.
-     * @param role - The role of the element, which can be an ARIA role or a custom role string.
-     * @param fieldPresentation - The field presentation instance being installed.
-     * @param options - Optional installation options, including ARIA updaters.
-     */
-    protected ariaInstaller(valueHost: IFieldValueHost, element: IJivsDomElement,
-        role: ElementRole | string, fieldPresentation: IFieldPresentation,
-        options?: FieldPresentationInstallOptions): void
-    {
-        if (element.jivsAriaValidationStateUpdater !== undefined)
-            return;
-        const ariaService = this.domServices.ariaService;
+//     /**
+//      * FieldPresentations impact ARIA attributes for accessibility. This method ensures that the appropriate
+//      * ARIA attributes are applied to the element based on the field presentation 
+//      * and the current validation state.
+//      * The goal is to establish an ARIA validation state updater on the element's
+//      * IJivsDomElement.jivsAriaValidationStateUpdater property
+//      * and to get an ARIA static updater to run immediately.
+//      * 
+//      * Both updaters can come from several sources.
+//      * options.staticAriaUpdater -> 
+//      *  fieldPresentation.getStaticAriaElementUpdater() -> 
+//      *      ariaservice finds it based on role
+//      * options.validationStateAriaUpdater -> 
+//      *      fieldPresentation.getValidationStateAriaElementUpdater() -> 
+//      *          ariaservice finds it based on role
+//      * @param valueHost - The host object that contains the field value and its current validation state.
+//      * @param element - The DOM element to which the field presentation is applied.
+//      * @param role - The role of the element, which can be an ARIA role or a custom role string.
+//      * @param fieldPresentation - The field presentation instance being installed.
+//      * @param options - Optional installation options, including ARIA updaters.
+//      */
+//     protected ariaInstaller(valueHost: IFieldValueHost, element: IJivsDomElement,
+//         role: ElementRole | string, fieldPresentation: IFieldPresentation,
+//         options?: FieldPresentationInstallOptions): void
+//     {
+// //!!PENDING: May move this into AriaService.install        
+//         if (element.jivsAriaValidationStateUpdater !== undefined)
+//             return;
+//         const ariaService = this.domServices.ariaService;
 
-        if (ariaService)
-        {
-            const staticAriaUpdater =
-                options?.staticAriaUpdater !== undefined
-                    ? options.staticAriaUpdater
-                    : fieldPresentation
-                        ?.getStaticAriaElementUpdater()
-                    ?? null;
+//         if (ariaService)
+//         {
+//             const staticAriaUpdater =
+//                 options?.staticAriaUpdater !== undefined
+//                     ? options.staticAriaUpdater
+//                     : fieldPresentation
+//                         ?.getStaticAriaElementUpdater()
+//                     ?? null;
 
-            const validationStateAriaUpdater =
-                options?.validationStateAriaUpdater
-                    !== undefined
-                    ? options.validationStateAriaUpdater
-                    : fieldPresentation
-                        ?.getValidationStateAriaElementUpdater()
-                    ?? null;
+//             const validationStateAriaUpdater =
+//                 options?.validationStateAriaUpdater
+//                     !== undefined
+//                     ? options.validationStateAriaUpdater
+//                     : fieldPresentation
+//                         ?.getValidationStateAriaElementUpdater()
+//                     ?? null;
 
-            ariaService.applyStaticAttributes(element, role, valueHost, staticAriaUpdater);
+//             ariaService.applyStaticAttributes(element, role, valueHost, staticAriaUpdater);
 
-            element.jivsAriaValidationStateUpdater = validationStateAriaUpdater;
-        }
-    }
+//             element.jivsAriaValidationStateUpdater = validationStateAriaUpdater;
+//         }
+//     }
 }
