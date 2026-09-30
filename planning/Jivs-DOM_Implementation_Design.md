@@ -3034,15 +3034,14 @@ The ARIA implementation requires the following public contracts and classes.
 | `IAriaService` | Defines updater registration, registry-based installation, static application, and field validation-state orchestration. |
 | `IFieldAriaElementAnchors` | Identifies the editor and selected error-message elements returned by `IElementRegistry.getFieldAriaElementAnchors()`. |
 | `AriaService` | Implements updater registries, composition, registry-based installation, static application, and validation-state orchestration. |
+| `EditorAriaStaticUpdater` | Applies aria-required if FieldValueHost.required = true |
 | `ValidationSummaryAriaStaticUpdater` | Applies the standard static Validation Summary semantics. |
-| `RequiredIndicatorAriaStaticUpdater` | Applies the standard static Required Indicator semantics. |
-| `ErrorMessageIdAriaStaticUpdater` | Assigns generated IDs to Field Error Display and `aria-error` elements. |
+| `RequiredIndicatorAriaStaticUpdater` | Makes the required indicator widget have aria-hidden because the editor will establish aria-required. |
 | `RadioGroupAriaStaticUpdater` | Applies the static `radiogroup` role required by the built-in radio-group editor. |
-| `NativeEditorAriaValidationStateUpdater` | Applies required and validation state to native editors. |
+| `EditorAriaValidationStateUpdater` | Applies validation state to editors that support the aria
+attributes on the element passed in. |
 | `AriaRequiredEditorValidationStateUpdater` | Applies ARIA required and validation state to editors without equivalent native semantics. |
-| `AriaErrorTextValidationStateUpdater` | Writes and clears plain-text error content in the dedicated `aria-error` element. |
-
-All seven concrete updater classes are publicly exported. Applications may instantiate them directly, return them from specialized-updater getters, or register them for additional roles.
+| `HiddenErrorMessagesAriaValidationStateUpdater` | Writes and clears plain-text error content in the dedicated `aria-error` element. |
 
 ### Public Service Contract
 
@@ -3050,8 +3049,6 @@ All seven concrete updater classes are publicly exported. Applications may insta
 
 ```ts
 interface IAriaStaticUpdater {
-    readonly alsoRunRoleUpdater: boolean;
-
     applyStaticAttributes(
         element: IJivsDomElement,
         role: ElementRole | string,
@@ -3066,8 +3063,6 @@ interface IAriaStaticUpdater {
 
 ```ts
 interface IAriaValidationStateUpdater {
-    readonly alsoRunRoleUpdater: boolean;
-
     applyValidationState(
         element: IJivsDomElement,
         valueHost: IFieldValueHost,
@@ -3136,9 +3131,6 @@ Updaters may be supplied by an Editor Adapter Definition, field presentation, or
 Composition follows these rules:
 
 - When no specialized updater is supplied, the registered role updater runs when available.
-- When a specialized updater is supplied and `alsoRunRoleUpdater` is `true`, the registered role updater runs first and the specialized updater runs second.
-- When `alsoRunRoleUpdater` is `false`, only the specialized updater runs.
-- `alsoRunRoleUpdater` is ignored when the updater itself was obtained from the role registry.
 - If the role updater throws, the specialized updater is not invoked.
 
 All updater instances are immutable after construction.
@@ -3212,7 +3204,7 @@ The `jivsAriaValidationStateUpdater` property has three states:
 | --- | --- |
 | `undefined` | ARIA installation did not complete. Validation-state processing skips the element. |
 | `null` | ARIA installation completed without a specialized updater. The Validation State Updater registered for the role remains eligible. |
-| Updater instance | ARIA installation completed with a specialized updater. Its `alsoRunRoleUpdater` value controls composition with the updater registered for the role. |
+| Updater instance | ARIA installation completed with a specialized updater. |
 
 The `jivsAriaValidationStateUpdater` property is also the completion guard for the element's complete ARIA installation. Static Updaters are applied immediately and are not stored.
 
@@ -3290,20 +3282,19 @@ All built-in updater classes are exported from `jivs-dom`.
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
+| `EditorAriaStaticUpdater` | Registered for `ElementRole.editor` | Assigns `aria-required` when FieldValueHost.required is true. |
 | `ValidationSummaryAriaStaticUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
 | `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
-| `ErrorMessageIdAriaStaticUpdater` | Registered for `ElementRole.error` and `ElementRole.ariaError` | Assigns a missing generated ID using the suffix selected from the normalized role. |
 | `RadioGroupAriaStaticUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
 
-One immutable `ErrorMessageIdAriaStaticUpdater` instance may be registered under both error roles.
 
 #### Validation State Updaters
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
-| `NativeEditorAriaValidationStateUpdater` | Registered for `ElementRole.editor` | Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. It does not assign `aria-required`. |
+| `EditorAriaValidationStateUpdater` | Registered for `ElementRole.editor` | Synchronizes `aria-invalid`, and `aria-errormessage`. It does not assign `aria-required`, which is handled by EditorAriaStaticUpdater. |
 | `AriaRequiredEditorValidationStateUpdater` | Returned by adapter definitions for editors without equivalent native required semantics | Synchronizes `aria-required`, `aria-invalid`, and `aria-errormessage`. It is not registered by default. |
-| `AriaErrorTextValidationStateUpdater` | Registered for `ElementRole.ariaError` | Writes selected field error messages as plain text and clears the content when appropriate. |
+| `HiddenErrorMessagesAriaValidationStateUpdater` | Registered for `ElementRole.ariaError` | Writes selected field error messages as plain text and clears the content when appropriate. |
 
 There is no Validation State Updater registered for `ElementRole.error`. Its field presentation owns state-dependent content. A field presentation may supply a specialized updater when its generated markup requires additional accessibility behavior.
 
@@ -3312,7 +3303,7 @@ There is no Validation State Updater registered for `ElementRole.error`. Its fie
 `InputRadioGroupAdapterDefinition` supplies:
 
 - a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
-- an `AriaRequiredEditorValidationStateUpdater` with `alsoRunRoleUpdater: false`.
+- an `AriaRequiredEditorValidationStateUpdater`.
 
 The containing anchor receives group-level required, invalid, and error-message relationship state. Descendant radio inputs do not receive duplicate group-level ARIA state.
 

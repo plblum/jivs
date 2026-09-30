@@ -68,7 +68,8 @@ export interface IAriaService
      *      jivsFieldPresentation.getStaticAriaElementUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
-     * 
+     * When none are found, nothing happens because its common to have roles and elements
+     * that do not need ARIA support.
      * @param element The DOM element to which the static ARIA attributes should be applied.
      * @param valueHost The value host associated with the element, if any. 
      * Field level elements will have a FieldValueHost, but may have undefined if their Element Identifier 
@@ -92,7 +93,8 @@ export interface IAriaService
      *      jivsFieldPresentation.getValidationStateAriaElementUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
-     * 
+     * When none are found, nothing happens because its common to have roles and elements
+     * that do not need ARIA support. 
      * @returns The resolved validation state ARIA element updater, or null if none could be resolved.
      * @param element The DOM element to which the validation state should be applied.
      * @param valueHost The value host associated with the element, if any.

@@ -25,24 +25,11 @@ import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
 
 /**
- * Base interface for all ARIA element updaters.
- */
-export interface IAriaElementUpdaterBase
-{
-    /**
-     * When true, this updater should be run followed by the role updater.
-     * When false, only this update should be run.
-     */
-    readonly alsoRunRoleUpdater: boolean;
-
-}
-
-/**
  * Applies ARIA attributes that do not change based on the field's validation state.
  * This updater is run by the PresentationInstallers.
  * Instances are immutable.
  */
-export interface IAriaStaticUpdater extends IAriaElementUpdaterBase
+export interface IAriaStaticUpdater
 {
     /**
      * Applies static ARIA attributes to the specified DOM element if applicable.
@@ -69,7 +56,7 @@ export interface IAriaStaticUpdater extends IAriaElementUpdaterBase
  * There should be different classes to handle variations by role. The installation process
  * in AriaService.install is expected to assign the appropriate IAriaValidationStateUpdater instance to the element.
  */
-export interface IAriaValidationStateUpdater extends IAriaElementUpdaterBase
+export interface IAriaValidationStateUpdater
 {
 
     /**

@@ -217,6 +217,8 @@ export class AriaService extends DomServiceBase
      *      jivsFieldPresentation.getStaticAriaElementUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
+     * When none are found, nothing happens because its common to have roles and elements
+     * that do not need ARIA support.
      * 
      * @param element The DOM element to which the static ARIA attributes should be applied.
      * @param valueHost The value host associated with the element, if any. 
@@ -241,7 +243,7 @@ export class AriaService extends DomServiceBase
             return staticUpdater;
         }
 
-        this.domServices.loggingFacade.log(LoggingLevel.Warn, (facade) =>
+        this.domServices.loggingFacade.log(LoggingLevel.Debug, (facade) =>
             facade.prepareLogDetails(
                 `No static ARIA updater could be resolved for element '{element}' with role: ${ element.jivsElementRole }`,
                 element, valueHost, this));
@@ -289,10 +291,14 @@ export class AriaService extends DomServiceBase
      *      jivsFieldPresentation.getValidationStateAriaElementUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
+     * When none are found, nothing happens because its common to have roles and elements
+     * that do not need ARIA support.
      * 
      * @param element The DOM element to which the validation state should be applied.
      * @param valueHost The value host associated with the element, if any.
      * @param state The validation state to apply.
+     * @returns The resolved ValidationState ARIA element updater, or null if none could be resolved.
+     * If it ran 
      */
     public applyValidationState(element: IJivsDomElement, 
         valueHost: IFieldValueHost, state: ValueHostValidationState): IAriaValidationStateUpdater | null
@@ -306,7 +312,7 @@ export class AriaService extends DomServiceBase
             return validationStateUpdater;
         }
 
-        this.domServices.loggingFacade.log(LoggingLevel.Warn, (facade) =>
+        this.domServices.loggingFacade.log(LoggingLevel.Debug, (facade) =>
             facade.prepareLogDetails(
                 `No Validation State ARIA updater could be resolved for element '{element}' with role: ${ element.jivsElementRole }`,
                 element, valueHost, this));
