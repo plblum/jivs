@@ -432,7 +432,7 @@ interface IJivsDomElement extends HTMLElement {
         IFieldPresentation | null;
 
     jivsAriaValidationStateUpdater?:
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 
     jivsFormPresentation?:
         IFormPresentation | null;
@@ -680,10 +680,10 @@ interface IEditorAdapterDefinition {
     ): IValueAdapter | null;
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 
     attachToSendValues(
         valueHost: IFieldValueHost,
@@ -1529,7 +1529,7 @@ A labeled group can use markup such as:
 | Installation anchor       | The element supplied to `install()` |
 | Text Value adapter        | `InputRadioGroupTextValueAdapter`   |
 | Native Value adapter      | None                                |
-| Static ARIA updater       | `RadioGroupAriaStaticElementUpdater` |
+| Static ARIA updater       | `RadioGroupAriaStaticUpdater` |
 | Validation-state ARIA updater | `AriaRequiredEditorValidationStateElementUpdater` |
 
 The matching selector can be replaced through the constructor.
@@ -1543,7 +1543,7 @@ class InputRadioGroupAdapterDefinition
     private readonly matchingSelector: string;
 
     private readonly staticAriaUpdater =
-        new RadioGroupAriaStaticElementUpdater();
+        new RadioGroupAriaStaticUpdater();
 
     private readonly validationStateAriaUpdater =
         new AriaRequiredEditorValidationStateElementUpdater();
@@ -1586,13 +1586,13 @@ class InputRadioGroupAdapterDefinition
     }
 
     public getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater {
+        IAriaStaticUpdater {
 
         return this.staticAriaUpdater;
     }
 
     public getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater {
+        IAriaValidationStateUpdater {
 
         return this.validationStateAriaUpdater;
     }
@@ -1701,7 +1701,7 @@ The installation anchor is the editor’s presentation target. Its field present
 
 The built-in definition does not require a radio-specific presentation. Normal presentation-name resolution remains in effect.
 
-`InputRadioGroupAdapterDefinition` returns a `RadioGroupAriaStaticElementUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent. It also returns an `AriaRequiredEditorValidationStateElementUpdater` with `alsoRunRoleUpdater` set to `false`.
+`InputRadioGroupAdapterDefinition` returns a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent. It also returns an `AriaRequiredEditorValidationStateElementUpdater` with `alsoRunRoleUpdater` set to `false`.
 
 The validation-state updater applies group-level state to the anchor, including:
 
@@ -1764,10 +1764,10 @@ interface IFieldPresentation {
     ): void;
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 abstract class FieldPresentationBase<
@@ -2133,7 +2133,7 @@ interface IFormPresentation {
     ): void;
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 }
 
 abstract class FormPresentationBase<
@@ -3031,16 +3031,16 @@ The ARIA implementation requires the following public contracts and classes.
 
 | Type or class | Purpose |
 | --- | --- |
-| `IAriaStaticElementUpdater` | Defines installation-time accessibility work for one field or form element. |
-| `IAriaValidationStateElementUpdater` | Defines validation-state accessibility work for one field element. Its application method does not receive the element’s role. |
+| `IAriaStaticUpdater` | Defines installation-time accessibility work for one field or form element. |
+| `IAriaValidationStateUpdater` | Defines validation-state accessibility work for one field element. Its application method does not receive the element’s role. |
 | `IAriaService` | Defines updater registration, registry-based installation, static application, and field validation-state orchestration. |
 | `IFieldAriaElementAnchors` | Identifies the editor and selected error-message elements returned by `IElementRegistry.getFieldAriaElementAnchors()`. |
 | `AriaService` | Implements updater registries, composition, registry-based installation, static application, and validation-state orchestration. |
-| `ValidationSummaryAriaStaticElementUpdater` | Applies the standard static Validation Summary semantics. |
-| `RequiredIndicatorAriaStaticElementUpdater` | Applies the standard static Required Indicator semantics. |
-| `ErrorMessageIdAriaStaticElementUpdater` | Assigns generated IDs to Field Error Display and `aria-error` elements. |
-| `RadioGroupAriaStaticElementUpdater` | Applies the static `radiogroup` role required by the built-in radio-group editor. |
-| `NativeEditorAriaValidationStateElementUpdater` | Applies required and validation state to native editors. |
+| `ValidationSummaryAriaStaticUpdater` | Applies the standard static Validation Summary semantics. |
+| `RequiredIndicatorAriaStaticUpdater` | Applies the standard static Required Indicator semantics. |
+| `ErrorMessageIdAriaStaticUpdater` | Assigns generated IDs to Field Error Display and `aria-error` elements. |
+| `RadioGroupAriaStaticUpdater` | Applies the static `radiogroup` role required by the built-in radio-group editor. |
+| `NativeEditorAriaValidationStateUpdater` | Applies required and validation state to native editors. |
 | `AriaRequiredEditorValidationStateElementUpdater` | Applies ARIA required and validation state to editors without equivalent native semantics. |
 | `AriaErrorTextValidationStateElementUpdater` | Writes and clears plain-text error content in the dedicated `aria-error` element. |
 
@@ -3053,7 +3053,7 @@ There are no `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFieldPresent
 #### Static Updater
 
 ```ts
-interface IAriaStaticElementUpdater {
+interface IAriaStaticUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
@@ -3069,7 +3069,7 @@ interface IAriaStaticElementUpdater {
 #### Validation-State Updater
 
 ```ts
-interface IAriaValidationStateElementUpdater {
+interface IAriaValidationStateUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -3091,12 +3091,12 @@ The element’s role is not passed to `applyValidationState()`. `AriaService` us
 interface IAriaService {
     registerStaticUpdater(
         role: ElementRole | string,
-        updater: IAriaStaticElementUpdater
+        updater: IAriaStaticUpdater
     ): void;
 
     registerValidationStateUpdater(
         role: ElementRole | string,
-        updater: IAriaValidationStateElementUpdater
+        updater: IAriaValidationStateUpdater
     ): void;
 
     /**
@@ -3110,10 +3110,9 @@ interface IAriaService {
 
     applyStaticAttributes(
         element: IJivsDomElement,
-        role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
-            IAriaStaticElementUpdater | null
+            IAriaStaticUpdater | null
     ): void;
 
     applyValidationState(
@@ -3170,27 +3169,27 @@ interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 }
 ```
 
@@ -3214,7 +3213,7 @@ Specialized-updater ownership is:
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 
     // Existing installed capabilities.
 }
@@ -3299,18 +3298,18 @@ All built-in updater classes are exported from `jivs-dom`.
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
-| `ValidationSummaryAriaStaticElementUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
-| `RequiredIndicatorAriaStaticElementUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
-| `ErrorMessageIdAriaStaticElementUpdater` | Registered for `ElementRole.error` and `ElementRole.ariaError` | Assigns a missing generated ID using the suffix selected from the normalized role. |
-| `RadioGroupAriaStaticElementUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
+| `ValidationSummaryAriaStaticUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
+| `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
+| `ErrorMessageIdAriaStaticUpdater` | Registered for `ElementRole.error` and `ElementRole.ariaError` | Assigns a missing generated ID using the suffix selected from the normalized role. |
+| `RadioGroupAriaStaticUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
 
-One immutable `ErrorMessageIdAriaStaticElementUpdater` instance may be registered under both error roles.
+One immutable `ErrorMessageIdAriaStaticUpdater` instance may be registered under both error roles.
 
 #### Validation State Updaters
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
-| `NativeEditorAriaValidationStateElementUpdater` | Registered for `ElementRole.editor` | Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. It does not assign `aria-required`. |
+| `NativeEditorAriaValidationStateUpdater` | Registered for `ElementRole.editor` | Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. It does not assign `aria-required`. |
 | `AriaRequiredEditorValidationStateElementUpdater` | Returned by adapter definitions for editors without equivalent native required semantics | Synchronizes `aria-required`, `aria-invalid`, and `aria-errormessage`. It is not registered by default. |
 | `AriaErrorTextValidationStateElementUpdater` | Registered for `ElementRole.ariaError` | Writes selected field error messages as plain text and clears the content when appropriate. |
 
@@ -3320,7 +3319,7 @@ There is no Validation State Updater registered for `ElementRole.error`. Its fie
 
 `InputRadioGroupAdapterDefinition` supplies:
 
-- a `RadioGroupAriaStaticElementUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
+- a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
 - an `AriaRequiredEditorValidationStateElementUpdater` with `alsoRunRoleUpdater: false`.
 
 The containing anchor receives group-level required, invalid, and error-message relationship state. Descendant radio inputs do not receive duplicate group-level ARIA state.
@@ -3581,17 +3580,17 @@ The ARIA implementation requires the following new public contracts and classes.
 
 | Type or class | Package | Kind | Purpose |
 | --- | --- | --- | --- |
-| `IAriaStaticElementUpdater` | `jivs-dom` | Interface | Defines installation-time accessibility work for one element. |
-| `IAriaValidationStateElementUpdater` | `jivs-dom` | Interface | Defines validation-state accessibility work for one field element. |
+| `IAriaStaticUpdater` | `jivs-dom` | Interface | Defines installation-time accessibility work for one element. |
+| `IAriaValidationStateUpdater` | `jivs-dom` | Interface | Defines validation-state accessibility work for one field element. |
 | `IAriaService` | `jivs-dom` | Interface | Defines updater registration, static application, and validation-state orchestration. |
 | `IFieldAriaElementAnchors` | `jivs-dom` | Interface | Returns the editor and selected error-message anchors from field discovery. |
 | `FieldPresentationInstallOptions` | `jivs-dom` | Interface | Supplies presentation selection and specialized ARIA updaters to `IFieldPresentationInstaller`. |
 | `AriaServiceBase` | `jivs-dom` | Abstract class | Implements registries, composition, static application, and validation-state orchestration. |
-| `ValidationSummaryAriaStaticElementUpdater` | `jivs-dom` | Exported class | Applies the standard static Validation Summary semantics. |
-| `RequiredIndicatorAriaStaticElementUpdater` | `jivs-dom` | Exported class | Applies the standard static Required Indicator semantics. |
-| `ErrorMessageIdAriaStaticElementUpdater` | `jivs-dom` | Exported class | Assigns generated IDs to Field Error Display and `aria-error` elements. |
-| `RadioGroupAriaStaticElementUpdater` | `jivs-dom` | Exported class | Applies the static `radiogroup` role required by the built-in radio-group editor. |
-| `NativeEditorAriaValidationStateElementUpdater` | `jivs-dom` | Exported class | Applies required and validation state to native editors. |
+| `ValidationSummaryAriaStaticUpdater` | `jivs-dom` | Exported class | Applies the standard static Validation Summary semantics. |
+| `RequiredIndicatorAriaStaticUpdater` | `jivs-dom` | Exported class | Applies the standard static Required Indicator semantics. |
+| `ErrorMessageIdAriaStaticUpdater` | `jivs-dom` | Exported class | Assigns generated IDs to Field Error Display and `aria-error` elements. |
+| `RadioGroupAriaStaticUpdater` | `jivs-dom` | Exported class | Applies the static `radiogroup` role required by the built-in radio-group editor. |
+| `NativeEditorAriaValidationStateUpdater` | `jivs-dom` | Exported class | Applies required and validation state to native editors. |
 | `AriaRequiredEditorValidationStateElementUpdater` | `jivs-dom` | Exported class | Applies ARIA required and validation state to editors without equivalent native semantics. |
 | `AriaErrorTextValidationStateElementUpdater` | `jivs-dom` | Exported class | Writes and clears plain-text error content in the dedicated `aria-error` element. |
 | `SimpleAriaService` | `jivs-simpledom` | Concrete class | Implements `findElements()` for SimpleDom markup conventions. |
@@ -3623,7 +3622,7 @@ There are no `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFieldPresent
 #### Static Updater
 
 ```ts
-interface IAriaStaticElementUpdater {
+interface IAriaStaticUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
@@ -3639,7 +3638,7 @@ interface IAriaStaticElementUpdater {
 #### Validation-State Updater
 
 ```ts
-interface IAriaValidationStateElementUpdater {
+interface IAriaValidationStateUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -3660,13 +3659,13 @@ interface IAriaValidationStateElementUpdater {
 interface IAriaService {
     registerStaticUpdater(
         role: ElementRole | string,
-        updater: IAriaStaticElementUpdater
+        updater: IAriaStaticUpdater
     ): void;
 
     registerValidationStateUpdater(
         role: ElementRole | string,
         updater:
-            IAriaValidationStateElementUpdater
+            IAriaValidationStateUpdater
     ): void;
 
     /**
@@ -3682,7 +3681,7 @@ interface IAriaService {
         role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
-            IAriaStaticElementUpdater | null
+            IAriaStaticUpdater | null
     ): void;
 
     applyValidationState(
@@ -3738,27 +3737,27 @@ interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 }
 ```
 
@@ -3780,7 +3779,7 @@ Specialized-updater ownership is:
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 
     // Existing installed capabilities.
 }
@@ -3952,18 +3951,18 @@ All built-in updater classes are exported from `jivs-dom`.
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
-| `ValidationSummaryAriaStaticElementUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
-| `RequiredIndicatorAriaStaticElementUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
-| `ErrorMessageIdAriaStaticElementUpdater` | Registered for `ElementRole.error` and `ElementRole.ariaError` | Assigns a missing generated ID using the suffix selected from the normalized role. |
-| `RadioGroupAriaStaticElementUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
+| `ValidationSummaryAriaStaticUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
+| `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
+| `ErrorMessageIdAriaStaticUpdater` | Registered for `ElementRole.error` and `ElementRole.ariaError` | Assigns a missing generated ID using the suffix selected from the normalized role. |
+| `RadioGroupAriaStaticUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
 
-One immutable `ErrorMessageIdAriaStaticElementUpdater` instance may be registered under both error roles.
+One immutable `ErrorMessageIdAriaStaticUpdater` instance may be registered under both error roles.
 
 #### Validation-State Updaters
 
 | Class | Standard use | Behavior |
 | --- | --- | --- |
-| `NativeEditorAriaValidationStateElementUpdater` | Registered for `ElementRole.editor` | Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. Does not assign `aria-required`. |
+| `NativeEditorAriaValidationStateUpdater` | Registered for `ElementRole.editor` | Synchronizes native `required`, `aria-invalid`, and `aria-errormessage`. Does not assign `aria-required`. |
 | `AriaRequiredEditorValidationStateElementUpdater` | Returned by adapter definitions for editors without equivalent native required semantics | Synchronizes `aria-required`, `aria-invalid`, and `aria-errormessage`. Not registered by default. |
 | `AriaErrorTextValidationStateElementUpdater` | Registered for `ElementRole.ariaError` | Writes selected field error messages as plain text and clears the content when appropriate. |
 
@@ -3973,7 +3972,7 @@ There is no registered validation-state updater for `ElementRole.error`. Its pre
 
 `InputRadioGroupAdapterDefinition` supplies:
 
-- a `RadioGroupAriaStaticElementUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
+- a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
 - an `AriaRequiredEditorValidationStateElementUpdater` with `alsoRunRoleUpdater: false`.
 
 The containing anchor receives group-level required, invalid, and error-message relationship state. Descendant radio inputs do not receive duplicate group-level ARIA state.

@@ -789,9 +789,9 @@ install(elementRegistry: IElementRegistry): void;
 
 For each applicable element, ARIA installation:
 
-1. Selects the applicable `IAriaStaticElementUpdater`.
+1. Selects the applicable `IAriaStaticUpdater`.
 2. Immediately executes that static updater.
-3. Selects the applicable `IAriaValidationStateElementUpdater`.
+3. Selects the applicable `IAriaValidationStateUpdater`.
 4. Assigns the selected updater, or `null`, to `IJivsDomElement.jivsAriaValidationStateUpdater`.
 
 ARIA installation uses an editor’s resolved `anchorElement`, not necessarily its original element.
@@ -852,7 +852,7 @@ For a field validation-state callback, the dispatcher:
 1. Applies the installed `FieldPresentation` objects for the field.
 2. Calls `AriaService.applyValidationState()`.
 3. `AriaService` obtains the selected editor and error-message elements from `ElementRegistry`.
-4. `AriaService` executes the installed `IAriaValidationStateElementUpdater` behavior.
+4. `AriaService` executes the installed `IAriaValidationStateUpdater` behavior.
 
 `FieldPresentation` does not invoke ARIA updaters.
 

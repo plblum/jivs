@@ -14,7 +14,7 @@
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
 import { IJivsDomElement } from './IJivsDomElement';
 import { ElementRole } from './Types';
 import { IElementRegistry } from './ElementRegistry';
@@ -35,7 +35,7 @@ export interface IAriaService
      * @param updater The static ARIA attribute updater to register.
      * As it is an instance, it must be treated as immutable.
      */
-    registerStaticUpdater(role: ElementRole | string, updater: IAriaStaticElementUpdater): void;
+    registerStaticUpdater(role: ElementRole | string, updater: IAriaStaticUpdater): void;
 
     /**
      * Registers a validation state ARIA attribute updater for the specified role.
@@ -45,7 +45,7 @@ export interface IAriaService
      * As it is an instance, it must be treated as immutable.
      */
     registerValidationStateUpdater(role: ElementRole | string,
-        updater: IAriaValidationStateElementUpdater): void;
+        updater: IAriaValidationStateUpdater): void;
     
     /**
      * Call during initialization phase to apply all static updaters,
@@ -56,31 +56,50 @@ export interface IAriaService
     install(registry: IElementRegistry): void;
 
     /**
-     * Applies the static ARIA attributes to the specified element using the provided updater.
-     * The role is used for registry lookup.
+     * Applies the static ARIA attributes to the specified element.
+     * 
+     * It resolves the appropriate static ARIA attribute updater for the element based on the
+     * element's IJivsDomElement properties.
+     * 
+     * The first to assign them in this order is used:
+     * 1. Editor adapter definition (not available on non-editor roles): 
+     *      jivsEditorAdapterDefinition.getStaticAriaElementUpdater()
+     * 2. Field presentation: 
+     *      jivsFieldPresentation.getStaticAriaElementUpdater()
+     * 3. AriaServices' default updaters based on role:
+     *      jivsElementRole
      * 
      * @param element The DOM element to which the static ARIA attributes should be applied.
-     * @param role The role of the element for which the static attributes should be applied.
-     * @param valueHost The value host associated with the element, if any.
-     * @param specializedUpdater The specialized static ARIA attribute updater to use, or null if none.
-     * When supplied, it runs first. Then if its alsoRunRoleUpdater is true,
-     * the updater in the registry is used.
+     * @param valueHost The value host associated with the element, if any. 
+     * Field level elements will have a FieldValueHost, but may have undefined if their Element Identifier 
+     * didn't match to a FieldValueHost.
+     * Form level elements will always have null/undefined.
+     * @returns The resolved static ARIA element updater, or null if none could be resolved.
      */
-    applyStaticAttributes(element: IJivsDomElement, role: ElementRole | string,
-        valueHost: IFieldValueHost | undefined,
-        specializedUpdater: IAriaStaticElementUpdater | null): void;
+    applyStaticAttributes(element: IJivsDomElement, valueHost: IFieldValueHost | null | undefined):
+        IAriaStaticUpdater | null;
 
     /**
-     * Applies the validation state ARIA attributes to the specified root element.
-     * It always uses IJivsDomElement.jivsAriaValidationStateUpdater which is setup
-     * during the installation phase and does not require a specialized updater to be passed in.
+     * Applies the validation state ARIA attributes to the specified element.
      * 
+     * It resolves the appropriate validation state ARIA attribute updater for the element based on the
+     * element's IJivsDomElement properties.
+     * 
+     * The first to assign them in this order is used:
+     * 1. Editor adapter definition (not available on non-editor roles): 
+     *      jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater()
+     * 2. Field presentation: 
+     *      jivsFieldPresentation.getValidationStateAriaElementUpdater()
+     * 3. AriaServices' default updaters based on role:
+     *      jivsElementRole
+     * 
+     * @returns The resolved validation state ARIA element updater, or null if none could be resolved.
      * @param element The DOM element to which the validation state should be applied.
      * @param valueHost The value host associated with the element, if any.
      * @param state The validation state to apply.
      */
     applyValidationState(element: IJivsDomElement, 
-        valueHost: IFieldValueHost, state: ValueHostValidationState): void;
+        valueHost: IFieldValueHost, state: ValueHostValidationState): IAriaValidationStateUpdater | null;
 }
 
 /**

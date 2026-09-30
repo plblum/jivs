@@ -6,7 +6,7 @@
 import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { AdapterBase } from '../Adapters/AdapterBase';
 
 /**
@@ -48,7 +48,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * ARIA attributes placed in a different element than the anchor.
      * @returns The static ARIA element updater, or null to use the default updater.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null
+    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }
@@ -57,7 +57,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * ARIA attributes placed in a different element than the anchor.
      * @returns The validation state ARIA element updater, or null to use the default updater.
      */
-    public getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null
+    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
     {
         return null;
     }

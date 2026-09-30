@@ -6,7 +6,7 @@ import type { ValidationState } from '@plblum/jivs-engine/build/interfaces/Valid
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/interfaces/ValueHostsManager';
 import { groupsMatch } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AdapterBase } from '../Adapters/AdapterBase';
-import { IAriaStaticElementUpdater } from '../Interfaces/AriaUpdaters';
+import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IFormPresentation } from '../Interfaces/FormPresentations';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
@@ -112,7 +112,7 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
      * @returns The static ARIA element updater, or null if not available,
      * which means use the default Aria Static Updater.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null
+    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }

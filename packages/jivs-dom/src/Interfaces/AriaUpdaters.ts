@@ -42,7 +42,7 @@ export interface IAriaElementUpdaterBase
  * This updater is run by the PresentationInstallers.
  * Instances are immutable.
  */
-export interface IAriaStaticElementUpdater extends IAriaElementUpdaterBase
+export interface IAriaStaticUpdater extends IAriaElementUpdaterBase
 {
     /**
      * Applies static ARIA attributes to the specified DOM element if applicable.
@@ -67,9 +67,9 @@ export interface IAriaStaticElementUpdater extends IAriaElementUpdaterBase
  * Instances are immutable.
  * 
  * There should be different classes to handle variations by role. The installation process
- * in AriaService.install is expected to assign the appropriate IAriaValidationStateElementUpdater instance to the element.
+ * in AriaService.install is expected to assign the appropriate IAriaValidationStateUpdater instance to the element.
  */
-export interface IAriaValidationStateElementUpdater extends IAriaElementUpdaterBase
+export interface IAriaValidationStateUpdater extends IAriaElementUpdaterBase
 {
 
     /**

@@ -8,7 +8,7 @@
  */
 
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
 import { EditorInstallOptions } from './EditorInstaller';
 import { IJivsDomElement } from "./IJivsDomElement";
 import { ITextValueAdapter, IValueAdapter } from './Adapters';
@@ -117,9 +117,9 @@ export interface IEditorAdapterDefinition
      * The static ARIA element updater is responsible for managing ARIA attributes on the associated DOM element
      * without regard to validation state. Its run once, during installation of the editor.
      * This instance is considered immutable.
-     * @returns An IAriaStaticElementUpdater instance, or null if none is available.
+     * @returns An IAriaStaticUpdater instance, or null if none is available.
      */
-    getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater(): IAriaStaticUpdater | null;
 
     /**
      * Gets the validation state ARIA element updater associated with this adapter definition, if any.
@@ -127,9 +127,9 @@ export interface IEditorAdapterDefinition
      * on the associated DOM element
      * based on the validation state of the editor.
      * This instance is considered immutable.
-     * @returns An IAriaValidationStateElementUpdater instance, or null if none is available.
+     * @returns An IAriaValidationStateUpdater instance, or null if none is available.
      */
-    getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null;
+    getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null;
 
     /**
      * The EditorInstaller uses this method to attach the editor to the send values mechanism

@@ -7,7 +7,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
@@ -199,7 +199,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Static Element Updater 
      * or null if the default one is sufficient.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null
+    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }
@@ -211,7 +211,7 @@ export abstract class EditorAdapterDefinitionBase
      * @returns a new instance of the Validation State Element Updater 
      * or null if the default one is sufficient.
      */
-    public getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null
+    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
     {
         return null;
     }    

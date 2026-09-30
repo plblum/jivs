@@ -1,7 +1,13 @@
+/**
+ * FormInstaller is a utility class that simplifies the installation and management of form elements within the DOM.
+ * 
+ * @module jivs-dom/FormInstaller/ConcreteClasses/FormInstaller
+ */
+
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from '../Interfaces/AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IElementCollector } from '../Interfaces/ElementCollector';
 import { IEditorElementRegistryRecord, IElementRegistry, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
@@ -10,7 +16,8 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
 
 
 /**
- * Main installer for the entire DOM side of Jivs when using jivs-dom.
+ * End user focused tool to install all aspects of jivs-dom to a form.
+ * 
  * Together with ElementCollector and ElementRegistry,
  * it facilitates the installation and management of form elements within the DOM.
  * - Uses ElementCollector to populate ElementRegistry.
@@ -21,6 +28,12 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
  *    - FormPresentationInstaller - installs and manages form presentation elements 
  *          (all form oriented roles) 
  * - Allows the AriaService to initialize after all relevant elements have been installed.
+ * 
+ * The results:
+ *    - IJivsDomElement properties are populated
+ *    - Presentations have been applied to the corresponding elements.
+ *    - AriaService has run its static phase and a first application of validation state updaters
+ *      using the FieldValueHost's current Validation State.
  * 
  * Example usage:
  * ```ts
@@ -64,6 +77,19 @@ export class FormInstaller
         return this.valueHostsManager.services.domServices;
     }
 
+    /**
+     * Executes the installation process against all elements added into the ElementRegistry.
+     * Its process includes:
+     * 1. Collecting elements into the ElementRegistry using the ElementCollector.
+     * 2. Installing entries from the registry using specialized installers:
+     *    - EditorInstaller - installs and manages editor elements.
+     *    - FieldPresentationInstaller - installs and manages field presentation elements.
+     *    - FormPresentationInstaller - installs and manages form presentation elements (all form oriented roles).
+     *    The results:
+     *    - IJivsDomElement properties are populated, except for Aria specific ones.
+     *    - Presentations have been applied to the corresponding elements.
+     * 3. Letting AriaService handle its own installation based on ElementRegistry.
+     */
     public install(): void
     {
         let domServices = this.domServices;
@@ -72,12 +98,12 @@ export class FormInstaller
         registry.clear();   // if it did exist, start fresh
         let root = domServices.resolveContainerElement(this.valueHostsManager);
         this.collector.collect(root, registry);
-        this.applyEntriesToRegistry(registry);
+        this.installFromRegistry(registry);
 
-        this.applyRegistryToAriaService(registry);  //!!!PENDING: Move into ariaService as install function
+        domServices.ariaService?.install(registry); 
 
     }
-    protected applyEntriesToRegistry(registry: IElementRegistry): void
+    protected installFromRegistry(registry: IElementRegistry): void
     {
         let domServices = this.domServices;
 
@@ -139,115 +165,21 @@ export class FormInstaller
             }
         }        
     }
-    protected applyRegistryToAriaService(registry: IElementRegistry): void
+
+    /**
+     * A one-line convenience method to install the form installer and attach dispatchers.
+     * It goes beyond the FormInstaller by also attaching the necessary dispatchers to the DOM services.
+     * @param valueHostsManager - the manager responsible for value hosts
+     * @param collector - the element collector to be used
+     * @param useTextValue - when true, attach the text value dispatcher. Default=true
+     * @param useNativeValue - when true, attach the native value dispatcher. Default=false (rarely used)
+     */
+    public static install(valueHostsManager: IValueHostsManager, collector: IElementCollector,
+        useTextValue: boolean = true, useNativeValue: boolean = false): void
     {
-        const ariaService = this.domServices.ariaService;
-        if (!ariaService)
-            return;
-
-        let delayedValidationStateUpdaters: Array<IEditorElementRegistryRecord | IFieldElementRegistryRecord> = [];
-        for (const resolvedEI of registry.getResolvedElementIdentifiers())
-        {
-
-            let ariaElementAnchors = registry.getFieldAriaElementAnchors(resolvedEI.fieldValueHost!.getElementIdentifier());
-            for (const record of resolvedEI.records)
-            {
-                if (record.element === ariaElementAnchors.editorAnchor ||
-                    record.element === ariaElementAnchors.errorMessageElement)
-                {
-                    this.applyAriaUpdaterToElement(record as IFieldElementRegistryRecord);
-                    if (record.element.jivsAriaValidationStateUpdater !== undefined)
-                        delayedValidationStateUpdaters.push(record);
-                }
-            }
-            // at this point, all the ARIA updaters for the field have been applied,
-            // we expect the errormessageeelement to have is id setup.
-            // We'll assign that id to the editor's IJivsDomElement.jivsErrorMessageId property.
-            // The Validation State updater on editor will use that to setup
-            // the aria-errormessage attribute correctly.
-            if (ariaElementAnchors.editorAnchor)
-            {
-                ariaElementAnchors.editorAnchor.jivsErrorMessageId = undefined;
-                if (ariaElementAnchors.errorMessageElement)
-                {
-                    let errorMessageId = ariaElementAnchors.errorMessageElement.id;
-                    if (!errorMessageId)
-                    {
-                        errorMessageId = `error-${encodeHtml(ariaElementAnchors.elementIdentifier)}-${Math.random().toString(36).substring(2, 9) }`;
-                        ariaElementAnchors.errorMessageElement.id = errorMessageId;
-                    }
-                    ariaElementAnchors.editorAnchor.jivsErrorMessageId = errorMessageId;
-                }
-            }
-        }
-        // Apply delayed validation state updaters
-        // This lets it resolve the errorMessageId needed on individual 
-        // validation state updaters so that the editor can use 
-        // aria-errormessage='id of the error message element.'
-        // Assumes the static updater for the error message ensures an ID exists.
-        for (const updater of delayedValidationStateUpdaters)
-        {
-            ariaService?.applyValidationState(
-                updater.element,
-                updater.fieldValueHost!,
-                updater.fieldValueHost!.currentValidationState
-            );
-        }
-
-        // apply static updaters to form roles, allowing Validation Summary to have its ARIA attributes correctly set
-        for (let entry of registry)
-        {
-            if (entry.kind === 'form')
-            {
-                entry = entry as IFormElementRegistryRecord;
-                let staticAriaUpdater: IAriaStaticElementUpdater | null = null;
-                if (entry.element.jivsFormPresentation)
-                    staticAriaUpdater = entry.element.jivsFormPresentation.getStaticAriaElementUpdater() ?? null;
-
-                this.domServices.ariaService?.applyStaticAttributes(
-                    entry.element,
-                    entry.role,
-                    undefined,
-                    staticAriaUpdater
-                );
-            }
-        }
- 
-    }
-   
-    protected applyAriaUpdaterToElement(entry: IFieldElementRegistryRecord | IEditorElementRegistryRecord): void
-    {
-        let element = entry.element;
-        if (element.jivsAriaValidationStateUpdater === undefined)
-        {
-            // Both static and validation state ARIA updaters have several sources.
-            // The first to assign them in this order is used:
-            // 1. Editor adapter definition (not available on non-editor roles)
-            // 2. Field presentation
-            // 3. AriaServices' default updaters
-            let staticUpdater: IAriaStaticElementUpdater | null = null;
-            let validationStateUpdater: IAriaValidationStateElementUpdater | null = null;
-            if (element.jivsEditorAdapterDefinition)
-            {
-                staticUpdater = element.jivsEditorAdapterDefinition.getStaticAriaElementUpdater() ?? null;
-                validationStateUpdater = element.jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater() ?? null;
-            }
-            if (!staticUpdater && element.jivsFieldPresentation)
-                staticUpdater = element.jivsFieldPresentation.getStaticAriaElementUpdater() ?? null;
-            if (!validationStateUpdater && element.jivsFieldPresentation)
-                validationStateUpdater = element.jivsFieldPresentation.getValidationStateAriaElementUpdater() ?? null;
-
-
-            this.domServices.ariaService!.applyStaticAttributes(
-                element,
-                entry.role,
-                entry.fieldValueHost ?? undefined,
-                staticUpdater
-            );
-
-            // validationStateUpdater is either assigned or null. Never undefined.
-            // This is used to block re-application any part of this function.
-            element.jivsAriaValidationStateUpdater = validationStateUpdater;
-        }
+        let formInstaller = new FormInstaller(valueHostsManager, collector);
+        formInstaller.install();
+        let domServices = valueHostsManager.services.domServices;
+        domServices.dispatchers.attach(valueHostsManager, useTextValue, useNativeValue);
     }
 }

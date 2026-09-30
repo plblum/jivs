@@ -14,7 +14,7 @@ import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValue
 import { ValueHostValidationState } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
 import { IJivsDomElement } from "./IJivsDomElement";
 import { ElementRole } from './Types';
-import { IAriaStaticElementUpdater, IAriaValidationStateElementUpdater } from './AriaUpdaters';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
 
 /**
  * A field presentation translates one field’s current validation state into changes to one widget. 
@@ -71,7 +71,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getStaticAriaElementUpdater(): IAriaStaticElementUpdater | null;
+    getStaticAriaElementUpdater(): IAriaStaticUpdater | null;
 
     /**
      * Allows a presentation whose generated HTML requires specialized accessibility behavior 
@@ -79,7 +79,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getValidationStateAriaElementUpdater(): IAriaValidationStateElementUpdater | null;
+    getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null;
 }
 
 /**

@@ -61,12 +61,12 @@ The installers are installation-time consumers. They request static composition 
 
 ## Core Updater Contracts
 
-### `IAriaStaticElementUpdater`
+### `IAriaStaticUpdater`
 
 Applies fixed accessibility behavior during installation.
 
 ```ts
-interface IAriaStaticElementUpdater {
+interface IAriaStaticUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
@@ -79,12 +79,12 @@ interface IAriaStaticElementUpdater {
 
 `valueHost` is available for field roles and omitted for form roles.
 
-### `IAriaValidationStateElementUpdater`
+### `IAriaValidationStateUpdater`
 
 Synchronizes one installed field element with the current field state.
 
 ```ts
-interface IAriaValidationStateElementUpdater {
+interface IAriaValidationStateUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
@@ -135,12 +135,12 @@ The optional, replaceable `DomServices` child service that coordinates static an
 interface IAriaService {
     registerStaticUpdater(
         role: ElementRole | string,
-        updater: IAriaStaticElementUpdater
+        updater: IAriaStaticUpdater
     ): void;
 
     registerValidationStateUpdater(
         role: ElementRole | string,
-        updater: IAriaValidationStateElementUpdater
+        updater: IAriaValidationStateUpdater
     ): void;
 
     applyStaticAttributes(
@@ -148,7 +148,7 @@ interface IAriaService {
         role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
-            IAriaStaticElementUpdater | null
+            IAriaStaticUpdater | null
     ): void;
 
     applyValidationState(
@@ -174,27 +174,27 @@ interface IEditorAdapterDefinition {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater?():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     getValidationStateAriaElementUpdater?():
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
     getStaticAriaElementUpdater?():
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 }
 ```
 
@@ -221,7 +221,7 @@ There are no separate `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFie
 ```ts
 interface IJivsDomElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 
     // Existing installed capabilities.
 }
@@ -253,10 +253,10 @@ interface FieldPresentationInstallOptions {
     presentationName?: string | null;
 
     staticAriaUpdater?:
-        IAriaStaticElementUpdater | null;
+        IAriaStaticUpdater | null;
 
     validationStateAriaUpdater?:
-        IAriaValidationStateElementUpdater | null;
+        IAriaValidationStateUpdater | null;
 }
 ```
 
