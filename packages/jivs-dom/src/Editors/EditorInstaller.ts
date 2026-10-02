@@ -10,7 +10,8 @@ import { ElementRole } from '../Interfaces/Types';
 /**
  * The EditorInstaller coordinates the following operations for one supplied element and IFieldValueHost:
  * - one adapter definition must be selected;
- * - one installation anchor must be resolved;
+ * - one anchor must be resolved;
+ * - one editor must be resolved
  * - the definition’s Text Value and Native Value capabilities must be examined;
  * - its DOM-to-Jivs event handlers must be attached;
  * - its field presentation and ARIA behavior must be installed independently;
@@ -41,7 +42,8 @@ export class EditorInstaller extends DomServiceBase
             options = {};
         }
         let definition = this.resolveDefinition(valueHost, element, options);   // may throw
-        const anchor = definition.resolveInstallationAnchor(valueHost, element);
+        const anchor = definition.identifyAnchor(valueHost, element);   // may throw
+        const editor = definition.identifyEditor(valueHost, anchor);   // may throw
 
         // already installed? Done!
         if (anchor.jivsEditorAdapterDefinition !== undefined)
@@ -49,16 +51,16 @@ export class EditorInstaller extends DomServiceBase
             return anchor;
         }
         anchor.jivsElementRole = ElementRole.editor;
-        anchor.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, anchor);
-        anchor.jivsValueAdapter = definition.createValueAdapter(valueHost, anchor);
+        anchor.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, editor, anchor);
+        anchor.jivsValueAdapter = definition.createValueAdapter(valueHost, editor, anchor);
 
-        definition.attachToSendValues(valueHost, anchor, options);
+        definition.attachToSendValues(valueHost, editor, anchor, options);
 
         // Presentations offloaded. 
         // They will use a role-specific default if no presentation name is provided
         // through our options or the definition's default.
-        const presentationName = options.presentationName != null // null/undefined
-                ? options.presentationName
+        const presentationName = options.presentationName !== null // null means the role default should be used
+                ? options.presentationName  // can be null
                 : definition.recommendedFieldPresentationName;
 
         this.domServices.fieldPresentationInstaller.install(valueHost, anchor, ElementRole.editor,
@@ -80,7 +82,7 @@ export class EditorInstaller extends DomServiceBase
      * @param options - Additional options for editor installation.
      * @returns The resolved editor adapter definition.
      */
-    protected resolveDefinition(valueHost: IFieldValueHost, element: IJivsDomElement, options: EditorInstallOptions): IEditorAdapterDefinition
+    protected resolveDefinition(valueHost: IFieldValueHost, element: HTMLElement, options: EditorInstallOptions): IEditorAdapterDefinition
     {
         let definition: IEditorAdapterDefinition | null = null;
         if (options.adapterKey) {

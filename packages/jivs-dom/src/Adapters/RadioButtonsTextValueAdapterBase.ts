@@ -16,9 +16,15 @@ import { TextValueAdapterBase } from './TextValueAdapterBase';
 export abstract class RadioButtonsTextValueAdapterBase extends TextValueAdapterBase<HTMLElement>
 {
 
-    public constructor(element: IJivsDomElement)
+    /**
+     * Constructor
+     * @param element - the element where the value is found
+     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * It is usually the same as element. Pass null to declare element as its value.
+     */
+    public constructor(element: HTMLElement, jivsElement: IJivsDomElement | null = null)
     {
-        super(element);
+        super(element, jivsElement);
     }
 
     public readTextValue(): string | undefined

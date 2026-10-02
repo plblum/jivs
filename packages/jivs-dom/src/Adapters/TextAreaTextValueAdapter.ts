@@ -1,10 +1,11 @@
 /**
- * Adapter for HTML textarea elements using its TextAreaHtmlElement.value property
+ * Adapter for HTML textarea elements using its HTMLTextAreaElement.value property
  * to get and set the text value of the textarea element.
  * 
  * @module jivs-dom/Adapters/ConcreteClasses/TextAreaTextValueAdapter
  */
 
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
@@ -15,7 +16,16 @@ import { TextValueAdapterBase } from './TextValueAdapterBase';
  */
 export class TextAreaTextValueAdapter
     extends TextValueAdapterBase<HTMLTextAreaElement> {
-
+    /**
+     * Constructor
+     * @param element - the element where the value is found
+     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * It is usually the same as element. Pass null to declare element as its value.
+     */
+    public constructor(element: HTMLTextAreaElement, jivsElement: IJivsDomElement | null = null)
+    {
+        super(element, jivsElement);
+    }
     public readTextValue(): string {
         return this.element.value;
     }

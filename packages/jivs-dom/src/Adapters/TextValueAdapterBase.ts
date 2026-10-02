@@ -9,6 +9,7 @@
  * @module jivs-dom/Adapters/AbstractClasses/TextValueAdapterBase
  */
 
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { AdapterBase } from './AdapterBase';
 
 /**
@@ -18,9 +19,9 @@ export abstract class TextValueAdapterBase<TElement extends HTMLElement = HTMLEl
     extends AdapterBase<TElement>
 {
 
-    public constructor(element: TElement)
+    public constructor(element: TElement, jivsElement: IJivsDomElement | null)
     {
-        super(element);
+        super(element, jivsElement);
     }
 
     /**

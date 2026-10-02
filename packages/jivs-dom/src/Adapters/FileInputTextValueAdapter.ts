@@ -5,6 +5,7 @@
  */
 
 import { TextValueAdapterBase } from './TextValueAdapterBase';
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Adapter for HTML input elements using type='file'.
@@ -23,7 +24,16 @@ import { TextValueAdapterBase } from './TextValueAdapterBase';
 export class FileInputTextValueAdapter
     extends TextValueAdapterBase<HTMLInputElement>
 {
-
+    /**
+     * Constructor
+     * @param element - the element where the value is found
+     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * It is usually the same as element. Pass null to declare element as its value.
+     */
+    public constructor(element: HTMLInputElement, jivsElement: IJivsDomElement | null = null)
+    {
+        super(element, jivsElement);
+    }
     /**
      * @returns A pipe delimited string of filenames with extensions, or an empty string if no files are selected.
      */

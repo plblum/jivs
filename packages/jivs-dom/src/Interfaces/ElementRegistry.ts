@@ -161,7 +161,7 @@ export interface IEditorElementRegistryRecord
     /**
      * The DOM element serving as the anchor for this editor, or null if none is assigned.
      * It is often the same as anchorElement.
-     * It is determined by and assigned using IEditorAdapterDefinition.resolveInstallationAnchor().
+     * It is determined by and assigned using IEditorAdapterDefinition.identifyAnchor().
      * Its value is never supplied by ElementCollector.
      */
     readonly anchorElement: IJivsDomElement | null;

@@ -28,9 +28,15 @@ export class RadioGroupTextValueAdapter extends RadioButtonsTextValueAdapterBase
     implements ITextValueAdapter
 {
 
-    constructor(groupContainer: IJivsDomElement)
+    /**
+     * Constructor
+     * @param containerElement - the element where the value is found
+     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * It is usually the same as containerElement. Pass null to declare containerElement as its value.
+     */
+    public constructor(containerElement: HTMLElement, jivsElement: IJivsDomElement | null = null)
     {
-        super(groupContainer);
+        super(containerElement, jivsElement);
     }
 
     protected getRadios(): HTMLInputElement[]

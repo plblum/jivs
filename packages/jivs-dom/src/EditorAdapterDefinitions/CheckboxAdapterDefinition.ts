@@ -29,10 +29,12 @@ export class CheckboxAdapterDefinition extends InputAdapterDefinition
         return defaultCheckboxPresentationName;
     }
 
-    public override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter
+    public override createTextValueAdapter(valueHost: IFieldValueHost,
+        editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter
     {
         return new CheckboxTextValueAdapter(
-            this.requireInputElement(element)   // may throw
+            this.requireInputElement(editor),   // may throw
+            anchor
         );
     }
 }

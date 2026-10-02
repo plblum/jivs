@@ -15,6 +15,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { FieldPresentationBase } from './FieldPresentationBase';
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Base class for field presentations that communicate validity and required
@@ -43,10 +44,11 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
         correctedClass?: string | null,
         requiredClass?: string | null,
         presentationClass?: string | null,
+        // intentionally last as its usually called from internal code
+        jivsElement: IJivsDomElement | null = null
     )
     {
-        super(element);
-        this._presentationClass = this.defaultPresentationClass();
+        super(element, jivsElement);
         this._invalidClass = (invalidClass !== undefined) ? invalidClass : this.defaultInvalidClass();
         this._validatedClass = (validatedClass !== undefined) ? validatedClass : this.defaultValidatedClass();
         this._correctedClass = (correctedClass !== undefined) ? correctedClass : this.defaultCorrectedClass();
@@ -197,6 +199,18 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     {
         const element = this.presentationElement;
 
+        this.applyToElement(element, valueHost, state);
+
+    }
+
+    /**
+     * Helper method for applying the configured CSS classes to a specific element based on the current required and validation state.
+     * @param element 
+     * @param valueHost 
+     * @param state 
+     */
+    protected applyToElement(element: HTMLElement, valueHost: IFieldValueHost, state: ValueHostValidationState): void
+    {
         if (this.requiredClass !== null)
             element.classList.remove(this.requiredClass);
         if (this.invalidClass !== null)
@@ -210,21 +224,16 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
             element.classList.add(this.presentationClass);
 
         // ordering of these 3 is intentional: invalid, corrected, validated
-        let corrected = false;
         if (!state.isValid)
         {
             if (this.invalidClass !== null)
                 element.classList.add(this.invalidClass);
         }
-        else if (state.corrected)
+        else if (state.corrected && this.correctedClass)
         {
-            if (this.correctedClass !== null)
-            {
-                element.classList.add(this.correctedClass);
-                corrected = true;
-            }
+            element.classList.add(this.correctedClass);
         }
-        if (!corrected && state.status === ValidationStatus.Valid)
+        else if (state.status === ValidationStatus.Valid)   // fallback for when corrected is setup but without css name
         {
             if (this.validatedClass !== null)
                 element.classList.add(this.validatedClass);
@@ -233,5 +242,5 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
         if (valueHost.required && this.requiredClass !== null)
             element.classList.add(this.requiredClass);
 
-    }
+    }    
 }

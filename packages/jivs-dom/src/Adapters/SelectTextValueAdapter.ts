@@ -5,6 +5,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/SelectTextValueAdapter
  */
 
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
@@ -23,7 +24,17 @@ import { TextValueAdapterBase } from './TextValueAdapterBase';
 export class SelectTextValueAdapter
     extends TextValueAdapterBase<HTMLSelectElement>
 {
-
+    /**
+     * Constructor
+     * @param element - the element where the value is found
+     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * It is usually the same as element. Pass null to declare element as its value.
+     */
+    public constructor(element: HTMLSelectElement, jivsElement: IJivsDomElement | null = null)
+    {
+        super(element, jivsElement);
+    }   
+    
     public readTextValue(): string
     {
         return this.element.value;

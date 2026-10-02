@@ -15,15 +15,16 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
 export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
 {
 
-    public constructor(element: TElement)
+    public constructor(element: TElement, jivsElement: IJivsDomElement | null)
     {
         assertNotNull(element, 'element');
         this._element = element;
+        this._jivsElement = jivsElement ?? (element as IJivsDomElement);
     }
 
     /**
      * The DOM element that this adapter is associated with.
-     * The element has a IJivsDomElement shape, available with the JivsElement wrapper.
+     * HTML operations are usually performed directly on this element.
      */
     protected get element(): TElement
     {
@@ -31,8 +32,13 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     }
     private readonly _element: TElement;
 
+    /**
+     * The element containing the Jivs-specific DOM element wrapper.
+     * It is often the same as the element itself.
+     */
     protected get jivsElement(): IJivsDomElement
     {
-        return this._element as IJivsDomElement;
+        return this._jivsElement;
     }
+    private readonly _jivsElement: IJivsDomElement;
 }

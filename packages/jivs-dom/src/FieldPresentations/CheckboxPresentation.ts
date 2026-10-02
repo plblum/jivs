@@ -3,6 +3,7 @@
  * 
  * @module jivs-dom/FieldPresentations/ConcreteClasses/CheckboxPresentation
  */
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
 
 /**
@@ -32,9 +33,10 @@ export class CheckboxPresentation extends IsValidFieldPresentationBase
         correctedClass?: string | null,
         requiredClass?: string | null,
         presentationClass?: string | null,
+        jivsElement?: IJivsDomElement | null
     )
     {
-        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass);
+        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass, jivsElement);
     }
 
     protected override defaultInvalidClass(): string | null

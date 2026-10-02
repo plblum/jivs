@@ -642,11 +642,16 @@ Adapters may retain additional element-specific state as class members. They do 
 
 An editor adapter definition keeps the behaviors for one widget model together. Without this coordinating type, widget recognition, installation-anchor selection, Jivs-to-DOM value transfer, and DOM-to-Jivs event handling could be implemented independently and disagree about how the editor represents its value.
 
+It operates around two element instances, albeit they may be the same instance.
+- Anchor is the element that retains the IJivsDomElement structure.
+- Editor is the element that retains the actual value.
+
+
 A definition is responsible for:
 
 * recognizing fields and elements that use its widget model;
-* resolving the element that serves as the installation anchor;
-* directly constructing the anchor’s Text Value and Native Value adapters;
+* resolving the element that serves as the anchor;
+* directly constructing the Text Value and Native Value adapters;
 * attaching DOM event handlers that send edited values to the `IFieldValueHost`;
 * identifying the default field presentation associated with the widget, when applicable;
 * optionally supplying specialized static and validation-state ARIA updaters for the widget.
@@ -659,24 +664,26 @@ interface IEditorAdapterDefinition {
     readonly recommendedFieldPresentationName?:
         string | null;
 
+    domServices: IJivsDomServices;
+
     matches(
         valueHost: IFieldValueHost,
-        element: HTMLElement
+        candidateElement: HTMLElement
     ): boolean;
 
-    resolveInstallationAnchor(
+    identifyAnchor(
         valueHost: IFieldValueHost,
         element: IJivsDomElement
     ): IJivsDomElement;
 
     createTextValueAdapter(
         valueHost: IFieldValueHost,
-        anchor: IJivsDomElement
+        editor: HTMLElement, anchor: IJivsDomElement
     ): ITextValueAdapter | null;
 
     createValueAdapter(
         valueHost: IFieldValueHost,
-        anchor: IJivsDomElement
+        editor: HTMLElement, anchor: IJivsDomElement
     ): IValueAdapter | null;
 
     getStaticAriaUpdater():
@@ -687,7 +694,7 @@ interface IEditorAdapterDefinition {
 
     attachToSendValues(
         valueHost: IFieldValueHost,
-        anchor: IJivsDomElement,
+        editor: HTMLElement, anchor: IJivsDomElement,
         options: EditorInstallOptions
     ): void;
 }
@@ -735,19 +742,17 @@ Priorities from `0` through `100` are the documented normal range, with larger v
 
 `matches()` is a read-only predicate. It must not modify or retain either argument.
 
-#### Resolving the Installation Anchor
+#### Resolving the Anchor Element
 
-The element supplied to `IEditorInstaller.install()` identifies the editor encountered by the caller. The selected definition determines which element stores the completed installation and its installed capabilities.
+The element passed into these functions may not be the right one to hold IJivsDomElement, the "Anchor".
+The `identifyAnchor()` function allows the adapter definition to determine the most appropriate element to hold the IJivsDomElement structure.
+Most of the time, the supplied element is the correct anchor, but this may not always be the case.
 
-`resolveInstallationAnchor()` returns that element.
-
-For ordinary editors, the supplied element is also the installation anchor. `EditorAdapterDefinitionBase` implements this default behavior.
-
-A composite editor may use several DOM elements for one logical value. Its definition can override `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. The built-in `RadioGroupAdapterDefinition` instead requires the enclosing radio-group element to be supplied directly and uses the inherited default resolution.
+The use case to override is a radio button group. The caller will supply one radio button element,
+but the AdapterDefinition will fix it to a specific radio button element representing the group,
+such as the first.
 
 Anchor resolution occurs before the installer examines `jivsEditorAdapterDefinition` or performs any installation mutations. Once an anchor is resolved, the installer passes that anchor to the adapter creation, event attachment, and presentation installation operations.
-
-`resolveInstallationAnchor()` must not install adapters, attach events, install a presentation, or assign `jivsEditorAdapterDefinition`.
 
 #### Completed Installation State
 
@@ -792,7 +797,7 @@ abstract class EditorAdapterDefinitionBase
         element: HTMLElement
     ): boolean;
 
-    public resolveInstallationAnchor(
+    public identifyAnchor(
         valueHost: IFieldValueHost,
         element: IJivsDomElement
     ): IJivsDomElement {
@@ -825,7 +830,7 @@ abstract class EditorAdapterDefinitionBase
 
 Concrete definitions override `attachToSendValuesCore()`, not `attachToSendValues()`. They choose and attach the DOM events appropriate to their widgets, while the public method provides consistent logging.
 
-Definitions for ordinary editors inherit `resolveInstallationAnchor()`. Definitions for composite editors override it.
+Definitions for ordinary editors inherit `identifyAnchor()`. Definitions for composite editors override it.
 
 #### Diagnostic Logging
 
@@ -1025,7 +1030,7 @@ The installer must first obtain the definition because that definition determine
 1. If `options.adapterKey` is a string, obtain the definition through `editorAdapterFactory.getDefinition()`.
 2. Otherwise, call `editorAdapterFactory.findDefinition(valueHost, element)`.
 3. If no definition can be selected, log the failure and throw.
-4. Call `definition.resolveInstallationAnchor(valueHost, element)` to obtain the anchor.
+4. Call `definition.identifyAnchor(valueHost, element)` to obtain the anchor.
 
 An explicit adapter key bypasses priority-based matching. An unregistered explicit key is an installation failure.
 
@@ -1159,7 +1164,7 @@ public install(
         options.adapterKey
     );
 
-    const anchor = definition.resolveInstallationAnchor(
+    const anchor = definition.identifyAnchor(
         valueHost,
         element
     );
@@ -1475,7 +1480,7 @@ The enclosing element, rather than one of its radio inputs, is passed to `IEdito
 
 This container-based approach also illustrates how applications can implement other composite editors, such as a dynamic list of textboxes that produces one delimited Text Value.
 
-> If an application requires radio inputs without an enclosing installation element, it supplies its own Adapter Definition and Text Value adapter. `IEditorAdapterDefinition.resolveInstallationAnchor()` supports that use case, but `jivs-dom` does not provide the implementation.
+> If an application requires radio inputs without an enclosing installation element, it supplies its own Adapter Definition and Text Value adapter. `IEditorAdapterDefinition.identifyAnchor()` supports that use case, but `jivs-dom` does not provide the implementation.
 
 ##### Radio-Group Markup
 
@@ -1621,7 +1626,7 @@ class RadioGroupAdapterDefinition
 
 `matches()` tests only the candidate installation element. It does not search beneath every candidate while the adapter factory is selecting a definition.
 
-The inherited `resolveInstallationAnchor()` returns the supplied element. An application supporting radio groups without an enclosing installation element can replace the definition and override that method.
+The inherited `identifyAnchor()` returns the supplied element. An application supporting radio groups without an enclosing installation element can replace the definition and override that method.
 
 `attachToSendValuesCore()` attaches one `change` handler to the installation anchor. Every `change` event that bubbles to the anchor submits the adapter’s current Text Value. The handler does not inspect or filter the event target.
 

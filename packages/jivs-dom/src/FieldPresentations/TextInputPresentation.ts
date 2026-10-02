@@ -4,10 +4,12 @@
  */
 
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
+import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Presentation for HTML input tags that feature a textbox.
- * That includes these type= attribute values: text, password, email, number, search, tel, and url.
+ * That includes these type= attribute values: text, password, email, number, search, tel, url,
+ *    date, datetime-local, month, week, and time.
  * Its default css classes are:
  * - invalidClass: jivs-invalid-editor-input
  * - validatedClass: null
@@ -32,9 +34,10 @@ export class TextInputPresentation extends IsValidFieldPresentationBase
         correctedClass?: string | null,
         requiredClass?: string | null,
         presentationClass?: string | null,
+        jivsElement?: IJivsDomElement | null
     )
     {
-        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass);
+        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass, jivsElement);
     }
 
     protected override defaultInvalidClass(): string | null

@@ -48,7 +48,7 @@ export abstract class ParsedTextEditorAdapterDefinition
      * Assign one of the properties to undefined depending on the outcome of the parsing.
      */
     protected abstract parseTextValue(textValue: string | undefined,
-        valueHost: IFieldValueHost, anchor: IJivsDomElement):
+        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement):
             {
                 nativeValue: unknown | undefined;
                 injectedError?: InjectedError;
@@ -64,25 +64,26 @@ export abstract class ParsedTextEditorAdapterDefinition
      * });
      * ```
      * @param valueHost - The value host that will receive the parsed native value.
+     * @param editor - The HTML element associated with the value host.
      * @param anchor - The DOM element associated with the value host.
      * @param duringEdit - Indicates if the value is being sent during an edit operation.
      * @returns void
      */
     protected sendParsedTextValue(valueHost: IFieldValueHost,
-        anchor: IJivsDomElement, duringEdit?: boolean): void
+        editor: HTMLElement, anchor: IJivsDomElement, duringEdit?: boolean): void
     {
         if (!anchor.jivsTextValueAdapter)
         {
             this.log(
                 LoggingLevel.Warn,
-                `No TextValueAdapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
-                anchor as HTMLElement,
+                `No TextValueAdapter found on the element '${editor}' associated with ValueHost '${valueHost}'.`,
+                editor,
                 valueHost
             );
             return;
         }
         let textValue = anchor.jivsTextValueAdapter.readTextValue();
-        let result = this.parseTextValue(textValue, valueHost, anchor);
+        let result = this.parseTextValue(textValue, valueHost, editor, anchor);
 
         valueHost.setValues(result.nativeValue, textValue, { 
             validate: true,

@@ -4,6 +4,7 @@
  */
 
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
+import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Presentation for HTML select tags.
@@ -31,9 +32,10 @@ export class SelectPresentation extends IsValidFieldPresentationBase
         correctedClass?: string | null,
         requiredClass?: string | null,
         presentationClass?: string | null,
+        jivsElement?: IJivsDomElement | null
     )
     {
-        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass);
+        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass, jivsElement);
     }
 
     protected override defaultInvalidClass(): string | null

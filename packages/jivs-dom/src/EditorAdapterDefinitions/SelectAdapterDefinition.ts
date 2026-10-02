@@ -31,24 +31,24 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
         return selectPresentationName;
     }
     
-    public override matches(valueHost: IFieldValueHost, element: HTMLElement): boolean
+    public override matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean
     {
-        return element instanceof HTMLSelectElement;
+        return candidateElement instanceof HTMLSelectElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, anchor: IJivsDomElement,
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement,
         options: EditorInstallOptions): void
     {
-        let element = anchor as HTMLSelectElement;
+        let selectElement = editor as HTMLSelectElement;
         let self = this;
-        element.addEventListener('change', () => {
-            self.sendTextValue(valueHost, anchor, false);
+        selectElement.addEventListener('change', () => {
+            self.sendTextValue(valueHost, editor, anchor, false);
         });
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
     {
-        return new SelectTextValueAdapter(anchor as HTMLSelectElement);
+        return new SelectTextValueAdapter(editor as HTMLSelectElement, anchor);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }

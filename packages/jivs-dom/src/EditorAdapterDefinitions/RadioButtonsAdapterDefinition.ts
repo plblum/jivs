@@ -39,10 +39,11 @@ export class RadioButtonsAdapterDefinition extends InputAdapterDefinition
         return defaultRadioButtonsPresentationName;
     }
 
-    public override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter
     {
         return new RadioButtonsTextValueAdapter(
-            this.requireInputElement(element)   // may throw
+            this.requireInputElement(editor),   // may throw
+            anchor
         );
     }
 }

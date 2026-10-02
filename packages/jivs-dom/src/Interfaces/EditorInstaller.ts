@@ -32,10 +32,11 @@ export interface IEditorInstaller
      * Only the first call will take any actions.
      * 
      * @param valueHost The field value host associated with the installation.
-     * @param element The DOM element serving as the installation anchor.
+     * @param element The DOM element known to the caller. It may be the actual editor
+     * or another element. It needs to be recognized by an Editor Adapter Definition.
      * @param options The options for installing the editor.
      */
-    install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): IJivsDomElement;
+    install(valueHost: IFieldValueHost, element: HTMLElement, options?: EditorInstallOptions): IJivsDomElement;
 }
 
 /**

@@ -50,7 +50,6 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
     public defaultFactoryRegistrations(factory: IPresentationFactory<IFieldPresentation>): void
     {
         // Register default field presentations here
-        // Example:
         factory.register(defaultTextInputPresentationName, (element) => new TextInputPresentation(element));
         factory.register(defaultCheckboxPresentationName, (element) => new CheckboxPresentation(element));
         factory.register(defaultRadioButtonsPresentationName, (element) => new RadioButtonsPresentation(element));

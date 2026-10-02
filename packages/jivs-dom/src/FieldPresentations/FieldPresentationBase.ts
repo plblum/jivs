@@ -8,6 +8,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { AdapterBase } from '../Adapters/AdapterBase';
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Base class for field presentations.
@@ -24,9 +25,9 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     implements IFieldPresentation
 {
 
-    public constructor(element: TElement)
+    public constructor(element: TElement, jivsElement: IJivsDomElement | null)
     {
-        super(element);
+        super(element, jivsElement);
     }
 
     /**
@@ -34,7 +35,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * Use this property to access the element that should be used for presentation purposes.
      * Designed to allow the element to be switched as the widget may discard and rebuild itself.
      */
-    protected get presentationElement(): TElement
+    protected get presentationElement(): HTMLElement
     {
         return this.resolvePresentationElement(this.element);
     }
@@ -45,7 +46,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * @returns The resolved presentation element.
      * The default implementation returns the element itself.
      */
-    protected resolvePresentationElement(element: TElement): TElement
+    protected resolvePresentationElement(element: TElement): HTMLElement
     {
         return element;
     }

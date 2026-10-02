@@ -55,22 +55,23 @@ export class InputAdapterDefinition
     /**
      * Matches when element is an HTMLInputElement and its type matches the inputType of this adapter.
      * @param valueHost - The host object that provides the field value.
-     * @param element - The HTML element to check for a match.
+     * @param candidateElement - The HTML element to check for a match.
      * @returns True if the element matches the input type of this adapter; otherwise, false.
      */
-    public matches(valueHost: IFieldValueHost, element: HTMLElement): boolean
+    public matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean
     {
-        return element instanceof HTMLInputElement
-            && element.type === this.inputType;
+        return candidateElement instanceof HTMLInputElement
+            && candidateElement.type === this.inputType;
     }
 
-    public createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter | null
+    public createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
     {
         return new InputTextValueAdapter(
-            this.requireInputElement(element)   // may throw
+            this.requireInputElement(editor),   // may throw
+            anchor
         );
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, anchor: IJivsDomElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
     {
         return null;
     }
@@ -78,22 +79,25 @@ export class InputAdapterDefinition
     /**
      * Wires up the onchange event and optionally oninput event for the input element.
      * @param valueHost - The host object that provides the field value.
-     * @param element - The HTML element to attach the event listeners to.
+     * @param editor - The HTML element to attach the event listeners to.
+     * @param anchor - The DOM element that contains the IJivsDomElement structure.
+     * It is often the same as the editor element.
+     * 
      * @param options - The editor installation options that determine event wiring.
      */
-    protected attachToSendValuesCore(valueHost: IFieldValueHost, element: IJivsDomElement,
+    protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement,
         options: EditorInstallOptions): void
     {
-        const input = this.requireInputElement(element); // may throw
+        const input = this.requireInputElement(editor); // may throw
         let self = this;
         input.addEventListener('change',
-            () => self.sendTextValue(valueHost, element, false)
+            () => self.sendTextValue(valueHost, editor, anchor, false)
         );
 
         if (options.duringEdit)
         {
             input.addEventListener('input',
-                () => self.sendTextValue(valueHost, element, true)
+                () => self.sendTextValue(valueHost, editor, anchor, true)
             );
         }
     }
@@ -104,7 +108,7 @@ export class InputAdapterDefinition
      * @param element - The DOM element to be checked and cast to an HTMLInputElement.
      * @returns The input element if it matches the required type; otherwise, throws an error.
      */
-    protected requireInputElement(element: IJivsDomElement): HTMLInputElement
+    protected requireInputElement(element: HTMLElement): HTMLInputElement
     {
         if (!(element instanceof HTMLInputElement)
             || element.type !== this.inputType)
