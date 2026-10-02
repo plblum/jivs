@@ -8,11 +8,11 @@
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { InputTextValueAdapter } from '../Adapters/InputTextValueAdapter';
+import { defaultTextInputPresentationName } from '../FieldPresentations/TextInputPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML input elements of a specific type.
@@ -24,7 +24,7 @@ export class InputAdapterDefinition
 {
 
     public constructor(inputType: string, adapterKey?: string, priority: number = 0,
-        defaultFieldPresentationName?: string | null)
+        recommendedFieldPresentationName?: string | null)
     {
         const normalizedInputType = inputType.toLowerCase();
 
@@ -32,7 +32,7 @@ export class InputAdapterDefinition
             adapterKey ??
             `input:${ normalizedInputType }`,
             priority,
-            defaultFieldPresentationName
+            recommendedFieldPresentationName
         );
 
         this._inputType = normalizedInputType;
@@ -46,6 +46,11 @@ export class InputAdapterDefinition
         return this._inputType;
     }
     private readonly _inputType: string;
+
+    override defaultFieldPresentationName(): string | null
+    {
+        return defaultTextInputPresentationName;
+    }
 
     /**
      * Matches when element is an HTMLInputElement and its type matches the inputType of this adapter.

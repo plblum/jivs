@@ -56,7 +56,7 @@ export interface IEditorAdapterDefinition
      * The presentation name recommended for this widget's default field presentation.
      * It must have an associated IFieldPresentation registered with the IJivsDomService's factory.
      */
-    readonly defaultFieldPresentationName?: string | null;
+    readonly recommendedFieldPresentationName?: string | null;
 
     /**
      * Get/set access to the IJivsDomServices instance associated with this adapter definition.

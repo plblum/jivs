@@ -8,6 +8,12 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IEditorAdapterDefinition, IEditorAdapterDefinitionFactory } from '../Interfaces/EditorAdapterDefinitions';
 import { DomServiceBase } from '../Services/DomServiceBase';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { CheckboxAdapterDefinition, defaultCheckboxAdapterKey } from './CheckboxAdapterDefinition';
+import { TextAreaAdapterDefinition, defaultTextAreaAdapterKey } from './TextAreaAdapterDefinition';
+import { SelectAdapterDefinition, defaultSelectAdapterKey } from './SelectAdapterDefinition';
+import { RadioButtonsAdapterDefinition, defaultRadioButtonsAdapterKey } from './RadioButtonsAdapterDefinition';
+import { defaultFileInputAdapterKey, FileInputAdapterDefinition } from './FileInputAdapterDefinition';
 
 /**
  * Registers and selects editor adapter definitions as part of running 
@@ -19,6 +25,10 @@ import { DomServiceBase } from '../Services/DomServiceBase';
 export class EditorAdapterDefinitionFactory extends DomServiceBase
     implements IEditorAdapterDefinitionFactory
 {
+    constructor(domServices: IJivsDomServices) {
+        super(domServices);
+        this.lazyRegistration(factory => this.defaultFactoryRegistrations(factory));
+    }
     // The collection of registered objects is ordered by priority, with higher priority definitions appearing first.
     // Priority values are 0 to 100 where 0 is the highest.
     // We need support two types of searches:
@@ -87,6 +97,30 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
             this._lazyRegistrationFunction = undefined;
         }
     }
+
+    /**
+     * The default factory registrations for editor adapter definitions.
+     * To expand or replace, use lazyRegistration().
+     * 
+     * If you want these to be installed and offer replacements by name, do this:
+     * ```ts
+     * factory.lazyRegistration(factory => {
+     * // order is important: default registrations first, then custom ones
+     *     factory.defaultFactoryRegistrations(factory);
+     *     factory.register(new AdapterDefinitionType(element));
+     * });
+     * ```
+     * @param factory 
+     */
+    public defaultFactoryRegistrations(factory: IEditorAdapterDefinitionFactory): void
+    {
+        // Register default field presentations here
+        factory.register(new CheckboxAdapterDefinition(defaultCheckboxAdapterKey, 80));
+        factory.register(new TextAreaAdapterDefinition(defaultTextAreaAdapterKey, 80));
+        factory.register(new RadioButtonsAdapterDefinition(defaultRadioButtonsAdapterKey, 80));
+        factory.register(new SelectAdapterDefinition(defaultSelectAdapterKey, 80));
+        factory.register(new FileInputAdapterDefinition(defaultFileInputAdapterKey, 80));
+    }    
     /**
      * Retrieves the editor adapter definition associated with the given adapter key, if any.
      * @param adapterKey The unique adapter key of the editor adapter definition to retrieve.

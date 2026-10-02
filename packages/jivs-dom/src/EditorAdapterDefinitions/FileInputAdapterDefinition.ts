@@ -2,12 +2,11 @@
  * Provides an editor adapter definition for HTML input type='file' elements.
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/FileInputAdapterDefinition
  */
-import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
-import { FileInputTextValueAdapter } from '../Adapters/FileInputTextValueAdapter';
-import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { FileInputTextValueAdapter } from '../Adapters/FileInputTextValueAdapter';
+import { defaultFileInputPresentationName } from '../FieldPresentations/FileInputPresentation';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
 
 /**
@@ -26,9 +25,14 @@ import { InputAdapterDefinition } from './InputAdapterDefinition';
 export class FileInputAdapterDefinition extends InputAdapterDefinition
 {
     public constructor(adapterKey?: string, priority: number = 0,
-        defaultFieldPresentationName?: string | null)
+        recommendedFieldPresentationName?: string | null)
     {
-        super('file', adapterKey, priority, defaultFieldPresentationName);
+        super('file', adapterKey ?? defaultFileInputAdapterKey, priority, recommendedFieldPresentationName);
+    }
+
+    override defaultFieldPresentationName(): string | null
+    {
+        return defaultFileInputPresentationName;
     }
 
     public override createTextValueAdapter(
@@ -43,3 +47,5 @@ export class FileInputAdapterDefinition extends InputAdapterDefinition
     }
 
 }
+
+export const defaultFileInputAdapterKey = 'input:file';

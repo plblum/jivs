@@ -227,7 +227,7 @@ and its members create the adapters, presentations, and aria updaters for the wi
 interface IEditorAdapterDefinition {
     readonly adapterKey: string;
     readonly priority: number;
-    readonly defaultFieldPresentationName?: string | null;
+    readonly recommendedFieldPresentationName?: string | null;
 
     matches(
         element: HTMLElement
@@ -486,7 +486,7 @@ The installer receives the `IFieldValueHost` because event handlers call it dire
 options.presentationName is supplied
     -> use the explicit name
 
-otherwise, definition.defaultFieldPresentationName is supplied
+otherwise, definition.recommendedFieldPresentationName is supplied
     -> use the adapter definition's default
 
 otherwise

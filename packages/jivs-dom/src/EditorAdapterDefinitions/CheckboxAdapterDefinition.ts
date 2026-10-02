@@ -8,6 +8,7 @@ import type { ITextValueAdapter } from '../Interfaces/Adapters';
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
 import { CheckboxTextValueAdapter } from '../Adapters/CheckboxTextValueAdapter';
+import { defaultCheckboxPresentationName } from '../FieldPresentations/CheckboxPresentation';
 
 /**
  * Provides an editor adapter definition for HTML input elements of type checkbox.
@@ -17,15 +18,23 @@ import { CheckboxTextValueAdapter } from '../Adapters/CheckboxTextValueAdapter';
 export class CheckboxAdapterDefinition extends InputAdapterDefinition
 {
     public constructor(adapterKey?: string, priority: number = 0,
-        defaultFieldPresentationName?: string | null)
+        recommendedFieldPresentationName?: string | null)
     {
-        super('checkbox', adapterKey, priority, defaultFieldPresentationName);
+        super('checkbox', adapterKey ?? defaultCheckboxAdapterKey,
+            priority, recommendedFieldPresentationName);
     }
 
-    override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter
+    public override defaultFieldPresentationName(): string | null
+    {
+        return defaultCheckboxPresentationName;
+    }
+
+    public override createTextValueAdapter(valueHost: IFieldValueHost, element: IJivsDomElement): ITextValueAdapter
     {
         return new CheckboxTextValueAdapter(
             this.requireInputElement(element)   // may throw
         );
     }
 }
+
+export const defaultCheckboxAdapterKey = 'input:checkbox';

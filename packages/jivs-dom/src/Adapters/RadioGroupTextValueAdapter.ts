@@ -1,0 +1,44 @@
+/**
+ * Adapter for a group of HTML radio input elements under a containing tag, using their checked property
+ * to determine and set the text value of the selected radio element.
+ * 
+ * @module jivs-dom/Adapters/ConcreteClasses/RadioGroupTextValueAdapter
+ */
+
+
+import { ITextValueAdapter } from '../Interfaces/Adapters';
+import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { RadioButtonsTextValueAdapterBase } from './RadioButtonsTextValueAdapterBase';
+
+/**
+ * Adapter for a group of HTML radio input elements under a containing tag, using their checked property
+ * to determine and set the text value of the selected radio element.
+ * 
+ * This implementation REQUIRES that all input type='radio' tags are contained
+ * within the same container element, and that container is passed to its constructor.
+ * It also REQUIRES that the name attribute of all radio inputs within the group is the same.
+ * It never checks the name when determining which radio is selected.
+ * 
+ * It resolves the input element to read or write by querying for all radio input elements within the container,
+ * at any depth below.
+ * 
+ * Exposed by RadioGroupAdapterDefinition.
+ */
+export class RadioGroupTextValueAdapter extends RadioButtonsTextValueAdapterBase
+    implements ITextValueAdapter
+{
+
+    constructor(groupContainer: IJivsDomElement)
+    {
+        super(groupContainer);
+    }
+
+    protected getRadios(): HTMLInputElement[]
+    {
+        return Array.from(
+            this.element.querySelectorAll<HTMLInputElement>(
+                'input[type="radio"]'
+            )
+        );
+    }
+}

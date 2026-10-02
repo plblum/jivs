@@ -59,7 +59,7 @@ export class EditorInstaller extends DomServiceBase
         // through our options or the definition's default.
         const presentationName = options.presentationName != null // null/undefined
                 ? options.presentationName
-                : definition.defaultFieldPresentationName;
+                : definition.recommendedFieldPresentationName;
 
         this.domServices.fieldPresentationInstaller.install(valueHost, anchor, ElementRole.editor,
             {

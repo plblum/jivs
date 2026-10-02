@@ -2,13 +2,13 @@
  * Provides an editor adapter definition for HTML select elements.
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/SelectAdapterDefinition
  */
-import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { SelectTextValueAdapter } from '../Adapters/SelectTextValueAdapter';
+import { defaultSelectPresentationName as selectPresentationName } from '../FieldPresentations/SelectPresentation';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
-import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML select elements.
@@ -21,9 +21,14 @@ import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
 {
     public constructor(adapterKey?: string, priority: number = 0,
-        defaultFieldPresentationName?: string | null)
+        recommendedFieldPresentationName?: string | null)
     {
-        super(adapterKey ?? 'select', priority, defaultFieldPresentationName);
+        super(adapterKey ?? defaultSelectAdapterKey, priority, recommendedFieldPresentationName);
+    }
+
+    override defaultFieldPresentationName(): string | null
+    {
+        return selectPresentationName;
     }
     
     public override matches(valueHost: IFieldValueHost, element: HTMLElement): boolean
@@ -49,3 +54,5 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
     }
 
 }
+
+export const defaultSelectAdapterKey = 'select';

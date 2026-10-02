@@ -85,7 +85,7 @@ flowchart TB
     subgraph FACTORY["IEditorAdapterDefinitionFactory"]
         direction LR
 
-        REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, InputRadioGroupAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
+        REGISTERED["Registered definitions: InputAdapterDefinition, CheckboxAdapterDefinition, RadioGroupAdapterDefinition, RadioButtonAdapterDefinition, TextAreaAdapterDefinition, SelectAdapterDefinition, FileInputAdapterDefinition"]
         FACTORY_API["Definition registry and selection"]
 
         REGISTERED -->|"used by"| FACTORY_API
@@ -656,7 +656,7 @@ interface IEditorAdapterDefinition {
     readonly adapterKey: string;
     readonly priority: number;
 
-    readonly defaultFieldPresentationName?:
+    readonly recommendedFieldPresentationName?:
         string | null;
 
     matches(
@@ -743,7 +743,7 @@ The element supplied to `IEditorInstaller.install()` identifies the editor encou
 
 For ordinary editors, the supplied element is also the installation anchor. `EditorAdapterDefinitionBase` implements this default behavior.
 
-A composite editor may use several DOM elements for one logical value. Its definition can override `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. The built-in `InputRadioGroupAdapterDefinition` instead requires the enclosing radio-group element to be supplied directly and uses the inherited default resolution.
+A composite editor may use several DOM elements for one logical value. Its definition can override `resolveInstallationAnchor()` so calls involving those elements converge on one anchor. The built-in `RadioGroupAdapterDefinition` instead requires the enclosing radio-group element to be supplied directly and uses the inherited default resolution.
 
 Anchor resolution occurs before the installer examines `jivsEditorAdapterDefinition` or performs any installation mutations. Once an anchor is resolved, the installer passes that anchor to the adapter creation, event attachment, and presentation installation operations.
 
@@ -782,7 +782,7 @@ abstract class EditorAdapterDefinitionBase
     protected constructor(
         public readonly adapterKey: string,
         public readonly priority: number,
-        public readonly defaultFieldPresentationName?:
+        public readonly recommendedFieldPresentationName?:
             string | null
     ) {
     }
@@ -971,7 +971,10 @@ The helper methods do not catch errors from adapters, parsing, or the `IFieldVal
 
 * `InputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `input:type` format;
 * `CheckboxAdapterDefinition` for checkbox inputs with `adapterKey="input:checkbox"`;
-* `InputRadioGroupAdapterDefinition` for native input radio groups with `adapterKey="input:radio-group"`;
+* `RadioButtonAdapterDefinition` for radio buttons with `adapterKey="input:radio"`.
+It resolves all siblings as a group;
+* `RadioGroupAdapterDefinition` for native input radio groups with `adapterKey="input:radio-group"`
+. It requires a container tag with those inputs as children.;
 * `TextAreaAdapterDefinition` for textarea elements with `adapterKey="textarea"`;
 * `SelectAdapterDefinition` for select elements with `adapterKey="select"`;
 * `FileInputAdapterDefinition` for file inputs with `adapterKey="input:file"`.
@@ -1101,7 +1104,7 @@ The editor installer always invokes `IFieldPresentationInstaller` for `ElementRo
 It resolves the presentation name in this order:
 
 1. If `options.presentationName` is a string or `null`, use it.
-2. Otherwise, if `definition.defaultFieldPresentationName` is a string or `null`, use it.
+2. Otherwise, if `definition.recommendedFieldPresentationName` is a string or `null`, use it.
 3. Otherwise, pass `undefined` so the presentation installer can apply its universal editor fallback.
 
 The values have distinct meanings:
@@ -1190,7 +1193,7 @@ public install(
     const presentationName =
         options.presentationName !== undefined
             ? options.presentationName
-            : definition.defaultFieldPresentationName;
+            : definition.recommendedFieldPresentationName;
 
     this.fieldPresentationInstaller.install(
         valueHost,
@@ -1235,7 +1238,8 @@ All initial built-in definitions use the Text Value path. They read strings from
 | ------------------------ | ---------------------------------- | --------------------------------- | --------------------------------------------------- |
 | Ordinary `input`         | `InputAdapterDefinition`           | `InputTextValueAdapter`           | `change`, plus `input` when `duringEdit` is enabled |
 | Checkbox `input`         | `CheckboxAdapterDefinition`        | `CheckboxTextValueAdapter`        | `change`                                            |
-| Native input radio group | `InputRadioGroupAdapterDefinition` | `InputRadioGroupTextValueAdapter` | One bubbling `change` handler on the group anchor   |
+| Native input radio buttons | `RadioButtonsAdapterDefinition` | `RadioButtonTextValueAdapter` | One bubbling `change` handler on the group anchor   |
+| Native input radio group | `RadioGroupAdapterDefinition` | `RadioGroupTextValueAdapter` | One bubbling `change` handler on the group anchor   |
 | `textarea`               | `TextAreaAdapterDefinition`        | `TextAreaTextValueAdapter`        | `change`, plus `input` when `duringEdit` is enabled |
 | Single-value `select`    | `SelectAdapterDefinition`          | `SelectTextValueAdapter`          | `change`                                            |
 | File `input`             | `FileInputAdapterDefinition`       | `FileInputTextValueAdapter`       | `change`                                            |
@@ -1312,7 +1316,7 @@ class InputAdapterDefinition
         inputType: string,
         adapterKey?: string,
         priority: number = 0,
-        defaultFieldPresentationName?:
+        recommendedFieldPresentationName?:
             string | null
     ) {
         const normalizedInputType =
@@ -1322,7 +1326,7 @@ class InputAdapterDefinition
             adapterKey ??
                 `input:${normalizedInputType}`,
             priority,
-            defaultFieldPresentationName
+            recommendedFieldPresentationName
         );
 
         this.inputType = normalizedInputType;
@@ -1520,7 +1524,7 @@ A labeled group can use markup such as:
 
 ##### Input Radio-Group Adapter Definition
 
-`InputRadioGroupAdapterDefinition` represents radio groups constructed from native `input[type="radio"]` elements.
+`RadioGroupAdapterDefinition` represents radio groups constructed from native `input[type="radio"]` elements.
 
 | Rule                      | Value                               |
 | ------------------------- | ----------------------------------- |
@@ -1537,7 +1541,7 @@ The matching selector can be replaced through the constructor.
 The relevant definition behavior is:
 
 ```ts
-class InputRadioGroupAdapterDefinition
+class RadioGroupAdapterDefinition
     extends EditorAdapterDefinitionBase {
 
     private readonly matchingSelector: string;
@@ -1554,13 +1558,13 @@ class InputRadioGroupAdapterDefinition
         adapterKey:
             string = "input:radio-group",
         priority: number = 0,
-        defaultFieldPresentationName?:
+        recommendedFieldPresentationName?:
             string | null
     ) {
         super(
             adapterKey,
             priority,
-            defaultFieldPresentationName
+            recommendedFieldPresentationName
         );
 
         this.matchingSelector =
@@ -1701,7 +1705,7 @@ The installation anchor is the editor’s presentation target. Its field present
 
 The built-in definition does not require a radio-specific presentation. Normal presentation-name resolution remains in effect.
 
-`InputRadioGroupAdapterDefinition` returns a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent. It also returns an `AriaRequiredEditorValidationStateUpdater` with `alsoRunRoleUpdater` set to `false`.
+`RadioGroupAdapterDefinition` returns a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent. It also returns an `AriaRequiredEditorValidationStateUpdater` with `alsoRunRoleUpdater` set to `false`.
 
 The validation-state updater applies group-level state to the anchor, including:
 
@@ -1720,7 +1724,8 @@ The other built-in definitions use these keys:
 | Definition                         | Default `adapterKey` |
 | ---------------------------------- | -------------------- |
 | `CheckboxAdapterDefinition`        | `input:checkbox`     |
-| `InputRadioGroupAdapterDefinition` | `input:radio-group`  |
+| `RadioButtonsAdapterDefinition`    | `input:radio`        |
+| `RadioGroupAdapterDefinition`      | `input:radio-group`  |
 | `TextAreaAdapterDefinition`        | `textarea`           |
 | `SelectAdapterDefinition`          | `select`             |
 | `FileInputAdapterDefinition`       | `input:file`         |
@@ -1845,7 +1850,7 @@ Presentation names and roles are open-ended strings. The built-in `ElementRole` 
 
 `register()` associates a presentation name with a creator. Registering the same name again replaces its creator for future installations. Presentations already installed on elements are unaffected.
 
-`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. For editors, `IEditorInstaller` first considers `EditorInstallOptions.presentationName`, then `IEditorAdapterDefinition.defaultFieldPresentationName`. Only when neither supplies a value does it pass `undefined`, allowing the factory to use the default registered for `ElementRole.editor`.
+`setDefaultPresentationName()` associates a role with the presentation name used when `create()` receives no explicit name. For editors, `IEditorInstaller` first considers `EditorInstallOptions.presentationName`, then `IEditorAdapterDefinition.recommendedFieldPresentationName`. Only when neither supplies a value does it pass `undefined`, allowing the factory to use the default registered for `ElementRole.editor`.
 
 Assigning another default for the same role replaces the earlier string. The method does not require the named presentation to be registered at that time, allowing defaults and creators to be configured in either order.
 
@@ -2876,7 +2881,7 @@ This table defines the attributes written by the standard ARIA updaters. Later s
 | `role="status"` | Installation — static | Validation Summary | Makes summary updates advisory live-region content. | Assigned when `role` is absent. | Implies `aria-live="polite"` and `aria-atomic="true"`. An existing role is preserved. |
 | `aria-atomic="true"` | Installation — static | Validation Summary | Requests announcement of the complete summary when its content changes. | Assigned when `aria-atomic` is absent. | Assigned explicitly even though `role="status"` implies it. An existing value is preserved. |
 | `aria-hidden="true"` | Installation — static | Required Indicator | Prevents the visual indicator from duplicating the required state communicated by the editor. | Assigned when `aria-hidden` is absent. | The Required Indicator presentation controls visual state but does not assign this attribute. |
-| `role="radiogroup"` | Installation — static | Radio-group editor anchor | Identifies the container as representing one radio-group value and makes it the target for group-level ARIA state. | Assigned by the specialized updater supplied by `InputRadioGroupAdapterDefinition` when `role` is absent. | An existing role is preserved. The developer remains responsible for the group’s accessible name. |
+| `role="radiogroup"` | Installation — static | Radio-group editor anchor | Identifies the container as representing one radio-group value and makes it the target for group-level ARIA state. | Assigned by the specialized updater supplied by `RadioGroupAdapterDefinition` when `role` is absent. | An existing role is preserved. The developer remains responsible for the group’s accessible name. |
 | `id="{generatedId}"` | Installation — static | Field Error Display or dedicated ARIA error-message element | Supplies the target required by `aria-errormessage` when the developer did not provide an ID. | Assigned when the element lacks a nonempty ID. | Uses the `error` or `ariaerror` suffix. A developer-supplied ID is preserved. |
 | `required` | Validation-state synchronization — dynamic | Native `input`, `select`, or `textarea` supporting required semantics | Uses the control’s native required behavior and accessibility semantics. | Present when `valueHost.required` is `true`; removed otherwise. | Determined by field configuration rather than `ValueHostValidationState`. `aria-required` is not also assigned. |
 | `aria-required="true"` | Validation-state synchronization — dynamic | ARIA editor target without equivalent native required semantics | Communicates that the represented value is required. | Present when `valueHost.required` is `true`; removed otherwise. | Used on the standard radio-group anchor. |
@@ -3285,7 +3290,7 @@ All built-in updater classes are exported from `jivs-dom`.
 | `EditorAriaStaticUpdater` | Registered for `ElementRole.editor` | Assigns `aria-required` when FieldValueHost.required is true. |
 | `ValidationSummaryAriaStaticUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
 | `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
-| `RadioGroupAriaStaticUpdater` | Returned by `InputRadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
+| `RadioGroupAriaStaticUpdater` | Returned by `RadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor anchor. |
 
 
 #### Validation State Updaters
@@ -3298,9 +3303,9 @@ All built-in updater classes are exported from `jivs-dom`.
 
 There is no Validation State Updater registered for `ElementRole.error`. Its field presentation owns state-dependent content. A field presentation may supply a specialized updater when its generated markup requires additional accessibility behavior.
 
-### InputRadioGroupAdapterDefinition
+### RadioGroupAdapterDefinition
 
-`InputRadioGroupAdapterDefinition` supplies:
+`RadioGroupAdapterDefinition` supplies:
 
 - a `RadioGroupAriaStaticUpdater` that assigns `role="radiogroup"` to the installation anchor only when `role` is absent;
 - an `AriaRequiredEditorValidationStateUpdater`.
@@ -4333,7 +4338,7 @@ The standard creation method constructs `EditorAdapterFactory` and registers the
 
 * ordinary input definitions;
 * `CheckboxAdapterDefinition`;
-* `InputRadioGroupAdapterDefinition`;
+* `RadioGroupAdapterDefinition`;
 * `TextAreaAdapterDefinition`;
 * `SelectAdapterDefinition`;
 * `FileInputAdapterDefinition`.

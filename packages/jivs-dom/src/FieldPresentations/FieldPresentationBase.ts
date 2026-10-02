@@ -14,6 +14,8 @@ import { AdapterBase } from '../Adapters/AdapterBase';
  * 
  * - implement init() when you need to perform initialization logic for the field presentation.
  * - implement apply() to update the field presentation based on the value host and its validation state.
+ * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
+ *   such as the host of the CSS class names.
  * - optionally override getStaticAriaElementUpdater() and getValidationStateAriaElementUpdater() 
  *   to provide ARIA updates on another element than the anchor.
  */
@@ -25,6 +27,27 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     public constructor(element: TElement)
     {
         super(element);
+    }
+
+    /**
+     * The element property may not always represent the actual presentation element.
+     * Use this property to access the element that should be used for presentation purposes.
+     * Designed to allow the element to be switched as the widget may discard and rebuild itself.
+     */
+    protected get presentationElement(): TElement
+    {
+        return this.resolvePresentationElement(this.element);
+    }
+
+    /**
+     * Resolves the actual presentation element for the field presentation.
+     * @param element The element to resolve as the presentation element.
+     * @returns The resolved presentation element.
+     * The default implementation returns the element itself.
+     */
+    protected resolvePresentationElement(element: TElement): TElement
+    {
+        return element;
     }
 
     /**
@@ -42,6 +65,9 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * @param state The current validation state of the value host.
      */
     public abstract apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void;
+
+
+
 
     /**
      * Return a static ARIA element updater if your widget's elements need

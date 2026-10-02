@@ -24,12 +24,15 @@ export abstract class EditorAdapterDefinitionBase
 {
 
     protected constructor(adapterKey: string, priority: number,
-        defaultFieldPresentationName?:string | null)
+        recommendedFieldPresentationName?:string | null)
     {
         assertNotNull(adapterKey, 'adapterKey');
         this._adapterKey = adapterKey;
         this._priority = priority;
-        this._defaultFieldPresentationName = defaultFieldPresentationName ?? null;
+        this._recommendedFieldPresentationName =
+            recommendedFieldPresentationName !== undefined ?
+                recommendedFieldPresentationName :
+                this.defaultFieldPresentationName();
     }
 
     /**
@@ -75,12 +78,19 @@ export abstract class EditorAdapterDefinitionBase
     /**
      * Provides the Presentation Name used by default for this Editor Adapter Definition.
      * Allows each editor to supply a companion presentation.
+     * The default is supplied by the `defaultFieldPresentationName` method but can be overriden
+     * by a parameter in the constructor.
      */
-    public get defaultFieldPresentationName(): string | null | undefined
+    public get recommendedFieldPresentationName(): string | null | undefined
     {
-        return this._defaultFieldPresentationName;
+        return this._recommendedFieldPresentationName;
     }
-    private _defaultFieldPresentationName?: string | null;
+    private _recommendedFieldPresentationName?: string | null;
+
+    /**
+     * Returns the default field presentation name for this editor adapter definition.
+     */
+    protected abstract defaultFieldPresentationName(): string | null;
 
     /**
      * Log wrapper around the Jivs logging service to prepare log details in addition

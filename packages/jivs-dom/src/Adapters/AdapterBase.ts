@@ -29,7 +29,7 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     {
         return this._element;
     }
-    private readonly _element: TElement = this.element;
+    private readonly _element: TElement;
 
     protected get jivsElement(): IJivsDomElement
     {

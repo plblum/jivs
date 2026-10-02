@@ -4,13 +4,13 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/TextAreaAdapterDefinition
  */
 
-import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { TextAreaTextValueAdapter } from '../Adapters/TextAreaTextValueAdapter';
+import { defaultTextAreaPresentationName } from '../FieldPresentations/TextAreaPresentation';
+import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
-import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Provides an editor adapter definition for HTML textarea elements.
@@ -23,9 +23,14 @@ import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
 {
     public constructor(adapterKey?: string, priority: number = 0,
-        defaultFieldPresentationName?: string | null)
+        recommendedFieldPresentationName?: string | null)
     {
-        super(adapterKey ?? 'textarea', priority, defaultFieldPresentationName);
+        super(adapterKey ?? defaultTextAreaAdapterKey, priority, recommendedFieldPresentationName);
+    }
+
+    public override defaultFieldPresentationName(): string | null
+    {
+        return defaultTextAreaPresentationName;
     }
     
     public override matches(valueHost: IFieldValueHost, element: HTMLElement): boolean
@@ -57,3 +62,5 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
     }
 
 }
+
+export const defaultTextAreaAdapterKey = 'textarea';

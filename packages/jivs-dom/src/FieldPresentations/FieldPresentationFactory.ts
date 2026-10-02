@@ -8,7 +8,14 @@
 
 import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { IPresentationFactory } from '../Interfaces/Presentations_common'
 import { PresentationFactoryBase } from '../Presentations_common/PresentationFactoryBase';
+import { defaultTextInputPresentationName, TextInputPresentation } from './TextInputPresentation';
+import { defaultCheckboxPresentationName, CheckboxPresentation } from './CheckboxPresentation';
+import { defaultSelectPresentationName, SelectPresentation } from './SelectPresentation';
+import { defaultRadioButtonsPresentationName, RadioButtonsPresentation } from './RadioButtonsPresentation';
+import { defaultTextAreaPresentationName, TextAreaPresentation } from './TextAreaPresentation';
+import { defaultFileInputPresentationName, FileInputPresentation } from './FileInputPresentation';
 
 /**
  * Factory class for creating field presentations (implementations of IFieldPresentation)
@@ -23,5 +30,33 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
     constructor(domServices: IJivsDomServices)
     {
         super(domServices);
+        this.lazyRegistration(factory => this.defaultFactoryRegistrations(factory));
+    }
+
+    /**
+     * The default factory registrations for field presentations.
+     * To expand or replace, use lazyRegistration().
+     * 
+     * If you want these to be installed and offer replacements by name, do this:
+     * ```ts
+     * factory.lazyRegistration(factory => {
+     * // order is important: default registrations first, then custom ones
+     *     factory.defaultFactoryRegistrations(factory);
+     *     factory.register(PresentationName, (element) => new PresentationType(element));
+     * });
+     * ```
+     * @param factory 
+     */
+    public defaultFactoryRegistrations(factory: IPresentationFactory<IFieldPresentation>): void
+    {
+        // Register default field presentations here
+        // Example:
+        factory.register(defaultTextInputPresentationName, (element) => new TextInputPresentation(element));
+        factory.register(defaultCheckboxPresentationName, (element) => new CheckboxPresentation(element));
+        factory.register(defaultRadioButtonsPresentationName, (element) => new RadioButtonsPresentation(element));
+        factory.register(defaultSelectPresentationName, (element) => new SelectPresentation(element));
+        factory.register(defaultTextAreaPresentationName, (element) => new TextAreaPresentation(element));
+        factory.register(defaultFileInputPresentationName, (element) => new FileInputPresentation(element));
+
     }
 }
