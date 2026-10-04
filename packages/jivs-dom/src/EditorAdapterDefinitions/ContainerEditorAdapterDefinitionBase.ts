@@ -38,6 +38,10 @@ import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
  * The adapters remain assigned to the container's
  * IJivsDomElement properties even though they read from and write to the
  * descendant editor.
+ * 
+ * This design uses the Editor Adapter Definition explicitly designed for the editor itself,
+ * leaving the container adapter to manage the container while redirecting to the editor adapter for editor-specific operations.
+ * Override createChildEditorDefinitionAdapter() to provide the editor-specific adapter definition.
  */
 export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLElement = HTMLElement>
     extends EditorAdapterDefinitionBase
@@ -112,9 +116,15 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
         return this._childEditorDefinitionAdapter;
     }
     private _childEditorDefinitionAdapter?: IEditorAdapterDefinition;
+
     /**
      * Creates and returns the child editor definition adapter associated with this container editor.
-     * This adapter is responsible for handling the actual editor element within the container.
+     * This adapter is responsible for handling the actual editor element.
+     * Our container adapter redirects several options to it:
+     * - Value retrieval and setting
+     * - Event handling
+     * - HTML element structure validation
+     * - Any other editor-specific behavior
      */
     protected abstract createChildEditorDefinitionAdapter(): IEditorAdapterDefinition;
 
@@ -143,13 +153,20 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
         return editor !== null && this.childEditorDefinitionAdapter.matches(valueHost, editor);
     }
 
-    public override identifyEditor(valueHost: IFieldValueHost, element: HTMLElement): HTMLElement
+    /**
+     * Resolves the editor as an element within the container using findEditorElement().
+     * Throws if the editor element cannot be found within the container.
+     * @param valueHost The host object that provides the field value.
+     * @param anchor The anchor element associated with the editor.
+     * @returns The editor element within the container.
+     */
+    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
     {
-        let editor = this.findEditorElement(element);
+        let editor = this.findEditorElement(anchor);
         if (!editor)
         {
-            let msg = `Editor element not found within the container {element}.`;
-            this.log(LoggingLevel.Error, msg, element, valueHost);
+            let msg = `Editor element not found within the container.`;
+            this.log(LoggingLevel.Error, msg, anchor, valueHost);
             throw new Error(msg);
         }
         return editor;
@@ -170,15 +187,38 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
         return container.querySelector<TEditor>(this.editorSelector);
     }
 
+    /**
+     * Redirects the creation of a text value adapter to the child editor definition adapter.
+     * @param valueHost The host object that provides the field value.
+     * @param editor The editor element within the container.
+     * @param anchor The anchor element associated with the editor.
+     * @returns The text value adapter for the editor element, or null if none is created.
+     */
     public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
     {
         // Create and return a text value adapter for the editor element here.
         return this.childEditorDefinitionAdapter.createTextValueAdapter(valueHost, editor, anchor);
     }
+
+    /**
+     * Redirects the creation of a value adapter to the child editor definition adapter.
+     * @param valueHost The host object that provides the field value.
+     * @param editor The editor element within the container.
+     * @param anchor The anchor element associated with the editor.
+     * @returns The value adapter for the editor element, or null if none is created.
+     */
     public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement | null): IValueAdapter | null
     {
         return this.childEditorDefinitionAdapter.createValueAdapter(valueHost, editor, anchor);
     }
+
+    /**
+     * Redirects the attachment of send values to the child editor definition adapter.
+     * @param valueHost The host object that provides the field value.
+     * @param editor The editor element within the container.
+     * @param anchor The anchor element associated with the editor.
+     * @param options Optional installation options for the editor.
+     */
     public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement, options?: EditorInstallOptions): void
     {
         // Attach event listeners or perform other setup for the editor element here.
@@ -186,6 +226,6 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     }
     protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement, options: EditorInstallOptions): void
     {
-        // Delegate to the child editor definition adapter.
+        // Not used
     }
 }

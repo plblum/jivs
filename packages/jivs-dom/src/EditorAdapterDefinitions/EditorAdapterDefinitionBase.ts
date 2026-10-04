@@ -131,25 +131,7 @@ export abstract class EditorAdapterDefinitionBase
      * otherwise, false.
      */
     public abstract matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean;
-
-    /**
-     * Resolves the element known as the "Editor", which is the actual editor element to be used for interactions.
-     * 
-     * The element passed into these functions may not be the actual editor element itself; 
-     * it could be a container or another related element.
-     * 
-     * This method should return the actual editor element that will be used for interactions, 
-     * even if the supplied element is a container or related element.
-     * 
-     * This class returns the element passed to it as the editor, assuming it is the actual editor element.
-     * 
-     * @param valueHost The field value host associated with the editor.
-     * @param element The DOM element known to the caller. It may be the actual editor or another element. It needs to be recognized by an Editor Adapter Definition.
-     */
-    public identifyEditor(valueHost: IFieldValueHost, element: HTMLElement): HTMLElement
-    {
-        return element;
-    }
+    
     /**
      * Resolves the element known as the "Anchor" which hosts the IJivsDomElement structure.
      * 
@@ -168,6 +150,25 @@ export abstract class EditorAdapterDefinitionBase
     public identifyAnchor(valueHost: IFieldValueHost, element: HTMLElement): IJivsDomElement
     {
         return element;
+    }
+
+    /**
+     * Resolves the element known as the "Editor", which is the actual editor element to be used for interactions.
+     * 
+     * The element passed into these functions may not be the actual editor element itself; 
+     * it could be a container or another related element.
+     * 
+     * This method should return the actual editor element that will be used for interactions, 
+     * even if the supplied element is a container or related element.
+     * 
+     * This class returns the element passed to it as the editor, assuming it is the actual editor element.
+     * 
+     * @param valueHost The field value host associated with the editor.
+     * @param anchor The Anchor element from which we can resolve the editor element.
+     */
+    public identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
+    {
+        return anchor;
     }
 
     /**

@@ -44,20 +44,34 @@ export class RadioButtonsTextValueAdapter extends RadioButtonsTextValueAdapterBa
     protected getRadios(): HTMLInputElement[]
     {
         const radioButton = this.element as HTMLInputElement;
-        if (!radioButton.name)
+        return RadioButtonsTextValueAdapter.getAllSiblingRadioButtons(radioButton);
+    }
+
+    /**
+     * Gets all sibling radio buttons in the same group as the provided radio button.
+     * @param radiobutton - one of the radio buttons from the group.
+     * @returns an array of all radio buttons in the same group (same name attribute and parent element).
+     */
+    public static getAllSiblingRadioButtons(radiobutton: HTMLInputElement): HTMLInputElement[]
+    {
+        if (radiobutton.type !== 'radio')
         {
-            return [radioButton];
+            throw new Error("Provided element is not a radio button.");
+        }
+        if (!radiobutton.name)
+        {
+            return [radiobutton];
         }
 
-        const parent = radioButton.parentElement;
+        const parent = radiobutton.parentElement;
         if (!parent)
         {
-            return [radioButton];
+            return [radiobutton];
         }
 
         return Array.from(
             parent.querySelectorAll<HTMLInputElement>(
-                `input[type="radio"][name="${radioButton.name}"]`
+                `input[type="radio"][name="${radiobutton.name}"]`
             )
         );
     }

@@ -1,3 +1,7 @@
+//!!MAY BE OBSOLETE - ContainerRadioButtonsAdapterDefinition will use
+// RadioButtonsAdapterDefinition as the child, and it may work.
+// THis had targeted an earlier idea where we only had a container around radio buttons,
+// not around other types of input elements.
 /**
  * Adapter for a group of HTML radio input elements under a containing tag, using their checked property
  * to determine and set the text value of the selected radio element.

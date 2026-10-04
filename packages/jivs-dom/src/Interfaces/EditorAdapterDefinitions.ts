@@ -86,9 +86,10 @@ export interface IEditorAdapterDefinition
      * even if the supplied element is a container or related element.
      * 
      * @param valueHost The field value host associated with the editor.
-     * @param element The DOM element known to the caller. It may be the actual editor or another element. It needs to be recognized by an Editor Adapter Definition.
+     * @param anchor The Anchor element from which we can resolve the editor element.
+     * They may be the same.
      */
-    identifyEditor(valueHost: IFieldValueHost, element: HTMLElement): HTMLElement;
+    identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement;
 
     /**
      * Resolves the element known as the "Anchor" which hosts the IJivsDomElement structure.
