@@ -77,21 +77,6 @@ export interface IEditorAdapterDefinition
     matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean;
 
     /**
-     * Resolves the element known as the "Editor", which is the actual editor element to be used for interactions.
-     * 
-     * The element passed into these functions may not be the actual editor element itself; 
-     * it could be a container or another related element.
-     * 
-     * This method should return the actual editor element that will be used for interactions, 
-     * even if the supplied element is a container or related element.
-     * 
-     * @param valueHost The field value host associated with the editor.
-     * @param anchor The Anchor element from which we can resolve the editor element.
-     * They may be the same.
-     */
-    identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement;
-
-    /**
      * Resolves the element known as the "Anchor" which hosts the IJivsDomElement structure.
      * 
      * The element passed into these functions may not be the right one to hold IJivsDomElement, the "Anchor".
@@ -107,6 +92,21 @@ export interface IEditorAdapterDefinition
      * @returns The DOM element that serves as the anchor for this adapter definition.
      */
     identifyAnchor(valueHost: IFieldValueHost, element: HTMLElement): IJivsDomElement;
+
+    /**
+     * Resolves the element known as the "Editor", which is the actual editor element to be used for interactions.
+     * 
+     * The element passed into these functions may not be the actual editor element itself; 
+     * it could be a container or another related element.
+     * 
+     * This method should return the actual editor element that will be used for interactions, 
+     * even if the supplied element is a container or related element.
+     * 
+     * @param valueHost The field value host associated with the editor.
+     * @param anchor The Anchor element from which we can resolve the editor element.
+     * They may be the same.
+     */
+    identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement;
 
     /**
      * The EditorInstaller uses this method to attach the editor to the send values mechanism
