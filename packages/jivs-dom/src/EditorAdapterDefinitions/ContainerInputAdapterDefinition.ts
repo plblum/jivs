@@ -4,6 +4,7 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/ContainerInputAdapterDefinition
  */
 
+import { defaultContainerTextInputPresentationName } from '../FieldPresentations/ContainerTextInputPresentation';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { ContainerEditorAdapterDefinitionBase } from './ContainerEditorAdapterDefinitionBase';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
@@ -61,9 +62,7 @@ export class ContainerInputAdapterDefinition extends ContainerEditorAdapterDefin
 
     override defaultFieldPresentationName(): string | null
     {
-        //!!!TODO: Switch to defaultContainerTextInputPresentationName
-        // This is here just to allow compilation
-        throw new Error("not implemented yet.");
+        return defaultContainerTextInputPresentationName;
     }    
 
     protected override get editorSelector(): string

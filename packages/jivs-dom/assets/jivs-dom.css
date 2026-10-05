@@ -11,14 +11,39 @@
  * Override these variables in application CSS to integrate Jivs presentation
  * colors and effects with the application's design system.
  */
-:root
-{
+:root {
     --jivs-invalid-color: red;
+    --jivs-required-color: var(--jivs-invalid-color);
+    --jivs-validated-color: green;
+    --jivs-corrected-color: var(--jivs-validated-color);
 
     --jivs-invalid-editor-border-color: var(--jivs-invalid-color);
     --jivs-invalid-editor-color: var(--jivs-invalid-color);
     --jivs-invalid-editor-background-color: #fff4f4;
     --jivs-invalid-choice-editor-box-shadow: 0 0 0 2px var(--jivs-invalid-color);
+
+    --jivs-invalid-container-editor-border-color: var(--jivs-invalid-editor-border-color);
+    --jivs-invalid-container-editor-color: var(--jivs-invalid-editor-color);
+    --jivs-invalid-container-editor-background-color: var(--jivs-invalid-editor-background-color);
+    --jivs-invalid-container-choice-editor-accent-color: var(--jivs-invalid-color);
+    --jivs-invalid-container-choice-editor-box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
+
+    --jivs-indicator-padding-inline: 0.25em;
+    --jivs-indicator-font-size: 1em;
+    --jivs-indicator-font-weight: 700;
+    --jivs-indicator-line-height: 1;
+    --jivs-indicator-vertical-align: middle;
+
+    /* Alternative required symbols include '\25CF' (solid circle) and
+       '\2022' (bullet). */
+    --jivs-required-indicator-content: '*';
+    --jivs-required-indicator-color: var(--jivs-required-color);
+
+    /* '\2713' provides a lighter checkmark alternative. */
+    --jivs-validated-indicator-content: '\2714';
+    --jivs-validated-indicator-color: var(--jivs-validated-color);
+    --jivs-corrected-indicator-content: '\2714';
+    --jivs-corrected-indicator-color: var(--jivs-corrected-color);
 
     /* Modern alternative that follows --jivs-invalid-color. Browser support
        is more limited than the fixed color above.
@@ -36,13 +61,10 @@
  * :where() deliberately gives these library selectors zero specificity so
  * application CSS can override them without escalating selector specificity.
  */
-:where(
-    .jivs-invalid-editor-input,
+:where(.jivs-invalid-editor-input,
     .jivs-invalid-editor-textarea,
     .jivs-invalid-editor-select,
-    .jivs-invalid-editor-file-input
-)
-{
+    .jivs-invalid-editor-file-input) {
     border-color: var(--jivs-invalid-editor-border-color);
     color: var(--jivs-invalid-editor-color);
 
@@ -58,11 +80,8 @@
  * the same name. Associated text belongs to separate role='label' elements
  * and is styled by their presentations.
  */
-:where(
-    .jivs-invalid-editor-checkbox,
-    .jivs-invalid-editor-radiobuttons
-)
-{
+:where(.jivs-invalid-editor-checkbox,
+    .jivs-invalid-editor-radiobuttons) {
     box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 }
 
@@ -78,4 +97,144 @@
  *     border-color: var(--jivs-invalid-editor-border-color);
  *     color: var(--jivs-invalid-editor-color);
  * }
+ */
+
+/*
+ * Contained native text-entry editors
+ *
+ * The invalid class is applied to an editor container. These descendant
+ * selectors apply the same treatment as the direct-element presentations to
+ * the native form control at any depth within that container.
+ *
+ * The input selector intentionally excludes checkbox, radio, and file inputs.
+ * The presentation's editor adapter is responsible for ensuring that the
+ * remaining input is the editor represented by the container.
+ */
+:where(.jivs-invalid-container-editor-input) :where(input:not([type='checkbox'], [type='radio'], [type='file'])),
+:where(.jivs-invalid-container-editor-textarea) :where(textarea),
+:where(.jivs-invalid-container-editor-select) :where(select:not([multiple])),
+:where(.jivs-invalid-container-editor-file-input) :where(input[type='file']) {
+    border-color: var(--jivs-invalid-container-editor-border-color);
+    color: var(--jivs-invalid-container-editor-color);
+
+    /* Optional: uncomment to tint invalid editor backgrounds.
+    background-color: var(--jivs-invalid-container-editor-background-color);
+    */
+}
+
+/*
+ * Contained checkbox and radio-button editors
+ *
+ * Color is applied to the container so associated label text can inherit it.
+ * accent-color preserves the browser's native control appearance. The shadow
+ * also marks unchecked controls, where accent-color may not be visible.
+ */
+:where(.jivs-invalid-container-editor-checkbox,
+    .jivs-invalid-container-editor-radiobuttons) {
+    color: var(--jivs-invalid-container-editor-color);
+}
+
+:where(.jivs-invalid-container-editor-checkbox) :where(input[type='checkbox']),
+:where(.jivs-invalid-container-editor-radiobuttons) :where(input[type='radio']) {
+    accent-color: var(--jivs-invalid-container-choice-editor-accent-color);
+    box-shadow: var(--jivs-invalid-container-choice-editor-box-shadow);
+}
+
+:where(.jivs-invalid-container-editor-radiobuttons) :where(input[type='radio']) {
+    border-radius: 50%;
+}
+
+/*
+ * Contained native file input button
+ *
+ * Applications may style the native button separately when the outer invalid
+ * treatment is insufficient. For example:
+ *
+ * :where(.jivs-invalid-container-editor-file-input)
+ *     :where(input[type='file'])::file-selector-button
+ * {
+ *     border-color: var(--jivs-invalid-container-editor-border-color);
+ *     color: var(--jivs-invalid-container-editor-color);
+ * }
+ */
+
+/*
+ * Validation indicators
+ *
+ * These classes are opt-in. The host element remains otherwise unstyled and the
+ * indicator participates in normal flow immediately after its content.
+ * Required is hidden after validation or correction because the result then
+ * communicates the more useful state. Invalid does not suppress required.
+ */
+:where(.jivs-required-indicator:not(.jivs-validated-indicator, .jivs-corrected-indicator),
+    .jivs-validated-indicator, .jivs-corrected-indicator)::after {
+    display: inline-block;
+    padding-inline: var(--jivs-indicator-padding-inline);
+    font-size: var(--jivs-indicator-font-size);
+    font-weight: var(--jivs-indicator-font-weight);
+    line-height: var(--jivs-indicator-line-height);
+    vertical-align: var(--jivs-indicator-vertical-align);
+}
+
+:where(.jivs-required-indicator:not(.jivs-validated-indicator,
+        .jivs-corrected-indicator))::after {
+    content: var(--jivs-required-indicator-content);
+    color: var(--jivs-required-indicator-color);
+}
+
+:where(.jivs-validated-indicator)::after {
+    content: var(--jivs-validated-indicator-content);
+    color: var(--jivs-validated-indicator-color);
+}
+
+:where(.jivs-corrected-indicator)::after {
+    content: var(--jivs-corrected-indicator-content);
+    color: var(--jivs-corrected-indicator-color);
+}
+
+/*
+ * Optional corrected-indicator animation
+ *
+ * This draws attention to a corrected field by expanding and then removing a
+ * rounded box shadow around the indicator. The final appearance matches the
+ * validated indicator.
+ *
+ * To enable it, uncomment this block.
+ *
+@keyframes jivs-corrected-indicator-pulse
+{
+    0%
+    {
+        box-shadow: 0 0 0 0 var(--jivs-corrected-indicator-color);
+        color: var(--jivs-corrected-indicator-color);
+    }
+
+    45%
+    {
+        box-shadow: 0 0 0 0.35em var(--jivs-corrected-indicator-color);
+        color: var(--jivs-corrected-indicator-color);
+    }
+
+    100%
+    {
+        box-shadow: 0 0 0 0 transparent;
+        color: var(--jivs-validated-indicator-color);
+    }
+}
+
+:where(.jivs-corrected-indicator)::after
+{
+    border-radius: 50%;
+    animation: jivs-corrected-indicator-pulse 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce)
+{
+    :where(.jivs-corrected-indicator)::after
+    {
+        animation: none;
+        box-shadow: none;
+        color: var(--jivs-validated-indicator-color);
+    }
+}
  */

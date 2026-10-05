@@ -4,6 +4,7 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/ContainerCheckboxAdapterDefinition
  */
 
+import { defaultContainerCheckboxPresentationName } from '../FieldPresentations/ContainerCheckboxPresentation';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { CheckboxAdapterDefinition } from './CheckboxAdapterDefinition';
 import { ContainerInputAdapterDefinition } from './ContainerInputAdapterDefinition';
@@ -51,9 +52,7 @@ export class ContainerCheckboxAdapterDefinition extends ContainerInputAdapterDef
 
     override defaultFieldPresentationName(): string | null
     {
-        //!!!TODO: Switch to defaultContainerTextCheckboxPresentationName
-        // This is here just to allow compilation
-        throw new Error("not implemented yet.");
+        return defaultContainerCheckboxPresentationName;
     }    
 
     protected override createChildEditorDefinitionAdapter(): IEditorAdapterDefinition

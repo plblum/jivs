@@ -2,21 +2,21 @@
  * Base class for field presentations applied to a container surrounding one or
  * more native HTML form controls.
  *
- * @module jivs-dom/FieldPresentations/AbstractClasses/ContainedIsValidFieldPresentationBase
+ * @module jivs-dom/FieldPresentations/AbstractClasses/ContainerIsValidFieldPresentationBase
  */
 
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
- * Base class for contained-editor presentations where the editor is an
+ * Base class for container-editor presentations where the editor is an
  * HTML form control contained within a surrounding container.
  * It can be any level of depth below the container element,
  * although there should only be exactly one descendant form control
  * except for a radio group implementation.
  * 
  * ```html
- * <div class="contained-editor">
+ * <div class="container-editor">
  *     <input type="text" name="example" />
  * </div>
  * 
@@ -31,7 +31,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * - If you want to apply styles with corrected, validated, or required states
  *   using ::after, it needs a wrapper so that the pseudo-element can be applied to the container rather than the form control itself.
  *   ```css
- *   .contained-editor-corrected::after {
+ *   .container-editor-corrected::after {
  *       content: 'checkmark character';
  *       display: block;
  *   }
@@ -48,26 +48,26 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * manage those controls. That responsibility belongs to the associated
  * EditorAdapterDefinition.
  *
- * The default presentationClass, `jivs-contained-editor`, provides a stable
+ * The default presentationClass, `jivs-container-editor`, provides a stable
  * customization hook on every contained editor. jivs-dom.css does not assign
  * any styles directly to that class.
  * 
- * Here's what it looks like with presentation name 'jivs-contained-editor' but still valid:
+ * Here's what it looks like with presentation name 'jivs-container-editor' but still valid:
  * ```html
- * <div class="jivs-contained-editor">
+ * <div class="jivs-container-editor">
  *     <input type="text" name="example" />
  * </div>
  * ```
  * To make it appear invalid:
  * ```css
- * .jivs-contained-editor.jivs-invalid-contained-editor-input input[type="text"]:
+ * .jivs-container-editor.jivs-invalid-container-editor-input input[type="text"]
  * {
- *     border-color: var(--jivs-invalid-contained-editor-border-color);
+ *     border-color: var(--jivs-invalid-container-editor-border-color);
  * }
  * ```
  * 
  * ```html
- * <div class="jivs-contained-editor jivs-invalid-contained-editor-input">
+ * <div class="jivs-container-editor jivs-invalid-container-editor-input">
  *     <input type="text" name="example" />
  * </div>
  * ```
@@ -77,15 +77,15 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * validatedClass, correctedClass, and requiredClass remain null by default.
  * Users may enable the corresponding opt-in rules supplied by jivs-dom.css:
  *
- * - jivs-required-contained-editor
- * - jivs-validated-contained-editor
- * - jivs-corrected-contained-editor
+ * - jivs-required-container-editor
+ * - jivs-validated-container-editor
+ * - jivs-corrected-container-editor
  *
  * The required class remains on a required container independently of its
  * validation-result class. The supplied CSS may suppress its required
  * indicator when a validated or corrected indicator is present.
  */
-export abstract class ContainedIsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
+export abstract class ContainerIsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
     extends IsValidFieldPresentationBase<TElement>
 {
     /**
@@ -115,7 +115,7 @@ export abstract class ContainedIsValidFieldPresentationBase<TElement extends HTM
      */
     protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-contained-editor';
+        return 'jivs-container-editor';
     }
 
 }

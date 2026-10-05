@@ -16,6 +16,12 @@ import { defaultSelectPresentationName, SelectPresentation } from './SelectPrese
 import { defaultRadioButtonsPresentationName, RadioButtonsPresentation } from './RadioButtonsPresentation';
 import { defaultTextAreaPresentationName, TextAreaPresentation } from './TextAreaPresentation';
 import { defaultFileInputPresentationName, FileInputPresentation } from './FileInputPresentation';
+import { ContainerRadioButtonsPresentation, defaultContainerRadioButtonsPresentationName } from './ContainerRadioButtonsPresentation';
+import { ContainerCheckboxPresentation, defaultContainerCheckboxPresentationName } from './ContainerCheckboxPresentation';
+import { ContainerSelectPresentation, defaultContainerSelectPresentationName } from './ContainerSelectPresentation';
+import { ContainerTextAreaPresentation, defaultContainerTextAreaPresentationName } from './ContainerTextAreaPresentation';
+import { ContainerTextInputPresentation, defaultContainerTextInputPresentationName } from './ContainerTextInputPresentation';
+import { ContainerFileInputPresentation, defaultContainerFileInputPresentationName } from './ContainerFileInputPresentation';
 
 /**
  * Factory class for creating field presentations (implementations of IFieldPresentation)
@@ -56,6 +62,12 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         factory.register(defaultSelectPresentationName, (element) => new SelectPresentation(element));
         factory.register(defaultTextAreaPresentationName, (element) => new TextAreaPresentation(element));
         factory.register(defaultFileInputPresentationName, (element) => new FileInputPresentation(element));
+        factory.register(defaultContainerTextInputPresentationName, (element) => new ContainerTextInputPresentation(element));
+        factory.register(defaultContainerCheckboxPresentationName, (element) => new ContainerCheckboxPresentation(element));
+        factory.register(defaultContainerRadioButtonsPresentationName, (element) => new ContainerRadioButtonsPresentation(element));
+        factory.register(defaultContainerSelectPresentationName, (element) => new ContainerSelectPresentation(element));
+        factory.register(defaultContainerTextAreaPresentationName, (element) => new ContainerTextAreaPresentation(element));
+        factory.register(defaultContainerFileInputPresentationName, (element) => new ContainerFileInputPresentation(element));
 
     }
 }

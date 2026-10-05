@@ -7,6 +7,7 @@
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { ContainerInputAdapterDefinition } from './ContainerInputAdapterDefinition';
 import { FileInputAdapterDefinition } from './FileInputAdapterDefinition';
+import { defaultContainerFileInputPresentationName } from '../FieldPresentations/ContainerFileInputPresentation';
 
 /**
  * Provides an editor adapter definition for HTML input type='file' elements
@@ -39,9 +40,7 @@ export class ContainerFileInputAdapterDefinition extends ContainerInputAdapterDe
 
     override defaultFieldPresentationName(): string | null
     {
-        //!!!TODO: Switch to defaultContainerTextFileInputPresentationName
-        // This is here just to allow compilation
-        throw new Error("not implemented yet.");
+        return defaultContainerFileInputPresentationName;
     }    
 
     protected override createChildEditorDefinitionAdapter(): IEditorAdapterDefinition

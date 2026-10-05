@@ -6,6 +6,7 @@
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { ContainerEditorAdapterDefinitionBase } from './ContainerEditorAdapterDefinitionBase';
 import { SelectAdapterDefinition } from './SelectAdapterDefinition';
+import { defaultContainerSelectPresentationName } from '../FieldPresentations/ContainerSelectPresentation';
 
 /**
  * Provides an editor adapter definition for HTML select elements within a container tag.
@@ -52,8 +53,7 @@ export class ContainerSelectAdapterDefinition extends ContainerEditorAdapterDefi
     }
     protected override defaultFieldPresentationName(): string | null
     {
-        //!!!PENDING
-        throw new Error('Method not implemented.');
+        return defaultContainerSelectPresentationName;
     }
 
 }

@@ -10,6 +10,7 @@ import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions
 import { ContainerInputAdapterDefinition } from './ContainerInputAdapterDefinition';
 import { RadioButtonsAdapterDefinition } from './RadioButtonsAdapterDefinition';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { defaultContainerRadioButtonsPresentationName } from '../FieldPresentations/ContainerRadioButtonsPresentation';
 
 /**
  * Provides an editor adapter definition for HTML input type='radio' elements
@@ -58,9 +59,7 @@ export class ContainerRadioButtonsAdapterDefinition extends ContainerInputAdapte
 
     override defaultFieldPresentationName(): string | null
     {
-        //!!!TODO: Switch to defaultContainerTextCheckboxPresentationName
-        // This is here just to allow compilation
-        throw new Error("not implemented yet.");
+        return defaultContainerRadioButtonsPresentationName;
     }
 
     protected override createChildEditorDefinitionAdapter(): IEditorAdapterDefinition

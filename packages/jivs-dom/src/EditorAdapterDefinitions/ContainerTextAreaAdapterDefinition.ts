@@ -7,6 +7,7 @@
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { ContainerEditorAdapterDefinitionBase } from './ContainerEditorAdapterDefinitionBase';
 import { TextAreaAdapterDefinition } from './TextAreaAdapterDefinition';
+import { defaultContainerTextAreaPresentationName } from '../FieldPresentations/ContainerTextAreaPresentation';
 
 /**
  * Provides an editor adapter definition for HTML textarea elements within a container tag.
@@ -52,8 +53,7 @@ export class ContainerTextAreaAdapterDefinition extends ContainerEditorAdapterDe
     }
     protected override defaultFieldPresentationName(): string | null
     {
-        //!!!PENDING
-        throw new Error('Method not implemented.');
+        return defaultContainerTextAreaPresentationName;
     }
 
 }
