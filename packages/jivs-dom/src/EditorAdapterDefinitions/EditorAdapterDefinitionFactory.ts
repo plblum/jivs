@@ -14,6 +14,13 @@ import { TextAreaAdapterDefinition, defaultTextAreaAdapterKey } from './TextArea
 import { SelectAdapterDefinition, defaultSelectAdapterKey } from './SelectAdapterDefinition';
 import { RadioButtonsAdapterDefinition, defaultRadioButtonsAdapterKey } from './RadioButtonsAdapterDefinition';
 import { defaultFileInputAdapterKey, FileInputAdapterDefinition } from './FileInputAdapterDefinition';
+import { getInputAdapterKey, InputAdapterDefinition } from './InputAdapterDefinition';
+import { ContainerCheckboxAdapterDefinition } from './ContainerCheckboxAdapterDefinition';
+import { ContainerFileInputAdapterDefinition } from './ContainerFileInputAdapterDefinition';
+import { ContainerInputAdapterDefinition, getContainerInputAdapterKey } from './ContainerInputAdapterDefinition';
+import { ContainerRadioButtonsAdapterDefinition } from './ContainerRadioButtonsAdapterDefinition';
+import { ContainerSelectAdapterDefinition, defaultContainerSelectAdapterKey } from './ContainerSelectAdapterDefinition';
+import { ContainerTextAreaAdapterDefinition, defaultContainerTextAreaAdapterKey } from './ContainerTextAreaAdapterDefinition';
 
 /**
  * Registers and selects editor adapter definitions as part of running 
@@ -115,11 +122,43 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
     public defaultFactoryRegistrations(factory: IEditorAdapterDefinitionFactory): void
     {
         // Register default field presentations here
+        // Default adapter keys look like this: 'input:type'
+        factory.register(new InputAdapterDefinition('text', getInputAdapterKey('text'), 80));
+        factory.register(new InputAdapterDefinition('password', getInputAdapterKey('password'), 80));
+        factory.register(new InputAdapterDefinition('email', getInputAdapterKey('email'), 80));
+        factory.register(new InputAdapterDefinition('number', getInputAdapterKey('number'), 80));
+        factory.register(new InputAdapterDefinition('url', getInputAdapterKey('url'), 80));
+        factory.register(new InputAdapterDefinition('tel', getInputAdapterKey('tel'), 80));
+        factory.register(new InputAdapterDefinition('date', getInputAdapterKey('date'), 80));
+        factory.register(new InputAdapterDefinition('datetime-local', getInputAdapterKey('datetime-local'), 80));
+        factory.register(new InputAdapterDefinition('month', getInputAdapterKey('month'), 80));
+        factory.register(new InputAdapterDefinition('week', getInputAdapterKey('week'), 80));
+        factory.register(new InputAdapterDefinition('time', getInputAdapterKey('time'), 80));
         factory.register(new CheckboxAdapterDefinition(defaultCheckboxAdapterKey, 80));
-        factory.register(new TextAreaAdapterDefinition(defaultTextAreaAdapterKey, 80));
         factory.register(new RadioButtonsAdapterDefinition(defaultRadioButtonsAdapterKey, 80));
-        factory.register(new SelectAdapterDefinition(defaultSelectAdapterKey, 80));
         factory.register(new FileInputAdapterDefinition(defaultFileInputAdapterKey, 80));
+
+        factory.register(new TextAreaAdapterDefinition(defaultTextAreaAdapterKey, 80)); // adapterkey = 'textarea'
+        factory.register(new SelectAdapterDefinition(defaultSelectAdapterKey, 80));     // adapterkey = 'select'
+
+        // container around the native HTML form controls
+        // Default container adapter keys look like this: 'container:input:type'
+        factory.register(new ContainerInputAdapterDefinition('text', getContainerInputAdapterKey('text'), 80));
+        factory.register(new ContainerInputAdapterDefinition('password', getContainerInputAdapterKey('password'), 80));
+        factory.register(new ContainerInputAdapterDefinition('email', getContainerInputAdapterKey('email'), 80));
+        factory.register(new ContainerInputAdapterDefinition('number', getContainerInputAdapterKey('number'), 80));
+        factory.register(new ContainerInputAdapterDefinition('url', getContainerInputAdapterKey('url'), 80));
+        factory.register(new ContainerInputAdapterDefinition('tel', getContainerInputAdapterKey('tel'), 80));
+        factory.register(new ContainerInputAdapterDefinition('date', getContainerInputAdapterKey('date'), 80));
+        factory.register(new ContainerInputAdapterDefinition('datetime-local', getContainerInputAdapterKey('datetime-local'), 80));
+        factory.register(new ContainerInputAdapterDefinition('month', getContainerInputAdapterKey('month'), 80));
+        factory.register(new ContainerInputAdapterDefinition('week', getContainerInputAdapterKey('week'), 80));
+        factory.register(new ContainerInputAdapterDefinition('time', getContainerInputAdapterKey('time'), 80));
+        factory.register(new ContainerCheckboxAdapterDefinition(getContainerInputAdapterKey('checkbox'), 80));
+        factory.register(new ContainerRadioButtonsAdapterDefinition(getContainerInputAdapterKey('radio'), 80));
+        factory.register(new ContainerFileInputAdapterDefinition(getContainerInputAdapterKey('file'), 80));
+        factory.register(new ContainerTextAreaAdapterDefinition(defaultContainerTextAreaAdapterKey, 80)); // adapterkey = 'container:textarea'
+        factory.register(new ContainerSelectAdapterDefinition(defaultContainerSelectAdapterKey, 80)); // adapterkey = 'container:select'
     }    
     /**
      * Retrieves the editor adapter definition associated with the given adapter key, if any.

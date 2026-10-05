@@ -28,7 +28,14 @@ import { defaultRadioButtonsPresentationName } from '../FieldPresentations/Radio
  */
 export class RadioButtonsAdapterDefinition extends InputAdapterDefinition
 {
-    public constructor(adapterKey?: string, priority: number = 0,
+    /**
+     * Creates an editor adapter definition for HTML input elements of type radio.
+     *
+     * @param adapterKey Uniquely identifies this definition in the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
+     * @param recommendedFieldPresentationName Optional presentation name used by default.
+     */
+    public constructor(adapterKey?: string, priority: number = 80,
         recommendedFieldPresentationName?: string | null)
     {
         super('radio', adapterKey ?? defaultRadioButtonsAdapterKey, priority, recommendedFieldPresentationName);

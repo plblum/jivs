@@ -25,8 +25,16 @@ import { InputAdapterDefinition } from './InputAdapterDefinition';
  */
 export class ContainerInputAdapterDefinition extends ContainerEditorAdapterDefinitionBase
 {
-
-    public constructor(inputType: string, adapterKey?: string, priority: number = 0,
+    /**
+     * Creates an editor adapter definition for HTML input elements of a specific type within a container tag.
+     *
+     * @param inputType The type attribute value of the input element this adapter supports.
+     * @param adapterKey Uniquely identifies this definition in the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
+     * @param containerSelector CSS selector used to identify the container element.
+     * @param recommendedFieldPresentationName Optional presentation name used by default.
+     */
+    public constructor(inputType: string, adapterKey?: string, priority: number = 80,
         containerSelector?: string | null, recommendedFieldPresentationName?: string | null)
     {
         const normalizedInputType = inputType.toLowerCase();

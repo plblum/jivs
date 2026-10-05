@@ -6,7 +6,7 @@
  */
 
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
  * Base class for contained-editor presentations where the editor is an
@@ -91,28 +91,20 @@ export abstract class ContainedIsValidFieldPresentationBase<TElement extends HTM
     /**
      * Creates a contained-editor presentation.
      *
-     * Passing null explicitly disables the corresponding class. Omitting a
-     * parameter uses the default supplied by this class or a derived class.
-     *
      * @param element The container that receives all presentation classes.
-     * @param invalidClass CSS class applied when the field is invalid.
-     * @param validatedClass CSS class applied after successful validation.
-     * @param correctedClass CSS class applied when a previous error has been corrected.
-     * @param requiredClass CSS class applied while the field is required.
-     * @param presentationClass Stable CSS class applied every time apply() runs.
+     * @param options Configuration options for the field presentation, including CSS classes.
+     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * default supplied by this class or a derived class.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     public constructor(
         element: TElement,
-        invalidClass?: string | null,
-        validatedClass?: string | null,
-        correctedClass?: string | null,
-        requiredClass?: string | null,
-        presentationClass?: string | null,
+        options? : IsValidFieldPresentationOptions,
         // intentionally placed last because its usually used internally
         jivsElement?: IJivsDomElement | null
     )
     {
-        super(element, invalidClass, validatedClass, correctedClass, requiredClass, presentationClass, jivsElement);
+        super(element, options, jivsElement);
     }
 
     /**

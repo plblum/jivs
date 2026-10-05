@@ -37,22 +37,30 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 export class RadioButtonsPresentation extends IsValidFieldPresentationBase
 {
     /**
-     * 
-     * @param radioButton 
-     * @param invalidClass - note that this parameter does not allow null, unlike its ancestor
-     * because the RadioPresentation class always expects a valid CSS class for invalid state and does not support a null value.
+     * Creates an instance of the RadioButtonsPresentation class.
+     * @param radioButton The HTML input element of type radio associated with this presentation.
+     * @param options Configuration options for the field presentation, including CSS classes.
+     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * default supplied by this class or a derived class.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(radioButton: HTMLElement,
-        invalidClass?: string, // does not support null - must always provide a valid CSS class for invalid state
+        options?: RadioButtonsFieldPresentationOptions,
         jivsElement?: IJivsDomElement | null
     )
     {
-        super(radioButton, invalidClass ?? undefined, undefined, undefined, undefined, undefined, jivsElement);
-        // discard values from the remaining parameters as they are not used for radio buttons presentation
+        super(
+            radioButton,
+            {
+                invalidClass: options?.invalidClass,
+                presentationClass: options?.presentationClass
+            },
+            jivsElement
+        );
+        // not used for radio buttons presentation:
         this.correctedClass = null;
         this.requiredClass = null;
         this.validatedClass = null;
-        // presentation remains a valid CSS class if it was set
     }
 
     protected override defaultInvalidClass(): string | null
@@ -94,3 +102,9 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
  * and consumed as default for RadioButtonsAdapterDefinition.
  */
 export const defaultRadioButtonsPresentationName = 'radiobuttonsEditor';
+
+export interface RadioButtonsFieldPresentationOptions
+{
+    invalidClass?: string; // does not support null - must always provide a valid CSS class for invalid state
+    presentationClass?: string | null;
+}

@@ -17,7 +17,14 @@ import { defaultCheckboxPresentationName } from '../FieldPresentations/CheckboxP
  */
 export class CheckboxAdapterDefinition extends InputAdapterDefinition
 {
-    public constructor(adapterKey?: string, priority: number = 0,
+    /**
+     * Creates an editor adapter definition for HTML input elements of type checkbox.
+     *
+     * @param adapterKey Uniquely identifies this definition in the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
+     * @param recommendedFieldPresentationName Optional presentation name used by default.
+     */
+    public constructor(adapterKey?: string, priority: number = 80,
         recommendedFieldPresentationName?: string | null)
     {
         super('checkbox', adapterKey ?? defaultCheckboxAdapterKey,

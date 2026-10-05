@@ -36,8 +36,15 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  */
 export class ContainerRadioButtonsAdapterDefinition extends ContainerInputAdapterDefinition
 {
-
-    public constructor(adapterKey?: string, priority: number = 0,
+    /**
+     * Creates an editor adapter definition for HTML input type='radio' elements within a container tag.
+     *
+     * @param adapterKey Uniquely identifies this definition in the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
+     * @param containerSelector CSS selector used to identify the container element.
+     * @param recommendedFieldPresentationName Optional presentation name used by default.
+     */
+    public constructor(adapterKey?: string, priority: number = 80,
         containerSelector?: string | null, recommendedFieldPresentationName?: string | null)
     {
         super(

@@ -3,7 +3,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/TextInputPresentation
  */
 
-import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
@@ -23,29 +23,27 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 export class TextInputPresentation extends IsValidFieldPresentationBase
 {
     /**
-     * 
-     * @param element 
-     * @param invalidClass - note that this parameter does not allow null, unlike its ancestor
-     * because the TextInputPresentation class always expects a valid CSS class for invalid state and does not support a null value.
+     * Constructor for the TextInputPresentation class.
+     * @param element The HTML input element of type text associated with this presentation.
+     * @param options Configuration options for the field presentation, including CSS classes.
+     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * default supplied by this class or a derived class.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        invalidClass?: string, // does not support null - must always provide a valid CSS class for invalid state
-        validatedClass?: string | null,
-        correctedClass?: string | null,
-        requiredClass?: string | null,
-        presentationClass?: string | null,
+        options?: IsValidFieldPresentationOptions,
         jivsElement?: IJivsDomElement | null
     )
     {
-        super(element, invalidClass ?? undefined, validatedClass, correctedClass, requiredClass, presentationClass, jivsElement);
+        super(element, options, jivsElement);
     }
-
     protected override defaultInvalidClass(): string | null
     {
         return 'jivs-invalid-editor-input';
     }
 
 }
+
 /**
  * For registering this presentation with the FieldPresentationFactory
  * and consumed as default for InputAdapterDefinition.

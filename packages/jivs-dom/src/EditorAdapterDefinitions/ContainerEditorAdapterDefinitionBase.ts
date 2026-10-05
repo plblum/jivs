@@ -50,7 +50,7 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
      * Creates a contained-editor adapter definition.
      *
      * @param adapterKey Uniquely identifies this definition in the factory.
-     * @param priority Determines matching order within the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
      * @param containerSelector Optional CSS selector that the container must match.
      * Pass null to allow any container with child elements.
      * @param recommendedFieldPresentationName Optional presentation name used by default.

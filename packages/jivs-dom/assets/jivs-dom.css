@@ -1,0 +1,81 @@
+/*
+ * Jivs DOM Presentation Styles
+ *
+ * Styles supporting the built-in field and form presentations provided by
+ * @plblum/jivs-dom.
+ */
+
+/*
+ * Presentation variables
+ *
+ * Override these variables in application CSS to integrate Jivs presentation
+ * colors and effects with the application's design system.
+ */
+:root
+{
+    --jivs-invalid-color: red;
+
+    --jivs-invalid-editor-border-color: var(--jivs-invalid-color);
+    --jivs-invalid-editor-color: var(--jivs-invalid-color);
+    --jivs-invalid-editor-background-color: #fff4f4;
+    --jivs-invalid-choice-editor-box-shadow: 0 0 0 2px var(--jivs-invalid-color);
+
+    /* Modern alternative that follows --jivs-invalid-color. Browser support
+       is more limited than the fixed color above.
+    --jivs-invalid-editor-background-color: color-mix(in srgb, var(--jivs-invalid-color) 8%, white);
+    */
+}
+
+/*
+ * Native text-entry editors
+ *
+ * Used by the inputEditor, textAreaEditor, selectEditor, and fileInputEditor
+ * presentations. The presentation-specific class names let applications
+ * customize one native editor family without changing the others.
+ *
+ * :where() deliberately gives these library selectors zero specificity so
+ * application CSS can override them without escalating selector specificity.
+ */
+:where(
+    .jivs-invalid-editor-input,
+    .jivs-invalid-editor-textarea,
+    .jivs-invalid-editor-select,
+    .jivs-invalid-editor-file-input
+)
+{
+    border-color: var(--jivs-invalid-editor-border-color);
+    color: var(--jivs-invalid-editor-color);
+
+    /* Optional: uncomment to tint invalid editor backgrounds.
+    background-color: var(--jivs-invalid-editor-background-color);
+    */
+}
+
+/*
+ * Native checkbox and uncontained radio-button editors
+ *
+ * RadioButtonsPresentation applies its class to sibling radio inputs having
+ * the same name. Associated text belongs to separate role='label' elements
+ * and is styled by their presentations.
+ */
+:where(
+    .jivs-invalid-editor-checkbox,
+    .jivs-invalid-editor-radiobuttons
+)
+{
+    box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
+}
+
+/*
+ * Native file input button
+ *
+ * File inputs expose their native button through ::file-selector-button.
+ * Applications may style it separately when the outer invalid treatment is
+ * insufficient. For example:
+ *
+ * :where(.jivs-invalid-editor-file-input)::file-selector-button
+ * {
+ *     border-color: var(--jivs-invalid-editor-border-color);
+ *     color: var(--jivs-invalid-editor-color);
+ * }
+ */

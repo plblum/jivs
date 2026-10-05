@@ -38,22 +38,26 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
     extends FieldPresentationBase<TElement>
 {
+    /**
+     * Constructor for IsValidFieldPresentationBase class.
+     * @param element The HTML element associated with this field presentation.
+     * @param options Configuration options for the field presentation.
+     * Passing null explicitly disables the corresponding class, while omitting the option uses 
+     * the default supplied by this class or a derived class.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
+     */
     constructor(element: TElement,
-        invalidClass?: string | null,
-        validatedClass?: string | null,
-        correctedClass?: string | null,
-        requiredClass?: string | null,
-        presentationClass?: string | null,
+        options? : IsValidFieldPresentationOptions,
         // intentionally last as its usually called from internal code
         jivsElement: IJivsDomElement | null = null
     )
     {
         super(element, jivsElement);
-        this._invalidClass = (invalidClass !== undefined) ? invalidClass : this.defaultInvalidClass();
-        this._validatedClass = (validatedClass !== undefined) ? validatedClass : this.defaultValidatedClass();
-        this._correctedClass = (correctedClass !== undefined) ? correctedClass : this.defaultCorrectedClass();
-        this._requiredClass = (requiredClass !== undefined) ? requiredClass : this.defaultRequiredClass();
-        this._presentationClass = (presentationClass !== undefined) ? presentationClass : this.defaultPresentationClass();
+        this._invalidClass = (options?.invalidClass != null) ? options.invalidClass : this.defaultInvalidClass(); // options.invalidClass treats null differently: use the default, not disable
+        this._validatedClass = (options?.validatedClass !== undefined) ? options.validatedClass : this.defaultValidatedClass();
+        this._correctedClass = (options?.correctedClass !== undefined) ? options.correctedClass : this.defaultCorrectedClass();
+        this._requiredClass = (options?.requiredClass !== undefined) ? options.requiredClass : this.defaultRequiredClass();
+        this._presentationClass = (options?.presentationClass !== undefined) ? options.presentationClass : this.defaultPresentationClass();
     }
     /**
      * A stable CSS class added every time apply() runs, regardless of the
@@ -68,7 +72,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      * Override defaultPresentationClass in a derived class to provide a default
      * CSS class for the presentation element. This class has a default of null.
      */
-    
     public get presentationClass(): string | null
     {
         if (this._presentationClass === undefined) {
@@ -243,4 +246,67 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
             element.classList.add(this.requiredClass);
 
     }    
+}
+
+export interface IsValidFieldPresentationOptions
+{
+
+    /**
+     * CSS class added when state.isValid is false.
+     *
+     * This class represents validation errors rather than the mere presence of
+     * issues. Warning issues may be present while isValid remains true and
+     * therefore do not cause this class to be added.
+     *
+     * Invalid state takes precedence over corrected and validated states.
+     * Leave null when this presentation does not visually identify invalid
+     * fields.
+     * 
+     * Cannot be null.
+     */
+    invalidClass?: string;
+    /**
+     * CSS class added when validation completed with
+     * ValueHostValidationState.status === ValidationStatus.Valid.
+     *
+     * It is added only when the field is valid and state.corrected is false.
+     * Leave null when successful validation should not produce a visual
+     * treatment.
+     * 
+     * When null, no CSS class will be added for the validated state.
+     */
+    validatedClass?: string | null;
+    /**
+     * CSS class added when the field is valid and state.corrected is true.
+     *
+     * Corrected state indicates that previously invalid validation results have
+     * been fixed. It takes precedence over validatedClass so the two classes
+     * are not added together.
+     *
+     * Leave null when corrected fields should use the ordinary valid
+     * presentation.
+     */
+    correctedClass?: string | null;
+
+    /**
+     * CSS class added when valueHost.required is true.
+     *
+     * Required state is independent of validation state, so this class may
+     * coexist with invalidClass, validatedClass, or correctedClass.
+     *
+     * Leave null when this presentation does not visually identify required
+     * fields.
+     */
+    requiredClass?: string | null;    
+    /**
+     * A stable CSS class added every time apply() runs, regardless of the
+     * field's required or validation state.
+     *
+     * Use it to identify the presentation element, establish neutral layout,
+     * integrate with an application's design system, or provide a stable
+     * selector for rules using :has().
+     *
+     * Leave null when the presentation does not need a stable class.
+     */
+    presentationClass?: string | null;
 }

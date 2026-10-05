@@ -23,19 +23,25 @@ export class InputAdapterDefinition
     extends EditorAdapterDefinitionBase
 {
 
-    public constructor(inputType: string, adapterKey?: string, priority: number = 0,
+    /**
+     * Creates an editor adapter definition for HTML input elements of a specific type.
+     *
+     * @param inputType The type attribute of the input element this adapter supports.
+     * @param adapterKey Uniquely identifies this definition in the factory.
+     * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
+     * @param recommendedFieldPresentationName Optional presentation name used by default.
+     */
+    public constructor(inputType: string, adapterKey?: string, priority: number = 80,
         recommendedFieldPresentationName?: string | null)
     {
-        const normalizedInputType = inputType.toLowerCase();
-
         super(
             adapterKey ??
-            `input:${ normalizedInputType }`,
+            getInputAdapterKey(inputType),
             priority,
             recommendedFieldPresentationName
         );
 
-        this._inputType = normalizedInputType;
+        this._inputType = inputType.toLowerCase();
     }
     /**
      * Supports inputs with this value for its type attribute.
@@ -121,4 +127,9 @@ export class InputAdapterDefinition
 
         return element as HTMLInputElement;
     }
+}
+
+export function getInputAdapterKey(inputType: string): string
+{
+    return `input:${ inputType.toLowerCase() }`;
 }
