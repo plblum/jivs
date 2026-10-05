@@ -25,11 +25,11 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * 
  * That includes these type= attribute values: radio
  * Its default css classes are:
- * - invalidClass: jivs-invalid-editor-radiobuttons
+ * - invalidClass: jivs-invalid (inherited)
  * - validatedClass: do not use
  * - correctedClass: do not use
  * - requiredClass: do not use
- * - presentationClass: null
+ * - presentationClass: jivs-editor-radiobuttons
  * 
  * Registered with FieldPresentationFactory as presentation name 'radiobuttonsEditor'.
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
@@ -40,7 +40,7 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
      * Creates an instance of the RadioButtonsPresentation class.
      * @param radioButton The HTML input element of type radio associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -63,9 +63,9 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
         this.validatedClass = null;
     }
 
-    protected override defaultInvalidClass(): string | null
+    protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-invalid-editor-radiobuttons';
+        return 'jivs-editor-radiobuttons';
     }
 
     /**

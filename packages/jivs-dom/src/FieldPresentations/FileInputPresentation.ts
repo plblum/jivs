@@ -9,11 +9,11 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * Presentation for HTML input tags that feature a file input.
  * That includes these type= attribute values: file.
  * Its default css classes are:
- * - invalidClass: jivs-invalid-editor-file-input
+ * - invalidClass: jivs-invalid (inherited)
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: null
+ * - presentationClass: jivs-editor-file-input
  * 
  * Registered with FieldPresentationFactory as presentation name 'fileInputEditor'.
  * InputAdapterDefinition should use this presentation name: 'fileInputEditor'.
@@ -24,7 +24,7 @@ export class FileInputPresentation extends IsValidFieldPresentationBase
      * Constructor for the FileInputPresentation class.
      * @param element The HTML input element of type file associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -35,9 +35,9 @@ export class FileInputPresentation extends IsValidFieldPresentationBase
     {
         super(element, options, jivsElement);
     }
-    protected override defaultInvalidClass(): string | null
+    protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-invalid-editor-file-input';
+        return 'jivs-editor-file-input';
     }
 
 }

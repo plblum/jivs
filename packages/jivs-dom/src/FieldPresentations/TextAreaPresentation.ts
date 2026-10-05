@@ -9,11 +9,11 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 /**
  * Presentation for HTML textarea tags.
  * Its default css classes are:
- * - invalidClass: jivs-invalid-editor-textarea
+ * - invalidClass: jivs-invalid (inherited)
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: null
+ * - presentationClass: jivs-editor-textarea
  * 
  * Registered with FieldPresentationFactory as presentation name 'textareaEditor'.
  * TextAreaAdapterDefinition should use this presentation name: 'textareaEditor'.
@@ -24,7 +24,7 @@ export class TextAreaPresentation extends IsValidFieldPresentationBase
      * Constructor for the TextAreaPresentation class.
      * @param element The HTML textarea element associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -36,9 +36,9 @@ export class TextAreaPresentation extends IsValidFieldPresentationBase
         super(element, options, jivsElement);
     }
 
-    protected override defaultInvalidClass(): string | null
+    protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-invalid-editor-textarea';
+        return 'jivs-editor-textarea';
     }
 
 }

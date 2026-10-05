@@ -20,8 +20,8 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * - invalidClass: null
  * - validatedClass: null
  * - correctedClass: null
- * - requiredClass: jivs-required-indicator
- * - presentationClass: jivs-required
+ * - requiredClass: jivs-required-indicator-indicator
+ * - presentationClass: jivs-indicator
  * 
  * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.
  */
@@ -31,7 +31,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
      * Constructor for the RequiredIndicatorPresentation class.
      * @param element The HTML element used for the required indicator.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -53,7 +53,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
     }
     protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-required';
+        return 'jivs-indicator';
     }
 
     override getStaticAriaElementUpdater(): IAriaStaticUpdater | null

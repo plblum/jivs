@@ -26,7 +26,7 @@ export abstract class EditorAdapterDefinitionBase
 {
 
     /**
-     * Creates a contained-editor adapter definition.
+     * Creates a wrapped-editor adapter definition.
      *
      * @param adapterKey Uniquely identifies this definition in the factory.
      * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.

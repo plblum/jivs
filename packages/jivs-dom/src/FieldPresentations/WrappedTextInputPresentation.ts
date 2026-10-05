@@ -22,23 +22,23 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * by adding visual cues to the wrapper rather than the input element itself.
  * 
  * ```css
- * .jivs-invalid-wrapped-editor.jivs-required-wrapped-editor::after {
-        content: '*';
-        color: red;
+ * .jivs-required.jivs-wrapped-editor-input::after {
+ *     content: '*';
+ *     color: red;
  * }
  * ```
  * 
  * Its default css classes are:
- * - invalidClass: jivs-invalid-wrapped-editor-input
+ * - invalidClass: jivs-invalid
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: inherited 'jivs-wrapped-editor'
+ * - presentationClass: jivs-wrapped-editor-input
  * 
  * We supply these CSS classes to activate the validated, corrected and required visual cues:
- * - validatedClass: jivs-validated-wrapped-editor
- * - correctedClass: jivs-corrected-wrapped-editor
- * - requiredClass: jivs-required-wrapped-editor
+ * - validatedClass: jivs-validated-indicator
+ * - correctedClass: jivs-corrected-indicator
+ * - requiredClass: jivs-required-indicator
  * 
  * Registered with FieldPresentationFactory as presentation name 'wrappedInputEditor'.
  * WrappedInputAdapterDefinition should use this presentation name: 'wrappedInputEditor'.
@@ -53,9 +53,9 @@ export class WrappedTextInputPresentation extends WrappedIsValidFieldPresentatio
         super(element, options, jivsElement);
     }
 
-    protected override defaultInvalidClass(): string | null
+    protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-invalid-wrapped-editor-input';
+        return 'jivs-wrapped-editor-input';
     }
 }
 

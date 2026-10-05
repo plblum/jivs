@@ -20,23 +20,23 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * by adding visual cues to the wrapper rather than the input element itself.
  * 
  * ```css
- * .jivs-invalid-wrapped-editor.jivs-required-wrapped-editor::after {
-        content: '*';
-        color: red;
+ * .jivs-required.jivs-wrapped-editor-checkbox::after {
+ *     content: '*';
+ *     color: red;
  * }
  * ```
  * 
  * Its default css classes are:
- * - invalidClass: jivs-invalid-wrapped-editor-checkbox
+ * - invalidClass: jivs-invalid (inherited)
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
  * - presentationClass: inherited 'jivs-wrapped-editor'
  * 
  * We supply these CSS classes to activate the validated, corrected and required visual cues:
- * - validatedClass: jivs-validated-wrapped-editor
- * - correctedClass: jivs-corrected-wrapped-editor
- * - requiredClass: jivs-required-wrapped-editor
+ * - validatedClass: jivs-validated-indicator
+ * - correctedClass: jivs-corrected-indicator
+ * - requiredClass: jivs-required-indicator
  * 
  * Registered with FieldPresentationFactory as presentation name 'wrappedCheckboxEditor'.
  * WrappedCheckboxAdapterDefinition should use this presentation name: 'wrappedCheckboxEditor'.
@@ -51,9 +51,9 @@ export class WrappedCheckboxPresentation extends WrappedIsValidFieldPresentation
         super(element, options, jivsElement);
     }
 
-    protected override defaultInvalidClass(): string | null
+    protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-invalid-wrapped-editor-checkbox';
+        return 'jivs-wrapped-editor-checkbox';
     }
 }
 

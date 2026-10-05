@@ -16,7 +16,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * except for a radio group implementation.
  * 
  * ```html
- * <div class="wrapped-editor">
+ * <div class="jivs-wrapped-editor-type">
  *     <input type="text" name="example" />
  * </div>
  * 
@@ -32,7 +32,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  *   using ::after, it needs a wrapper so that the pseudo-element can be applied 
  *   to the wrapper rather than the form control itself.
  *   ```css
- *   .wrapped-editor-corrected::after {
+ *   .jivs-corrected::after {
  *       content: 'checkmark character';
  *       display: block;
  *   }
@@ -49,26 +49,25 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * manage those controls. That responsibility belongs to the associated
  * EditorAdapterDefinition.
  *
- * The default presentationClass, `jivs-wrapped-editor`, provides a stable
- * customization hook on every contained editor. jivs-dom.css does not assign
- * any styles directly to that class.
+ * Every wrapped editor should have a unique presentation class to allow for consistent styling and behavior.
+ * Override defaultPresentationClass() in derived classes to provide a unique presentation class for each wrapped editor.
  * 
- * Here's what it looks like with presentation name 'jivs-wrapped-editor' but still valid:
+ * Here's what it looks like with presentation class 'jivs-wrapped-editor-[type]' but still valid:
  * ```html
- * <div class="jivs-wrapped-editor">
+ * <div class="jivs-wrapped-editor-type">
  *     <input type="text" name="example" />
  * </div>
  * ```
  * To make it appear invalid:
  * ```css
- * .jivs-wrapped-editor.jivs-invalid-wrapped-editor-input input[type="text"]
+ * .jivs-wrapped-editor-input.jivs-invalid input[type="text"]
  * {
  *     border-color: var(--jivs-invalid-wrapped-editor-border-color);
  * }
  * ```
  * 
  * ```html
- * <div class="jivs-wrapped-editor jivs-invalid-wrapped-editor-input">
+ * <div class="jivs-wrapped-editor-type jivs-invalid">
  *     <input type="text" name="example" />
  * </div>
  * ```
@@ -78,9 +77,9 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * validatedClass, correctedClass, and requiredClass remain null by default.
  * Users may enable the corresponding opt-in rules supplied by jivs-dom.css:
  *
- * - jivs-required-wrapped-editor
- * - jivs-validated-wrapped-editor
- * - jivs-corrected-wrapped-editor
+ * - jivs-required
+ * - jivs-validated
+ * - jivs-corrected
  *
  * The required class remains on a required wrapping element independently of its
  * validation-result class. The supplied CSS may suppress its required
@@ -90,11 +89,11 @@ export abstract class WrappedIsValidFieldPresentationBase<TElement extends HTMLE
     extends IsValidFieldPresentationBase<TElement>
 {
     /**
-     * Creates a contained-editor presentation.
+     * Creates a wrapped-editor presentation.
      *
      * @param element The wrapper that receives all presentation classes.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -106,17 +105,6 @@ export abstract class WrappedIsValidFieldPresentationBase<TElement extends HTMLE
     )
     {
         super(element, options, jivsElement);
-    }
-
-    /**
-     * Returns the stable class identifying a contained editor.
-     *
-     * The library supplies no styles directly for this class. It is available
-     * as a predictable hook for application CSS and subclass customization.
-     */
-    protected override defaultPresentationClass(): string | null
-    {
-        return 'jivs-wrapped-editor';
     }
 
 }

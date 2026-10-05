@@ -30,7 +30,16 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - presentationClass is always applied when apply() runs, regardless of state.
  * 
  * Its Css properties use a value of null to indicate that the class isn't used.
- *
+ * It assigns InvalidClass to 'jivs-invalid' as a default.
+ * Subclasses are expected to supply the presentation class name to build a combined CSS class for the field presentation.
+ * Example valid: 
+ * ```html
+ * <input type="text" class="jivs-editor-input" />
+ * ```
+ * Example invalid: 
+ * ```html
+ * <input type="text" class="jivs-invalid jivs-editor-input" />
+ * ```
  * Each configured property must contain one CSS class name without a leading
  * period. Assign properties in a derived class to enable the corresponding
  * presentation behavior.
@@ -42,7 +51,7 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      * Constructor for IsValidFieldPresentationBase class.
      * @param element The HTML element associated with this field presentation.
      * @param options Configuration options for the field presentation.
-     * Passing null explicitly disables the corresponding class, while omitting the option uses 
+     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses 
      * the default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
@@ -82,10 +91,8 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     public set presentationClass(value: string | null) {
             this._presentationClass = value;
     }
-    protected defaultPresentationClass(): string | null {
-        return null;
-    }
     private _presentationClass: string | null | undefined;
+    protected abstract defaultPresentationClass(): string | null;
 
     /**
      * CSS class added when state.isValid is false.
@@ -99,7 +106,7 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      * fields.
      * 
      * Override defaultInvalidClass in a derived class to provide a default
-     * CSS class for invalid fields. This class has a default of null.
+     * CSS class for invalid fields. This class has a default of 'jivs-invalid'.
      */
     public get invalidClass(): string | null
     {
@@ -109,7 +116,7 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
             this._invalidClass = value;
     }
     protected defaultInvalidClass(): string | null {
-        return null;
+        return 'jivs-invalid';
     }
     private _invalidClass: string | null;
 

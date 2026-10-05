@@ -54,20 +54,31 @@
     */
 }
 
-/*
- * Native text-entry editors
+/*---- HTML FORM CONTROLS ------------------------
  *
- * Used by the inputEditor, textAreaEditor, selectEditor, and fileInputEditor
- * presentations. The presentation-specific class names let applications
- * customize one native editor family without changing the others.
+ * Styles used by HTML form controls: input, select, and textarea.
+ * Each has its own presentation class name.
+ * - 'jivs-editor-input' - input for most that are textbox oriented
+ * - 'jivs-editor-checkbox' - input for checkbox
+ * - 'jivs-editor-radiobuttons' - input for radio
+ * - 'jivs-editor-file-input' - input for file
+ * - 'jivs-editor-select' - select
+ * - 'jivs-editor-textarea' - textarea
+ *
+ * There are additional class names to apply situational styling:
+ * - 'jivs-invalid' - validation state is invalid
  *
  * :where() deliberately gives these library selectors zero specificity so
  * application CSS can override them without escalating selector specificity.
  */
-:where(.jivs-invalid-editor-input,
-    .jivs-invalid-editor-textarea,
-    .jivs-invalid-editor-select,
-    .jivs-invalid-editor-file-input) {
+
+/*
+ * Apply invalid styling to .jivs-editor-input, .jivs-editor-textarea, .jivs-editor-select, .jivs-editor-file-input
+ */
+:where(.jivs-invalid.jivs-editor-input,
+    .jivs-invalid.jivs-editor-textarea,
+    .jivs-invalid.jivs-editor-select,
+    .jivs-invalid.jivs-editor-file-input) {
     border-color: var(--jivs-invalid-editor-border-color);
     color: var(--jivs-invalid-editor-color);
 
@@ -77,56 +88,60 @@
 }
 
 /*
- * Native checkbox and non-wrapped radio-button editors
+ * Apply invalid styling to .jivs-editor-checkbox, .jivs-editor-radiobuttons
  *
  * RadioButtonsPresentation applies its class to sibling radio inputs having
  * the same name. Associated text belongs to separate role='label' elements
  * and is styled by their presentations.
  */
-:where(.jivs-invalid-editor-checkbox,
-    .jivs-invalid-editor-radiobuttons) {
+:where(.jivs-invalid.jivs-editor-checkbox,
+        .jivs-invalid.jivs-editor-radiobuttons) {
     box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 }
 
 /*
- * Native file input button
+ * Expand invalid styling on .jivs-editor-file-input.
  *
  * File inputs expose their native button through ::file-selector-button.
  * Applications may style it separately when the outer invalid treatment is
  * insufficient. For example:
  *
- * :where(.jivs-invalid-editor-file-input)::file-selector-button
+ * :where(.jivs-invalid.jivs-editor-file-input)::file-selector-button
  * {
  *     border-color: var(--jivs-invalid-editor-border-color);
  *     color: var(--jivs-invalid-editor-color);
  * }
  */
 
-/*
- * Field labels
+/*---- WRAPPED HTML FORM CONTROLS -----------------------
+ * HTML form controls wrapped in another tag, treating the wrapping tag as part of the editor
+ * <div class='jivs-wrapped-editor-input'><input type='text' /></div>
  *
- * Label color is opt-in so applications retain control over their normal
- * typography and validation emphasis.
- */
-:where(.jivs-invalid-label) {
-    /* color: var(--jivs-invalid-label-color); */
-}
-
-/*
- * Wrapped native text-entry editors
+ * Used by HTML form controls: input, select, and textarea.
+ * Each has its own presentation class name.
+ * - 'jivs-wrapped-editor-input' - input for most that are textbox oriented
+ * - 'jivs-wrapped-editor-checkbox' - input for checkbox
+ * - 'jivs-wrapped-editor-radiobuttons' - input for radio
+ * - 'jivs-wrapped-editor-file-input' - input for file
+ * - 'jivs-wrapped-editor-select' - select
+ * - 'jivs-wrapped-editor-textarea' - textarea
+ *
+ * There are additional class names to apply situational styling:
+ * - 'jivs-invalid' - validation state is invalid
  *
  * The invalid class is applied to an editor's wrapping element. These descendant
  * selectors apply the same treatment as the direct-element presentations to
  * the native form control at any depth within that wrapping element.
- *
- * The input selector intentionally excludes checkbox, radio, and file inputs.
- * The presentation's editor adapter is responsible for ensuring that the
- * remaining input is the editor represented by the wrapping element.
  */
-:where(.jivs-invalid-wrapped-editor-input) :where(input:not([type='checkbox'], [type='radio'], [type='file'])),
-:where(.jivs-invalid-wrapped-editor-textarea) :where(textarea),
-:where(.jivs-invalid-wrapped-editor-select) :where(select:not([multiple])),
-:where(.jivs-invalid-wrapped-editor-file-input) :where(input[type='file']) {
+
+/*
+ * Apply invalid styling to .jivs-wrapped-editor-input, .jivs-wrapped-editor-textarea,
+ * .jivs-wrapped-editor-select, .jivs-wrapped-editor-file-input.
+ */
+:where(.jivs-invalid.jivs-wrapped-editor-input) :where(input:not([type='checkbox'], [type='radio'], [type='file'])),
+:where(.jivs-invalid.jivs-wrapped-editor-textarea) :where(textarea),
+:where(.jivs-invalid.jivs-wrapped-editor-select) :where(select:not([multiple])),
+:where(.jivs-invalid.jivs-wrapped-editor-file-input) :where(input[type='file']) {
     border-color: var(--jivs-invalid-wrapped-editor-border-color);
     color: var(--jivs-invalid-wrapped-editor-color);
 
@@ -136,34 +151,34 @@
 }
 
 /*
- * Wrapped checkbox and radio-button editors
+ * Apply invalid styling to .jivs-wrapped-editor-checkbox, .jivs-wrapped-editor-radiobuttons
  *
  * Color is applied to the wrapping element so associated label text can inherit it.
  * accent-color preserves the browser's native control appearance. The shadow
  * also marks unchecked controls, where accent-color may not be visible.
  */
-:where(.jivs-invalid-wrapped-editor-checkbox,
-    .jivs-invalid-wrapped-editor-radiobuttons) {
+:where(.jivs-invalid.jivs-wrapped-editor-checkbox,
+        .jivs-invalid.jivs-wrapped-editor-radiobuttons) {
     color: var(--jivs-invalid-wrapped-editor-color);
 }
 
-:where(.jivs-invalid-wrapped-editor-checkbox) :where(input[type='checkbox']),
-:where(.jivs-invalid-wrapped-editor-radiobuttons) :where(input[type='radio']) {
+:where(.jivs-invalid.jivs-wrapped-editor-checkbox) :where(input[type='checkbox']),
+:where(.jivs-invalid.jivs-wrapped-editor-radiobuttons) :where(input[type='radio']) {
     accent-color: var(--jivs-invalid-wrapped-choice-editor-accent-color);
     box-shadow: var(--jivs-invalid-wrapped-choice-editor-box-shadow);
 }
 
-:where(.jivs-invalid-wrapped-editor-radiobuttons) :where(input[type='radio']) {
+:where(.jivs-invalid.jivs-wrapped-editor-radiobuttons) :where(input[type='radio']) {
     border-radius: 50%;
 }
 
 /*
- * Wrapped native file input button
+ * Expand invalid styling on .jivs-wrapped-editor-file-input
  *
  * Applications may style the native button separately when the outer invalid
  * treatment is insufficient. For example:
  *
- * :where(.jivs-invalid-wrapped-editor-file-input)
+ * :where(.jivs-invalid.jivs-wrapped-editor-file-input)
  *     :where(input[type='file'])::file-selector-button
  * {
  *     border-color: var(--jivs-invalid-wrapped-editor-border-color);
@@ -171,13 +186,32 @@
  * }
  */
 
+/*---- NON-EDITOR ROLES ---------------*/
+
 /*
- * Validation indicators
+ * Apply invalid styling on .jivs-label
  *
- * These classes are opt-in. The host element remains otherwise unstyled and the
- * indicator participates in normal flow immediately after its content.
- * Required is hidden after validation or correction because the result then
- * communicates the more useful state. Invalid does not suppress required.
+ * Label color is opt-in so applications retain control over their normal
+ * typography and validation emphasis.
+ */
+:where(.jivs-invalid.jivs-label) {
+    /* color: var(--jivs-invalid-label-color); */
+}
+
+/*---- VALIDATION INDICATORS ------------
+ *
+ * Validation indicators include:
+ * - validated - the user has entered valid data
+ * - corrected - the user fixed an entry
+ * - required - the field is required
+ *
+ * These three are tied together so that you can have a required indicator
+ * that gets replaced by the corrected or validated states.
+ * Yet that requires you to opt-in by assigning these class names to
+ * the right property on the presentation object.
+ * - 'jivs-validated-indicator' - Assign to Presentation.validatedClass
+ * - 'jivs-corrected-indicator' - Assign to Presentation.correctedClass
+ * - 'jivs-required-indicator' - Assign to Presentation.requiredClass - This is preassigned when role='required'
  */
 :where(.jivs-required-indicator:not(.jivs-validated-indicator, .jivs-corrected-indicator),
     .jivs-validated-indicator, .jivs-corrected-indicator)::after {

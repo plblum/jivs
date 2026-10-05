@@ -1,28 +1,31 @@
 /**
- * Provides a presentation for HTML input elements of type checkbox.
+ * Provides a presentation an HTML tag around the elements of a field,
+ * intended to call out the region as containing an error.
+ * Specific to ElementRole.container.
  * 
- * @module jivs-dom/FieldPresentations/ConcreteClasses/CheckboxPresentation
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/FieldContainerPresentation
  */
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
- * Presentation for HTML input tags that feature a checkbox.
- * That includes these type= attribute values: checkbox
+ * Provides a presentation an HTML tag around the elements of a field,
+ * intended to call out the region as containing an error.
+ * Specific to ElementRole.container.
+ * 
  * Its default css classes are:
  * - invalidClass: jivs-invalid (inherited)
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-checkbox
+ * - presentationClass: jivs-field-container
  * 
- * Registered with FieldPresentationFactory as presentation name 'checkboxEditor'.
- * CheckboxAdapterDefinition should use this presentation name: 'checkboxEditor'.
+ * Registered with FieldPresentationFactory as presentation name 'fieldContainer'.
  */
-export class CheckboxPresentation extends IsValidFieldPresentationBase
+export class FieldContainerPresentation extends IsValidFieldPresentationBase
 {
     /**
-     * Constructor for the CheckboxPresentation class.
+     * Constructor for the FieldContainerPresentation class.
      * @param element The HTML input element of type checkbox associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
      * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
@@ -39,12 +42,11 @@ export class CheckboxPresentation extends IsValidFieldPresentationBase
 
     protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-editor-checkbox';
+        return 'jivs-field-container';
     }
 
 }
 /**
- * For registering this presentation with the FieldPresentationFactory
- * and consumed as default for CheckboxAdapterDefinition.
+ * For registering this presentation with the FieldPresentationFactory.
  */
-export const defaultCheckboxPresentationName = 'checkboxEditor';
+export const defaultFieldContainerPresentationName = 'fieldContainer';
