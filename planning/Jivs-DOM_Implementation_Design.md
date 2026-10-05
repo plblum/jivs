@@ -1008,13 +1008,13 @@ Each class supplies its matching rules, directly creates its adapters, and attac
 
 These are basically the same idea as above, however the editor is contained within another element.
 They have a different anchor and editor.
-* `ContainerInputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `container:input:type` format;
-* `ContainerCheckboxAdapterDefinition` for checkbox inputs with `adapterKey="container:input:checkbox"`;
-* `ContainerRadioButtonsAdapterDefinition` for radio buttons with `adapterKey="container:input:radio"`.
+* `WrappedInputAdapterDefinition` for ordinary input types other than checkbox, radio, and file, with adapter keys in `wrapper:input:type` format;
+* `WrappedCheckboxAdapterDefinition` for checkbox inputs with `adapterKey="wrapper:input:checkbox"`;
+* `WrappedRadioButtonsAdapterDefinition` for radio buttons with `adapterKey="wrapper:input:radio"`.
 It resolves all siblings as a group;
-* `ContainerTextAreaAdapterDefinition` for textarea elements with `adapterKey="container:textarea"`;
-* `ContainerSelectAdapterDefinition` for select elements with `adapterKey="container:select"`;
-* `ContainerFileInputAdapterDefinition` for file inputs with `adapterKey="container:input:file"`.
+* `WrappedTextAreaAdapterDefinition` for textarea elements with `adapterKey="wrapper:textarea"`;
+* `WrappedSelectAdapterDefinition` for select elements with `adapterKey="wrapper:select"`;
+* `WrappedFileInputAdapterDefinition` for file inputs with `adapterKey="wrapper:input:file"`.
 
 `ParsedTextEditorAdapterDefinition` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
 
@@ -1290,13 +1290,14 @@ All initial built-in definitions use the Text Value path. They read strings from
 
 None of these definitions creates an `IValueAdapter`. During installation, `jivsValueAdapter` is therefore set to `null`.
 
-These are variants for native editors found inside of a container. They use the container as the Anchor which will manage presentation. They internally use those above to manage the editor.
-- `ContainerInputAdapterDefinition`
-- `ContainerCheckboxAdapterDefinition`
-- `ContainerRadioButtonsAdapterDefinition`
-- `ContainerTextAreaAdapterDefinition`
-- `ContainerSelectAdapterDefinition`
-- `ContainerFileInputAdapterDefinition`
+These are variants for native editors found inside of a wrapping element that together they represent the editor. 
+They use the wrapper as the Anchor which will manage presentation. They internally use those above to manage the editor.
+- `WrapperInputAdapterDefinition`
+- `WrapperCheckboxAdapterDefinition`
+- `WrapperRadioButtonsAdapterDefinition`
+- `WrapperTextAreaAdapterDefinition`
+- `WrapperSelectAdapterDefinition`
+- `WrapperFileInputAdapterDefinition`
 
 #### Input Definition Registration
 
@@ -1323,7 +1324,7 @@ input:color
 
 The input type is passed to the definition’s constructor. Unless an adapter key is supplied explicitly, the constructor derives it using the standard `input:type` pattern.
 
-We also have Container-based versions, like ContainerInputAdapterDefinition. Their adapter keys are those from above prefixed with "container:", such as "container:input:text" and "container:input:month".
+We also have Wrapper-based versions, like WrapperInputAdapterDefinition. Their adapter keys are those from above prefixed with "wrapper:", such as "wrapper:input:text" and "wrapper:input:month".
 
 Conceptually, built-in registration is:
 
@@ -1570,7 +1571,7 @@ The implementation establishes these rules:
 
 The adapter does not retain the discovered radio elements. Radios added or removed after installation therefore participate in the next read or write automatically.
 
-#### Containers around Native Editors
+#### Wrappers around Native Editors
 Often the presentation can be enhanced by placing styles on a containing tag. 
 Example:
 ```html
@@ -1579,29 +1580,29 @@ Example:
 </div>
 ```
 
-The ContainerEditorAdapterDefinitionBase class supports these use cases.
+The WrapperEditorAdapterDefinitionBase class supports these use cases.
 
 It defines the anchor and editor elements separately:
 - Anchor: The container element gets the IJivsDomElement structure. This is used for presentation.
 - Editor: The actual editor element. This is used by TextValueAdapter and ValueAdapter. It is also where the attachToSendValues() code adds its event handlers.
 
 ```ts
-export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLElement = HTMLElement>
+export abstract class WrapperEditorAdapterDefinitionBase<TEditor extends HTMLElement = HTMLElement>
     extends EditorAdapterDefinitionBase
 {
     protected constructor(adapterKey: string, priority: number,
-        containerSelector?: string | null, recommendedFieldPresentationName?: string | null)
+        wrapperSelector?: string | null, recommendedFieldPresentationName?: string | null)
     {
         super(adapterKey, priority, recommendedFieldPresentationName);
 
-        this._containerSelector = containerSelector !== undefined
-            ? containerSelector
-            : this.defaultContainerSelector();
+        this._wrapperSelector = wrapperSelector !== undefined
+            ? wrapperSelector
+            : this.defaultWrapperSelector();
     }
 
-    public get containerSelector(): string | null {}
+    public get wrapperSelector(): string | null {}
 
-    protected defaultContainerSelector(): string | null {}
+    protected defaultWrapperSelector(): string | null {}
 
     protected abstract get editorSelector(): string;
 
@@ -1611,7 +1612,7 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
 
     public override matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean
     {
-        if (this.containerSelector !== null && !candidateElement.matches(this.containerSelector))
+        if (this.wrapperSelector !== null && !candidateElement.matches(this.wrapperSelector))
             return false;
 
         if (candidateElement.childElementCount === 0)
@@ -1653,7 +1654,7 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
 }
 ```
 
-ContainerEditorAdapterDefinitionBase uses another EditorAdapterDefinition to handle the specifics needed
+WrapperEditorAdapterDefinitionBase uses another EditorAdapterDefinition to handle the specifics needed
 by the editor. That child definition is usually the one we built for when the editor is not within the container.
 Thus we get the benefits of the TextValueAdapter, ValueAdapter and attachToSendValues() function from that
 existing class.
@@ -1663,21 +1664,21 @@ is still stored in properties of the anchor's IDomJivsElement structure. This al
 to direct to anchors all of the time, while the TextValueAdapter internally has the editor element
 from which to work.
 
-##### Performance improved by assigning containerSelector property
-The matches() function defaults to using containerElement.querySelector(editorSelector) 
+##### Performance improved by assigning wrapperSelector property
+The matches() function defaults to using anchorElement.querySelector(editorSelector) 
 to locate the descendant editor. That is not very performant for large DOM trees
 especially when matches is run against a list of Adapter definitions.
-To improve performance, consider using a containerSelector to quickly filter 
-out non-matching containers before performing a descendant search.
+To improve performance, consider using a wrapperSelector to quickly filter 
+out non-matching wrappers before performing a descendant search.
 
 Example:
 ```html
-<div class="container">
+<div class="wrapper">
     <input type="text" class="editor" />
 </div>
 ```
-In this example, the container has the class "container" and the descendant editor has the class "editor".
-The containerSelector could be "div.container" and the editorSelector could be "input[type="text"].editor".
+In this example, the div has the class "wrapper" and the descendant editor has the class "editor".
+The wrapperSelector could be "div.wrapper" and the editorSelector could be "input[type="text"].editor".
 
 #### Excluded and Deferred Elements
 

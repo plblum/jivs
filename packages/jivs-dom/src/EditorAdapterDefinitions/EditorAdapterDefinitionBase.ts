@@ -12,6 +12,8 @@ import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { EditorAriaStaticUpdater } from '../Aria/EditorAriaStaticUpdater';
+import { EditorAriaValidationStateUpdater } from '../Aria/EditorAriaValidationStateUpdater';
 
 /**
  * Base class for editor adapter definitions.
@@ -245,7 +247,7 @@ export abstract class EditorAdapterDefinitionBase
      */
     public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
-        return null;
+        return new EditorAriaStaticUpdater();
     }
     /**
      * The Aria system uses a default Validation State Element Updater that may not
@@ -257,7 +259,7 @@ export abstract class EditorAdapterDefinitionBase
      */
     public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
     {
-        return null;
+        return new EditorAriaValidationStateUpdater();
     }    
 
     //#region utilities

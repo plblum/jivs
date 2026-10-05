@@ -1,8 +1,8 @@
 /**
- * Provides an abstract base class for editor adapter definitions whose
- * build around a container element, while the actual editor resides within that container.
+ * Provides an abstract base class for editor adapter definitions
+ * built around a wrapper, while the actual editor resides within that wrapper.
  *
- * @module jivs-dom/EditorAdapterDefinitions/AbstractClasses/ContainerEditorAdapterDefinitionBase
+ * @module jivs-dom/EditorAdapterDefinitions/AbstractClasses/WrappedEditorAdapterDefinitionBase
  */
 
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
@@ -14,59 +14,63 @@ import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 
 /**
- * Base class for editor adapter definitions that use a container around the actual editor element.
+ * Base class for editor adapter definitions that use a wrapper around the actual editor element.
+ * 
+ * "Wrapper" refers to the container element that surrounds the actual editor element.
+ * It is treated as part of the editor itself, even though it is a separate DOM element.
+ * 
  * 
  * It defines the anchor and editor elements separately:
- * - Anchor: The container element gets the IJivsDomElement structure.
+ * - Anchor: The wrapper gets the IJivsDomElement structure.
  * - Editor: The actual editor element.
  * 
- * The matches() function defaults to using containerElement.querySelector(editorSelector) 
+ * The matches() function defaults to using wrappedElement.querySelector(editorSelector) 
  * to locate the descendant editor. That is not very performant for large DOM trees
  * especially when matches is run against a list of Adapter definitions.
- * To improve performance, consider using a containerSelector to quickly filter 
- * out non-matching containers before performing a descendant search.
+ * To improve performance, consider using a wrapperSelector to quickly filter 
+ * out non-matching wrappers before performing a descendant search.
  * 
  * Example:
  * ```html
- * <div class="container">
+ * <div class="wrapped">
  *     <input type="text" class="editor" />
  * </div>
  * ```
- * In this example, the container has the class "container" and the descendant editor has the class "editor".
- * The containerSelector could be "div.container" and the editorSelector could be "input[type="text"].editor".
+ * In this example, the wrapper has the class "wrapped" and the descendant editor has the class "editor".
+ * The wrapperSelector could be "div.wrapped" and the editorSelector could be "input[type="text"].editor".
  *
- * The adapters remain assigned to the container's
+ * The adapters remain assigned to the wrapper's
  * IJivsDomElement properties even though they read from and write to the
  * descendant editor.
  * 
  * This design uses the Editor Adapter Definition explicitly designed for the editor itself,
- * leaving the container adapter to manage the container while redirecting to the editor adapter for editor-specific operations.
+ * leaving the wrapper adapter to manage the wrapper while redirecting to the editor adapter for editor-specific operations.
  * Override createChildEditorDefinitionAdapter() to provide the editor-specific adapter definition.
  */
-export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLElement = HTMLElement>
+export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLElement = HTMLElement>
     extends EditorAdapterDefinitionBase
 {
     /**
-     * Creates a contained-editor adapter definition.
+     * Creates a wrapped-editor adapter definition.
      *
      * @param adapterKey Uniquely identifies this definition in the factory.
      * @param priority Determines matching order within the factory where 0 is highest and 100 is lowest.
-     * @param containerSelector Optional CSS selector that the container must match.
-     * Pass null to allow any container with child elements.
+     * @param wrapperSelector Optional CSS selector that the wrapper must match.
+     * Pass null to allow any wrapped with child elements.
      * @param recommendedFieldPresentationName Optional presentation name used by default.
      */
     protected constructor(adapterKey: string, priority: number,
-        containerSelector?: string | null, recommendedFieldPresentationName?: string | null)
+        wrapperSelector?: string | null, recommendedFieldPresentationName?: string | null)
     {
         super(adapterKey, priority, recommendedFieldPresentationName);
 
-        this._containerSelector = containerSelector !== undefined
-            ? containerSelector
-            : this.defaultContainerSelector();
+        this._wrapperSelector = wrapperSelector !== undefined
+            ? wrapperSelector
+            : this.defaultWrapperSelector();
     }
 
     /**
-     * Optional CSS selector that the container must match before its descendants
+     * Optional CSS selector that the wrapper must match before its descendants
      * are searched by the matches() function.
      *
      * A null value permits any element with child elements. The selector may
@@ -75,25 +79,25 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
      * An invalid selector is a configuration error. The exception raised by
      * HTMLElement.matches() is intentionally not suppressed.
      */
-    public get containerSelector(): string | null
+    public get wrapperSelector(): string | null
     {
-        return this._containerSelector;
+        return this._wrapperSelector;
     }
-    private readonly _containerSelector: string | null;
+    private readonly _wrapperSelector: string | null;
 
     /**
-     * Returns the default container selector.
+     * Returns the default wrapped selector.
      *
      * Override this method when every instance of a concrete definition should
-     * expect a particular container structure. The default is null.
+     * expect a particular wrapped structure. The default is null.
      */
-    protected defaultContainerSelector(): string | null
+    protected defaultWrapperSelector(): string | null
     {
         return null;
     }
 
     /**
-     * CSS selector used to locate the supported editor within the container.
+     * CSS selector used to locate the supported editor within the wrapper.
      *
      * Concrete definitions should make this selector specific enough to
      * identify the exact tag and input type they support.
@@ -118,9 +122,9 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     private _childEditorDefinitionAdapter?: IEditorAdapterDefinition;
 
     /**
-     * Creates and returns the child editor definition adapter associated with this container editor.
+     * Creates and returns the child editor definition adapter associated with this wrapped editor.
      * This adapter is responsible for handling the actual editor element.
-     * Our container adapter redirects several options to it:
+     * Our wrapped adapter redirects several options to it:
      * - Value retrieval and setting
      * - Event handling
      * - HTML element structure validation
@@ -129,21 +133,21 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     protected abstract createChildEditorDefinitionAdapter(): IEditorAdapterDefinition;
 
     /**
-     * Determines whether the element is a supported editor container.
+     * Determines whether the element is a supported editor.
      * Used by the EditorAdapterDefinitionFactory when requesting an adapter without a 
      * specific adapter key.
      *
-     * The containerSelector is checked before any descendant search. Containers
+     * The wrapperSelector is checked before any descendant search. Wrappers
      * without child elements are rejected without executing editorSelector.
      *
      * @param valueHost The field value host associated with the candidate editor.
-     * @param candidateElement The candidate container element.
-     * @returns True when the container satisfies its configured restriction and
+     * @param candidateElement The candidate wrapper.
+     * @returns True when the wrapper satisfies its configured restriction and
      * contains a supported descendant editor.
      */
     public override matches(valueHost: IFieldValueHost, candidateElement: HTMLElement): boolean
     {
-        if (this.containerSelector !== null && !candidateElement.matches(this.containerSelector))
+        if (this.wrapperSelector !== null && !candidateElement.matches(this.wrapperSelector))
             return false;
 
         if (candidateElement.childElementCount === 0)
@@ -154,18 +158,18 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     }
 
     /**
-     * Resolves the editor as an element within the container using findEditorElement().
-     * Throws if the editor element cannot be found within the container.
+     * Resolves the editor as an element within the wrapper using findEditorElement().
+     * Throws if the editor element cannot be found within the wrapped.
      * @param valueHost The host object that provides the field value.
      * @param anchor The anchor element associated with the editor.
-     * @returns The editor element within the container.
+     * @returns The editor element within the wrapper.
      */
     public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
     {
         let editor = this.findEditorElement(anchor);
         if (!editor)
         {
-            let msg = `Editor element not found within the container.`;
+            let msg = `Editor element not found within the wrapped.`;
             this.log(LoggingLevel.Error, msg, anchor, valueHost);
             throw new Error(msg);
         }
@@ -173,24 +177,24 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     }
 
     /**
-     * Finds the supported editor within the container.
+     * Finds the supported editor within the wrapper.
      *
      * The default implementation performs a deep descendant search using
      * editorSelector. Override this method when a widget requires different
      * element-resolution behavior.
      *
-     * @param container The container whose descendants will be searched.
+     * @param wrapper the wrapper whose descendants will be searched.
      * @returns The matching editor element, or null when none is found.
      */
-    protected findEditorElement(container: HTMLElement): TEditor | null
+    protected findEditorElement(wrapper: HTMLElement): TEditor | null
     {
-        return container.querySelector<TEditor>(this.editorSelector);
+        return wrapper.querySelector<TEditor>(this.editorSelector);
     }
 
     /**
      * Redirects the creation of a text value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
-     * @param editor The editor element within the container.
+     * @param editor The editor element within the wrapper.
      * @param anchor The anchor element associated with the editor.
      * @returns The text value adapter for the editor element, or null if none is created.
      */
@@ -203,7 +207,7 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     /**
      * Redirects the creation of a value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
-     * @param editor The editor element within the container.
+     * @param editor The editor element within the wrapper.
      * @param anchor The anchor element associated with the editor.
      * @returns The value adapter for the editor element, or null if none is created.
      */
@@ -215,7 +219,7 @@ export abstract class ContainerEditorAdapterDefinitionBase<TEditor extends HTMLE
     /**
      * Redirects the attachment of send values to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
-     * @param editor The editor element within the container.
+     * @param editor The editor element within the wrapper.
      * @param anchor The anchor element associated with the editor.
      * @param options Optional installation options for the editor.
      */

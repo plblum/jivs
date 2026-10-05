@@ -6,6 +6,8 @@
 
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
+import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAriaStaticUpdater';
 
 /**
  * Presentation for HTML tags indicating required indicator fields.
@@ -52,6 +54,11 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
     protected override defaultPresentationClass(): string | null
     {
         return 'jivs-required';
+    }
+
+    override getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    {
+        return new RequiredIndicatorAriaStaticUpdater();
     }
 
 }

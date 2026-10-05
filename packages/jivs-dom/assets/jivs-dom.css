@@ -25,11 +25,11 @@
 
     --jivs-invalid-label-color: var(--jivs-invalid-text-color);
 
-    --jivs-invalid-container-editor-border-color: var(--jivs-invalid-editor-border-color);
-    --jivs-invalid-container-editor-color: var(--jivs-invalid-editor-color);
-    --jivs-invalid-container-editor-background-color: var(--jivs-invalid-editor-background-color);
-    --jivs-invalid-container-choice-editor-accent-color: var(--jivs-invalid-color);
-    --jivs-invalid-container-choice-editor-box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
+    --jivs-invalid-wrapped-editor-border-color: var(--jivs-invalid-editor-border-color);
+    --jivs-invalid-wrapped-editor-color: var(--jivs-invalid-editor-color);
+    --jivs-invalid-wrapped-editor-background-color: var(--jivs-invalid-editor-background-color);
+    --jivs-invalid-wrapped-choice-editor-accent-color: var(--jivs-invalid-color);
+    --jivs-invalid-wrapped-choice-editor-box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 
     --jivs-indicator-padding-inline: 0.25em;
     --jivs-indicator-font-size: 1em;
@@ -77,7 +77,7 @@
 }
 
 /*
- * Native checkbox and uncontained radio-button editors
+ * Native checkbox and non-wrapped radio-button editors
  *
  * RadioButtonsPresentation applies its class to sibling radio inputs having
  * the same name. Associated text belongs to separate role='label' elements
@@ -113,61 +113,61 @@
 }
 
 /*
- * Contained native text-entry editors
+ * Wrapped native text-entry editors
  *
- * The invalid class is applied to an editor container. These descendant
+ * The invalid class is applied to an editor's wrapping element. These descendant
  * selectors apply the same treatment as the direct-element presentations to
- * the native form control at any depth within that container.
+ * the native form control at any depth within that wrapping element.
  *
  * The input selector intentionally excludes checkbox, radio, and file inputs.
  * The presentation's editor adapter is responsible for ensuring that the
- * remaining input is the editor represented by the container.
+ * remaining input is the editor represented by the wrapping element.
  */
-:where(.jivs-invalid-container-editor-input) :where(input:not([type='checkbox'], [type='radio'], [type='file'])),
-:where(.jivs-invalid-container-editor-textarea) :where(textarea),
-:where(.jivs-invalid-container-editor-select) :where(select:not([multiple])),
-:where(.jivs-invalid-container-editor-file-input) :where(input[type='file']) {
-    border-color: var(--jivs-invalid-container-editor-border-color);
-    color: var(--jivs-invalid-container-editor-color);
+:where(.jivs-invalid-wrapped-editor-input) :where(input:not([type='checkbox'], [type='radio'], [type='file'])),
+:where(.jivs-invalid-wrapped-editor-textarea) :where(textarea),
+:where(.jivs-invalid-wrapped-editor-select) :where(select:not([multiple])),
+:where(.jivs-invalid-wrapped-editor-file-input) :where(input[type='file']) {
+    border-color: var(--jivs-invalid-wrapped-editor-border-color);
+    color: var(--jivs-invalid-wrapped-editor-color);
 
     /* Optional: uncomment to tint invalid editor backgrounds.
-    background-color: var(--jivs-invalid-container-editor-background-color);
+    background-color: var(--jivs-invalid-wrapped-editor-background-color);
     */
 }
 
 /*
- * Contained checkbox and radio-button editors
+ * Wrapped checkbox and radio-button editors
  *
- * Color is applied to the container so associated label text can inherit it.
+ * Color is applied to the wrapping element so associated label text can inherit it.
  * accent-color preserves the browser's native control appearance. The shadow
  * also marks unchecked controls, where accent-color may not be visible.
  */
-:where(.jivs-invalid-container-editor-checkbox,
-    .jivs-invalid-container-editor-radiobuttons) {
-    color: var(--jivs-invalid-container-editor-color);
+:where(.jivs-invalid-wrapped-editor-checkbox,
+    .jivs-invalid-wrapped-editor-radiobuttons) {
+    color: var(--jivs-invalid-wrapped-editor-color);
 }
 
-:where(.jivs-invalid-container-editor-checkbox) :where(input[type='checkbox']),
-:where(.jivs-invalid-container-editor-radiobuttons) :where(input[type='radio']) {
-    accent-color: var(--jivs-invalid-container-choice-editor-accent-color);
-    box-shadow: var(--jivs-invalid-container-choice-editor-box-shadow);
+:where(.jivs-invalid-wrapped-editor-checkbox) :where(input[type='checkbox']),
+:where(.jivs-invalid-wrapped-editor-radiobuttons) :where(input[type='radio']) {
+    accent-color: var(--jivs-invalid-wrapped-choice-editor-accent-color);
+    box-shadow: var(--jivs-invalid-wrapped-choice-editor-box-shadow);
 }
 
-:where(.jivs-invalid-container-editor-radiobuttons) :where(input[type='radio']) {
+:where(.jivs-invalid-wrapped-editor-radiobuttons) :where(input[type='radio']) {
     border-radius: 50%;
 }
 
 /*
- * Contained native file input button
+ * Wrapped native file input button
  *
  * Applications may style the native button separately when the outer invalid
  * treatment is insufficient. For example:
  *
- * :where(.jivs-invalid-container-editor-file-input)
+ * :where(.jivs-invalid-wrapped-editor-file-input)
  *     :where(input[type='file'])::file-selector-button
  * {
- *     border-color: var(--jivs-invalid-container-editor-border-color);
- *     color: var(--jivs-invalid-container-editor-color);
+ *     border-color: var(--jivs-invalid-wrapped-editor-border-color);
+ *     color: var(--jivs-invalid-wrapped-editor-color);
  * }
  */
 

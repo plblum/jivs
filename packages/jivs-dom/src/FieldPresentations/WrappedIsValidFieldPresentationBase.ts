@@ -1,22 +1,22 @@
 /**
- * Base class for field presentations applied to a container surrounding one or
+ * Base class for field presentations applied to a wrapper surrounding one or
  * more native HTML form controls.
  *
- * @module jivs-dom/FieldPresentations/AbstractClasses/ContainerIsValidFieldPresentationBase
+ * @module jivs-dom/FieldPresentations/AbstractClasses/WrappedIsValidFieldPresentationBase
  */
 
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
- * Base class for container-editor presentations where the editor is an
- * HTML form control contained within a surrounding container.
- * It can be any level of depth below the container element,
+ * Base class for wrapped-editor presentations where the editor is an
+ * HTML form control contained within a surrounding wrapper.
+ * It can be any level of depth below the wrapper,
  * although there should only be exactly one descendant form control
  * except for a radio group implementation.
  * 
  * ```html
- * <div class="container-editor">
+ * <div class="wrapped-editor">
  *     <input type="text" name="example" />
  * </div>
  * 
@@ -29,45 +29,46 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * 
  * Uses:
  * - If you want to apply styles with corrected, validated, or required states
- *   using ::after, it needs a wrapper so that the pseudo-element can be applied to the container rather than the form control itself.
+ *   using ::after, it needs a wrapper so that the pseudo-element can be applied 
+ *   to the wrapper rather than the form control itself.
  *   ```css
- *   .container-editor-corrected::after {
+ *   .wrapped-editor-corrected::after {
  *       content: 'checkmark character';
  *       display: block;
  *   }
  *   ```
  * - Radio button groups can have enclosing presentation around all of the fields.
- * - Third party or custom widgets that have a container but use an HTML form control inside.
+ * - Third party or custom widgets that have a wrapper but use an HTML form control inside.
  *
- * The element passed to the constructor is the container and remains the
+ * The element passed to the constructor is the wrapper and remains the
  * presentation element. Validation and required-state CSS classes are applied
- * to that container rather than directly to its descendant form controls.
+ * to that wrapper rather than directly to its descendant form controls.
  *
- * CSS rules may begin with the container's state class and select supported
+ * CSS rules may begin with the wrapper's state class and select supported
  * form controls at any descendant depth. The presentation does not locate or
  * manage those controls. That responsibility belongs to the associated
  * EditorAdapterDefinition.
  *
- * The default presentationClass, `jivs-container-editor`, provides a stable
+ * The default presentationClass, `jivs-wrapped-editor`, provides a stable
  * customization hook on every contained editor. jivs-dom.css does not assign
  * any styles directly to that class.
  * 
- * Here's what it looks like with presentation name 'jivs-container-editor' but still valid:
+ * Here's what it looks like with presentation name 'jivs-wrapped-editor' but still valid:
  * ```html
- * <div class="jivs-container-editor">
+ * <div class="jivs-wrapped-editor">
  *     <input type="text" name="example" />
  * </div>
  * ```
  * To make it appear invalid:
  * ```css
- * .jivs-container-editor.jivs-invalid-container-editor-input input[type="text"]
+ * .jivs-wrapped-editor.jivs-invalid-wrapped-editor-input input[type="text"]
  * {
- *     border-color: var(--jivs-invalid-container-editor-border-color);
+ *     border-color: var(--jivs-invalid-wrapped-editor-border-color);
  * }
  * ```
  * 
  * ```html
- * <div class="jivs-container-editor jivs-invalid-container-editor-input">
+ * <div class="jivs-wrapped-editor jivs-invalid-wrapped-editor-input">
  *     <input type="text" name="example" />
  * </div>
  * ```
@@ -77,21 +78,21 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * validatedClass, correctedClass, and requiredClass remain null by default.
  * Users may enable the corresponding opt-in rules supplied by jivs-dom.css:
  *
- * - jivs-required-container-editor
- * - jivs-validated-container-editor
- * - jivs-corrected-container-editor
+ * - jivs-required-wrapped-editor
+ * - jivs-validated-wrapped-editor
+ * - jivs-corrected-wrapped-editor
  *
- * The required class remains on a required container independently of its
+ * The required class remains on a required wrapping element independently of its
  * validation-result class. The supplied CSS may suppress its required
  * indicator when a validated or corrected indicator is present.
  */
-export abstract class ContainerIsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
+export abstract class WrappedIsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
     extends IsValidFieldPresentationBase<TElement>
 {
     /**
      * Creates a contained-editor presentation.
      *
-     * @param element The container that receives all presentation classes.
+     * @param element The wrapper that receives all presentation classes.
      * @param options Configuration options for the field presentation, including CSS classes.
      * Passing null explicitly disables the corresponding class, while omitting the option uses the 
      * default supplied by this class or a derived class.
@@ -115,7 +116,7 @@ export abstract class ContainerIsValidFieldPresentationBase<TElement extends HTM
      */
     protected override defaultPresentationClass(): string | null
     {
-        return 'jivs-container-editor';
+        return 'jivs-wrapped-editor';
     }
 
 }

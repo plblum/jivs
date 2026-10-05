@@ -15,12 +15,12 @@ import { SelectAdapterDefinition, defaultSelectAdapterKey } from './SelectAdapte
 import { RadioButtonsAdapterDefinition, defaultRadioButtonsAdapterKey } from './RadioButtonsAdapterDefinition';
 import { defaultFileInputAdapterKey, FileInputAdapterDefinition } from './FileInputAdapterDefinition';
 import { getInputAdapterKey, InputAdapterDefinition } from './InputAdapterDefinition';
-import { ContainerCheckboxAdapterDefinition } from './ContainerCheckboxAdapterDefinition';
-import { ContainerFileInputAdapterDefinition } from './ContainerFileInputAdapterDefinition';
-import { ContainerInputAdapterDefinition, getContainerInputAdapterKey } from './ContainerInputAdapterDefinition';
-import { ContainerRadioButtonsAdapterDefinition } from './ContainerRadioButtonsAdapterDefinition';
-import { ContainerSelectAdapterDefinition, defaultContainerSelectAdapterKey } from './ContainerSelectAdapterDefinition';
-import { ContainerTextAreaAdapterDefinition, defaultContainerTextAreaAdapterKey } from './ContainerTextAreaAdapterDefinition';
+import { WrappedCheckboxAdapterDefinition } from './WrappedCheckboxAdapterDefinition';
+import { WrappedFileInputAdapterDefinition } from './WrappedFileInputAdapterDefinition';
+import { WrappedInputAdapterDefinition, getWrappedInputAdapterKey } from './WrappedInputAdapterDefinition';
+import { WrappedRadioButtonsAdapterDefinition } from './WrappedRadioButtonsAdapterDefinition';
+import { WrappedSelectAdapterDefinition, defaultWrappedSelectAdapterKey } from './WrappedSelectAdapterDefinition';
+import { WrappedTextAreaAdapterDefinition, defaultWrappedTextAreaAdapterKey } from './WrappedTextAreaAdapterDefinition';
 
 /**
  * Registers and selects editor adapter definitions as part of running 
@@ -141,24 +141,24 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
         factory.register(new TextAreaAdapterDefinition(defaultTextAreaAdapterKey, 80)); // adapterkey = 'textarea'
         factory.register(new SelectAdapterDefinition(defaultSelectAdapterKey, 80));     // adapterkey = 'select'
 
-        // container around the native HTML form controls
-        // Default container adapter keys look like this: 'container:input:type'
-        factory.register(new ContainerInputAdapterDefinition('text', getContainerInputAdapterKey('text'), 80));
-        factory.register(new ContainerInputAdapterDefinition('password', getContainerInputAdapterKey('password'), 80));
-        factory.register(new ContainerInputAdapterDefinition('email', getContainerInputAdapterKey('email'), 80));
-        factory.register(new ContainerInputAdapterDefinition('number', getContainerInputAdapterKey('number'), 80));
-        factory.register(new ContainerInputAdapterDefinition('url', getContainerInputAdapterKey('url'), 80));
-        factory.register(new ContainerInputAdapterDefinition('tel', getContainerInputAdapterKey('tel'), 80));
-        factory.register(new ContainerInputAdapterDefinition('date', getContainerInputAdapterKey('date'), 80));
-        factory.register(new ContainerInputAdapterDefinition('datetime-local', getContainerInputAdapterKey('datetime-local'), 80));
-        factory.register(new ContainerInputAdapterDefinition('month', getContainerInputAdapterKey('month'), 80));
-        factory.register(new ContainerInputAdapterDefinition('week', getContainerInputAdapterKey('week'), 80));
-        factory.register(new ContainerInputAdapterDefinition('time', getContainerInputAdapterKey('time'), 80));
-        factory.register(new ContainerCheckboxAdapterDefinition(getContainerInputAdapterKey('checkbox'), 80));
-        factory.register(new ContainerRadioButtonsAdapterDefinition(getContainerInputAdapterKey('radio'), 80));
-        factory.register(new ContainerFileInputAdapterDefinition(getContainerInputAdapterKey('file'), 80));
-        factory.register(new ContainerTextAreaAdapterDefinition(defaultContainerTextAreaAdapterKey, 80)); // adapterkey = 'container:textarea'
-        factory.register(new ContainerSelectAdapterDefinition(defaultContainerSelectAdapterKey, 80)); // adapterkey = 'container:select'
+        // wrapped around the native HTML form controls
+        // Default wrapped adapter keys look like this: 'wrapped:input:type'
+        factory.register(new WrappedInputAdapterDefinition('text', getWrappedInputAdapterKey('text'), 80));
+        factory.register(new WrappedInputAdapterDefinition('password', getWrappedInputAdapterKey('password'), 80));
+        factory.register(new WrappedInputAdapterDefinition('email', getWrappedInputAdapterKey('email'), 80));
+        factory.register(new WrappedInputAdapterDefinition('number', getWrappedInputAdapterKey('number'), 80));
+        factory.register(new WrappedInputAdapterDefinition('url', getWrappedInputAdapterKey('url'), 80));
+        factory.register(new WrappedInputAdapterDefinition('tel', getWrappedInputAdapterKey('tel'), 80));
+        factory.register(new WrappedInputAdapterDefinition('date', getWrappedInputAdapterKey('date'), 80));
+        factory.register(new WrappedInputAdapterDefinition('datetime-local', getWrappedInputAdapterKey('datetime-local'), 80));
+        factory.register(new WrappedInputAdapterDefinition('month', getWrappedInputAdapterKey('month'), 80));
+        factory.register(new WrappedInputAdapterDefinition('week', getWrappedInputAdapterKey('week'), 80));
+        factory.register(new WrappedInputAdapterDefinition('time', getWrappedInputAdapterKey('time'), 80));
+        factory.register(new WrappedCheckboxAdapterDefinition(getWrappedInputAdapterKey('checkbox'), 80));
+        factory.register(new WrappedRadioButtonsAdapterDefinition(getWrappedInputAdapterKey('radio'), 80));
+        factory.register(new WrappedFileInputAdapterDefinition(getWrappedInputAdapterKey('file'), 80));
+        factory.register(new WrappedTextAreaAdapterDefinition(defaultWrappedTextAreaAdapterKey, 80)); // adapterkey = 'wrapped:textarea'
+        factory.register(new WrappedSelectAdapterDefinition(defaultWrappedSelectAdapterKey, 80)); // adapterkey = 'wrapped:select'
     }    
     /**
      * Retrieves the editor adapter definition associated with the given adapter key, if any.

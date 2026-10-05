@@ -1,46 +1,46 @@
 /**
- * Provides an editor adapter definition for HTML input type='file' elements within a container tag.
+ * Provides an editor adapter definition for HTML input type='file' elements within the wrapper.
  * 
- * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/ContainerFileInputAdapterDefinition
+ * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/WrappedFileInputAdapterDefinition
  */
 
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
-import { ContainerInputAdapterDefinition } from './ContainerInputAdapterDefinition';
+import { WrappedInputAdapterDefinition } from './WrappedInputAdapterDefinition';
 import { FileInputAdapterDefinition } from './FileInputAdapterDefinition';
-import { defaultContainerFileInputPresentationName } from '../FieldPresentations/ContainerFileInputPresentation';
+import { defaultWrappedFileInputPresentationName } from '../FieldPresentations/WrappedFileInputPresentation';
 
 /**
  * Provides an editor adapter definition for HTML input type='file' elements
- * within a container tag.
+ * within the wrapper.
  * 
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="container">      <!-- this is the anchor -- >
+ * <div class="wrapped">      <!-- this is the anchor -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <input type="file" class="editor" />     <!-- the editor element -->
  * </div>
  * ```
- * Subclass to introduce the containerSelector value to ensure the container is optimally identified.
+ * Subclass to introduce the wrapperSelector value to ensure the wrapper is optimally identified.
  */
-export class ContainerFileInputAdapterDefinition extends ContainerInputAdapterDefinition
+export class WrappedFileInputAdapterDefinition extends WrappedInputAdapterDefinition
 {
 
     public constructor(adapterKey?: string, priority: number = 0,
-        containerSelector?: string | null, recommendedFieldPresentationName?: string | null)
+        wrapperSelector?: string | null, recommendedFieldPresentationName?: string | null)
     {
         super(
             'file',
             adapterKey,
             priority,
-            containerSelector,
+            wrapperSelector,
             recommendedFieldPresentationName
         );
     }
 
     override defaultFieldPresentationName(): string | null
     {
-        return defaultContainerFileInputPresentationName;
+        return defaultWrappedFileInputPresentationName;
     }    
 
     protected override createChildEditorDefinitionAdapter(): IEditorAdapterDefinition
