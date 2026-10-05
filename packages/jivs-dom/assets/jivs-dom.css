@@ -17,10 +17,13 @@
     --jivs-validated-color: green;
     --jivs-corrected-color: var(--jivs-validated-color);
 
+    --jivs-invalid-text-color: var(--jivs-invalid-color);
     --jivs-invalid-editor-border-color: var(--jivs-invalid-color);
-    --jivs-invalid-editor-color: var(--jivs-invalid-color);
+    --jivs-invalid-editor-color: var(--jivs-invalid-text-color);
     --jivs-invalid-editor-background-color: #fff4f4;
     --jivs-invalid-choice-editor-box-shadow: 0 0 0 2px var(--jivs-invalid-color);
+
+    --jivs-invalid-label-color: var(--jivs-invalid-text-color);
 
     --jivs-invalid-container-editor-border-color: var(--jivs-invalid-editor-border-color);
     --jivs-invalid-container-editor-color: var(--jivs-invalid-editor-color);
@@ -98,6 +101,16 @@
  *     color: var(--jivs-invalid-editor-color);
  * }
  */
+
+/*
+ * Field labels
+ *
+ * Label color is opt-in so applications retain control over their normal
+ * typography and validation emphasis.
+ */
+:where(.jivs-invalid-label) {
+    /* color: var(--jivs-invalid-label-color); */
+}
 
 /*
  * Contained native text-entry editors

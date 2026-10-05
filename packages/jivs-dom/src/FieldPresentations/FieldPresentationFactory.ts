@@ -22,6 +22,8 @@ import { ContainerSelectPresentation, defaultContainerSelectPresentationName } f
 import { ContainerTextAreaPresentation, defaultContainerTextAreaPresentationName } from './ContainerTextAreaPresentation';
 import { ContainerTextInputPresentation, defaultContainerTextInputPresentationName } from './ContainerTextInputPresentation';
 import { ContainerFileInputPresentation, defaultContainerFileInputPresentationName } from './ContainerFileInputPresentation';
+import { defaultLabelPresentationName, LabelPresentation } from './LabelPresentation';
+import { ElementRole } from '../Interfaces/Types';
 
 /**
  * Factory class for creating field presentations (implementations of IFieldPresentation)
@@ -68,6 +70,12 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         factory.register(defaultContainerSelectPresentationName, (element) => new ContainerSelectPresentation(element));
         factory.register(defaultContainerTextAreaPresentationName, (element) => new ContainerTextAreaPresentation(element));
         factory.register(defaultContainerFileInputPresentationName, (element) => new ContainerFileInputPresentation(element));
+
+        factory.register(defaultLabelPresentationName, (element) => new LabelPresentation(element));
+
+        // fallbacks for when no specific presentation is registered for an element role
+        factory.setDefaultPresentationName(ElementRole.editor, defaultTextInputPresentationName);
+        factory.setDefaultPresentationName(ElementRole.label, defaultLabelPresentationName);
 
     }
 }
