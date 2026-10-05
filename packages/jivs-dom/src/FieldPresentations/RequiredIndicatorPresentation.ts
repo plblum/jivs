@@ -1,0 +1,61 @@
+/**
+ * Provides a field presentation for an element, where the jivs-dom ElementRole is
+ * 'required'.
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/RequiredIndicatorPresentation
+ */
+
+import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
+import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+
+/**
+ * Presentation for HTML tags indicating required indicator fields.
+ * Typically they are an empty span tag with a specific CSS class to indicate the required status.
+ * Also typical is to include the textual content in the span tag, and the CSS class will style it accordingly.
+ * 
+ * This implementation can work either way, although our default style class expects an empty span tag with the appropriate CSS class.
+ * 
+ * Its default css classes are:
+ * - invalidClass: null
+ * - validatedClass: null
+ * - correctedClass: null
+ * - requiredClass: jivs-required-indicator
+ * - presentationClass: jivs-required
+ * 
+ * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.
+ */
+export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
+{
+    /**
+     * Constructor for the RequiredIndicatorPresentation class.
+     * @param element The HTML element used for the required indicator.
+     * @param options Configuration options for the field presentation, including CSS classes.
+     * Passing null explicitly disables the corresponding class, while omitting the option uses the 
+     * default supplied by this class or a derived class.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
+     */
+    constructor(element: HTMLElement,
+        options?: IsValidFieldPresentationOptions,
+        jivsElement?: IJivsDomElement | null
+    )
+    {
+        super(element, options, jivsElement);
+    }
+
+    protected override defaultInvalidClass(): string | null
+    {
+        return null;
+    }
+    protected override defaultRequiredClass(): string | null
+    {
+        return 'jivs-required-indicator';
+    }
+    protected override defaultPresentationClass(): string | null
+    {
+        return 'jivs-required';
+    }
+
+}
+/**
+ * For registering this presentation with the FieldPresentationFactory
+ */
+export const defaultRequiredIndicatorPresentationName = 'requiredIndicator';
