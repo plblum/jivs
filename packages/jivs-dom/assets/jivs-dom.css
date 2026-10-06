@@ -25,6 +25,9 @@
 
     --jivs-invalid-label-color: var(--jivs-invalid-text-color);
 
+    --jivs-invalid-field-container-outline-color: var(--jivs-invalid-color);
+    --jivs-invalid-field-container-background-color: var(--jivs-invalid-editor-background-color);
+
     --jivs-invalid-wrapped-editor-border-color: var(--jivs-invalid-editor-border-color);
     --jivs-invalid-wrapped-editor-color: var(--jivs-invalid-editor-color);
     --jivs-invalid-wrapped-editor-background-color: var(--jivs-invalid-editor-background-color);
@@ -32,6 +35,7 @@
     --jivs-invalid-wrapped-choice-editor-box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 
     --jivs-indicator-padding-inline: 0.25em;
+    --jivs-indicator-font-family: system-ui, 'Segoe UI Symbol', 'Apple Symbols', 'Noto Sans Symbols 2', sans-serif;
     --jivs-indicator-font-size: 1em;
     --jivs-indicator-font-weight: 700;
     --jivs-indicator-line-height: 1;
@@ -43,9 +47,9 @@
     --jivs-required-indicator-color: var(--jivs-required-color);
 
     /* '\2713' provides a lighter checkmark alternative. */
-    --jivs-validated-indicator-content: '\2714';
+    --jivs-validated-indicator-content: '\2714\FE0E';
     --jivs-validated-indicator-color: var(--jivs-validated-color);
-    --jivs-corrected-indicator-content: '\2714';
+    --jivs-corrected-indicator-content: '\2714\FE0E';
     --jivs-corrected-indicator-color: var(--jivs-corrected-color);
 
     /* Modern alternative that follows --jivs-invalid-color. Browser support
@@ -95,7 +99,7 @@
  * and is styled by their presentations.
  */
 :where(.jivs-invalid.jivs-editor-checkbox,
-        .jivs-invalid.jivs-editor-radiobuttons) {
+    .jivs-invalid.jivs-editor-radiobuttons) {
     box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 }
 
@@ -158,7 +162,7 @@
  * also marks unchecked controls, where accent-color may not be visible.
  */
 :where(.jivs-invalid.jivs-wrapped-editor-checkbox,
-        .jivs-invalid.jivs-wrapped-editor-radiobuttons) {
+    .jivs-invalid.jivs-wrapped-editor-radiobuttons) {
     color: var(--jivs-invalid-wrapped-editor-color);
 }
 
@@ -198,6 +202,17 @@
     /* color: var(--jivs-invalid-label-color); */
 }
 
+/*
+ * Apply invalid styling on .jivs-field-container
+ *
+ * Field-container styling is opt-in so applications can choose treatments
+ * appropriate to their layout. The outline example does not affect layout.
+ */
+:where(.jivs-invalid.jivs-field-container) {
+    /* outline: 2px solid var(--jivs-invalid-field-container-outline-color); */
+    /* background-color: var(--jivs-invalid-field-container-background-color); */
+}
+
 /*---- VALIDATION INDICATORS ------------
  *
  * Validation indicators include:
@@ -213,10 +228,26 @@
  * - 'jivs-corrected-indicator' - Assign to Presentation.correctedClass
  * - 'jivs-required-indicator' - Assign to Presentation.requiredClass - This is preassigned when role='required'
  */
+/*
+ * RequiredIndicatorPresentation assigns 'jivs-indicator' to the empty
+ * role='required' element. The reset prevents the element's tag styling from
+ * contributing its own box or typography; ::after supplies the visible indicator.
+ * This selector deliberately retains class specificity so it overrides tag rules.
+ */
+.jivs-indicator {
+    all: initial;
+}
+
+.jivs-indicator:not(.jivs-required-indicator,
+    .jivs-validated-indicator, .jivs-corrected-indicator) {
+    display: none;
+}
+
 :where(.jivs-required-indicator:not(.jivs-validated-indicator, .jivs-corrected-indicator),
     .jivs-validated-indicator, .jivs-corrected-indicator)::after {
     display: inline-block;
     padding-inline: var(--jivs-indicator-padding-inline);
+    font-family: var(--jivs-indicator-font-family);
     font-size: var(--jivs-indicator-font-size);
     font-weight: var(--jivs-indicator-font-weight);
     line-height: var(--jivs-indicator-line-height);
