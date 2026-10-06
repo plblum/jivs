@@ -128,10 +128,11 @@ export interface IEditorAdapterDefinition
      * attaching event handlers.
      * 
      * @param anchor The DOM element that contains the IJivsDomElement structure.
+     * @param valueHost The field value host associated with the editor.
      * @param eventName The name of the event to attach the handler to.
      * @param handler The event listener function to handle the specified event.
      */
-    attachEventHandler(anchor: IJivsDomElement, eventName: string, handler: EventListener): void;
+    attachEventHandler(anchor: IJivsDomElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void;
 
     /**
      * Creates a suitable ITextValueAdapter for the given value host together with both its Editor and Anchor elements.

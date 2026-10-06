@@ -225,9 +225,11 @@ export abstract class EditorAdapterDefinitionBase
      * the 'on' prefix (e.g., use 'click' instead of 'onclick').
      * @param handler The event listener function to handle the specified event.
      */
-    public attachEventHandler(anchor: IJivsDomElement, eventName: string, handler: EventListener): void
+    public attachEventHandler(anchor: IJivsDomElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void
     {
-        anchor.addEventListener(eventName, handler);
+        let editor = this.identifyEditor(valueHost, anchor);
+        editor.addEventListener(eventName, handler);
+
     }
     
     /**

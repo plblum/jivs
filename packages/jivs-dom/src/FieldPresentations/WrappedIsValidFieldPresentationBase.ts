@@ -95,16 +95,16 @@ export abstract class WrappedIsValidFieldPresentationBase<TElement extends HTMLE
      * @param options Configuration options for the field presentation, including CSS classes.
      * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
-     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
+     * @param anchor The Jivs DOM element associated with this field presentation, if any.
      */
     public constructor(
         element: TElement,
         options? : IsValidFieldPresentationOptions,
         // intentionally placed last because its usually used internally
-        jivsElement?: IJivsDomElement | null
+        anchor?: IJivsDomElement | null
     )
     {
-        super(element, options, jivsElement);
+        super(element, options, anchor);
     }
 
 }

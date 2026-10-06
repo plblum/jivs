@@ -21,9 +21,9 @@ export abstract class ValueAdapterBase<TElement extends HTMLElement = HTMLElemen
     extends AdapterBase<TElement>
 {
 
-    public constructor(element: TElement, jivsElement: IJivsDomElement | null)
+    public constructor(element: TElement, anchor: IJivsDomElement | null)
     {
-        super(element, jivsElement);
+        super(element, anchor);
     }
 
     /**

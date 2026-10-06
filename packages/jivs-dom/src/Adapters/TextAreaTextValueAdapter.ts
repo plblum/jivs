@@ -19,12 +19,12 @@ export class TextAreaTextValueAdapter
     /**
      * Constructor
      * @param element - the element where the value is found
-     * @param jivsElement - the element that retains the IJivsDomElement structure.
+     * @param anchor - the element that retains the IJivsDomElement structure.
      * It is usually the same as element. Pass null to declare element as its value.
      */
-    public constructor(element: HTMLTextAreaElement, jivsElement: IJivsDomElement | null = null)
+    public constructor(element: HTMLTextAreaElement, anchor: IJivsDomElement | null = null)
     {
-        super(element, jivsElement);
+        super(element, anchor);
     }
     public readTextValue(): string {
         return this.element.value;

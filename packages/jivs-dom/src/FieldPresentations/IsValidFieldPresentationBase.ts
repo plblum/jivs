@@ -53,15 +53,16 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      * @param options Configuration options for the field presentation.
      * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses 
      * the default supplied by this class or a derived class.
-     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
+     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * When null, it indicates that element itself is used as the Jivs DOM element.
      */
     constructor(element: TElement,
         options? : IsValidFieldPresentationOptions,
         // intentionally last as its usually called from internal code
-        jivsElement: IJivsDomElement | null = null
+        anchor: IJivsDomElement | null = null
     )
     {
-        super(element, jivsElement);
+        super(element, anchor);
         this._invalidClass = (options?.invalidClass != null) ? options.invalidClass : this.defaultInvalidClass(); // options.invalidClass treats null differently: use the default, not disable
         this._validatedClass = (options?.validatedClass !== undefined) ? options.validatedClass : this.defaultValidatedClass();
         this._correctedClass = (options?.correctedClass !== undefined) ? options.correctedClass : this.defaultCorrectedClass();

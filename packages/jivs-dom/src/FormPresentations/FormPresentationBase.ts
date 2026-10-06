@@ -31,9 +31,9 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
         return this._respondToWildcardGroup;
     }
 
-    public constructor(element: TElement, jivsElement: IJivsDomElement | null, respondToWildcardGroup: boolean = false)
+    public constructor(element: TElement, anchor: IJivsDomElement | null, respondToWildcardGroup: boolean = false)
     {
-        super(element, jivsElement);
+        super(element, anchor);
         this._respondToWildcardGroup = respondToWildcardGroup;
     }
 

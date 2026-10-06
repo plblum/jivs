@@ -24,10 +24,15 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     extends AdapterBase<TElement>
     implements IFieldPresentation
 {
-
-    public constructor(element: TElement, jivsElement: IJivsDomElement | null)
+    /**
+     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsDomElement wrapper.
+     * @param element The DOM element that this adapter is associated with.
+     * @param anchor The element containing the IJivsDomElement wrapper.
+     * It is often the same as the element itself.
+     */
+    public constructor(element: TElement, anchor: IJivsDomElement | null)
     {
-        super(element, jivsElement);
+        super(element, anchor);
     }
 
     /**

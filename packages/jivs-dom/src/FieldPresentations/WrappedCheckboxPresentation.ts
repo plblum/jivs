@@ -45,10 +45,10 @@ export class WrappedCheckboxPresentation extends WrappedIsValidFieldPresentation
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        jivsElement?: IJivsDomElement | null
+        anchor?: IJivsDomElement | null
     )
     {
-        super(element, options, jivsElement);
+        super(element, options, anchor);
     }
 
     protected override defaultPresentationClass(): string | null

@@ -42,11 +42,11 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
      * @param options Configuration options for the field presentation, including CSS classes.
      * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
-     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
+     * @param anchor The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(radioButton: HTMLElement,
         options?: RadioButtonsFieldPresentationOptions,
-        jivsElement?: IJivsDomElement | null
+        anchor?: IJivsDomElement | null
     )
     {
         super(
@@ -55,7 +55,7 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
                 invalidClass: options?.invalidClass,
                 presentationClass: options?.presentationClass
             },
-            jivsElement
+            anchor
         );
         // not used for radio buttons presentation:
         this.correctedClass = null;

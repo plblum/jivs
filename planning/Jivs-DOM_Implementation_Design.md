@@ -1729,7 +1729,7 @@ abstract class FieldPresentationBase<
 > implements IFieldPresentation {
 
     public constructor(
-        element: TElement, jivsElement: IJivsDomElement
+        element: TElement, anchor: IJivsDomElement
     ) {
     }
 
