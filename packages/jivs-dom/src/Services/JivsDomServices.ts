@@ -228,35 +228,23 @@ export class JivsDomServices extends ServiceWithAccessorBase
     }
 
     /**
-     * Helper to resolve the field element based on the FieldValueHost.
+     * Helper to resolve the field element based on the FieldValueHost and role.
      * 
-     * Returns an HTML element representing the resolved field element, or null if not found.
+     * Returns an array of HTML elements representing the resolved field elements, or empty array if none are found.
      * 
-     * @param root The root HTMLElement to search within. If null, it uses resolveContainerElement().
      * @param valueHost The field value host associated with the field element. 
      * It specifies which field element to resolve within the root element.
      * @param role The role of the element, either as an ElementRole or a string.
-     * @param elementIdentifierTemplate Optional template to identify the element.
+     * @returns An array of HTML elements representing the resolved field elements, or empty array if none are found.
      */
-    public resolveFieldElement(root: HTMLElement | null, valueHost: IFieldValueHost,
-        role: ElementRole | string, elementIdentifierTemplate?: string): HTMLElement | null
+    public resolveFieldElement(valueHost: IFieldValueHost, role: ElementRole | string): HTMLElement[]
     {
         assertNotNull(valueHost, 'valueHost');
-        if (!root) {
-            root = this.resolveContainerElement(valueHost.valueHostsManager);
-        }
-
-        const elementIdentifier = valueHost.getElementIdentifier(elementIdentifierTemplate);
-        const element = root.querySelector(elementIdentifier);
-        if (!element) {
-            this.loggingFacade.log(LoggingLevel.Warn, 
-                facade => facade.prepareLogDetails(
-                    `Field element not found for identifier: ${ elementIdentifier }`,
-                    null, valueHost, this, elementIdentifier));
-        }
-        return element instanceof HTMLElement ? element : null;
+        const elementIdentifier = valueHost.getElementIdentifier();
+        const elementRegistry = this.getElementRegistry(valueHost.valueHostsManager);
+        return elementRegistry.getElementsByRole(role, elementIdentifier);
     }
-
+    
     /**
      * Retrieves the element registry associated with the specified ValueHostsManager instance.
      * ValueHostsManager retains it in metadata under the key 'elementRegistry'.

@@ -216,6 +216,21 @@ export abstract class EditorAdapterDefinitionBase
         editor: HTMLElement, anchor: IJivsDomElement, options: EditorInstallOptions): void;
 
     /**
+     * Attaches the handler to the widget specific event listener system.
+     * Our base class implements the DOM addEventListener mechanism for 
+     * attaching event handlers.
+     * 
+     * @param anchor The DOM element that contains the IJivsDomElement structure.
+     * @param eventName The name of the event to attach the handler to. Do not include
+     * the 'on' prefix (e.g., use 'click' instead of 'onclick').
+     * @param handler The event listener function to handle the specified event.
+     */
+    public attachEventHandler(anchor: IJivsDomElement, eventName: string, handler: EventListener): void
+    {
+        anchor.addEventListener(eventName, handler);
+    }
+    
+    /**
      * Provides a new instance of the TextValueAdapter to assign to 
      * IJivsDomElement.jivsTextValueAdapter.
      * Leave null if the editor does not support it.

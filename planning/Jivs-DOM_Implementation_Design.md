@@ -1920,70 +1920,79 @@ If factory resolution, presentation creation, or the initial `apply()` call thro
 Replacing the DOM element creates a new installation lifetime. The replacement element begins with both `jivsFieldPresentation` and `jivsAriaValidationStateUpdater` set to `undefined` and must be installed separately.
 
 ### Built-in Field Presentations
-> This section is a work in progress. Much of it is based on conversations that are unfinished. We'll be returning to it in a separate chat.
-
 `jivs-dom` supplies field presentations for common validation visualizations. Applications can replace their registrations, select another presentation explicitly, or derive from the exported base classes.
 
-Presentation code owns visual content and CSS state. A presentation may supply specialized ARIA updater objects when its generated HTML requires them, but the presentation itself does not assign ARIA attributes through its `apply()` method. All ARIA mutation remains the responsibility of registered or specialized updaters coordinated by `IAriaService`.
-
-The initial presentation CSS will be supplied in one file:
+Presentation code owns visual content and CSS state. The initial presentation CSS will be supplied in one file:
 
 ```text
 assets/jivs-dom.css
 ```
 
-The initial CSS definitions will be designed separately after the presentation contracts are finalized.
+#### Presentations for non-error roles
 
-#### Invalid-State Presentations
+Editors, labels, required indicators, and field containers all benefit from these values supplied by the apply function:
 
-Editors, labels, and field containers use separate presentations because their visual treatments are substantially different.
+- ValueHostValidationState.isValid - when false, indicates invalid.
+- ValueHostValidationState.status = ValidationStatus.Valid - indicates "validated"
+- ValueHostValidationState.corrected = true - indicates "corrected"
+- FieldValueHost.required = true - indicates "required"
 
-| Role      | Presentation name  | State class              |
-| --------- | ------------------ | ------------------------ |
-| Editor    | `invalidEditor`    | `jivs-invalid-editor`    |
-| Label     | `invalidLabel`     | `jivs-invalid-label`     |
-| Container | `invalidContainer` | `jivs-invalid-container` |
+The IsValidFieldPresentationBase class is built to handle these 4 states. It offers style sheet class name properties for each, plus one for the presentation itself.
+- invalidClass - isValid=false
+- validatedClass - ValidationStatus.Valid
+- correctedClass - corrected = true
+- requiredClass - required = true
+- presentationClass - for the Presentation object.
 
-Each presentation toggles its state class when:
+IsValidFieldPresentationBase is built around changing the style sheet classes of the presentation element. Each time apply() is called, it removes then adds to build a class list.
+- presentationClass is always added if assigned
+- requiredClass is always added if assigned and required = true
+- The remaining 3 are applied using a rule to select at most one of them:
+    - isValid=false always picks invalidClass. The rest are ignored
+    - corrected=true + correctedClass assigned uses correctedClass. validatedClass is ignored.
+    - ValidationState.Valid + validatedClass assigned uses validatedClass
+
+jivs-dom.css supplies these style sheet class names to use with the class properties on IsValidFieldPresentationBase:
+- `.jivs-invalid`
+- `.jivs-validated`
+- `.jivs-corrected`
+- `.jivs-indicator` (for required indicator)
+
+Implementations of IsValidFieldPresentationBase have these responsibilities:
+- Provide the value for presentationClass through defaultPresentationClass(). This name must be specific to the presentation.
+- Provide either the default value or null for not used for each of the invalidClass, validatedClass, correctedClass, and requiredClass in their respective default() functions.
+- Update jivs-dom.css with any specific implementation for those style classes they're using.
+
+WrappedIsValidFieldPresentationBase inherits IsValidFieldPresentationBase to cover a use case where you have an Editor within a containing tag called the "Wrapper", where the wrapper element is consider part of the editor widget.
 
 ```ts
-state.isValid === false
+<tag class='editorwrapper'>
+   <input />
+</tag>
 ```
+It directs presentation to the wrapper element, not the editor element, which means the style class names are assigned to the wrapper.
 
-They share an exported invalid-state base class that accepts or otherwise defines the class to toggle. The base class is part of the public extensibility API so applications can create equivalent presentations for custom roles.
+|FieldPresentation|Target|PresentationName|Other CSS|
+|-----------------|------|----------------|---------|
+|IsValidFieldPresentationBase|n/a|n/a|invalidClass|
+|TextInputPresentation|Input editors|jivs-editor-input|invalidClass|
+|CheckboxPresentation|Input type='checkbox'|jivs-editor-checkbox|invalidClass|
+|RadioButtonsPresentation|Input type='radio'|jivs-editor-radiobuttons|invalidClass|
+|FileInputPresentation|Input type='file'|jivs-editor-file-input|invalidClass|
+|TextAreaPresentation|textarea|jivs-editor-textarea|invalidClass|
+|SelectPresentation|select|jivs-editor-select|invalidClass|
+|WrappedIsValidFieldPresentationBase|n/a|n/a|invalidClass|
+|WrappedTextInputPresentation|Input editors|jivs-editor-input|invalidClass|
+|WrappedCheckboxPresentation|Input type='checkbox'|jivs-editor-checkbox|invalidClass|
+|WrappedRadioButtonsPresentation|Input type='radio'|jivs-editor-radiobuttons|invalidClass|
+|WrappedFileInputPresentation|Input type='file'|jivs-editor-file-input|invalidClass|
+|WrappedTextAreaPresentation|textarea|jivs-editor-textarea|invalidClass|
+|WrappedSelectPresentation|select|jivs-editor-select|invalidClass|
+|LabelPresentation|role=label|jivs-label|invalidClass|
+|RequiredIndicatorPresentation|role=required|jivs-indicator|requiredClass|
+|FieldContainerPresentation|role=container|jivs-field-container|invalidClass|
 
-#### Required Indicator Presentation
 
-A Required Indicator is installed as an `IFieldPresentation`. Its `apply()` implementation toggles the `jivs-required` class according to:
-
-```ts
-valueHost.required
-```
-
-The presentation assigns the persistent `jivs-required-indicator` class to identify its element without depending on a particular DOM discovery convention. It does not assign a visible `display` value. CSS hides an inactive Required Indicator:
-
-```css
-.jivs-required-indicator:not(.jivs-required) {
-    display: none;
-}
-```
-
-Separate CSS applies the desired appearance while the indicator is active:
-
-```css
-.jivs-required-indicator.jivs-required {
-    /* visual styling */
-}
-```
-
-This separates two CSS responsibilities:
-
-* visibility when the indicator is inactive;
-* appearance when the indicator is active.
-
-The active rule should not assign `display`, because `jivs-dom` cannot predict whether the application expects the element to use inline, inline-block, flex, or another layout mode.
-
-The presentation does not create or replace the indicator’s content. The application may supply `*`, the word “Required,” an icon, or other content in its markup.
 
 #### Error Display Direction
 
@@ -3899,6 +3908,8 @@ getValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
 getFieldPresentationElements(elementIdentifier: string): IJivsDomElement[];
 
 getFormPresentationElements(): IJivsDomElement[];
+
+getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[];
 ```
 
 Results preserve Registry order. Adapter queries return installed editor anchors. The field-presentation query includes editor anchors with Field Presentations and excludes `aria-error` elements. Dispatchers still check the installed property before invoking it.
@@ -4187,10 +4198,8 @@ interface IJivsDomServices
     ): HTMLElement | null;
 
     resolveFieldElement(
-        root: HTMLElement | null,
         valueHost: IFieldValueHost,
-        role: ElementRole | string,
-        elementIdentifierTemplate?: string
+        role: ElementRole | string
     ): HTMLElement | null;
 }
 ```
@@ -4421,10 +4430,8 @@ interface IJivsDomServices {
     ): HTMLElement | null;
 
     resolveFieldElement(
-        root: HTMLElement | null,
         valueHost: IFieldValueHost,
-        role: ElementRole | string,
-        elementIdentifierTemplate?: string
+        role: ElementRole | string
     ): HTMLElement | null;
 }
 ```

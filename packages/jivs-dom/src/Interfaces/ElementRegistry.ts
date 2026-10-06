@@ -107,6 +107,14 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
     getFormPresentationElements(): IJivsDomElement[];
 
     /**
+     * General purpose query applying a required role and optional element identifier filter.
+     * @param role The role to filter elements by.
+     * @param elementIdentifier The optional element identifier to further filter elements by. If null, all elements with the specified role are returned.
+     * @returns An array of DOM elements corresponding to the specified role and optional element identifier. It may return an empty list.
+     */
+    getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[];
+
+    /**
      * Query designed to retrieve these specific roles for a field element
      * given a matching Element Identifier.
      * - editor

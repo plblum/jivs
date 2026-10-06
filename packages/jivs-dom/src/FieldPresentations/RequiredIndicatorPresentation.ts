@@ -20,7 +20,7 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * - invalidClass: null
  * - validatedClass: null
  * - correctedClass: null
- * - requiredClass: jivs-required-indicator-indicator
+ * - requiredClass: jivs-required-indicator
  * - presentationClass: jivs-indicator
  * 
  * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.

@@ -166,7 +166,9 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
         if (!entry) return [];
         let elements: IJivsDomElement[] = [];
-        for (let record of entry.records) { // already kind='field'
+        for (let record of entry.records) // already kind='field'
+        {
+            if (record.element.jivsTextValueAdapter)
                 elements.push(record.element);
         }
         return elements;
@@ -181,7 +183,17 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      */
     public getValueAdapterElements(elementIdentifier: string): IJivsDomElement[]
     {
-        return this.getTextValueAdapterElements(elementIdentifier); // same!
+        // optimized query with entriesByElementIdentifier
+        let elementIdentifierLC = elementIdentifier.toLowerCase();
+        let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
+        if (!entry) return [];
+        let elements: IJivsDomElement[] = [];
+        for (let record of entry.records) // already kind='field'
+        {
+            if (record.element.jivsValueAdapter)
+                elements.push(record.element);
+        }
+        return elements;
     }
 
     /**
@@ -223,6 +235,34 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         }
         return elements;
     }
+    
+    /**
+     * General purpose query applying a required role and optional element identifier filter.
+     * @param role The role to filter elements by.
+     * @param elementIdentifier The optional element identifier to further filter elements by. If null, all elements with the specified role are returned.
+     * @returns An array of DOM elements corresponding to the specified role and optional element identifier. It may return an empty list.
+     */
+    public getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[]
+    {
+        let elements: IJivsDomElement[] = [];
+        if (elementIdentifier) {
+            let elementIdentifierLC = elementIdentifier.toLowerCase();
+            let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
+            if (!entry) return [];
+            for (let record of entry.records) {
+                if (record.role === role) {
+                    elements.push(record.element);
+                }
+            }
+        } else {
+            for (let record of this.records) {
+                if (record.role === role) {
+                    elements.push(record.element);
+                }
+            }
+        }
+        return elements;
+    }   
 
     /**
      * Query designed to retrieve these specific roles for a field element
@@ -260,7 +300,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
                     }
                     break;
                 case ElementRole.editor:
-                    result.editorAnchor = record.element;
+                    result.editorAnchor = (<IEditorElementRegistryRecord>record).anchorElement;
                     break;
             }
         }

@@ -221,8 +221,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      */
     protected applyToElement(element: HTMLElement, valueHost: IFieldValueHost, state: ValueHostValidationState): void
     {
-        if (this.requiredClass !== null)
-            element.classList.remove(this.requiredClass);
         if (this.invalidClass !== null)
             element.classList.remove(this.invalidClass);
         if (this.validatedClass !== null)
@@ -230,8 +228,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
         if (this.correctedClass !== null)
             element.classList.remove(this.correctedClass);
 
-        if (this.presentationClass !== null)
-            element.classList.add(this.presentationClass);
 
         // ordering of these 3 is intentional: invalid, corrected, validated
         if (!state.isValid)
@@ -249,6 +245,8 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
                 element.classList.add(this.validatedClass);
         }
 
+        if (this.presentationClass !== null)
+            element.classList.add(this.presentationClass);
         if (valueHost.required && this.requiredClass !== null)
             element.classList.add(this.requiredClass);
 

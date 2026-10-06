@@ -119,18 +119,16 @@ export interface IJivsDomServices
     resolveContainerElement(valueHostsManager: IValueHostsManager): HTMLElement;
 
     /**
-     * Helper to resolve the field element based on the FieldValueHost.
+     * Helper to resolve the field element based on the FieldValueHost and role.
      * 
-     * Returns an HTML element representing the resolved field element, or null if not found.
+     * Returns an array of HTML elements representing the resolved field elements, or empty array if none are found.
      * 
-     * @param root The root HTMLElement to search within. If null, it uses resolveContainerElement().
      * @param valueHost The field value host associated with the field element. 
      * It specifies which field element to resolve within the root element.
      * @param role The role of the element, either as an ElementRole or a string.
-     * @param elementIdentifierTemplate Optional template to identify the element.
+     * @returns An array of HTML elements representing the resolved field elements, or empty array if none are found.
      */
-    resolveFieldElement(root: HTMLElement | null, valueHost: IFieldValueHost,
-        role: ElementRole | string, elementIdentifierTemplate?: string): HTMLElement | null;
+    resolveFieldElement(valueHost: IFieldValueHost, role: ElementRole | string): HTMLElement[];
     
     /**
      * Retrieves the element registry associated with the specified ValueHostsManager instance.
