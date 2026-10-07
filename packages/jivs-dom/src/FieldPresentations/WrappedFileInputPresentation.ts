@@ -20,7 +20,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * by adding visual cues to the wrapper rather than the input type='file' element itself.
  * 
  * ```css
- * .jivs-required.jivs-wrapped-editor-file-input::after {
+ * .jivs-required.jivs-wrapped-editor.jivs-wrapped-editor-file-input::after {
  *     content: '*';
  *     color: red;
  * }
@@ -31,7 +31,8 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: inherited 'jivs-wrapped-editor-file-input'
+ * - variantClass: null
+ * - persistent classes: 'jivs-wrapped-editor-file-input' + inherited
  * 
  * We supply these CSS classes to activate the validated, corrected and required visual cues:
  * - validatedClass: jivs-validated-indicator
@@ -51,9 +52,10 @@ export class WrappedFileInputPresentation extends WrappedIsValidFieldPresentatio
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-wrapped-editor-file-input';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-wrapped-editor-file-input');
     }
 }
 

@@ -31,7 +31,8 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-wrapped-editor-select
+ * - variantClass: null
+ * - persistent classes: 'jivs-wrapped-editor-select' + inherited
  * 
  * We supply these CSS classes to activate the validated, corrected and required visual cues:
  * - validatedClass: jivs-validated-indicator
@@ -51,10 +52,11 @@ export class WrappedSelectPresentation extends WrappedIsValidFieldPresentationBa
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-wrapped-editor-select';
-    }
+        super.gatherPersistentClasses(list);
+        list.push('jivs-wrapped-editor-select');
+    }    
 }
 
 /**

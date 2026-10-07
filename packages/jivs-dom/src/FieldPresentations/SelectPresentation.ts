@@ -13,7 +13,8 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-select
+ * - variationClass: null
+ * - persistent classes: 'jivs-editor-select' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'selectEditor'.
  * SelectAdapterDefinition should use this presentation name: 'selectEditor'.
@@ -36,11 +37,11 @@ export class SelectPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-editor-select';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-select');
     }
-
 }
 /**
  * For registering this presentation with the FieldPresentationFactory

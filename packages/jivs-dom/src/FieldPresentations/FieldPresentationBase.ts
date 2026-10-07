@@ -30,9 +30,12 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * @param anchor The element containing the IJivsDomElement wrapper.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, anchor: IJivsDomElement | null)
+    public constructor(element: TElement, options?: FieldPresentationBaseOptions, anchor?: IJivsDomElement | null)
     {
-        super(element, anchor);
+        super(element, anchor ?? null);
+        this._variationClass = (options?.variationClass !== undefined) ?
+            options.variationClass :
+            this.defaultVariationClass();
     }
 
     /**
@@ -57,11 +60,50 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     }
 
     /**
+     * A class to add to the presentation element regardless of its state.
+     * If assigned, it will be affixed upon initialization and not later removed.
+     * 
+     * Use to select a different CSS class for the presentation element.
+     * Defaults to null.
+     */
+    protected get variationClass(): string | null
+    {
+        return this._variationClass;
+    }
+    private _variationClass: string | null;
+    protected defaultVariationClass(): string | null
+    {
+        return null;
+    }
+
+    /**
      * Initializes the field presentation. 
      * This method should be implemented by derived classes to perform any necessary setup logic.
      * The default implementation does nothing.
      */
     public init(valueHostsManager: IValueHostsManager): void
+    {
+        let persistentClasses: string[] = [];
+        this.gatherPersistentClasses(persistentClasses);
+        // placed outside of gatherPersistentClasses to ensure it is always added last
+        // for visual appeal only.
+        if (this.variationClass)
+        {
+            persistentClasses.push(this.variationClass);
+        }        
+        for (let cls of persistentClasses)
+        {
+            this.presentationElement.classList.add(cls);
+        }        
+    }
+
+    /**
+     * Gathers all persistent classes that should be applied to the presentation element.
+     * Override this method to add more persistent classes as needed but
+     * be sure to call the base implementation to include the default persistent classes.
+     * @param list 
+     */
+    protected gatherPersistentClasses(list: string[]): void
     {
     }
 
@@ -94,4 +136,17 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
         return null;
     }
 
+}
+
+/**
+ * Options for configuring the base field presentation.
+ */
+export interface FieldPresentationBaseOptions
+{
+    /**
+     * The CSS class to add to the presentation element regardless of its state.
+     * If assigned, it will be affixed upon initialization and not later removed.
+     * Defaults to null.
+     */
+    variationClass?: string | null;
 }

@@ -29,7 +29,8 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: do not use
  * - correctedClass: do not use
  * - requiredClass: do not use
- * - presentationClass: jivs-editor-radiobuttons
+ * - variationClass: null
+ * - persistent classes: 'jivs-editor-radiobuttons' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'radiobuttonsEditor'.
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
@@ -53,7 +54,7 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
             radioButton,
             {
                 invalidClass: options?.invalidClass,
-                presentationClass: options?.presentationClass
+                variationClass: options?.presentationClass
             },
             anchor
         );
@@ -63,11 +64,11 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
         this.validatedClass = null;
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-editor-radiobuttons';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-radiobuttons');
     }
-
     /**
      * Adds or removes the invalidClass on all radio buttons in the same group.
      * Adds presentationClass to all radio buttons in the same group if supplied.

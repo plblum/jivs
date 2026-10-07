@@ -5,7 +5,7 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { FieldPresentationBase } from './FieldPresentationBase';
+import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
 
 /**
  * Base class for error message display Field presentations.
@@ -67,14 +67,15 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
      * @param variationClass The CSS class for the presentation element.
      * @param hasIssuesClass The CSS class applied when issues are found.
      */
-    constructor(element: HTMLElement, anchor: IJivsDomElement,
-        issuesFoundDisplay: IIssuesFoundDisplay, variationClass?: string, hasIssuesClass?: string)
+    constructor(element: HTMLElement, 
+        issuesFoundDisplay: IIssuesFoundDisplay,
+        options?: ErrorMessageDisplayPresentationBaseOptions,
+        anchor?: IJivsDomElement | null)
     {
-        super(element, anchor);
+        super(element, options, anchor);
         assertNotNull(issuesFoundDisplay, 'issuesFoundDisplay');
         this._issuesFoundDisplay = issuesFoundDisplay;
-        this._variationClass = variationClass ?? this.defaultVariationClass();
-        this._hasIssuesClass = hasIssuesClass ?? this.defaultHasIssuesClass();
+        this._hasIssuesClass = options?.hasIssuesClass ?? this.defaultHasIssuesClass();
     }
 
     /**
@@ -86,22 +87,6 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
         return this._issuesFoundDisplay;
     }
     private _issuesFoundDisplay: IIssuesFoundDisplay;
-
-    /**
-     * Each presentation class adds "presentation class names" to the presentation element
-     * that are always present. Those names are fixed. You can add new presentation classes
-     * to provide variations of the presentation using this property.
-     * Defaults to null.
-     */
-    public get variationClass(): string | null
-    {
-        return this._variationClass;
-    }
-    private _variationClass: string | null;
-    protected defaultVariationClass(): string | null
-    {
-        return null;
-    }
     
     /**
      * A style class name that is applied when issues are found.
@@ -129,28 +114,16 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     public override init(valueHostsManager: IValueHostsManager): void
     {
         super.init(valueHostsManager);
-        let presentationClasses: string[] = [];
-        this.gatherPersistentClasses(presentationClasses);
-        for (let cls of presentationClasses)
-        {
-            this.presentationElement.classList.add(cls);
-        }
         this.issuesFoundDisplay.setDomServices(valueHostsManager.services.domServices);        
     }
 
     /**
-     * Gathers all persistent classes that should be applied to the presentation element.
-     * Override this method to add more persistent classes as needed but
-     * be sure to call the base implementation to include the default persistent classes.
-     * @param list 
+     * @param list - adds 'jivs-error-message-display' to the list of persistent classes.
      */
-    protected gatherPersistentClasses(list: string[]): void
+    protected override gatherPersistentClasses(list: string[]): void
     {
+        super.gatherPersistentClasses(list);
         list.push('jivs-error-message-display');
-        if (this.variationClass)
-        {
-            list.push(this.variationClass);
-        }
     }
 
     /**
@@ -219,4 +192,14 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     {
     }
 
+}
+
+export interface ErrorMessageDisplayPresentationBaseOptions extends FieldPresentationBaseOptions
+{
+    /**
+     * The CSS class to add to the presentation element when issues are found.
+     * If assigned, it will be affixed upon initialization and not later removed.
+     * If not assigned, 'jivs-has-issues' will be used as the default class.
+     */
+    hasIssuesClass?: string;
 }

@@ -2,17 +2,19 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { ErrorMessageDisplayPresentationBase } from './ErrorMessageDisplayPresentationBase';
+import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 /**
  * A Field Presentation class for displaying inline error messages, which means
  * the container itself contains the error message content.
  */
 export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPresentationBase
 {
-    constructor(element: HTMLElement, anchor: IJivsDomElement,
-        issuesFoundDisplay: IIssuesFoundDisplay, variationClass?: string, hasIssuesClass?: string)
+    constructor(element: HTMLElement,
+        issuesFoundDisplay: IIssuesFoundDisplay,
+        options?: ErrorMessageDisplayPresentationBaseOptions,
+        anchor?: IJivsDomElement | null)
     {
-        super(element, anchor, issuesFoundDisplay, variationClass, hasIssuesClass);
+        super(element, issuesFoundDisplay, options, anchor);
     }
 
     protected override gatherPersistentClasses(list: string[]): void

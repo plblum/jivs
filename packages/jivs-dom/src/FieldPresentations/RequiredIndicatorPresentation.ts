@@ -21,7 +21,8 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: jivs-required-indicator
- * - presentationClass: jivs-indicator
+ * - variationClass: null
+ * - persistent classes: 'jivs-indicator' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.
  */
@@ -51,11 +52,12 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
     {
         return 'jivs-required-indicator';
     }
-    protected override defaultPresentationClass(): string | null
-    {
-        return 'jivs-indicator';
-    }
 
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-indicator');
+    }
     override getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
         return new RequiredIndicatorAriaStaticUpdater();

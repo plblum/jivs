@@ -14,7 +14,8 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-checkbox
+ * - variationClass: null
+ * - persistent classes: 'jivs-editor-checkbox' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'checkboxEditor'.
  * CheckboxAdapterDefinition should use this presentation name: 'checkboxEditor'.
@@ -37,9 +38,10 @@ export class CheckboxPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-editor-checkbox';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-checkbox');
     }
 
 }

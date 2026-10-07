@@ -14,7 +14,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { FieldPresentationBase } from './FieldPresentationBase';
+import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
@@ -62,39 +62,13 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
         anchor: IJivsDomElement | null = null
     )
     {
-        super(element, anchor);
+        super(element, options, anchor);
         this._invalidClass = (options?.invalidClass != null) ? options.invalidClass : this.defaultInvalidClass(); // options.invalidClass treats null differently: use the default, not disable
         this._validatedClass = (options?.validatedClass !== undefined) ? options.validatedClass : this.defaultValidatedClass();
         this._correctedClass = (options?.correctedClass !== undefined) ? options.correctedClass : this.defaultCorrectedClass();
         this._requiredClass = (options?.requiredClass !== undefined) ? options.requiredClass : this.defaultRequiredClass();
-        this._presentationClass = (options?.presentationClass !== undefined) ? options.presentationClass : this.defaultPresentationClass();
     }
-    /**
-     * A stable CSS class added every time apply() runs, regardless of the
-     * field's required or validation state.
-     *
-     * Use it to identify the presentation element, establish neutral layout,
-     * integrate with an application's design system, or provide a stable
-     * selector for rules using :has().
-     *
-     * Leave null when the presentation does not need a stable class.
-     * 
-     * Override defaultPresentationClass in a derived class to provide a default
-     * CSS class for the presentation element. This class has a default of null.
-     */
-    public get presentationClass(): string | null
-    {
-        if (this._presentationClass === undefined) {
-            this._presentationClass = this.defaultPresentationClass();
-        }
-        return this._presentationClass;
-    }
-    public set presentationClass(value: string | null) {
-            this._presentationClass = value;
-    }
-    private _presentationClass: string | null | undefined;
-    protected abstract defaultPresentationClass(): string | null;
-
+    
     /**
      * CSS class added when state.isValid is false.
      *
@@ -246,15 +220,15 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
                 element.classList.add(this.validatedClass);
         }
 
-        if (this.presentationClass !== null)
-            element.classList.add(this.presentationClass);
+        if (this.variationClass !== null)
+            element.classList.add(this.variationClass);
         if (valueHost.required && this.requiredClass !== null)
             element.classList.add(this.requiredClass);
 
     }    
 }
 
-export interface IsValidFieldPresentationOptions
+export interface IsValidFieldPresentationOptions extends FieldPresentationBaseOptions
 {
 
     /**
@@ -304,15 +278,4 @@ export interface IsValidFieldPresentationOptions
      * fields.
      */
     requiredClass?: string | null;    
-    /**
-     * A stable CSS class added every time apply() runs, regardless of the
-     * field's required or validation state.
-     *
-     * Use it to identify the presentation element, establish neutral layout,
-     * integrate with an application's design system, or provide a stable
-     * selector for rules using :has().
-     *
-     * Leave null when the presentation does not need a stable class.
-     */
-    presentationClass?: string | null;
 }

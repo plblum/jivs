@@ -13,7 +13,8 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-textarea
+ * - variationClass: null
+ * - persistent classes: 'jivs-editor-textarea' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'textareaEditor'.
  * TextAreaAdapterDefinition should use this presentation name: 'textareaEditor'.
@@ -36,11 +37,11 @@ export class TextAreaPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-editor-textarea';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-textarea');
     }
-
 }
 /**
  * For registering this presentation with the FieldPresentationFactory

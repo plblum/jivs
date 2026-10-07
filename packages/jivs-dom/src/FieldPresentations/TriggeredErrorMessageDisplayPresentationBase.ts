@@ -4,7 +4,7 @@ import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { ErrorMessageDisplayPresentationBase } from './ErrorMessageDisplayPresentationBase';
+import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
 
 /**
@@ -22,14 +22,15 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
 export abstract class TriggeredErrorMessageDisplayPresentationBase extends ErrorMessageDisplayPresentationBase
     implements IErrorMessageDisplayController
 {
-    constructor(element: HTMLElement, anchor: IJivsDomElement,
+    constructor(element: HTMLElement,
         issuesFoundDisplay: IIssuesFoundDisplay,
         triggers: IErrorMessageDisplayTrigger[],
-        variationClass?: string, hasIssuesClass?: string, openClass?: string)
+        options?: TriggeredErrorMessageDisplayPresentationBaseOptions,
+        anchor?: IJivsDomElement)
     {
-        super(element, anchor, issuesFoundDisplay, variationClass, hasIssuesClass);
+        super(element, issuesFoundDisplay, options, anchor);
         this._triggers = triggers ?? [];
-        this._openClass = openClass ?? this.defaultOpenClass();
+        this._openClass = options?.openClass ?? this.defaultOpenClass();
     }
 
     /**
@@ -286,4 +287,14 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
 //#endregion IErrorMessageDisplayController Implementation
 
 
+}
+
+export interface TriggeredErrorMessageDisplayPresentationBaseOptions extends ErrorMessageDisplayPresentationBaseOptions
+{
+    /**
+     * The CSS class applied when the error message display is opened.
+     * Defaults to 'jivs-open' if not provided.
+     * If null, this CSS class will not be applied when the error message display is opened.
+     */
+    openClass?: string | null;
 }

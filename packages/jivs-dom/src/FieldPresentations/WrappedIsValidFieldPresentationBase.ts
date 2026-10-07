@@ -16,11 +16,11 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * except for a radio group implementation.
  * 
  * ```html
- * <div class="jivs-wrapped-editor-type">
+ * <div class="jivs-wrapped-editor jivs-wrapped-editor-type">
  *     <input type="text" name="example" />
  * </div>
  * 
- * <tag>
+ * <tag class="jivs-wrapped-editor jivs-wrapped-editor-type">
  *  <nested-element>
  *      <input type="text" name="example" />
  *  </nested-element>
@@ -49,25 +49,25 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * manage those controls. That responsibility belongs to the associated
  * EditorAdapterDefinition.
  *
- * Every wrapped editor should have a unique presentation class to allow for consistent styling and behavior.
- * Override defaultPresentationClass() in derived classes to provide a unique presentation class for each wrapped editor.
+ * Every wrapped editor should have a unique persistent class to allow for consistent styling and behavior.
+ * This class adds 'jivs-wrapped-editor' along with those it inherits.
  * 
  * Here's what it looks like with presentation class 'jivs-wrapped-editor-[type]' but still valid:
  * ```html
- * <div class="jivs-wrapped-editor-type">
+ * <div class="jivs-wrapped-editor jivs-wrapped-editor-type">
  *     <input type="text" name="example" />
  * </div>
  * ```
  * To make it appear invalid:
  * ```css
- * .jivs-wrapped-editor-input.jivs-invalid input[type="text"]
+ * .jivs-wrapped-editor.jivs-wrapped-editor-input.jivs-invalid input[type="text"]
  * {
  *     border-color: var(--jivs-invalid-wrapped-editor-border-color);
  * }
  * ```
  * 
  * ```html
- * <div class="jivs-wrapped-editor-type jivs-invalid">
+ * <div class="jivs-wrapped-editor jivs-wrapped-editor-type jivs-invalid">
  *     <input type="text" name="example" />
  * </div>
  * ```
@@ -106,5 +106,9 @@ export abstract class WrappedIsValidFieldPresentationBase<TElement extends HTMLE
     {
         super(element, options, anchor);
     }
-
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-wrapped-editor');
+    }
 }

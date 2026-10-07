@@ -15,7 +15,8 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-input
+ * - variationClass: null
+ * - persistent classes: 'jivs-editor-input' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'inputEditor'.
  * InputAdapterDefinition should use this presentation name: 'inputEditor'.
@@ -37,11 +38,12 @@ export class TextInputPresentation extends IsValidFieldPresentationBase
     {
         super(element, options, anchor);
     }
-    protected override defaultPresentationClass(): string | null
-    {
-        return 'jivs-editor-input';
-    }
 
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-input');
+    }
 }
 
 /**

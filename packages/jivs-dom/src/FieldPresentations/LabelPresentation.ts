@@ -14,7 +14,8 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-label
+ * - variationClass: null
+ * - persistent classes: 'jivs-label' + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'label'.
  */
@@ -36,11 +37,11 @@ export class LabelPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-label';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-label');
     }
-
 }
 /**
  * For registering this presentation with the FieldPresentationFactory

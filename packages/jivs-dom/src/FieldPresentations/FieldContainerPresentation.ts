@@ -40,7 +40,7 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultPresentationClass(): string | null
+    protected override defaultVariationClass(): string | null
     {
         return 'jivs-field-container';
     }

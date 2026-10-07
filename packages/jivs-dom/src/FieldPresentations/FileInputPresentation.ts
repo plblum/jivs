@@ -13,7 +13,8 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - validatedClass: null
  * - correctedClass: null
  * - requiredClass: null
- * - presentationClass: jivs-editor-file-input
+ * - variationClass: null
+ * - persistent classes: jivs-editor-file-input + inherited
  * 
  * Registered with FieldPresentationFactory as presentation name 'fileInputEditor'.
  * InputAdapterDefinition should use this presentation name: 'fileInputEditor'.
@@ -35,11 +36,12 @@ export class FileInputPresentation extends IsValidFieldPresentationBase
     {
         super(element, options, anchor);
     }
-    protected override defaultPresentationClass(): string | null
-    {
-        return 'jivs-editor-file-input';
-    }
 
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-editor-file-input');
+    }
 }
 /**
  * For registering this presentation with the FieldPresentationFactory
