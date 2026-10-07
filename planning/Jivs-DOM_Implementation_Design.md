@@ -1994,36 +1994,9 @@ It directs presentation to the wrapper element, not the editor element, which me
 
 
 
-#### Error Display Direction
+#### Error Display Presentations
 
-Error displays require a more specialized design and will be completed in a focused presentation-design pass.
-
-The intended developer experience is that the application supplies one installation element:
-
-```html
-<span
-    data-jivs-role="error"
-    data-jivs-presentation="...">
-</span>
-```
-
-The selected presentation constructs the complete error-display widget. Depending on the presentation, that may include:
-
-* an inline message container;
-* an icon or other popup trigger;
-* a popup container;
-* a header;
-* the generated Issue Found messages;
-* a footer;
-* other presentation-specific content.
-
-The user should not need to mark up and register each internal part separately. Customization should normally require only presentation properties and CSS.
-
-A presentation may create descendants, siblings, or another presentation-specific structure associated with its installation element. It may retain references to generated elements, retain generated identifiers, or use a known relationship such as a generated next sibling.
-
-Non-popup structure may be created during installation and retained for the presentation’s lifetime. Popup structure may be created lazily. Once created, it also remains presentation-owned state for the rest of that lifetime.
-
-#### Shared Issue-Display Construction
+##### Shared Issue-Display Construction
 
 Field Error Displays and the Validation Summary need substantially the same HTML-construction machinery. Shared base behavior should support:
 
@@ -2041,7 +2014,7 @@ Field and form presentations then supply their different contexts:
 
 The exact inheritance and helper-class structure remains to be designed.
 
-#### Complete HTML Templates
+##### Complete HTML Templates
 
 Rather than prescribing separate header, message, and footer markup, the presentation should allow the application to supply the complete HTML within the generated container.
 
@@ -2066,7 +2039,7 @@ Additional tokens may be introduced when the detailed design identifies a concre
 
 The complete template is structural HTML controlled by the developer. Human-readable static text used by the presentation must be localizable through `ErrorMessagesService`.
 
-#### Token Content and Encoding
+##### Token Content and Encoding
 
 `{Label}` is plain dynamic text and must be HTML-encoded before insertion.
 
@@ -2084,21 +2057,337 @@ may become:
 The <span class="labelstyle">Book</span> is required.
 ```
 
-The detailed design must preserve this distinction between trusted generated HTML and dynamic values that still require encoding.
 
-#### Deferred Error-Display Decisions
+##### Error Display Architecture
 
-The focused presentation-design work still needs to determine:
+The error-display foundation separates four responsibilities:
 
-* the exact base classes and public configuration API;
-* how header and footer text and their Localization Keys are configured;
-* whether issue-count selection requires rules beyond normal and single-issue templates;
-* which tokens are supported by field and form presentations;
-* the trust and encoding contract for localized HTML fragments;
-* the initial inline, icon, tooltip, popup, and Validation Summary presentations;
-* popup construction and interaction behavior;
-* the state classes used by each presentation;
-* the initial definitions in `jivs-dom.css`.
+* validation-state handling and common CSS state;
+* construction of Issue Found content;
+* event-driven opening and closing;
+* coordination between popup-capable presentations.
+
+Inline error displays use only the first two responsibilities. Triggered and popup presentations add triggers, transition state, delays, and manager-wide popup coordination.
+
+##### Types and Responsibilities
+
+| Type | Responsibility |
+|---|---|
+| `IIssuesFoundDisplay` | Creates the Issue Found content placed into an element selected by the presentation. |
+| `ErrorMessageDisplayPresentationBase` | Common Field Presentation base for `ElementRole.error`. Owns the injected `IIssuesFoundDisplay`, initializes common CSS, and routes validation state to `applyIssuesFound()` or `removeIssuesFound()`. |
+| `InlineErrorMessageDisplayPresentation` | Places Issue Found content directly into the installed presentation element. It does not use triggers. |
+| `IErrorMessageDisplayController` | Defines the `open()`, `close()`, and `toggle()` operations invoked by triggers and popup coordination. |
+| `IErrorMessageDisplayTriggerContext` | Supplies one operation with its anchor, DOM services, Field Value Host, and controller. |
+| `ErrorMessageDisplayTriggerContext` | Standard context implementation. It can release its retained references through `dispose()`. |
+| `IErrorMessageDisplayTrigger` | Installs event handlers or another triggering mechanism through `install(context)`. |
+| `EditorTriggerBase` | Base for triggers that locate editor anchors and attach handlers through their `EditorAdapterDefinition`. It owns the trigger’s opening and closing delays. |
+| `EditorFocusTrigger` | Opens on `focusin` and closes on `focusout`. |
+| `TriggerState` | Identifies whether a controller is `closed`, `opening`, `open`, or `closing`. |
+| `TriggeredErrorMessageDisplayPresentationBase` | Implements `IErrorMessageDisplayController`, owns triggers, transition state, and the pending timer, and delegates actual presentation work to `openCore()` and `closeCore()`. |
+| `IPopupService` | Coordinates controllers belonging to one `ValueHostsManager`. It supports controller registration, one-popup-at-a-time opening, forced closure, and disposal. |
+| `PopupService` | Standard manager-owned implementation of `IPopupService`. |
+
+No concrete popup presentation is defined at this stage. It will inherit `TriggeredErrorMessageDisplayPresentationBase` and provide the generated popup structure, content target, positioning, and core open/close behavior.
+
+##### Type Relationships
+
+```mermaid
+flowchart TB
+    ANCHOR("IJivsDomElement")
+    BASE("ErrorMessageDisplayPresentationBase")
+    INLINE("InlineErrorMessageDisplayPresentation")
+    TRIGGERED("TriggeredErrorMessageDisplayPresentationBase")
+    DISPLAY("IIssuesFoundDisplay")
+
+    CONTROLLER("IErrorMessageDisplayController")
+    TRIGGERS("IErrorMessageDisplayTrigger[]")
+    CONTEXT("IErrorMessageDisplayTriggerContext")
+    STATE("TriggerState and timer")
+
+    VALUE_HOST("IFieldValueHost")
+    MANAGER("ValueHostsManager metadata")
+    POPUP_SERVICE("IPopupService / PopupService")
+
+    ANCHOR -->|"jivsFieldPresentation"| BASE
+    INLINE -->|"extends"| BASE
+    TRIGGERED -->|"extends"| BASE
+    BASE -->|"owns"| DISPLAY
+
+    TRIGGERED -.->|"implements"| CONTROLLER
+    TRIGGERED -->|"owns"| TRIGGERS
+    TRIGGERED -->|"owns"| STATE
+    CONTEXT -->|"references"| CONTROLLER
+    CONTEXT -->|"references"| ANCHOR
+    CONTEXT -->|"references"| VALUE_HOST
+
+    VALUE_HOST -->|"valueHostsManager"| MANAGER
+    MANAGER -->|"metadata owns"| POPUP_SERVICE
+    POPUP_SERVICE -->|"registers"| CONTROLLER
+    POPUP_SERVICE -->|"retains context factory for"| CONTROLLER
+```
+
+##### Common Error Display Processing
+
+`ErrorMessageDisplayPresentationBase` receives:
+
+* the installed presentation element;
+* its `IJivsDomElement` anchor;
+* a fresh `IIssuesFoundDisplay`;
+* the presentation and Issue Found CSS class names.
+
+Initialization occurs during the first `apply()` call because the Field Value Host and its DOM services are then available.
+
+Common initialization:
+
+1. Adds `jivs-error-message-display`.
+2. Supplies DOM services to the injected `IIssuesFoundDisplay`.
+3. Allows subclasses to perform additional one-time initialization.
+
+Each `apply()` call first removes the earlier Issue Found state. When `state.issuesFound` contains entries, it invokes `applyIssuesFound()`. Otherwise, it leaves the presentation without its Issue Found state.
+
+The common base manages the `jivs-has-issues` class but does not assume where Issue Found content belongs. An inline presentation uses the installed element. A popup presentation may use a generated popup content element.
+
+##### Inline Error Messages
+
+`InlineErrorMessageDisplayPresentation` uses the installed presentation element as its content target.
+
+When issues exist, it:
+
+1. Applies the common Issue Found CSS state.
+2. Passes the element and issues to `IIssuesFoundDisplay.apply()`.
+
+When issues are removed, it:
+
+1. Removes the common Issue Found CSS state.
+2. Clears the element’s content.
+
+Inline presentations do not install triggers or participate in popup coordination.
+
+##### Trigger Collaboration
+
+A trigger receives an `IErrorMessageDisplayTriggerContext` through:
+
+```ts
+install(context: IErrorMessageDisplayTriggerContext): void;
+```
+
+The context provides:
+
+```ts
+interface IErrorMessageDisplayTriggerContext
+{
+    readonly anchorElement: IJivsDomElement;
+    readonly domServices: IJivsDomServices;
+    readonly valueHost: IFieldValueHost;
+    readonly controller: IErrorMessageDisplayController;
+
+    dispose(): void;
+}
+```
+
+The context’s `anchorElement` is the anchor for the error-display presentation. It is not necessarily an editor anchor.
+
+Editor triggers use `IJivsDomServices.resolveFieldElement()` to obtain the editor anchors associated with the Field Value Host. For each editor anchor, they call its `EditorAdapterDefinition.attachEventHandler()` operation. The adapter definition resolves the actual editor widget and maps the requested DOM event name when necessary.
+
+Triggers associated with other roles may install ordinary DOM event listeners directly.
+
+`EditorFocusTrigger` installs:
+
+* `focusin` to request opening;
+* `focusout` to request closing.
+
+`focusin` and `focusout` are used because they bubble and therefore support composite editor widgets more reliably than `focus` and `blur`.
+
+##### Trigger-Owned Delays
+
+Each trigger owns the delays appropriate to the interaction it installs.
+
+For example, an editor-focus trigger may delay opening so that quickly tabbing through a field does not display a popup. It may delay closing long enough to allow focus or pointer movement into the popup.
+
+A trigger passes its delays to the controller:
+
+```ts
+context.controller.open(context, openDelay);
+context.controller.close(context, closeDelay);
+```
+
+The controller operations return `void`. They represent transition requests rather than a promise that the eventual core operation will succeed.
+
+A zero delay requests immediate processing. It is also used when validation or popup coordination must force closure and cancel pending activity.
+
+##### Trigger State
+
+```ts
+enum TriggerState
+{
+    closed,
+    opening,
+    open,
+    closing
+}
+```
+
+`TriggeredErrorMessageDisplayPresentationBase` owns one `TriggerState` value and at most one pending timer.
+
+| Current state | Request | Behavior |
+|---|---|---|
+| `closed` | `open()` | Opens immediately or enters `opening` and schedules opening. |
+| `closed` | `close()` | No action. |
+| `opening` | `open()` | Leaves the existing opening request unchanged. |
+| `opening` | `close()` | Cancels the opening timer and becomes `closed`. |
+| `open` | `open()` | No action. |
+| `open` | `close()` | Closes immediately or enters `closing` and schedules closure. |
+| `closing` | `close()` with a delay | Leaves the existing closing request unchanged. |
+| `closing` | `close()` with zero delay | Cancels the delayed closure and attempts closure immediately. |
+| `closing` | `open()` | Cancels the closing timer and restores `open` without calling `openCore()` again. |
+
+A delayed timer clears its stored handle before invoking other code. Before and after each potentially reentrant operation, the controller verifies that the expected transitional state remains active.
+
+This protects a newer transition when DOM work synchronously raises another focus, pointer, or application event.
+
+##### Core Operations
+
+Subclasses implement:
+
+```ts
+protected abstract openCore(
+    context: IErrorMessageDisplayTriggerContext
+): boolean;
+
+protected abstract closeCore(
+    context: IErrorMessageDisplayTriggerContext
+): boolean;
+```
+
+These operations are synchronous.
+
+`openCore()` returns `true` when the presentation was opened successfully. The controller then enters `TriggerState.open`. A failure returns it to `TriggerState.closed`.
+
+`closeCore()` returns `true` when the presentation was closed successfully. The controller then enters `TriggerState.closed`. A failure returns it to `TriggerState.open`.
+
+The future popup presentation will use these methods to manage generated popup elements, content, positioning, and the `jivs-open` CSS class.
+
+##### Opening Workflow
+
+Immediately before `openCore()` executes, the controller asks the manager’s popup service to prepare it for opening.
+
+```mermaid
+flowchart TB
+    EVENT("Installed trigger event")
+    REQUEST("IErrorMessageDisplayController.open")
+    DELAY("Immediate execution or opening timer")
+    SERVICE("IPopupService.prepareToOpen")
+    OTHERS("Other registered controllers close with delay 0")
+    CORE("openCore")
+    OPEN("TriggerState.open")
+
+    EVENT -->|"supplies context and delay"| REQUEST
+    REQUEST --> DELAY
+    DELAY --> SERVICE
+    SERVICE --> OTHERS
+    OTHERS --> CORE
+    CORE -->|"successful"| OPEN
+```
+
+Popup coordination occurs when the opening delay expires, not when the delayed opening is initially requested. This allows the currently visible popup to remain available until the replacement is actually ready to open.
+
+##### Popup Service
+
+One `PopupService` belongs to one `ValueHostsManager` and is retained in manager metadata. `IJivsDomServices` remains stateless and provides access to the manager-specific service through `getPopupService()`.
+
+The service retains:
+
+```ts
+Map<IErrorMessageDisplayController, TriggerContextFactory>
+```
+
+The controller is the registration identity. Registering the same controller again replaces its earlier context factory.
+
+The factory creates a fresh context when the service must force that controller closed. A context instance is not retained in the registration.
+
+`prepareToOpen(controller)` invokes:
+
+```ts
+otherController.close(context, 0);
+```
+
+for every registered controller except the controller preparing to open. This closes visible popups and cancels popups whose delayed opening has not yet completed.
+
+`closePopups()` performs the same forced closure for every registered controller. It is the developer-facing operation for dismissing popup presentations associated with the manager.
+
+`dispose()` closes the registered popups and clears the controller/factory map so the service no longer retains presentations or Field Value Hosts through their context factories.
+
+##### Context Lifetimes
+
+Trigger contexts have two distinct lifetimes.
+
+An installation context is passed to each trigger during initialization. Installed event-handler closures capture that context, so it remains alive for the lifetime of those handlers. It cannot be disposed while those handlers remain installed.
+
+A temporary context is created for operations such as:
+
+* validation-driven forced closure;
+* `IPopupService.prepareToOpen()`;
+* `IPopupService.closePopups()`.
+
+These operations call `close(context, 0)` synchronously. Their temporary contexts can therefore be disposed immediately afterward, releasing their anchor, DOM service, Field Value Host, and controller references.
+
+Trigger detachment is not currently part of the presentation contract. If detachment is introduced later, it must remove installed handlers before disposing their captured installation context.
+
+##### Validation-Driven Closure
+
+When a later validation state contains no issues, `TriggeredErrorMessageDisplayPresentationBase.apply()` forces closure:
+
+```ts
+this.close(context, 0);
+```
+
+This operation does not depend on the presentation already being `open`.
+
+It also handles a presentation in `opening` state by canceling its opening timer and establishing `closed`. This prevents a delayed popup from appearing after its issues have been removed.
+
+##### CSS State
+
+The error-display foundation uses these standard CSS responsibilities:
+
+| CSS class | Purpose |
+|---|---|
+| `jivs-error-message-display` | Identifies every Error Message Display presentation. |
+| Presentation-specific class | Identifies the concrete inline or popup presentation. |
+| `jivs-has-issues` | Indicates that validation supplied one or more issues. |
+| `jivs-open` | Indicates that a triggered presentation is open. |
+
+The common base owns the general error-display and Issue Found classes. Concrete presentations own their presentation-specific class and the visual meaning of `jivs-open`.
+
+##### Remaining Popup Design
+
+The remaining design work concerns the concrete popup presentation built on `TriggeredErrorMessageDisplayPresentationBase`.
+
+The intended developer experience is that the application supplies a single installation element:
+
+```html
+<span
+    data-jivs-role="error"
+    data-jivs-presentation="...">
+</span>
+```
+
+The popup presentation should construct and manage the complete popup widget. The application should not need to create or register its internal parts separately.
+
+The following aspects remain unresolved:
+
+* whether the presentation generates its own icon or other visible popup trigger;
+* the popup’s internal structure, including any header, content container, footer, and presentation-specific elements;
+* which generated element is supplied to `IIssuesFoundDisplay` as its content target;
+* whether the popup is created as a descendant, sibling, or separately positioned element associated with the installation element;
+* whether popup elements are created during installation or lazily when first opened;
+* which generated elements, identifiers, and other resources the presentation retains;
+* how the popup is positioned relative to its anchor;
+* which pointer and focus event handlers belong to the popup itself;
+* which open and close delays those handlers use;
+* how popup-specific CSS classes, icons, and other visual assets are configured.
+
+These decisions must also establish ownership and lifecycle rules for the generated elements. Once created, the popup structure is expected to remain presentation-owned state until the presentation is disposed, unless the concrete popup design identifies a reason to recreate it.
+
 
 ## Form Presentation Architecture
 
@@ -4192,6 +4481,8 @@ interface IJivsDomServices
     getElementRegistry(
         valueHostsManager: IValueHostsManager
     ): IElementRegistry;
+
+    getPopupService(valueHostManager: IValueHostManager): IPopupService;
 
     resolveContainerElement(
         valueHostsManager: IValueHostsManager

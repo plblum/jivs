@@ -68,7 +68,7 @@ export class FieldPresentationInstaller extends DomServiceBase
 
         let fieldPresentation: IFieldPresentation =
             this.domServices.fieldPresentationFactory.create(element, role, options.presentationName);
-        fieldPresentation.init();
+        fieldPresentation.init(valueHost.valueHostsManager);
         fieldPresentation.apply(valueHost, valueHost.currentValidationState);
         element.jivsFieldPresentation = fieldPresentation;
 

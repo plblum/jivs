@@ -12,6 +12,7 @@
 
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { ValueHostValidationState } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
+import type { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
 import { IJivsDomElement } from "./IJivsDomElement";
 import { ElementRole } from './Types';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
@@ -47,7 +48,7 @@ export interface IFieldPresentation
      * For example, a Field Error Display might create its internal elements that surround 
      * the error messages it will display.
      */
-    init(): void;
+    init(valueHostsManager: IValueHostsManager): void;
 
     /**
      * Apply the current validation state to the field presentation.

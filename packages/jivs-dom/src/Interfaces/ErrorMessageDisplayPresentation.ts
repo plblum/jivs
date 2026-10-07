@@ -9,24 +9,36 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
  * ```ts
  * // context is already available
  * editor.addEventListener('focus', (event) => {
- *  context.controller.open(context);
+ *  context.controller.open(context, 500);
  * });
  * ```
  */
 export interface IErrorMessageDisplayController
 {
     /**
-     * Requests the presentation to go into its open state. Returns true if the operation was successful, false otherwise.
+     * Requests the presentation to go into its open state.
+     * @param delay The delay in milliseconds before attempting to open the presentation.
+     * The UI experience may be improved by offering a slight delay before opening the presentation, 
+     * allowing for smoother transitions and avoiding abrupt changes.
+     * Note that delays impact later calls to open and close, as the timing of these operations may be affected by previously specified delays.
      */
-    open(context: IErrorMessageDisplayTriggerContext): boolean;
+    open(context: IErrorMessageDisplayTriggerContext, delay: number): void;
+
     /**
-     * Requests the presentation to go into its closed state. Returns true if the operation was successful, false otherwise.
+     * Requests the presentation to go into its closed state.
+     * @param delay The delay in milliseconds before attempting to close the presentation.
+     * The UI experience may be improved by offering a slight delay before closing the presentation, 
+     * allowing for smoother transitions and avoiding abrupt changes.
+     * Note that delays impact later calls to open and close, as the timing of these operations may be affected by previously specified delays.
      */
-    close(context: IErrorMessageDisplayTriggerContext): boolean;
+    close(context: IErrorMessageDisplayTriggerContext, delay: number): void;
+
     /**
-     * Toggles the presentation between its open and closed states. Returns true if the operation was successful, false otherwise.
+     * Toggles the presentation between its open and closed states.
+     * @param openDelay The delay in milliseconds before attempting to open the presentation.
+     * @param closeDelay The delay in milliseconds before attempting to close the presentation.
      */
-    toggle(context: IErrorMessageDisplayTriggerContext): boolean;
+    toggle(context: IErrorMessageDisplayTriggerContext, openDelay: number, closeDelay: number): void;
 }   
 
 /**
@@ -39,6 +51,8 @@ export interface IErrorMessageDisplayTriggerContext
     readonly domServices: IJivsDomServices;
     readonly valueHost: IFieldValueHost;
     readonly controller: IErrorMessageDisplayController;
+
+    dispose(): void;
 }
 
 /**
@@ -62,4 +76,16 @@ export interface IErrorMessageDisplayTrigger
      * providing access to the container element, content element, DOM services, value host, and controller.
      */
     install(context: IErrorMessageDisplayTriggerContext): void;
+}
+
+/**
+ * Represents the possible states of a trigger controlling the error message display.
+ * Consumed by IErrorMessageDisplayControllers.
+ */
+export enum TriggerState
+{
+    closed,
+    opening,
+    open,
+    closing
 }

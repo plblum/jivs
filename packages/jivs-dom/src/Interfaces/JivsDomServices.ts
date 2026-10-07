@@ -21,6 +21,7 @@ import { ElementRole } from './Types';
 import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
 import { IPresentationFactory } from './Presentations_common';
 import { IElementRegistry } from './ElementRegistry';
+import { IPopupService } from './PopupService';
 
 
 /**
@@ -137,6 +138,13 @@ export interface IJivsDomServices
      * @param valueHostsManager The ValueHostsManager instance for which to retrieve the element registry.
      */
     getElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
+
+    /**
+     * Retrieves the popup service associated with the specified ValueHostsManager instance.
+     * Use to close all open popups.
+     * @param valueHostsManager The ValueHostsManager instance for which to retrieve the popup service.
+     */
+    getPopupService(valueHostsManager: IValueHostsManager): IPopupService;
     
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.

@@ -30,6 +30,8 @@ import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
 import { IssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { ElementRegistry } from '../FormInstaller/ElementRegistry';
+import { IPopupService } from '../Interfaces/PopupService';
+import { PopupService } from './PopupService';
 /**
  * @inheritdoc jivs-dom/Types/JivsDomServices
  */
@@ -263,6 +265,27 @@ export class JivsDomServices extends ServiceWithAccessorBase
     protected createElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry
     {
         return new ElementRegistry(valueHostsManager);
+    }
+
+    /**
+     * Retrieves the popup service associated with the specified ValueHostsManager instance.
+     * Use this service to close open popups.
+     * FieldPresentations that implement IErrorMessageDisplayController should register themselves with this service.
+     * @param valueHostsManager The ValueHostsManager instance for which to retrieve the popup service.
+     * @returns The popup service associated with the specified ValueHostsManager instance.
+     */
+    public getPopupService(valueHostsManager: IValueHostsManager): IPopupService
+    {
+        let popupService = valueHostsManager.getMetadata('popupService') as IPopupService | null;
+        if (!popupService) {
+            popupService = this.createPopupService();
+            valueHostsManager.setMetadata('popupService', popupService);
+        }
+        return popupService;
+    }
+    protected createPopupService(): IPopupService
+    {
+        return new PopupService();
     }
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.

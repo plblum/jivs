@@ -3,13 +3,13 @@
  * @module jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase
  */
 
-import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
+import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { AdapterBase } from '../Adapters/AdapterBase';
+import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
+import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-
 /**
  * Base class for field presentations.
  * 
@@ -61,7 +61,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * This method should be implemented by derived classes to perform any necessary setup logic.
      * The default implementation does nothing.
      */
-    public init(): void
+    public init(valueHostsManager: IValueHostsManager): void
     {
     }
 

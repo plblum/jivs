@@ -4,20 +4,21 @@ import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { ErrorMessageDisplayPresentationBase } from './ErrorMessageDisplayPresentationBase';
 /**
- * A presentation class for displaying inline error messages, which means
+ * A Field Presentation class for displaying inline error messages, which means
  * the container itself contains the error message content.
  */
 export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPresentationBase
 {
     constructor(element: HTMLElement, anchor: IJivsDomElement,
-        issuesFoundDisplay: IIssuesFoundDisplay, presentationClass?: string, hasIssuesClass?: string)
+        issuesFoundDisplay: IIssuesFoundDisplay, variationClass?: string, hasIssuesClass?: string)
     {
-        super(element, anchor, issuesFoundDisplay, presentationClass, hasIssuesClass);
+        super(element, anchor, issuesFoundDisplay, variationClass, hasIssuesClass);
     }
 
-    override defaultPresentationClass(): string | null
+    protected override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-inline-error-message-display';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-inline-error-message-display');
     }
     /**
      * Expands the base class implementation to apply the issues found using the issuesFoundDisplay.
