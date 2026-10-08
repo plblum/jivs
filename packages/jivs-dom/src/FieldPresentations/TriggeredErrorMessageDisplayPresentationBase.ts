@@ -12,12 +12,24 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * rather than being always visible. Subclasses should implement the logic for showing and hiding the error
  * messages based on the triggering events.
  * 
+ * This class represents trigger actions in these methods: open(), close(), and toggle().
+ * It handles timer-based delays for showing and hiding the error messages.
+ * 
+ * It introduces the 'jivs-open' style class name for indicating when the error message display is open.
+ * 
  * The triggers are supplied as a list of IErrorMessageDisplayTrigger instances.
  * Each installs event handlers that invoke any of the functions found on this class
  * through IErrorMessageDisplayController: open(), close(), and toggle().
  * 
  * Trigger installation only happens once, during the first call to apply() on the presentation.
  * (Not using the init function because it doesn't have the necessary parameters to fully realize an installation.)
+ * 
+ * ## Style Classes
+ * - persistent classes: 'jivs-triggered-error-message-display', 'jivs-error-message-display'
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - stateful classes: 'jivs-open', 'jivs-has-issues'
+ *
  */
 export abstract class TriggeredErrorMessageDisplayPresentationBase extends ErrorMessageDisplayPresentationBase
     implements IErrorMessageDisplayController
@@ -30,7 +42,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     {
         super(element, issuesFoundDisplay, options, anchor);
         this._triggers = triggers ?? [];
-        this._openClass = options?.openClass ?? this.defaultOpenClass();
     }
 
     /**
@@ -43,14 +54,9 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     }
     private _triggers: IErrorMessageDisplayTrigger[];
 
-    protected get openClass(): string | null
+    protected get openClass(): string[]
     {
-        return this._openClass;
-    }
-    private _openClass: string | null;
-    protected defaultOpenClass(): string | null
-    {
-        return 'jivs-open';
+        return ['jivs-open'];
     }
     protected override gatherPersistentClasses(list: string[]): void
     {
@@ -291,10 +297,4 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
 
 export interface TriggeredErrorMessageDisplayPresentationBaseOptions extends ErrorMessageDisplayPresentationBaseOptions
 {
-    /**
-     * The CSS class applied when the error message display is opened.
-     * Defaults to 'jivs-open' if not provided.
-     * If null, this CSS class will not be applied when the error message display is opened.
-     */
-    openClass?: string | null;
 }

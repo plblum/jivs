@@ -9,6 +9,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a radio button.
@@ -24,25 +25,23 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * It provides a better presentation.
  * 
  * That includes these type= attribute values: radio
- * Its default css classes are:
- * - invalidClass: jivs-invalid (inherited)
- * - validatedClass: do not use
- * - correctedClass: do not use
- * - requiredClass: do not use
- * - variationClass: null
- * - persistent classes: 'jivs-editor-radiobuttons' + inherited
+ * 
+ * ## Style Classes
+ * - persistent classes: 'jivs-editor-radiobuttons', 'jivs-editor', 'jivs-isvalidpresentation'
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - supports these stateful classes: 'jivs-invalid'
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  * Registered with FieldPresentationFactory as presentation name 'radiobuttonsEditor'.
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
  */
-export class RadioButtonsPresentation extends IsValidFieldPresentationBase
+export class RadioButtonsPresentation extends EditorFieldPresentationBase
 {
     /**
      * Creates an instance of the RadioButtonsPresentation class.
      * @param radioButton The HTML input element of type radio associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
-     * default supplied by this class or a derived class.
      * @param anchor The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(radioButton: HTMLElement,
@@ -53,15 +52,16 @@ export class RadioButtonsPresentation extends IsValidFieldPresentationBase
         super(
             radioButton,
             {
-                invalidClass: options?.invalidClass,
-                variationClass: options?.presentationClass
+                variationClasses: options?.presentationClass,
+
+        // not used for radio buttons presentation:
+                correctedClassEnabled: false,
+                requiredClassEnabled: false,
+                validatedClassEnabled: false
             },
             anchor
         );
-        // not used for radio buttons presentation:
-        this.correctedClass = null;
-        this.requiredClass = null;
-        this.validatedClass = null;
+
     }
 
     protected override gatherPersistentClasses(list: string[]): void

@@ -41,8 +41,9 @@ export interface IFormPresentation
      * Initializes the form presentation. 
      * This method is called once after the presentation is created and 
      * before it is applied to any validation state.
+     * @param valueHostsManager The manager for value hosts within the form.
      */
-    init(): void;
+    init(valueHostsManager: IValueHostsManager): void;
 
     /**
      * Applies the specified validation state to the form.

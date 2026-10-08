@@ -67,7 +67,7 @@ export class FormPresentationInstaller extends DomServiceBase
         element.jivsElementRole = role;
         let formPresentation: IFormPresentation =
             this.domServices.formPresentationFactory.create(element, role, options.presentationName);
-        formPresentation.init();
+        formPresentation.init(valueHostsManager);
         formPresentation.apply(valueHostsManager, valueHostsManager.currentValidationState({
             group: options.group
         }));

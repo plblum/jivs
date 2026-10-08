@@ -16,13 +16,12 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * 
  * This implementation can work either way, although our default style class expects an empty span tag with the appropriate CSS class.
  * 
- * Its default css classes are:
- * - invalidClass: null
- * - validatedClass: null
- * - correctedClass: null
- * - requiredClass: jivs-required-indicator
- * - variationClass: null
- * - persistent classes: 'jivs-indicator' + inherited
+ * ## Style Classes
+ * - persistent classes: 'jivs-indicator', 'jivs-editor', 'jivs-isvalidpresentation'
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.
  */
@@ -32,8 +31,6 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
      * Constructor for the RequiredIndicatorPresentation class.
      * @param element The HTML element used for the required indicator.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
-     * default supplied by this class or a derived class.
      * @param anchor The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
@@ -41,16 +38,14 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
         anchor?: IJivsDomElement | null
     )
     {
+        if (options)
+            options.requiredClassEnabled = true;
         super(element, options, anchor);
     }
 
-    protected override defaultInvalidClass(): string | null
+    protected override get requiredClassEnabled(): boolean
     {
-        return null;
-    }
-    protected override defaultRequiredClass(): string | null
-    {
-        return 'jivs-required-indicator';
+        return true;
     }
 
     protected override gatherPersistentClasses(list: string[]): void

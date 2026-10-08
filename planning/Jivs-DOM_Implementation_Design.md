@@ -1693,12 +1693,10 @@ The initial built-in definitions do not support:
 
 Action and display elements are not editors. File support is limited to the browser-exposed string available from `HTMLInputElement.value`.
 
-## Field Presentation Architecture
-
-### Field Presentation Contracts
-
+## Field Presentation Adapters
 A field presentation translates one field’s current validation state into changes to one widget. Each installed presentation is an element-bound object that may retain presentation-specific state.
 
+### Field Presentation Contracts
 Presentation installation occurs after the `ValueHostsManager` and its `IFieldValueHost` instances have been created. This allows installation to apply the field’s current validation state immediately, regardless of whether preliminary validation has already run.
 
 `FieldValidationDispatcher` locates each relevant element, reads its installed `jivsFieldPresentation`, and invokes `apply()`. 
@@ -1711,7 +1709,7 @@ FieldPresention adapters also can supply their own ARIA guidance as they may hav
 
 ```ts
 interface IFieldPresentation {
-    init(): void;
+    init(valueHostsManager: IValueHostsManager): void;
     apply(
         valueHost: IFieldValueHost,
         state: ValueHostValidationState
@@ -1729,11 +1727,11 @@ abstract class FieldPresentationBase<
 > implements IFieldPresentation {
 
     public constructor(
-        element: TElement, anchor: IJivsDomElement
+        element: TElement, options?: FieldPresentationBaseOptions, anchor: IJivsDomElement
     ) {
     }
 
-    public init(): void {}
+    public init(valueHostsManager: IValueHostsManager): void {}
 
     public abstract apply(
         valueHost: IFieldValueHost,
@@ -1758,6 +1756,20 @@ abstract class FieldPresentationBase<
     {
         return element;
     }
+
+    protected addClasses(list: string[]): void;
+    protected removeClasses(list: string[]): void;
+    protected variationClasses: string[];
+    protected gatherPersistentClasses(list: string[]): void;
+}
+
+interface FieldPresentationBaseOptions
+{
+    /**
+     * Style sheet class names to add to the presentation element that will always be present.
+     * Defaults to an empty array.
+     */
+    variationClasses?: string[] | string | null;
 }
 ```
 
@@ -1767,7 +1779,106 @@ The presentation retains its element but does not retain the `IFieldValueHost` o
 
 Applications may implement `IFieldPresentation` directly or derive from `FieldPresentationBase`.
 
+The style sheet classes are installed as described [below](#style-class-strategy). The user can supply their own classes in addition to the fixed ones through the `variationClasses` property on the options.
+
 The optional ARIA getters allow a presentation whose generated HTML requires specialized accessibility behavior to supply immutable updater instances. A getter returning `null` means that the presentation supplies no specialized updater of that kind. The presentation itself does not mutate ARIA attributes through these getters.
+
+#### Style Class Strategy
+##### Persistent classes
+A Persistent class is a CSS class that remains applied to the presentation element throughout its lifecycle, 
+regardless of the field's validation state. The init() function will gather and apply these persistent classes to the presentation element
+using `gatherPersistentClasses()` to retrieve each persistent class.
+All class names should follow the 'jivs-' prefix convention to maintain consistency across the field presentations.
+ 
+- Concrete field presentations should define their own persistent classes.
+- Base classes should also define their persistent classes if they provide any foundational styling or behavior.
+- Expect that all persistent classes from the concrete class up through the inheritance chain to be collected and applied to the presentation element.
+
+    For example, ErrorMessageDisplayPresentationBase supplies 'jivs-error-message-display' and its subclass InlineErrorMessageDisplayPresentation     supplies 'jivs-inline-error-message-display'.
+    You should setup up your CSS files to include these persistent classes prior to adding your own.
+    ```css
+    .jivs-error-message-display.jivs-inline-error-message-display.my-custom-class {
+        // Inline error message display styling
+    }
+    ```
+- Add your own custom classes through the `variationClasses` option when constructing the field presentation.
+
+##### Stateful classes
+Stateful classes are CSS classes that are applied to the presentation element based on specific states of the field.
+These classes may change dynamically as the field's state changes, such as when it becomes focused, invalid, or disabled.
+There are fixed stateful classes that jivs-dom manages:
+ - 'jivs-invalid' - For when ValidationState.isValid = false. Not used for error message displays (role='error').
+ - 'jivs-has-errors' - For when ValidationState.issuesFound.length > 0. Only used for error message displays.
+ - 'jivs-validated' - For when ValidationState.status = Valid to indicate that the field has been successfully validated. Not used for error message displays.
+ - 'jivs-corrected' - For when a previously invalid field has been corrected and is now valid. Not used for error message displays.
+ - 'jivs-required' - For when FieldValueHost.required = true. Not used for error message displays.
+ 
+There are several strategies for customizing stateful classes:
+1. Do not change the fixed stateful class. Let it only be used to change the state, usually by removing or applying display: none.
+   Instead, create your own custom stateful classes to handle all visualizations. Add each new class to the variationClasses option when constructing the field presentation.
+   ```css
+   .jivs-error-message-display: not(.jivs-has-errors) {
+       display: none;
+   }
+   .jivs-error-message-display.jivs-has-errors {
+     // do not change this class. Always create custom stateful classes for additional visualizations.
+   }
+   .jivs-error-message-display.jivs-has-errors.my-custom-stateful-class {
+       color: red;
+   }
+   ```
+2. Change the fixed stateful class to support visualizations, ensuring it still correctly handles visibility.
+   The variationClasses option does not need to be updated.
+   ```css
+   .jivs-error-message-display: not(.jivs-has-errors) {
+       display: none;
+   }
+   .jivs-error-message-display.jivs-has-errors {
+       color: red;
+   }
+   ```
+3. Combine both approaches by using fixed stateful classes for essential state changes and custom stateful classes for additional visualizations.
+   In this case, be careful that a specific style defined in the fixed stateful class does not conflict with the custom stateful classes
+   because CSS cannot guarantee the order of precedence for conflicting styles.
+   ```css
+   .jivs-error-message-display: not(.jivs-has-errors) {
+       display: none;
+   }
+   .jivs-error-message-display.jivs-has-errors {
+       color: red;
+   }
+   .jivs-error-message-display.jivs-has-errors.my-custom-stateful-class {
+       outline: 1px dotted red;
+   }
+   ```
+#### Field Presentation Classes and their Style Classes
+|Class name|Inherits|Target|PersistantClass|Behavior Classes|
+|----------|--------|------|---------------|----------------|
+|FieldPresentationBase|AdapterBase|n/a|n/a|n/a|
+|IsValidFieldPresentationBase|FieldPresentationBase|Non-editors|jivs-isvalidpresentation|jivs-invalid,jivs-validated,jivs-corrected,jivs-required|
+|EditorFieldPresentationBase|IsValidFieldPresentationBase|editors|jivs-editor|inherited|
+|WrappedEditorFieldPresentationBase|IsValidFieldPresentationBase|wrapped editors|jivs-wrapped-editor|inherited|
+|ErrorMessageDisplayPresentationBase|FieldPresentationBase|error message display|jivs-error-message-display|jivs-has-errors|
+|TriggeredErrorMessageDisplayPresentationBase|ErrorMessageDisplayPresentationBase|error message display|jivs-triggered-error-message-display|jivs-open, inherited|
+|PopupErrorMessageDisplayPresentationBase|TriggeredErrorMessageDisplayPresentationBase|error message display with popups|jivs-popup-error-message-display|inherited|
+
+Concrete implementations of IsValidFieldPresentationBase:
+FieldContainerPresentation, LabelPresentation, RequiredIndicatorPresentation
+
+Concrete implementations of EditorFieldPresentationBase:
+CheckboxPresentation, FileInputPresentation, RadioButtonsPresentation, SelectPresentation, TextAreaPresentation, TextInputPresentation
+
+Concrete implementations of WrapperEditorFieldPresentationBase:
+WrapperCheckboxPresentation, WrapperFileInputPresentation, WrapperRadioButtonsPresentation, WrapperSelectPresentation, WrapperTextAreaPresentation, WrapperTextInputPresentation
+
+Concrete implementations of ErrorMessageDisplayPresentationBase:
+InlineErrorMessageDisplayPresentation
+
+Concrete implementations of TriggeredErrorMessageDisplayPresentationBase:
+PENDING
+
+Concrete implementations of PopupErrorMessageDisplayPresentationBase:
+PENDING
 
 #### Field Presentation Factory
 
@@ -1937,29 +2048,17 @@ Editors, labels, required indicators, and field containers all benefit from thes
 - ValueHostValidationState.corrected = true - indicates "corrected"
 - FieldValueHost.required = true - indicates "required"
 
-The IsValidFieldPresentationBase class is built to handle these 4 states. It offers style sheet class name properties for each, plus one for the presentation itself.
-- invalidClass - isValid=false
-- validatedClass - ValidationStatus.Valid
-- correctedClass - corrected = true
-- requiredClass - required = true
-- presentationClass - for the Presentation object.
+The IsValidFieldPresentationBase class supplies the base structure for these. It knows how to address each of those states,
+using these fixed style class names:
+- 'jivs-invalid' - isValid=false
+- 'jivs-validated' - ValidationStatus.Valid
+- 'jivs-corrected' - corrected = true
+- 'jivs-required' - required = true
 
-IsValidFieldPresentationBase is built around changing the style sheet classes of the presentation element. Each time apply() is called, it removes then adds to build a class list.
-- presentationClass is always added if assigned
-- requiredClass is always added if assigned and required = true
-- The remaining 3 are applied using a rule to select at most one of them:
-    - isValid=false always picks invalidClass. The rest are ignored
-    - corrected=true + correctedClass assigned uses correctedClass. validatedClass is ignored.
-    - ValidationState.Valid + validatedClass assigned uses validatedClass
-
-jivs-dom.css supplies these style sheet class names to use with the class properties on IsValidFieldPresentationBase:
-- `.jivs-invalid`
-- `.jivs-validated`
-- `.jivs-corrected`
-- `.jivs-indicator` (for required indicator)
+jivs-dom.css supplies these style sheet class names to use with the class properties on IsValidFieldPresentationBase.
 
 Implementations of IsValidFieldPresentationBase have these responsibilities:
-- Provide the value for presentationClass through defaultPresentationClass(). This name must be specific to the presentation.
+- Provide a persistent class name through gatherPersistentClasses() to associate the HTML with the class you are creating.
 - Provide either the default value or null for not used for each of the invalidClass, validatedClass, correctedClass, and requiredClass in their respective default() functions.
 - Update jivs-dom.css with any specific implementation for those style classes they're using.
 
@@ -1971,28 +2070,6 @@ WrappedIsValidFieldPresentationBase inherits IsValidFieldPresentationBase to cov
 </tag>
 ```
 It directs presentation to the wrapper element, not the editor element, which means the style class names are assigned to the wrapper.
-
-|FieldPresentation|Target|PresentationName|Other CSS|
-|-----------------|------|----------------|---------|
-|IsValidFieldPresentationBase|n/a|n/a|invalidClass|
-|TextInputPresentation|Input editors|jivs-editor-input|invalidClass|
-|CheckboxPresentation|Input type='checkbox'|jivs-editor-checkbox|invalidClass|
-|RadioButtonsPresentation|Input type='radio'|jivs-editor-radiobuttons|invalidClass|
-|FileInputPresentation|Input type='file'|jivs-editor-file-input|invalidClass|
-|TextAreaPresentation|textarea|jivs-editor-textarea|invalidClass|
-|SelectPresentation|select|jivs-editor-select|invalidClass|
-|WrappedIsValidFieldPresentationBase|n/a|n/a|invalidClass|
-|WrappedTextInputPresentation|Input editors|jivs-editor-input|invalidClass|
-|WrappedCheckboxPresentation|Input type='checkbox'|jivs-editor-checkbox|invalidClass|
-|WrappedRadioButtonsPresentation|Input type='radio'|jivs-editor-radiobuttons|invalidClass|
-|WrappedFileInputPresentation|Input type='file'|jivs-editor-file-input|invalidClass|
-|WrappedTextAreaPresentation|textarea|jivs-editor-textarea|invalidClass|
-|WrappedSelectPresentation|select|jivs-editor-select|invalidClass|
-|LabelPresentation|role=label|jivs-label|invalidClass|
-|RequiredIndicatorPresentation|role=required|jivs-indicator|requiredClass|
-|FieldContainerPresentation|role=container|jivs-field-container|invalidClass|
-
-
 
 #### Error Display Presentations
 
@@ -2389,12 +2466,14 @@ The following aspects remain unresolved:
 These decisions must also establish ownership and lifecycle rules for the generated elements. Once created, the popup structure is expected to remain presentation-owned state until the presentation is disposed, unless the concrete popup design identifies a reason to recreate it.
 
 
-## Form Presentation Architecture
+## Form Presentation Adapters
+Form Presentation is an Adapter to adjust the presentation of a widget at the form-level.
+Typically that are the roles: summary and submit.
+
+It translates the `ValueHostsManager` validation state into changes to one form-level element,
+and attaches both persistent and stateful style sheet classes.
 
 ### Form Presentation Contracts
-
-A form presentation translates the `ValueHostsManager` validation state into changes to one form-level element. Typical elements include Validation Summaries and submit controls.
-
 Form presentations are separate from field presentations because they receive an `IValueHostsManager` and `ValidationState` rather than an individual `IFieldValueHost` and `ValueHostValidationState`.
 
 `FormValidationDispatcher` locates each relevant element, reads its installed `IJivsDomElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
@@ -2403,7 +2482,7 @@ Form presentations are separate from field presentations because they receive an
 
 ```ts
 interface IFormPresentation {
-    init(): void;
+    init(valueHostsManager: IValueHostsManager): void;
     apply(
         valueHostsManager: IValueHostsManager,
         state: ValidationState

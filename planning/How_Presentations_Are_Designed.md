@@ -492,7 +492,7 @@ The order may change when a shared abstraction is easier to understand through a
 
 The following questions remain intentionally deferred until their concrete roles are designed:
 
-- Whether the Required Indicator assigns a default `presentationClass`, such as `jivs-required-indicator`.
+- Whether the Required Indicator assigns a default `presentationClass`, such as `jivs-required`.
 - Whether the container role needs a Presentation or is handled entirely with `:has()`.
 - The concrete editor, label, required, and possible container class names.
 - The default visual treatment for each role and state.

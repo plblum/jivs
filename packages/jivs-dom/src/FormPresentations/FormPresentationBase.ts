@@ -58,7 +58,7 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
         return element;
     }
 
-    public init(): void
+    public init(valueHostsManager: IValueHostsManager): void
     {
         // nothing in the base
     }

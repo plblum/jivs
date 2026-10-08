@@ -19,6 +19,75 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  *   such as the host of the CSS class names.
  * - optionally override getStaticAriaElementUpdater() and getValidationStateAriaElementUpdater() 
  *   to provide ARIA updates on another element than the anchor.
+ * 
+ * ## CSS Class rules
+ * ### Persistent classes
+ * A Persistent class is a CSS class that remains applied to the presentation element throughout its lifecycle, 
+ * regardless of the field's validation state. The init() function will gather and apply these persistent classes to the presentation element
+ * using gatherPersistentClasses() to retrieve each persistent class.
+ * All class names should follow the 'jivs-' prefix convention to maintain consistency across the field presentations.
+ * 
+ * - Concrete field presentations should define their own persistent classes.
+ * - Base classes should also define their persistent classes if they provide any foundational styling or add stateful classes.
+ * - Expect that all persistent classes from the concrete class up through the inheritance chain to be collected and applied to the presentation element.
+ * 
+ *   For example, ErrorMessageDisplayPresentationBase supplies 'jivs-error-message-display' and its subclass InlineErrorMessageDisplayPresentation supplies 'jivs-inline-error-message-display'.
+ *   You should setup up your CSS files to include these persistent classes prior to adding your own.
+ *   ```css
+ *   .jivs-error-message-display.jivs-inline-error-message-display.my-custom-class {
+ *       // Inline error message display styling
+ *   }
+ *   ```
+ * - Add your own custom classes through the `variationClasses` option when constructing the field presentation.
+ * 
+ * ### Stateful classes
+ * Stateful classes are CSS classes that are applied to the presentation element based on specific states of the field.
+ * These classes may change dynamically as the field's state changes, such as when it becomes focused, invalid, or disabled.
+ * There are fixed stateful classes that jivs-dom manages:
+ *  - 'jivs-invalid' - For when ValidationState.isValid = false. Not used for error message displays (role='error').
+ *  - 'jivs-has-errors' - For when ValidationState.issuesFound.length > 0. Only used for error message displays.
+ *  - 'jivs-validated' - For when ValidationState.status = Valid to indicate that the field has been successfully validated. Not used for error message displays.
+ *  - 'jivs-corrected' - For when a previously invalid field has been corrected and is now valid. Not used for error message displays.
+ *  - 'jivs-required' - For when FieldValueHost.required = true. Not used for error message displays.
+ * 
+ * There are several strategies for customizing stateful classes:
+ * 1. Do not change the fixed stateful class. Let it only be used to change the state, usually by removing or applying display: none.
+ *    Instead, create your own custom stateful classes to handle all visualizations. Add each new class to the variationClasses option when constructing the field presentation.
+ *    ```css
+ *    .jivs-error-message-display: not(.jivs-invalid) {
+ *        display: none;
+ *    }
+ *    .jivs-error-message-display.jivs-invalid {
+ *      // do not change this class. Always create custom stateful classes for additional visualizations.
+ *    }
+ *    .jivs-error-message-display.jivs-invalid.my-custom-stateful-class {
+ *        color: red;
+ *    }
+ *    ```
+ * 2. Change the fixed stateful class to support visualizations, ensuring it still correctly handles visibility.
+ *    The variationClasses option does not need to be updated.
+ *    ```css
+ *    .jivs-error-message-display: not(.jivs-invalid) {
+ *        display: none;
+ *    }
+ *    .jivs-error-message-display.jivs-invalid {
+ *        color: red;
+ *    }
+ *    ```
+ * 3. Combine both approaches by using fixed stateful classes for essential state changes and custom stateful classes for additional visualizations.
+ *    In this case, be careful that a specific style defined in the fixed stateful class does not conflict with the custom stateful classes
+ *    because CSS cannot guarantee the order of precedence for conflicting styles.
+ *    ```css
+ *    .jivs-error-message-display: not(.jivs-invalid) {
+ *        display: none;
+ *    }
+ *    .jivs-error-message-display.jivs-invalid {
+ *        color: red;
+ *    }
+ *    .jivs-error-message-display.jivs-invalid.my-custom-stateful-class {
+ *        outline: 1px dotted red;
+ *    }
+ *    ```
  */
 export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLElement>
     extends AdapterBase<TElement>
@@ -33,9 +102,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     public constructor(element: TElement, options?: FieldPresentationBaseOptions, anchor?: IJivsDomElement | null)
     {
         super(element, anchor ?? null);
-        this._variationClass = (options?.variationClass !== undefined) ?
-            options.variationClass :
-            this.defaultVariationClass();
+        this._variationClasses = FieldPresentationBase.toStyleClassNameArray(options?.variationClasses);
     }
 
     /**
@@ -59,22 +126,65 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
         return element;
     }
 
+
     /**
-     * A class to add to the presentation element regardless of its state.
-     * If assigned, it will be affixed upon initialization and not later removed.
-     * 
-     * Use to select a different CSS class for the presentation element.
-     * Defaults to null.
+     * Utility method to add a list of CSS classes to the presentation element.
+     * @param list The list of CSS classes to add to the presentation element.
      */
-    protected get variationClass(): string | null
+    protected addClasses(list: string[]): void
     {
-        return this._variationClass;
+        for (let cls of list)
+        {
+            this.presentationElement.classList.add(cls);
+        }
     }
-    private _variationClass: string | null;
-    protected defaultVariationClass(): string | null
+    /**
+     * Utility method to remove a list of CSS classes from the presentation element.
+     * @param list The list of CSS classes to remove from the presentation element.
+     */
+    protected removeClasses(list: string[]): void
     {
-        return null;
+        for (let cls of list)
+        {
+            this.presentationElement.classList.remove(cls);
+        }
     }
+    /**
+     * Use in the constructor to convert style sheet class options into an array of individual CSS classes.
+     * If the input is a space-delimited string of classes, it will be split into an array of individual classes.
+     * @param styleClass The style classes. When just a string, they are treated as a space-delimited list of individual classes.
+     * If the input is null or undefined, an empty array will be returned.
+     * @returns An array of individual CSS classes derived from the input.
+     */
+    public static toStyleClassNameArray(styleClass: string | string[] | null | undefined): string[]
+    {
+        if (Array.isArray(styleClass))
+        {
+            return styleClass;
+        }
+        else if (typeof styleClass === 'string')
+        { // this can be a space delimited list of classes
+            return styleClass.split(' ').filter(cls => cls.length > 0);
+        }
+        return [];
+    }
+
+    /**
+     * Style sheet class names to add to the presentation element that will always be present.
+     * Defaults to an empty array.
+     * The FieldPresentationClass will add its own with predefined names. When building
+     * CSS, combine the fixed names with the variationClasses provided here.
+     * ```css
+     * .jivs-error-message-display.my-variation-class
+     * {
+     *   // styles
+     * }
+     */
+    protected get variationClasses(): string[]
+    {
+        return this._variationClasses;
+    }
+    private _variationClasses: string[];
 
     /**
      * Initializes the field presentation. 
@@ -87,14 +197,11 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
         this.gatherPersistentClasses(persistentClasses);
         // placed outside of gatherPersistentClasses to ensure it is always added last
         // for visual appeal only.
-        if (this.variationClass)
+        if (this.variationClasses.length > 0)
         {
-            persistentClasses.push(this.variationClass);
+            persistentClasses.push(...this.variationClasses);
         }        
-        for (let cls of persistentClasses)
-        {
-            this.presentationElement.classList.add(cls);
-        }        
+        this.addClasses(persistentClasses);          
     }
 
     /**
@@ -113,8 +220,6 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * @param state The current validation state of the value host.
      */
     public abstract apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void;
-
-
 
 
     /**
@@ -144,9 +249,16 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
 export interface FieldPresentationBaseOptions
 {
     /**
-     * The CSS class to add to the presentation element regardless of its state.
-     * If assigned, it will be affixed upon initialization and not later removed.
-     * Defaults to null.
+     * Style sheet class names to add to the presentation element that will always be present.
+     * Defaults to an empty array.
+     * The FieldPresentationClass will add its own with predefined names. When building
+     * CSS, combine the fixed names with the variationClasses provided here.
+     * ```css
+     * .jivs-error-message-display.my-variation-class
+     * {
+     *   // styles
+     * }
+     * ```
      */
-    variationClass?: string | null;
+    variationClasses?: string[] | string | null;
 }

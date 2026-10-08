@@ -13,12 +13,13 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * intended to call out the region as containing an error.
  * Specific to ElementRole.container.
  * 
- * Its default css classes are:
- * - invalidClass: jivs-invalid (inherited)
- * - validatedClass: null
- * - correctedClass: null
- * - requiredClass: null
- * - presentationClass: jivs-field-container
+ * ## Style Classes
+ * Style classes are applied to the wrapper (the anchor).
+ * - persistent classes: `jivs-field-container`, `jivs-isvalidpresentation`
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  * Registered with FieldPresentationFactory as presentation name 'fieldContainer'.
  */
@@ -40,12 +41,13 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
         super(element, options, anchor);
     }
 
-    protected override defaultVariationClass(): string | null
+    override gatherPersistentClasses(list: string[]): void
     {
-        return 'jivs-field-container';
+        super.gatherPersistentClasses(list);
+        list.push('jivs-field-container');
     }
-
 }
+
 /**
  * For registering this presentation with the FieldPresentationFactory.
  */

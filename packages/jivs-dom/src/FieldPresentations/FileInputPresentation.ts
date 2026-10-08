@@ -4,29 +4,28 @@
  */
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a file input.
  * That includes these type= attribute values: file.
- * Its default css classes are:
- * - invalidClass: jivs-invalid (inherited)
- * - validatedClass: null
- * - correctedClass: null
- * - requiredClass: null
- * - variationClass: null
- * - persistent classes: jivs-editor-file-input + inherited
+ * 
+ * ## Style Classes
+ * - persistent classes: 'jivs-editor-file-input', 'jivs-isvalidpresentation', 'jivs-editor'
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  * Registered with FieldPresentationFactory as presentation name 'fileInputEditor'.
  * InputAdapterDefinition should use this presentation name: 'fileInputEditor'.
  */
-export class FileInputPresentation extends IsValidFieldPresentationBase
+export class FileInputPresentation extends EditorFieldPresentationBase
 {
     /**
      * Constructor for the FileInputPresentation class.
      * @param element The HTML input element of type file associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
-     * default supplied by this class or a derived class.
      * @param anchor The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,

@@ -5,7 +5,7 @@
  */
 
 import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
-import { WrappedIsValidFieldPresentationBase } from './WrappedIsValidFieldPresentationBase';
+import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -13,38 +13,18 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * The input should be a textbox style. checkboxes, radio buttons, and file are 
  * handled elsewhere.
  * 
+ * ## Style Classes
  * Style classes are applied to the wrapper (the anchor).
- * By default, they make the editor element look like our non-wrapped editor.
- * 
- * Wrappers around editors allow for additional styling and layout control separate 
- * from the input element itself. Its immediate benefit is to offer an 
- * Indicator for the validity state or required status of the input element
- * by adding visual cues to the wrapper rather than the input element itself.
- * 
- * ```css
- * .jivs-required.jivs-wrapped-editor-input::after {
- *     content: '*';
- *     color: red;
- * }
- * ```
- * 
- * Its default css classes are:
- * - invalidClass: jivs-invalid
- * - validatedClass: null
- * - correctedClass: null
- * - requiredClass: null
- * - variantClass: null
- * - persistent classes: 'jivs-wrapped-editor-input' + inherited
- * 
- * We supply these CSS classes to activate the validated, corrected and required visual cues:
- * - validatedClass: jivs-validated-indicator
- * - correctedClass: jivs-corrected-indicator
- * - requiredClass: jivs-required-indicator
+ * - persistent classes: `jivs-wrapped-editor-input`, `jivs-wrapped-editor`, `jivs-isvalidpresentation`
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  * Registered with FieldPresentationFactory as presentation name 'wrappedInputEditor'.
  * WrappedInputAdapterDefinition should use this presentation name: 'wrappedInputEditor'.
  */
-export class WrappedTextInputPresentation extends WrappedIsValidFieldPresentationBase
+export class WrappedTextInputPresentation extends WrappedEditorFieldPresentationBase
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,

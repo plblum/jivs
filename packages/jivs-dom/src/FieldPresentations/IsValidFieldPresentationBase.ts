@@ -22,27 +22,20 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * state by adding and removing CSS classes.
  * 
  * It targets roles of editor, label, container, and required. Its not suitable
- * for error messages. It resolves CSS classes based on:
- * - ValueHostValidationState.isValid = false - invalidClass is applied.
- * - ValueHostValidationState.isValid = true, ValueHostValidationState.status = ValidationStatus.Valid and ValueHostValidationState.corrected = false - validatedClass is applied.
- * - ValueHostValidationState.isValid = true, ValueHostValidationState.status = ValidationStatus.Valid and ValueHostValidationState.corrected = true - correctedClass is applied.
- * - valueHost.required = true - requiredClass is applied.
- * - presentationClass is always applied when apply() runs, regardless of state.
+ * for error messages.
  * 
- * Its Css properties use a value of null to indicate that the class isn't used.
- * It assigns InvalidClass to 'jivs-invalid' as a default.
- * Subclasses are expected to supply the presentation class name to build a combined CSS class for the field presentation.
- * Example valid: 
- * ```html
- * <input type="text" class="jivs-editor-input" />
- * ```
- * Example invalid: 
- * ```html
- * <input type="text" class="jivs-invalid jivs-editor-input" />
- * ```
- * Each configured property must contain one CSS class name without a leading
- * period. Assign properties in a derived class to enable the corresponding
- * presentation behavior.
+ * ## CSS Class Resolution
+ * - permenant classes: 'jivs-isvalidpresentation' + subclass supplied permanent classes
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - ValueHostValidationState.isValid = false: 
+ *   'jivs-invalid'
+ * - ValueHostValidationState.isValid = true, ValueHostValidationState.status = ValidationStatus.Valid and ValueHostValidationState.corrected = false:
+ *   'jivs-validated' class is applied.
+ * - ValueHostValidationState.isValid = true, ValueHostValidationState.status = ValidationStatus.Valid and ValueHostValidationState.corrected = true:
+ *   'jivs-corrected' class is applied.
+ * - valueHost.required = true: 
+ *   'jivs-required' class is applied.
  */
 export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
     extends FieldPresentationBase<TElement>
@@ -63,60 +56,53 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     )
     {
         super(element, options, anchor);
-        this._invalidClass = (options?.invalidClass != null) ? options.invalidClass : this.defaultInvalidClass(); // options.invalidClass treats null differently: use the default, not disable
-        this._validatedClass = (options?.validatedClass !== undefined) ? options.validatedClass : this.defaultValidatedClass();
-        this._correctedClass = (options?.correctedClass !== undefined) ? options.correctedClass : this.defaultCorrectedClass();
-        this._requiredClass = (options?.requiredClass !== undefined) ? options.requiredClass : this.defaultRequiredClass();
+        this._validatedClassEnabled = options?.validatedClassEnabled ?? this.defaultValidatedClassEnabled();
+        this._correctedClassEnabled = options?.correctedClassEnabled ?? this.defaultCorrectedClassEnabled();
+        this._requiredClassEnabled = options?.requiredClassEnabled ?? this.defaultRequiredClassEnabled();
+    }
+
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-isvalidpresentation');
     }
     
     /**
      * CSS class added when state.isValid is false.
-     *
-     * This class represents validation errors rather than the mere presence of
-     * issues. Warning issues may be present while isValid remains true and
-     * therefore do not cause this class to be added.
-     *
-     * Invalid state takes precedence over corrected and validated states.
-     * Leave null when this presentation does not visually identify invalid
-     * fields.
-     * 
-     * Override defaultInvalidClass in a derived class to provide a default
-     * CSS class for invalid fields. This class has a default of 'jivs-invalid'.
+     * It has fixed value of 'jivs-invalid'.
      */
-    public get invalidClass(): string | null
+    protected get invalidClass(): string[]
     {
-        return this._invalidClass;
+        return ['jivs-invalid'];
     }
-    public set invalidClass(value: string | null) {
-            this._invalidClass = value;
-    }
-    protected defaultInvalidClass(): string | null {
-        return 'jivs-invalid';
-    }
-    private _invalidClass: string | null;
+
 
     /**
      * CSS class added when validation completed with
      * ValueHostValidationState.status === ValidationStatus.Valid.
-     *
-     * It is added only when the field is valid and state.corrected is false.
-     * Leave null when successful validation should not produce a visual
-     * treatment.
-     * 
-     * Override defaultValidatedClass to provide a different default CSS class for validated fields.
-     * This class has a default of null.
+     * It has a fixed value of 'jivs-validated'.
      */
-    public get validatedClass(): string | null
+    protected get validatedClass(): string[] 
     {
-        return this._validatedClass;
+        return ['jivs-validated'];
     }
-    public set validatedClass(value: string | null) {
-        this._validatedClass = value;
+
+    /**
+     * Indicates whether the validated CSS class should be applied.
+     * Validated CSS Class is an optional feature.
+     * Its value can be set by options.validatedClassEnabled.
+     * If not set there, it uses a default supplied by this class or a derived class.
+     */
+    protected get validatedClassEnabled(): boolean
+    {
+        return this._validatedClassEnabled;
     }
-    protected defaultValidatedClass(): string | null {
-        return null;
+    private _validatedClassEnabled: boolean;
+
+    protected defaultValidatedClassEnabled(): boolean
+    {
+        return false;
     }
-    private _validatedClass: string | null;
 
     /**
      * CSS class added when the field is valid and state.corrected is true.
@@ -124,50 +110,60 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      * Corrected state indicates that previously invalid validation results have
      * been fixed. It takes precedence over validatedClass so the two classes
      * are not added together.
-     *
-     * Leave null when corrected fields should use the ordinary valid
-     * presentation.
      * 
-     * Override defaultCorrectedClass to provide a different default CSS class for corrected fields.
-     * This class has a default of null.
+     * It has a fixed value of 'jivs-corrected'.
      */
-    public get correctedClass(): string | null
+    protected get correctedClass(): string[] 
     {
-        return this._correctedClass;
+        return ['jivs-corrected'];
     }
-    public set correctedClass(value: string | null) {
-        this._correctedClass = value;
+    /**
+     * Indicates whether the corrected CSS class should be applied.
+     * Corrected CSS Class is an optional feature.
+     * Its value can be set by options.correctedClassEnabled.
+     * If not set there, it uses a default supplied by this class or a derived class.
+     */
+    protected get correctedClassEnabled(): boolean
+    {
+        return this._correctedClassEnabled;
     }
-    protected defaultCorrectedClass(): string | null {
-        return null;
+    private _correctedClassEnabled: boolean;
+
+    protected defaultCorrectedClassEnabled(): boolean
+    {
+        return false;
     }
-    private _correctedClass: string | null; 
 
     /**
      * CSS class added when valueHost.required is true.
      *
      * Required state is independent of validation state, so this class may
      * coexist with invalidClass, validatedClass, or correctedClass.
-     *
-     * Leave null when this presentation does not visually identify required
-     * fields.
      * 
-     * Override defaultRequiredClass to provide a different default CSS class for required fields.
-     * This class has a default of null.
+     * It has a fixed value of 'jivs-required'.
      */
-    public get requiredClass(): string | null
+    protected get requiredClass(): string[]
     {
-        return this._requiredClass;
+        return ['jivs-required'];
     }
-    public set requiredClass(value: string | null)
+
+    /**
+     * Indicates whether the required CSS class should be applied.
+     * Required CSS Class is an optional feature.
+     * Its value can be set by options.requiredClassEnabled.
+     * If not set there, it uses a default supplied by this class or a derived class.
+     */
+    protected get requiredClassEnabled(): boolean
     {
-        this._requiredClass = value;
+        return this._requiredClassEnabled;
     }
-    protected defaultRequiredClass(): string | null
+    private _requiredClassEnabled: boolean;
+
+    protected defaultRequiredClassEnabled(): boolean
     {
-        return null;
+        return false;
     }
-    private _requiredClass: string | null;
+
 
     /**
      * Synchronizes the configured CSS classes with the current required and
@@ -196,86 +192,57 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
      */
     protected applyToElement(element: HTMLElement, valueHost: IFieldValueHost, state: ValueHostValidationState): void
     {
-        if (this.invalidClass !== null)
-            element.classList.remove(this.invalidClass);
-        if (this.validatedClass !== null)
-            element.classList.remove(this.validatedClass);
-        if (this.correctedClass !== null)
-            element.classList.remove(this.correctedClass);
 
+        this.removeClasses(this.invalidClass);
+        this.removeClasses(this.validatedClass);
+        this.removeClasses(this.correctedClass);
 
         // ordering of these 3 is intentional: invalid, corrected, validated
         if (!state.isValid)
         {
-            if (this.invalidClass !== null)
-                element.classList.add(this.invalidClass);
+            this.addClasses(this.invalidClass);
         }
-        else if (state.corrected && this.correctedClass)
+        else if (state.corrected && this.correctedClassEnabled)
         {
-            element.classList.add(this.correctedClass);
+            this.addClasses(this.correctedClass);
         }
         else if (state.status === ValidationStatus.Valid)   // fallback for when corrected is setup but without css name
         {
-            if (this.validatedClass !== null)
-                element.classList.add(this.validatedClass);
+            if (this.validatedClassEnabled)
+                this.addClasses(this.validatedClass);
         }
 
-        if (this.variationClass !== null)
-            element.classList.add(this.variationClass);
-        if (valueHost.required && this.requiredClass !== null)
-            element.classList.add(this.requiredClass);
+        if (valueHost.required && this.requiredClassEnabled)
+            this.addClasses(this.requiredClass);
 
     }    
 }
 
 export interface IsValidFieldPresentationOptions extends FieldPresentationBaseOptions
 {
+    
+    /**
+     * Indicates whether the validated CSS class should be applied.
+     * Validated CSS Class is an optional feature.
+     * Its value can be set by options.validatedClassEnabled.
+     * It defaults to false on most subclasses of IsValidFieldPresentation.
+     */
+    validatedClassEnabled?: boolean;
 
     /**
-     * CSS class added when state.isValid is false.
-     *
-     * This class represents validation errors rather than the mere presence of
-     * issues. Warning issues may be present while isValid remains true and
-     * therefore do not cause this class to be added.
-     *
-     * Invalid state takes precedence over corrected and validated states.
-     * Leave null when this presentation does not visually identify invalid
-     * fields.
-     * 
-     * Cannot be null.
+     * Indicates whether the corrected CSS class should be applied.
+     * Corrected CSS Class is an optional feature.
+     * Its value can be set by options.correctedClassEnabled.
+     * It defaults to false on most subclasses of IsValidFieldPresentation.
      */
-    invalidClass?: string;
-    /**
-     * CSS class added when validation completed with
-     * ValueHostValidationState.status === ValidationStatus.Valid.
-     *
-     * It is added only when the field is valid and state.corrected is false.
-     * Leave null when successful validation should not produce a visual
-     * treatment.
-     * 
-     * When null, no CSS class will be added for the validated state.
-     */
-    validatedClass?: string | null;
-    /**
-     * CSS class added when the field is valid and state.corrected is true.
-     *
-     * Corrected state indicates that previously invalid validation results have
-     * been fixed. It takes precedence over validatedClass so the two classes
-     * are not added together.
-     *
-     * Leave null when corrected fields should use the ordinary valid
-     * presentation.
-     */
-    correctedClass?: string | null;
+    correctedClassEnabled?: boolean;    
 
     /**
-     * CSS class added when valueHost.required is true.
-     *
-     * Required state is independent of validation state, so this class may
-     * coexist with invalidClass, validatedClass, or correctedClass.
-     *
-     * Leave null when this presentation does not visually identify required
-     * fields.
+     * Indicates whether the required CSS class should be applied.
+     * Required CSS Class is an optional feature.
+     * Its value can be set by options.requiredClassEnabled.
+     * It defaults to false on most subclasses of IsValidFieldPresentation.
+     * On RequiredIndicatorPresentation it defaults to true.
      */
-    requiredClass?: string | null;    
+    requiredClassEnabled?: boolean;
 }

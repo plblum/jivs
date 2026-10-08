@@ -13,48 +13,17 @@ import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPres
  * by checking validationstate.issuesFound?.count > 0.
  * It updates the style class with 'jivs-has-issues' when issues are found
  * and removes it when no issues are found.
+ * 
  * It provides these methods that are expected to be inherited by subclasses.
  * - applyIssuesFound()
  * - removeIssuesFound()
  * 
- * The CSS classes used by this presentation are:
- * - One or more fixed presentation classes.
- * - Using the variationClass property, an additional presentation class that offers a variation, such as 'jivs-inline-error-messages'
- * - A style class applied when issues are found: 'jivs-has-issues'
+ * ## Style Classes
+ * - persistent classes: 'jivs-error-message-display'
+ *   Add your own permanent classes within the options.variationClasses property.
+ *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
+ * - stateful classes: 'jivs-has-issues'
  * 
- * This class always adds 'jivs-error-message-display' to the presentation element.
- * InlineErrorMessageDisplayPresentation also adds 'jivs-inline-error-message-display'.
- * TriggeredErrorMessageDisplayPresentationBase also adds 'jivs-triggered-error-message-display'.
- * 
- * Suppose you are setting up CSS for InlineErrorMessageDisplayPresentation, you would target the 'jivs-inline-error-message-display' class.
- * ```css
- * .jivs-inline-error-message-display 
- * {
- * }
- * ```
- * The you want some additional styling for various use cases:
- * You create this, where '.jivs-awesome-error-messages' is the additional class you want to apply.
- * Set that in variationClass when constructing the presentation.
- * ```css
- * .jivs-inline-error-message-display.jivs-awesome-error-messages 
- * {
- * }
- * ``` 
- * Examples:
- * ```html
- * <!-- valid has no content but has the presentation classes applied -->
- * <div class="jivs-error-message-display jivs-inline-error-message-display">
- * </div>
- * 
- * <!-- adding variationClass='jivs-awesome-error-messages' -->
- * <div class="jivs-error-message-display jivs-inline-error-message-display jivs-awesome-error-messages">
- * </div>
- * 
- * <!-- invalid has content, all presentation classes, and 'jivs-has-issues' applied -->
- * <div class="jivs-error-message-display jivs-inline-error-message-display jivs-awesome-error-messages jivs-has-issues">
- *     <!-- Error messages will be displayed here -->
- * </div>
- * ```
  */
 export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentationBase
 {
@@ -75,7 +44,6 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
         super(element, options, anchor);
         assertNotNull(issuesFoundDisplay, 'issuesFoundDisplay');
         this._issuesFoundDisplay = issuesFoundDisplay;
-        this._hasIssuesClass = options?.hasIssuesClass ?? this.defaultHasIssuesClass();
     }
 
     /**
@@ -92,15 +60,11 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
      * A style class name that is applied when issues are found.
      * Defaults to 'jivs-has-issues' if not provided in the constructor.
      */
-    public get hasIssuesClass(): string | null
+    public get hasIssuesClass(): string[]
     {
-        return this._hasIssuesClass;
+        return ['jivs-has-issues'];
     }
-    private _hasIssuesClass: string | null;
-    protected defaultHasIssuesClass(): string | null
-    {
-        return 'jivs-has-issues';
-    }
+
 
     protected override get presentationElement(): HTMLElement
     {
@@ -136,20 +100,14 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
      */
     protected applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
     {
-        if (this.hasIssuesClass)
-        {
-            this.presentationElement.classList.add(this.hasIssuesClass);
-        }
+        this.addClasses(this.hasIssuesClass);
     }
     /**
      * Removes the issues found from the presentation, typically by clearing the visual state.
      */
     protected removeIssuesFound(): void
     {
-        if (this.hasIssuesClass)
-        {
-            this.presentationElement.classList.remove(this.hasIssuesClass);
-        }
+        this.removeClasses(this.hasIssuesClass);
     }
 
     /**
@@ -196,10 +154,4 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
 
 export interface ErrorMessageDisplayPresentationBaseOptions extends FieldPresentationBaseOptions
 {
-    /**
-     * The CSS class to add to the presentation element when issues are found.
-     * If assigned, it will be affixed upon initialization and not later removed.
-     * If not assigned, 'jivs-has-issues' will be used as the default class.
-     */
-    hasIssuesClass?: string;
 }
