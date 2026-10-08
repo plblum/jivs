@@ -15,7 +15,11 @@ export class IssuesFoundDisplay extends IssuesFoundDisplayBase
     {
         super(useSummaryMessages, messagesLimit);
     }
-    override apply(containerElement: HTMLElement, issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
+    public override needsContainerUpdate(): boolean
+    {
+        return true;
+    }
+    public override apply(containerElement: HTMLElement, issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
     {
         let resolvedText = this.getErrorMessageContent(issuesFound, valueHostsManager, fieldValueHost);
         containerElement.innerHTML = resolvedText;

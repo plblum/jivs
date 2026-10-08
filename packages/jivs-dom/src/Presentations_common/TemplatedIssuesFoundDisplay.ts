@@ -1,5 +1,6 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { jivsErrorMessagesContainerClass } from './IssuesFoundDisplayBase';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
@@ -22,7 +23,7 @@ import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
  * It supplies the following as the HTML for the default template:
  * ```html
  * <header>{Header}</header>
- * <div class="jivs-errormessages">{IssuesFound}</div>
+ * <div class="jivs-error-messages-container">{IssuesFound}</div>
  * <footer>{Footer}</footer>
  * ```
  * When the template is not provided, a default template will be generated based on the presence of header and footer text.
@@ -35,9 +36,9 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
      * Initializes a new instance of the TemplatedIssuesFoundDisplay class.
      * @param template - Template containing HTML and tokens of {Header}, {Footer}, and {IssuesFound}.
      * Use null to use a default template.
-     * @param headerText - The text to use for the header section.
+     * @param headerText - The text to use for the header section. It can contain HTML. Be sure to HTML encode where necessary.
      * @param headerTextl10n - The localization key for the header text.
-     * @param footerText - The text to use for the footer section.
+     * @param footerText - The text to use for the footer section. It can contain HTML. Be sure to HTML encode where necessary.
      * @param footerTextl10n - The localization key for the footer text.
      * @param useSummaryMessages - Whether to use summary messages instead of detailed messages.
      * @param messagesLimit - The maximum number of messages to display, if any.
@@ -79,7 +80,7 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
         if (hasHeaderText) {
             template += '<header>{Header}</header>';
         }
-        template += '<div class="jivs-errormessages">{IssuesFound}</div>';
+        template += TemplatedIssuesFoundDisplay.defaultIssuesFoundHtml(); 
         if (hasFooterText) {
             template += '<footer>{Footer}</footer>';
         }
@@ -88,6 +89,28 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
     private _hasHeaderToken: boolean = false;
     private _hasFooterToken: boolean = false;
 
+    public static defaultIssuesFoundHtml(): string
+    {
+        return `<div class="${jivsErrorMessagesContainerClass}">{IssuesFound}</div>`;
+    }
+
+    /**
+     * When true, the Field Presentation needs to update its container element to
+     * include class 'jivs-error-messages-container'.
+     * Determined by searching the template for the 'jivs-error-messages-container' string.
+     */
+    public needsContainerUpdate(): boolean
+    {
+        return !this.template.includes(jivsErrorMessagesContainerClass);
+    }
+
+    /**
+     * The header text to be displayed. It can contain HTML and expects the source Header text to already be HTML encoded where needed.
+     * @param issuesFound 
+     * @param valueHostsManager 
+     * @param fieldValueHost 
+     * @returns 
+     */
     protected getHeaderContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
         return this.resolveText(this._headerTextl10n, this._headerText, issuesFound, valueHostsManager, fieldValueHost);
@@ -95,6 +118,13 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
     private _headerText: string = '';
     private _headerTextl10n: string = '';
     
+    /**
+     * The footer text to be displayed. It can contain HTML and expects the source Footer text to already be HTML encoded where needed.
+     * @param issuesFound 
+     * @param valueHostsManager 
+     * @param fieldValueHost 
+     * @returns 
+     */
     protected getFooterContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
         return this.resolveText(this._footerTextl10n, this._footerText, issuesFound, valueHostsManager, fieldValueHost);

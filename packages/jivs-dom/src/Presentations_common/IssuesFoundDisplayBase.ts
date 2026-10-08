@@ -1,7 +1,8 @@
-import type { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
-import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
+import type { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
 import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
@@ -26,7 +27,7 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  *     <h2>Form Submission Errors</h2>
  *   </header>
  * 
- *   <div class="errormessages">
+ *   <div class="jivs-error-messages-container">
  *     <ul>
  *       <li>Email is required.</li>
  *       <li>Password is too short.</li>
@@ -38,6 +39,7 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  *   </footer>
  * </div>
  * ```
+ * The 'jivs-error-messages-container' class is used to wrap the list of error messages consistently across the application.
  */
 export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
 {
@@ -77,6 +79,12 @@ export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
     private _domServices!: IJivsDomServices;
 
     /**
+     * When true, the Field Presentation needs to update its container element to
+     * include class 'jivs-error-messages-container'.
+     */
+    public abstract needsContainerUpdate(): boolean;    
+
+    /**
      * Utility to resolve the appropriate text for a given key, falling back to the default text if no specific text is found.
      * It uses the jivsServices.errorMessagesService to localize based on the key, if available, or falls back to the default text.
      * It supports token replacement as follows:
@@ -98,7 +106,7 @@ export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
             resolvedText = resolvedText.replace('{Count}', issuesFound.length.toString());
             if (fieldValueHost)
             {
-                resolvedText = resolvedText.replace('{Label}', fieldValueHost.getLabel());
+                resolvedText = resolvedText.replace('{Label}', encodeHtml(fieldValueHost.getLabel()));
             }
         }
         return resolvedText ?? '';
@@ -124,3 +132,8 @@ export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
         valueHostsManager: IValueHostsManager,
         fieldValueHost: IFieldValueHost | null): void;
 }
+
+/**
+ * The CSS class used for the container wrapping error messages.
+ */
+export const jivsErrorMessagesContainerClass = 'jivs-error-messages-container';

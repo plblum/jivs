@@ -20,6 +20,12 @@ export interface IIssuesFoundDisplay
     setDomServices(domServices: IJivsDomServices): void;
 
     /**
+     * When true, the Field Presentation needs to update its container element to
+     * include class 'jivs-error-messages-container'.
+     */
+    needsContainerUpdate(): boolean;
+
+    /**
      * Applies the display of issues found to the specified container element.
      * 
      * @param containerElement The HTML element that will contain the displayed issues. Expect to update its content with HTML.
