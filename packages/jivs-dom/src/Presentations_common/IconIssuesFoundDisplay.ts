@@ -119,7 +119,7 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
         list.push('jivs-iconissuesfounddisplay');
     }
 
-    protected generateTemplateContent(): string
+    protected override generateTemplateContent(): string
     {
         const iconTag = this.generateIconTag();
         const headerTag = this.hasHeaderText ? `<header>{Header}</header>` : '';

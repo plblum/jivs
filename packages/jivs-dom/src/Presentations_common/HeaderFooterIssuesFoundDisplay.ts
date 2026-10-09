@@ -37,12 +37,12 @@ export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoun
         super(options);    
     }
 
-    override gatherOuterClasses(list: string[]): void
+    protected override gatherOuterClasses(list: string[]): void
     {
         list.push('jivs-headerfooterissuesfounddisplay');
     }
 
-    protected generateTemplateContent(): string
+    protected override generateTemplateContent(): string
     {
         // uses the parameters to determine if a part is needed, but does not resolve their text until apply time
 

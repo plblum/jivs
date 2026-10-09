@@ -124,7 +124,7 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
      */
     public needsContainerUpdate(): boolean
     {
-        return this.template !== undefined && this.template.includes(jivsErrorMessagesContainerClass);
+        return this.template?.length > 0 && this.template.includes(jivsErrorMessagesContainerClass);
     }
 
     /**

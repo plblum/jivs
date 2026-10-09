@@ -160,7 +160,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     {
         if (Array.isArray(styleClass))
         {
-            return styleClass;
+            return [...styleClass]; // clone to avoid mutation of the original array
         }
         else if (typeof styleClass === 'string')
         { // this can be a space delimited list of classes

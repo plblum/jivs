@@ -1,9 +1,6 @@
-import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { FieldPresentationBase } from '../FieldPresentations/FieldPresentationBase';
 import { jivsErrorMessagesContainerClass } from './IssuesFoundDisplayBase';
 import { TemplatedIssuesFoundDisplay, TemplatedIssuesFoundDisplayOptions } from './TemplatedIssuesFoundDisplay';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
 /**
  * Uses the TemplatedIssuesFoundDisplay as the base class for generating issue displays with templates.
@@ -22,10 +19,7 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
     constructor(options?: GeneratedTemplatedIssuesFoundDisplayBaseOptions)
     {
         super('', options);
-        let outerClasses = options?.outerClasses ?? [];
-        if (typeof outerClasses === 'string') {
-            outerClasses = [outerClasses];
-        }
+        let outerClasses = FieldPresentationBase.toStyleClassNameArray(options?.outerClasses)
         this.gatherOuterClasses(outerClasses);
         this._outerClasses = outerClasses;
     }
@@ -42,11 +36,11 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
     /**
      * Gets the style classes for the outer element.
      */
-    protected get outerClasses(): string[] | null
+    protected get outerClasses(): string[]
     {
         return this._outerClasses;
     }
-    private _outerClasses: string[] | null;
+    private _outerClasses: string[];
 
     protected get outerTag(): string
     {
@@ -55,7 +49,7 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
     protected get outerBeginTag(): string
     {
         let outer = '';
-        if (this.outerClasses && this.outerClasses.length > 0) {
+        if (this.outerClasses.length > 0) {
             outer = ` class="${this.outerClasses.join(' ')}"`;
         }
         return `<${this.outerTag}${outer}>`;
@@ -84,16 +78,6 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
         return `<div class="${ jivsErrorMessagesContainerClass }">{IssuesFound}</div>`;
     } 
 
-    public override apply(containerElement: HTMLElement, issuesFound: IssueFound[],
-        valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
-    {
-        assertNotNull(containerElement, 'containerElement');
-        if (this.template == null) // null/undefined
-        {
-            this.template = this.generateTemplate();
-        }
-        super.apply(containerElement, issuesFound, valueHostsManager, fieldValueHost);
-    }
 }
 
 export interface GeneratedTemplatedIssuesFoundDisplayBaseOptions extends Omit<TemplatedIssuesFoundDisplayOptions, 'template'>

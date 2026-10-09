@@ -15,7 +15,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * 
  * ## Style Classes
  * Style classes are applied to the wrapper (the anchor).
- * - persistent classes: `jivs-field-container`, `jivs-isvalidpresentation`
+ * - persistent classes: `jivs-fieldcontainer`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
  * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
@@ -44,7 +44,7 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
     override gatherPersistentClasses(list: string[]): void
     {
         super.gatherPersistentClasses(list);
-        list.push('jivs-field-container');
+        list.push('jivs-fieldcontainer');
     }
 }
 
