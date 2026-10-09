@@ -2,7 +2,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { jivsErrorMessagesContainerClass } from './IssuesFoundDisplayBase';
-import { TemplatedIssuesFoundDisplay } from './TemplatedIssuesFoundDisplay';
+import { TemplatedIssuesFoundDisplay, TemplatedIssuesFoundDisplayOptions } from './TemplatedIssuesFoundDisplay';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
 /**
@@ -15,17 +15,16 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
  */
 export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends TemplatedIssuesFoundDisplay
 {
-    constructor(outerClasses: string[] | null,
-        headerText: string | null,
-        headerTextl10n: string | null,
-        footerText: string | null,
-        footerTextl10n: string | null,
-        useSummaryMessages: boolean, messagesLimit: number | undefined = undefined)
+    /**
+     * Constructor for the generated templated issues found display.
+     * @param options The options for configuring the generated templated issues found display.
+     */
+    constructor(options?: GeneratedTemplatedIssuesFoundDisplayBaseOptions)
     {
-        super(null, headerText, headerTextl10n, footerText, footerTextl10n, useSummaryMessages, messagesLimit);
-        if (outerClasses == null)
-        {
-            outerClasses = [];
+        super('', options);
+        let outerClasses = options?.outerClasses ?? [];
+        if (typeof outerClasses === 'string') {
+            outerClasses = [outerClasses];
         }
         this.gatherOuterClasses(outerClasses);
         this._outerClasses = outerClasses;
@@ -63,10 +62,10 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
     }
 
     /**
-     * 
+     * Generates the complete HTML template including the outer container and inner content.
      * @returns The generated HTML template as a string.
      */
-    protected generateTemplate(): string
+    protected override generateTemplate(): string
     {
         return `${this.outerBeginTag}${this.generateTemplateContent()}</${this.outerTag}>`;
     }
@@ -95,4 +94,13 @@ export abstract class GeneratedTemplatedIssuesFoundDisplayBase extends Templated
         }
         super.apply(containerElement, issuesFound, valueHostsManager, fieldValueHost);
     }
+}
+
+export interface GeneratedTemplatedIssuesFoundDisplayBaseOptions extends Omit<TemplatedIssuesFoundDisplayOptions, 'template'>
+{
+    /**
+     * The outer CSS classes to be applied to the outer container element. 
+     * It can be a single class as a string or an array of class names.
+     */
+    outerClasses?: string[] | string;
 }

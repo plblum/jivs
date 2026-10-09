@@ -1,7 +1,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
+import { IssuesFoundDisplayBase, IssuesFoundDisplayBaseOptions } from './IssuesFoundDisplayBase';
 
 /**
  * Displays the error messages from the issuesFound list as the immediate child of the specified container element.
@@ -11,9 +11,9 @@ import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
  */
 export class IssuesFoundDisplay extends IssuesFoundDisplayBase
 {
-    constructor(useSummaryMessages: boolean, messagesLimit: number | undefined = undefined)
+    constructor(options?: IssuesFoundDisplayOptions)
     {
-        super(useSummaryMessages, messagesLimit);
+        super(options);
     }
     public override needsContainerUpdate(): boolean
     {
@@ -24,4 +24,8 @@ export class IssuesFoundDisplay extends IssuesFoundDisplayBase
         let resolvedText = this.getErrorMessageContent(issuesFound, valueHostsManager, fieldValueHost);
         containerElement.innerHTML = resolvedText;
     }
+}
+
+export interface IssuesFoundDisplayOptions extends IssuesFoundDisplayBaseOptions
+{
 }

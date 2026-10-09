@@ -1,4 +1,4 @@
-import { GeneratedTemplatedIssuesFoundDisplayBase } from './GeneratedTemplatedIssuesFoundDisplayBase';
+import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFoundDisplayBaseOptions } from './GeneratedTemplatedIssuesFoundDisplayBase';
 
 /**
  * Creates an issue display with a header and footer, using the provided template structure.
@@ -19,24 +19,22 @@ import { GeneratedTemplatedIssuesFoundDisplayBase } from './GeneratedTemplatedIs
 export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplayBase
 {
     /**
-     * 
-     * @param outerClasses - The CSS classes for the outer container element. 
-     * This class will always insert 'jivs-headerfooterissuesfounddisplay' into the outer container's CSS classes.
-     * @param headerText - Used WITHIN a generated <header> tag
-     * @param headerTextl10n 
-     * @param footerText - Used WITHIN a generated <footer> tag
-     * @param footerTextl10n 
-     * @param useSummaryMessages 
-     * @param messagesLimit 
+     * Creates a header and footer issues found display.
+     * ## Options   
+     * outerClasses - The CSS classes for the outer container element. 
+     *       This class will always insert 'jivs-headerfooterissuesfounddisplay' 
+     *       into the outer container's CSS classes.
+     * headerText - Used WITHIN a generated <header> tag
+     * headerTextl10n 
+     * footerText - Used WITHIN a generated <footer> tag
+     * footerTextl10n 
+     * useSummaryMessages 
+     * messagesLimit 
+     * @param options The options for configuring the header and footer issues found display.
      */
-    constructor(outerClasses: string[] | null,
-        headerText: string | null,
-        headerTextl10n: string | null,
-        footerText: string | null,
-        footerTextl10n: string | null,
-        useSummaryMessages: boolean, messagesLimit: number | undefined = undefined)
+    constructor(options?: HeaderFooterIssuesFoundDisplayOptions)
     {
-        super(outerClasses, headerText, headerTextl10n, footerText, footerTextl10n, useSummaryMessages, messagesLimit);    
+        super(options);    
     }
 
     override gatherOuterClasses(list: string[]): void
@@ -60,4 +58,8 @@ export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoun
         }
         return template;
     }
+}
+
+export interface HeaderFooterIssuesFoundDisplayOptions extends GeneratedTemplatedIssuesFoundDisplayBaseOptions
+{
 }

@@ -40,13 +40,17 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  * </div>
  * ```
  * The 'jivs-error-messages-container' class is used to wrap the list of error messages consistently across the application.
+ * 
+ * ## Options
+ * useSummaryMessages - Whether to use summary messages instead of detailed messages.
+ * messagesLimit - The maximum number of messages to display, if any.
  */
 export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
 {
-    constructor (useSummaryMessages: boolean = false, messagesLimit: number | undefined = undefined)
+    constructor(options?: IssuesFoundDisplayBaseOptions)
     {
-        this._useSummaryMessages = useSummaryMessages;
-        this._messagesLimit = messagesLimit;
+        this._useSummaryMessages = options?.useSummaryMessages ?? false;
+        this._messagesLimit = options?.messagesLimit;
     }
     protected get useSummaryMessages(): boolean
     {
@@ -137,3 +141,19 @@ export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
  * The CSS class used for the container wrapping error messages.
  */
 export const jivsErrorMessagesContainerClass = 'jivs-error-messages-container';
+
+export interface IssuesFoundDisplayBaseOptions
+{
+    /**
+     * Whether to use summary messages for the issues found.
+     * When not defined, it defaults to false.
+     */
+    useSummaryMessages?: boolean;
+    
+    /**
+     * The limit for the number of messages to display.
+     * When not defined or 0, there is no limit.
+     */
+    messagesLimit?: number;
+
+}

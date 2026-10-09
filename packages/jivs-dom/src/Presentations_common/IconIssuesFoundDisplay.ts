@@ -1,6 +1,5 @@
-import { GeneratedTemplatedIssuesFoundDisplayBase } from './GeneratedTemplatedIssuesFoundDisplayBase';
-import { TemplatedIssuesFoundDisplay } from './TemplatedIssuesFoundDisplay';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
+import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFoundDisplayBaseOptions } from './GeneratedTemplatedIssuesFoundDisplayBase';
 
 
 /**
@@ -84,23 +83,25 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
     /**
      * Creates an icon issues found display with the supplied parameters.
      * Only one of iconContent or imageSrc will be used. If both are supplied, iconContent takes precedence.
-     * @param outerClasses - The CSS classes for the outer container element.
-     * This class will always insert 'jivs-iconissuesfounddisplay' into the outer container's CSS classes.
-     * @param iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
-     * @param imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
-     * @param headerText - The text to use for the header section. It can contain HTML. Be sure to HTML encode where necessary.
-     * @param headerTextl10n - The localization key for the header text.
-     * @param useSummaryMessages - Whether to use summary messages.
-     * @param messagesLimit - The limit for the number of messages to display.
+     * 
+     * ## Options
+     * outerClasses - The CSS classes for the outer container element.
+     *      This class will always insert 'jivs-iconissuesfounddisplay' into the outer container's CSS classes.
+     * iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
+     * imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
+     * headerText - The text to use for the header section. It can contain HTML. 
+     *      Be sure to HTML encode where necessary.
+     * headerTextl10n - The localization key for the header text.
+     * useSummaryMessages - Whether to use summary messages.
+     * messagesLimit - The limit for the number of messages to display.
+     * 
+     * @param options - The options for configuring the icon issues found display.
      */
-    constructor(outerClasses: string[] | null, iconContent?: string, imageSrc?: string,
-        headerText: string | null = null,
-        headerTextl10n: string | null = null,
-        useSummaryMessages: boolean = false, messagesLimit?: number)
+    constructor(options?: IconIssuesFoundDisplayOptions)
     {
-        super(outerClasses, headerText, headerTextl10n, null, null, useSummaryMessages, messagesLimit);
-        this._iconContent = iconContent;
-        this._imageSrc = iconContent ? undefined : imageSrc;
+        super(options);
+        this._iconContent = options?.iconContent;
+        this._imageSrc = options?.iconContent ? undefined : options?.imageSrc;
     }
     protected get iconContent(): string | undefined
     {
@@ -147,4 +148,20 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
         }
     }
 
+}
+
+export interface IconIssuesFoundDisplayOptions extends Omit<GeneratedTemplatedIssuesFoundDisplayBaseOptions, 'footerText' | 'footerTextl10n'>
+{
+    /**
+     * The content for the icon section. It can contain HTML.
+     * Ensure HTML encoding where appropriate.
+     * When both this and imageSrc are provided, iconContent takes precedence.
+     */
+    iconContent?: string;
+
+    /**
+     * The source URL for the image to be used as an icon.
+     * When supplied, the icon is generated as an image element.
+     */
+    imageSrc?: string;
 }
