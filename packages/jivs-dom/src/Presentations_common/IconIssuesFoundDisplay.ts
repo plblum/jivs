@@ -1,3 +1,4 @@
+import { GeneratedTemplatedIssuesFoundDisplayBase } from './GeneratedTemplatedIssuesFoundDisplayBase';
 import { TemplatedIssuesFoundDisplay } from './TemplatedIssuesFoundDisplay';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
 
@@ -6,18 +7,22 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
  * A classic appearance of issues found displays is to use one icon to the side of 
  * the error messages container.
  * ```html
- * <div class="jivs-icon-issues-found-display">
+ * <div class="jivs-iconissuesfounddisplay [outerClasses]">
  *     <span class="jivs-icon" aria-hidden="true">[some content for an icon]</span>
  *     <div class='jivs-error-messages-container'>
- *     <ul>
- *         <li>Error message here</li>
- *     </ul>
+ *          <ul>
+ *              <li>Error message here</li>
+ *          </ul>
  *     </div>
  * </div>
  * ```
- * The rest involves the user supplying styling (recommend display:flex; align-items:flex-start; gap: set to desired spacing)
+ * It always includes 'jivs-iconissuesfounddisplay' in the outer container's CSS classes
+ * to align with the expected styling for icon issues found displays.
+ * 
+ * The rest involves the user supplying styling to jivs-iconissuesfounddisplay 
+ * (recommend display:flex; align-items:flex-start; gap: set to desired spacing)
  * and passing in the appropriate icon content for the `.jivs-icon` element.
- * They can pass in a reference for an <img> tag which will be generated if supplied.
+ * They can pass in a image source URL which will result in an <img src="[url]" alt="" />.
  * They can pass in HTML for anything they want.
  * They can omit content, and this class will still drop the <span class='jivs-icon'></span> element
  * so that style sheets can apply ::after styling to it with content style supplying the unicode character for the icon.
@@ -35,33 +40,56 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
  *     <span class="jivs-icon" aria-hidden="true"></span>
  * ```
  */
-export class IconIssuesFoundDisplay extends TemplatedIssuesFoundDisplay
+export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplayBase
 {
     /**
-     * Creates a template from the supplied parameters.
+     * Creates an icon issues found display with the supplied parameters.
+     * Only one of iconContent or imageSrc will be used. If both are supplied, iconContent takes precedence.
+     * @param outerClasses - The CSS classes for the outer container element.
+     * This class will always insert 'jivs-iconissuesfounddisplay' into the outer container's CSS classes.
      * @param iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
      * @param imageSrc  - Makes an img tag with this as the src for the icon element.
+     * @param useSummaryMessages - Whether to use summary messages.
+     * @param messagesLimit - The limit for the number of messages to display.
      */
-    constructor(iconContent?: string, imageSrc?: string, useSummaryMessages: boolean = false, messagesLimit?: number )
+    constructor(outerClasses: string[] | null, iconContent?: string, imageSrc?: string, useSummaryMessages: boolean = false, messagesLimit?: number )
     {
-        super(IconIssuesFoundDisplay.createTemplate(iconContent, imageSrc), null, null, null, null, useSummaryMessages, messagesLimit);
-
+        super(outerClasses, null, null, null, null, useSummaryMessages, messagesLimit);
+        this._iconContent = iconContent;
+        this._imageSrc = iconContent ? undefined : imageSrc;
     }
-    public static createTemplate(iconContent?: string, imageSrc?: string): string
+    protected get iconContent(): string | undefined
     {
-        let template = '';
-        if (iconContent)
+        return this._iconContent;
+    }
+    protected get imageSrc(): string | undefined
+    {
+        return this._imageSrc;
+    }
+    private _iconContent?: string;
+    private _imageSrc?: string;
+
+    protected override gatherOuterClasses(list: string[]): void
+    {
+        list.push('jivs-iconissuesfounddisplay');
+    }
+
+    protected generateTemplateContent(): string
+    {
+        let iconTag = '';
+        if (this.iconContent)
         {
-            template = `<span class="jivs-icon" aria-hidden="true">${iconContent}</span>`;
+            iconTag = `<span class="jivs-icon" aria-hidden="true">${ this.iconContent }</span>`;
         }
-        else if (imageSrc)
+        else if (this.imageSrc)
         {
-            template = `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(imageSrc) }" />`;
+            iconTag = `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(this.imageSrc) }" />`;
         }
         else
         {
-            template = `<span class="jivs-icon" aria-hidden="true"></span>`;
-        }
-        return '<div class="jivs-icon-issues-found-display">' + template + TemplatedIssuesFoundDisplay.defaultIssuesFoundHtml() + '</div>';
+            iconTag = `<span class="jivs-icon" aria-hidden="true"></span>`;
+        }       
+        return iconTag + this.defaultIssuesFoundHtml();
     }
+
 }

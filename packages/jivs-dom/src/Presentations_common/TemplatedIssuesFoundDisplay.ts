@@ -19,15 +19,6 @@ import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
  * 
  * You can use static text instead of tokens if you prefer in header and footer, but you will not
  * get the benefits of localization or support of dynamic values like issue count or field labels.
- * 
- * It supplies the following as the HTML for the default template:
- * ```html
- * <header>{Header}</header>
- * <div class="jivs-error-messages-container">{IssuesFound}</div>
- * <footer>{Footer}</footer>
- * ```
- * When the template is not provided, a default template will be generated based on the presence of header and footer text.
- * It only adds the header and footer sections if the corresponding text is provided.
  */
 export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
 {
@@ -56,43 +47,73 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
         this._footerText = footerText ?? '';
         this._footerTextl10n = footerTextl10n ?? '';
 
-        this._template = template ?? this.defaultTemplate(headerText || headerTextl10n ? true : false, footerText || footerTextl10n ? true : false);
-        this._hasHeaderToken = this._template.includes('{Header}');
-        this._hasFooterToken = this._template.includes('{Footer}');
-        if (!this.template.includes('{IssuesFound}')) {
-            throw new Error('The template must include the {IssuesFound} token.');
-        }
+        this.template = template;   // will update properties dependent on the template, like header and footer tokens
     }
     /**
      * Gets the current template string.
      */
-    protected get template(): string
+    protected get template(): string | null
     {
-        return this._template;
+        return this._template ?? null;
     }
-    private _template!: string;
-
-    protected defaultTemplate(hasHeaderText: boolean, hasFooterText: boolean): string
+    protected set template(value: string | null)
     {
-        // uses the parameters to determine if a part is needed, but does not resolve their text until apply time
-
-        let template = '';
-        if (hasHeaderText) {
-            template += '<header>{Header}</header>';
-        }
-        template += TemplatedIssuesFoundDisplay.defaultIssuesFoundHtml(); 
-        if (hasFooterText) {
-            template += '<footer>{Footer}</footer>';
-        }
-        return template;
+        this._template = value;
+        const hasTemplate = this._template !== null && this._template !== undefined;
+        this._hasHeaderToken = hasTemplate && this._template!.includes('{Header}');
+        this._hasFooterToken = hasTemplate && this._template!.includes('{Footer}');
+        if (hasTemplate && !this.template!.includes('{IssuesFound}'))
+        {
+            throw new Error('The template must include the {IssuesFound} token.');
+        }        
     }
+    private _template?: string | null;
+
+    protected get headerText(): string
+    {
+        return this._headerText;
+    }
+    protected set headerText(value: string)
+    {
+        this._headerText = value ?? '';
+    }
+    protected get headerTextl10n(): string
+    {
+        return this._headerTextl10n;
+    }
+    protected set headerTextl10n(value: string)
+    {
+        this._headerTextl10n = value ?? '';
+    }
+    protected get footerText(): string
+    {
+        return this._footerText;
+    }
+    protected set footerText(value: string)
+    {
+        this._footerText = value ?? '';
+    }
+    protected get footerTextl10n(): string
+    {
+        return this._footerTextl10n;
+    }
+    protected set footerTextl10n(value: string)
+    {
+        this._footerTextl10n = value ?? '';
+    }
+
+    protected get hasHeaderText(): boolean
+    {
+        return this._headerText || this._headerTextl10n ? true : false;
+    }
+
+    protected get hasFooterText(): boolean
+    {
+        return this._footerText || this._footerTextl10n ? true : false;
+    }
+
     private _hasHeaderToken: boolean = false;
     private _hasFooterToken: boolean = false;
-
-    public static defaultIssuesFoundHtml(): string
-    {
-        return `<div class="${jivsErrorMessagesContainerClass}">{IssuesFound}</div>`;
-    }
 
     /**
      * When true, the Field Presentation needs to update its container element to
@@ -101,7 +122,7 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
      */
     public needsContainerUpdate(): boolean
     {
-        return !this.template.includes(jivsErrorMessagesContainerClass);
+        return this.template != null && this.template.includes(jivsErrorMessagesContainerClass);
     }
 
     /**
@@ -143,7 +164,8 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
         valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
     {
         assertNotNull(containerElement, 'containerElement');
-        let template = this.template;
+        let template = this.template!;
+        assertNotNull(template, 'template');
         if (this._hasHeaderToken) {
             template = template.replace('{Header}', this.getHeaderContent(issuesFound, valueHostsManager, fieldValueHost));
         }
