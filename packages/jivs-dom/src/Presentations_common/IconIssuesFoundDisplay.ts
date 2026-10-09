@@ -6,22 +6,55 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
 /**
  * A classic appearance of issues found displays is to use one icon to the side of 
  * the error messages container.
+ * 
+ * It has a 2 column pattern with the icon in the first column and the error messages container in the second column.
+ * The second column may have an optional header followed by the list of error messages.
+ * 
  * ```html
  * <div class="jivs-iconissuesfounddisplay [outerClasses]">
- *     <span class="jivs-icon" aria-hidden="true">[some content for an icon]</span>
- *     <div class='jivs-error-messages-container'>
- *          <ul>
- *              <li>Error message here</li>
- *          </ul>
+ *     <div class='jivs-column1'>
+ *         <!-- represents the icon element. See below -->
+ *     </div>
+ *     <div class='jivs-column2'>
+ *          <div class='jivs-error-messages-container'>
+ *               <ul>
+ *                   <li>Error message here</li>
+ *               </ul>
+ *          </div>
  *     </div>
  * </div>
  * ```
- * It always includes 'jivs-iconissuesfounddisplay' in the outer container's CSS classes
- * to align with the expected styling for icon issues found displays.
+ * Column 2 containing both a header and the list of error messages:
+ * ```html
+ *     <div class='jivs-column2'>
+ *          <header>{Header}</header>
+ *          <div class='jivs-error-messages-container'>
+ *               <ul>
+ *                   <li>Error message here</li>
+ *               </ul>
+ *          </div>
+ *     </div>
+ * ```
+ * Example using a single issue with header:
+ * ```html
+ *     <div class='jivs-column2'>
+ *          <header>{Header}</header>
+ *          <div class='jivs-error-messages-container'>
+ *               <span>Error message here</span>
+ *          </div>
+ *     </div>
+ * ```
+ * It has these fixed style sheet classes:
+ * - jivs-iconissuesfounddisplay: The outer element.
+ * - jivs-column1: The first column containing the icon element.
+ * - jivs-column2: The second column containing the error messages container.
+ * - jivs-error-messages-container: The container for the list of error messages.
+ * - jivs-icon: The element representing the icon within the first column.
  * 
- * The rest involves the user supplying styling to jivs-iconissuesfounddisplay 
- * (recommend display:flex; align-items:flex-start; gap: set to desired spacing)
- * and passing in the appropriate icon content for the `.jivs-icon` element.
+ * The rest involves the user supplying styling and 
+ * passing in the appropriate icon content for the `.jivs-icon` element.
+ * 
+ * ## Establishing the Icon Content
  * They can pass in a image source URL which will result in an <img src="[url]" alt="" />.
  * They can pass in HTML for anything they want.
  * They can omit content, and this class will still drop the <span class='jivs-icon'></span> element
@@ -29,15 +62,21 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
  * 
  * With iconContent property supplied:
  * ```html
- *     <span class="jivs-icon" aria-hidden="true">[exactly iconContent]</span>
+ *     <div class="jivs-column1">
+ *         <span class="jivs-icon" aria-hidden="true">[exactly iconContent]</span>
+ *     </div>
  * ```
  * With imageSrc property supplied:
  * ```html
- *     <img class="jivs-icon" alt="" aria-hidden="true" src="[HTML Encoded imageSrc]" />
+ *     <div class="jivs-column1">
+ *         <img class="jivs-icon" alt="" aria-hidden="true" src="[HTML Encoded imageSrc]" />
+ *     </div>
  * ```
  * With none of the properties supplied:
  * ```html
- *     <span class="jivs-icon" aria-hidden="true"></span>
+ *     <div class="jivs-column1">
+ *         <span class="jivs-icon" aria-hidden="true"></span>
+ *     </div>
  * ```
  */
 export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplayBase
@@ -48,13 +87,18 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
      * @param outerClasses - The CSS classes for the outer container element.
      * This class will always insert 'jivs-iconissuesfounddisplay' into the outer container's CSS classes.
      * @param iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
-     * @param imageSrc  - Makes an img tag with this as the src for the icon element.
+     * @param imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
+     * @param headerText - The text to use for the header section. It can contain HTML. Be sure to HTML encode where necessary.
+     * @param headerTextl10n - The localization key for the header text.
      * @param useSummaryMessages - Whether to use summary messages.
      * @param messagesLimit - The limit for the number of messages to display.
      */
-    constructor(outerClasses: string[] | null, iconContent?: string, imageSrc?: string, useSummaryMessages: boolean = false, messagesLimit?: number )
+    constructor(outerClasses: string[] | null, iconContent?: string, imageSrc?: string,
+        headerText: string | null = null,
+        headerTextl10n: string | null = null,
+        useSummaryMessages: boolean = false, messagesLimit?: number)
     {
-        super(outerClasses, null, null, null, null, useSummaryMessages, messagesLimit);
+        super(outerClasses, headerText, headerTextl10n, null, null, useSummaryMessages, messagesLimit);
         this._iconContent = iconContent;
         this._imageSrc = iconContent ? undefined : imageSrc;
     }
@@ -76,20 +120,31 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
 
     protected generateTemplateContent(): string
     {
-        let iconTag = '';
+        const iconTag = this.generateIconTag();
+        const headerTag = this.hasHeaderText ? `<header>{Header}</header>` : '';
+        let template = '<div class="jivs-column1">';
+        template += iconTag;
+        template += '</div>';
+        template += '<div class="jivs-column2">';
+        template += headerTag + this.defaultIssuesFoundHtml();
+        template += '</div>';
+        return template;
+    }
+
+    private generateIconTag(): string
+    {
         if (this.iconContent)
         {
-            iconTag = `<span class="jivs-icon" aria-hidden="true">${ this.iconContent }</span>`;
+            return `<span class="jivs-icon" aria-hidden="true">${ this.iconContent }</span>`;
         }
         else if (this.imageSrc)
         {
-            iconTag = `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(this.imageSrc) }" />`;
+            return `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(this.imageSrc) }" />`;
         }
         else
         {
-            iconTag = `<span class="jivs-icon" aria-hidden="true"></span>`;
-        }       
-        return iconTag + this.defaultIssuesFoundHtml();
+            return `<span class="jivs-icon" aria-hidden="true"></span>`;
+        }
     }
 
 }
