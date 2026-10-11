@@ -19,7 +19,7 @@ import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPres
  * - removeIssuesFound()
  * 
  * ## Style Classes
- * - persistent classes: 'jivs-error-message-display'
+ * - persistent classes: 'jivs-errormessagedisplay'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
  * - stateful classes: 'jivs-has-issues'
@@ -82,12 +82,12 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     }
 
     /**
-     * @param list - adds 'jivs-error-message-display' to the list of persistent classes.
+     * @param list - adds 'jivs-errormessagedisplay' to the list of persistent classes.
      */
     protected override gatherPersistentClasses(list: string[]): void
     {
         super.gatherPersistentClasses(list);
-        list.push('jivs-error-message-display');
+        list.push('jivs-errormessagedisplay');
     }
 
     /**

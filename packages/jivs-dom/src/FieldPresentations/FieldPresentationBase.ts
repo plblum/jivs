@@ -31,10 +31,10 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - Base classes should also define their persistent classes if they provide any foundational styling or add stateful classes.
  * - Expect that all persistent classes from the concrete class up through the inheritance chain to be collected and applied to the presentation element.
  * 
- *   For example, ErrorMessageDisplayPresentationBase supplies 'jivs-error-message-display' and its subclass InlineErrorMessageDisplayPresentation supplies 'jivs-inline-error-message-display'.
+ *   For example, ErrorMessageDisplayPresentationBase supplies 'jivs-errormessagedisplay' and its subclass InlineErrorMessageDisplayPresentation supplies 'jivs-inlineerrormessagedisplay'.
  *   You should setup up your CSS files to include these persistent classes prior to adding your own.
  *   ```css
- *   .jivs-error-message-display.jivs-inline-error-message-display.my-custom-class {
+ *   .jivs-errormessagedisplay.jivs-inlineerrormessagedisplay.my-custom-class {
  *       // Inline error message display styling
  *   }
  *   ```
@@ -54,23 +54,23 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * 1. Do not change the fixed stateful class. Let it only be used to change the state, usually by removing or applying display: none.
  *    Instead, create your own custom stateful classes to handle all visualizations. Add each new class to the variationClasses option when constructing the field presentation.
  *    ```css
- *    .jivs-error-message-display: not(.jivs-invalid) {
+ *    .jivs-errormessagedisplay: not(.jivs-invalid) {
  *        display: none;
  *    }
- *    .jivs-error-message-display.jivs-invalid {
+ *    .jivs-errormessagedisplay.jivs-invalid {
  *      // do not change this class. Always create custom stateful classes for additional visualizations.
  *    }
- *    .jivs-error-message-display.jivs-invalid.my-custom-stateful-class {
+ *    .jivs-errormessagedisplay.jivs-invalid.my-custom-stateful-class {
  *        color: red;
  *    }
  *    ```
  * 2. Change the fixed stateful class to support visualizations, ensuring it still correctly handles visibility.
  *    The variationClasses option does not need to be updated.
  *    ```css
- *    .jivs-error-message-display: not(.jivs-invalid) {
+ *    .jivs-errormessagedisplay: not(.jivs-invalid) {
  *        display: none;
  *    }
- *    .jivs-error-message-display.jivs-invalid {
+ *    .jivs-errormessagedisplay.jivs-invalid {
  *        color: red;
  *    }
  *    ```
@@ -78,13 +78,13 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  *    In this case, be careful that a specific style defined in the fixed stateful class does not conflict with the custom stateful classes
  *    because CSS cannot guarantee the order of precedence for conflicting styles.
  *    ```css
- *    .jivs-error-message-display: not(.jivs-invalid) {
+ *    .jivs-errormessagedisplay: not(.jivs-invalid) {
  *        display: none;
  *    }
- *    .jivs-error-message-display.jivs-invalid {
+ *    .jivs-errormessagedisplay.jivs-invalid {
  *        color: red;
  *    }
- *    .jivs-error-message-display.jivs-invalid.my-custom-stateful-class {
+ *    .jivs-errormessagedisplay.jivs-invalid.my-custom-stateful-class {
  *        outline: 1px dotted red;
  *    }
  *    ```
@@ -175,7 +175,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * The FieldPresentationClass will add its own with predefined names. When building
      * CSS, combine the fixed names with the variationClasses provided here.
      * ```css
-     * .jivs-error-message-display.my-variation-class
+     * .jivs-errormessagedisplay.my-variation-class
      * {
      *   // styles
      * }
@@ -254,7 +254,7 @@ export interface FieldPresentationBaseOptions
      * The FieldPresentationClass will add its own with predefined names. When building
      * CSS, combine the fixed names with the variationClasses provided here.
      * ```css
-     * .jivs-error-message-display.my-variation-class
+     * .jivs-errormessagedisplay.my-variation-class
      * {
      *   // styles
      * }

@@ -1794,10 +1794,10 @@ All class names should follow the 'jivs-' prefix convention to maintain consiste
 - Base classes should also define their persistent classes if they provide any foundational styling or behavior.
 - Expect that all persistent classes from the concrete class up through the inheritance chain to be collected and applied to the presentation element.
 
-    For example, ErrorMessageDisplayPresentationBase supplies 'jivs-error-message-display' and its subclass InlineErrorMessageDisplayPresentation     supplies 'jivs-inline-error-message-display'.
+    For example, ErrorMessageDisplayPresentationBase supplies 'jivs-errormessagedisplay' and its subclass InlineErrorMessageDisplayPresentation     supplies 'jivs-inlineerrormessagedisplay'.
     You should setup up your CSS files to include these persistent classes prior to adding your own.
     ```css
-    .jivs-error-message-display.jivs-inline-error-message-display.my-custom-class {
+    .jivs-errormessagedisplay.jivs-inlineerrormessagedisplay.my-custom-class {
         // Inline error message display styling
     }
     ```
@@ -1817,23 +1817,23 @@ There are several strategies for customizing stateful classes:
 1. Do not change the fixed stateful class. Let it only be used to change the state, usually by removing or applying display: none.
    Instead, create your own custom stateful classes to handle all visualizations. Add each new class to the variationClasses option when constructing the field presentation.
    ```css
-   .jivs-error-message-display: not(.jivs-has-errors) {
+   .jivs-errormessagedisplay: not(.jivs-has-errors) {
        display: none;
    }
-   .jivs-error-message-display.jivs-has-errors {
+   .jivs-errormessagedisplay.jivs-has-errors {
      // do not change this class. Always create custom stateful classes for additional visualizations.
    }
-   .jivs-error-message-display.jivs-has-errors.my-custom-stateful-class {
+   .jivs-errormessagedisplay.jivs-has-errors.my-custom-stateful-class {
        color: red;
    }
    ```
 2. Change the fixed stateful class to support visualizations, ensuring it still correctly handles visibility.
    The variationClasses option does not need to be updated.
    ```css
-   .jivs-error-message-display: not(.jivs-has-errors) {
+   .jivs-errormessagedisplay: not(.jivs-has-errors) {
        display: none;
    }
-   .jivs-error-message-display.jivs-has-errors {
+   .jivs-errormessagedisplay.jivs-has-errors {
        color: red;
    }
    ```
@@ -1841,13 +1841,13 @@ There are several strategies for customizing stateful classes:
    In this case, be careful that a specific style defined in the fixed stateful class does not conflict with the custom stateful classes
    because CSS cannot guarantee the order of precedence for conflicting styles.
    ```css
-   .jivs-error-message-display: not(.jivs-has-errors) {
+   .jivs-errormessagedisplay: not(.jivs-has-errors) {
        display: none;
    }
-   .jivs-error-message-display.jivs-has-errors {
+   .jivs-errormessagedisplay.jivs-has-errors {
        color: red;
    }
-   .jivs-error-message-display.jivs-has-errors.my-custom-stateful-class {
+   .jivs-errormessagedisplay.jivs-has-errors.my-custom-stateful-class {
        outline: 1px dotted red;
    }
    ```
@@ -1858,7 +1858,7 @@ There are several strategies for customizing stateful classes:
 |IsValidFieldPresentationBase|FieldPresentationBase|Non-editors|jivs-isvalidpresentation|jivs-invalid,jivs-validated,jivs-corrected,jivs-required|
 |EditorFieldPresentationBase|IsValidFieldPresentationBase|editors|jivs-editor|inherited|
 |WrappedEditorFieldPresentationBase|IsValidFieldPresentationBase|wrapped editors|jivs-wrapped-editor|inherited|
-|ErrorMessageDisplayPresentationBase|FieldPresentationBase|error message display|jivs-error-message-display|jivs-has-errors|
+|ErrorMessageDisplayPresentationBase|FieldPresentationBase|error message display|jivs-errormessagedisplay|jivs-has-errors|
 |TriggeredErrorMessageDisplayPresentationBase|ErrorMessageDisplayPresentationBase|error message display|jivs-triggered-error-message-display|jivs-open, inherited|
 |PopupErrorMessageDisplayPresentationBase|TriggeredErrorMessageDisplayPresentationBase|error message display with popups|jivs-popup-error-message-display|inherited|
 
@@ -2216,7 +2216,7 @@ Initialization occurs during the first `apply()` call because the Field Value Ho
 
 Common initialization:
 
-1. Adds `jivs-error-message-display`.
+1. Adds `jivs-errormessagedisplay`.
 2. Supplies DOM services to the injected `IIssuesFoundDisplay`.
 3. Allows subclasses to perform additional one-time initialization.
 
@@ -2428,7 +2428,7 @@ The error-display foundation uses these standard CSS responsibilities:
 
 | CSS class | Purpose |
 |---|---|
-| `jivs-error-message-display` | Identifies every Error Message Display presentation. |
+| `jivs-errormessagedisplay` | Identifies every Error Message Display presentation. |
 | Presentation-specific class | Identifies the concrete inline or popup presentation. |
 | `jivs-has-issues` | Indicates that validation supplied one or more issues. |
 | `jivs-open` | Indicates that a triggered presentation is open. |

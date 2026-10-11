@@ -8,6 +8,8 @@ import { IssuesFoundDisplayBase, IssuesFoundDisplayBaseOptions } from './IssuesF
  * It uses the IssuesFoundFormatterService to format the error messages.
  * 
  * It has limited customization options compared to templated displays via TemplatedIssuesFoundDisplay.
+ * 
+ * It applies the 'jivs-issuesfounddisplay' class to the container element.
  */
 export class IssuesFoundDisplay extends IssuesFoundDisplayBase
 {
@@ -22,6 +24,7 @@ export class IssuesFoundDisplay extends IssuesFoundDisplayBase
     public override apply(containerElement: HTMLElement, issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
     {
         let resolvedText = this.getErrorMessageContent(issuesFound, valueHostsManager, fieldValueHost);
+        containerElement.classList.add('jivs-issuesfounddisplay');
         containerElement.innerHTML = resolvedText;
     }
 }

@@ -10,7 +10,7 @@ import { jivsErrorMessagesContainerClass } from '../Presentations_common/IssuesF
  * the container itself contains the error message content.
  * 
  * ## Style Classes
- * - persistent classes: 'jivs-inline-error-message-display', 'jivs-error-message-display', 'jivs-error-messages-container'
+ * - persistent classes: 'jivs-inlineerrormessagedisplay', 'jivs-errormessagedisplay', 'jivs-error-messages-container'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
  * - stateful classes: 'jivs-has-issues'
@@ -41,7 +41,7 @@ export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPr
     protected override gatherPersistentClasses(list: string[]): void
     {
         super.gatherPersistentClasses(list);
-        list.push('jivs-inline-error-message-display');
+        list.push('jivs-inlineerrormessagedisplay');
         if (this.issuesFoundDisplay.needsContainerUpdate()) {
             list.push(jivsErrorMessagesContainerClass); // jivs-error-messages-container
         }

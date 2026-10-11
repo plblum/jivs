@@ -1,5 +1,5 @@
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFoundDisplayBaseOptions } from './GeneratedTemplatedIssuesFoundDisplayBase';
+import { LayoutIssuesFoundDisplayBase, LayoutIssuesFoundDisplayBaseOptions } from './LayoutIssuesFoundDisplayBase';
 
 
 /**
@@ -26,7 +26,7 @@ import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFound
  * Column 2 containing both a header and the list of error messages:
  * ```html
  *     <div class='jivs-column2'>
- *          <header>{Header}</header>
+ *          <div class='jivs-header'>{Header}</div>
  *          <div class='jivs-error-messages-container'>
  *               <ul>
  *                   <li>Error message here</li>
@@ -37,7 +37,7 @@ import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFound
  * Example using a single issue with header:
  * ```html
  *     <div class='jivs-column2'>
- *          <header>{Header}</header>
+ *          <div class='jivs-header'>{Header}</div>
  *          <div class='jivs-error-messages-container'>
  *               <span>Error message here</span>
  *          </div>
@@ -49,6 +49,7 @@ import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFound
  * - jivs-column2: The second column containing the error messages container.
  * - jivs-error-messages-container: The container for the list of error messages.
  * - jivs-icon: The element representing the icon within the first column.
+ * - jivs-header: The optional header within the second column.
  * 
  * The rest involves the user supplying styling and 
  * passing in the appropriate icon content for the `.jivs-icon` element.
@@ -78,7 +79,7 @@ import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFound
  *     </div>
  * ```
  */
-export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplayBase
+export class IconIssuesFoundDisplay extends LayoutIssuesFoundDisplayBase
 {
     /**
      * Creates an icon issues found display with the supplied parameters.
@@ -122,7 +123,7 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
     protected override generateTemplateContent(): string
     {
         const iconTag = this.generateIconTag();
-        const headerTag = this.hasHeaderText ? `<header>{Header}</header>` : '';
+        const headerTag = this.hasHeaderText ? `<div class='jivs-header'>{Header}</div>` : '';
         let template = '<div class="jivs-column1">';
         template += iconTag;
         template += '</div>';
@@ -150,7 +151,7 @@ export class IconIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplay
 
 }
 
-export interface IconIssuesFoundDisplayOptions extends Omit<GeneratedTemplatedIssuesFoundDisplayBaseOptions, 'footerText' | 'footerTextl10n'>
+export interface IconIssuesFoundDisplayOptions extends Omit<LayoutIssuesFoundDisplayBaseOptions, 'footerText' | 'footerTextl10n'>
 {
     /**
      * The content for the icon section. It can contain HTML.

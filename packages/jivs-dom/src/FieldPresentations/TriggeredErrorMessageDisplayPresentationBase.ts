@@ -25,7 +25,7 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * (Not using the init function because it doesn't have the necessary parameters to fully realize an installation.)
  * 
  * ## Style Classes
- * - persistent classes: 'jivs-triggered-error-message-display', 'jivs-error-message-display'
+ * - persistent classes: 'jivs-triggered-error-message-display', 'jivs-errormessagedisplay'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
  * - stateful classes: 'jivs-open', 'jivs-has-issues'

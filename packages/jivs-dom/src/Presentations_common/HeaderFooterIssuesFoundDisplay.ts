@@ -1,22 +1,24 @@
-import { GeneratedTemplatedIssuesFoundDisplayBase, GeneratedTemplatedIssuesFoundDisplayBaseOptions } from './GeneratedTemplatedIssuesFoundDisplayBase';
+import { LayoutIssuesFoundDisplayBase, LayoutIssuesFoundDisplayBaseOptions } from './LayoutIssuesFoundDisplayBase';
 
 /**
  * Creates an issue display with a header and footer, using the provided template structure.
  * It will look like this:
  * ```html
  * <div class="jivs-headerfooterissuesfounddisplay [outerClasses]">
- *      <header>{Header}</header>
+ *      <div class='jivs-header'>{Header}</div>
  *      <div class="jivs-error-messages-container">{IssuesFound}</div>
- *      <footer>{Footer}</footer>
+ *      <div class='jivs-footer'>{Footer}</div>
  * </div>
  * ```
- * When you supply headerText, it will be within a generated <header> tag. No <header> if there is no headerText or headerTextl10n.
- * When you supply footerText, it will be within a generated <footer> tag. No <footer> if there is no footerText or footerTextl10n.
+ * When you supply headerText, it will be within a generated <div class='jivs-header'> tag. 
+ * No <div class='jivs-header'> if there is no headerText or headerTextl10n.
+ * When you supply footerText, it will be within a generated <div class='jivs-footer'> tag. 
+ * No <div class='jivs-footer'> if there is no footerText or footerTextl10n.
  * 
  * This class will always inject 'jivs-headerfooterissuesfounddisplay' into the outer container's CSS classes.
  * You can add more CSS classes through the outerClasses parameter.
  */
-export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoundDisplayBase
+export class HeaderFooterIssuesFoundDisplay extends LayoutIssuesFoundDisplayBase
 {
     /**
      * Creates a header and footer issues found display.
@@ -24,9 +26,9 @@ export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoun
      * outerClasses - The CSS classes for the outer container element. 
      *       This class will always insert 'jivs-headerfooterissuesfounddisplay' 
      *       into the outer container's CSS classes.
-     * headerText - Used WITHIN a generated <header> tag
+     * headerText - Used WITHIN a generated <div class='jivs-header'> tag
      * headerTextl10n 
-     * footerText - Used WITHIN a generated <footer> tag
+     * footerText - Used WITHIN a generated <div class='jivs-footer'> tag
      * footerTextl10n 
      * useSummaryMessages 
      * messagesLimit 
@@ -39,6 +41,7 @@ export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoun
 
     protected override gatherOuterClasses(list: string[]): void
     {
+        super.gatherOuterClasses(list);
         list.push('jivs-headerfooterissuesfounddisplay');
     }
 
@@ -49,17 +52,17 @@ export class HeaderFooterIssuesFoundDisplay extends GeneratedTemplatedIssuesFoun
         let template = '';
         if (this.hasHeaderText)
         {
-            template += '<header>{Header}</header>';
+            template += '<div class="jivs-header">{Header}</div>';
         }
         template += this.defaultIssuesFoundHtml();
         if (this.hasFooterText)
         {
-            template += '<footer>{Footer}</footer>';
+            template += '<div class="jivs-footer">{Footer}</div>';
         }
         return template;
     }
 }
 
-export interface HeaderFooterIssuesFoundDisplayOptions extends GeneratedTemplatedIssuesFoundDisplayBaseOptions
+export interface HeaderFooterIssuesFoundDisplayOptions extends LayoutIssuesFoundDisplayBaseOptions
 {
 }
