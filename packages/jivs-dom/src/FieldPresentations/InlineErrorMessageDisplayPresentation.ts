@@ -1,9 +1,9 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
+import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
-import { jivsErrorMessagesContainerClass } from '../Presentations_common/IssuesFoundDisplayBase';
+import { jivsErrorMessagesContainerClass } from '../Presentations_common/MessageFrameBase';
 
 /**
  * A Field Presentation class for displaying inline error messages, which means
@@ -31,30 +31,30 @@ import { jivsErrorMessagesContainerClass } from '../Presentations_common/IssuesF
 export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPresentationBase
 {
     constructor(element: HTMLElement,
-        issuesFoundDisplay: IIssuesFoundDisplay,
+        messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
         anchor?: IJivsDomElement | null)
     {
-        super(element, issuesFoundDisplay, options, anchor);
+        super(element, messageFrame, options, anchor);
     }
 
     protected override gatherPersistentClasses(list: string[]): void
     {
         super.gatherPersistentClasses(list);
         list.push('jivs-inlineerrormessagedisplay');
-        if (this.issuesFoundDisplay.needsContainerUpdate()) {
+        if (this.messageFrame.needsContainerUpdate()) {
             list.push(jivsErrorMessagesContainerClass); // jivs-error-messages-container
         }
     }
     /**
-     * Expands the base class implementation to apply the issues found using the issuesFoundDisplay.
+     * Expands the base class implementation to apply the issues found using the messageFrame.
      * @param valueHost The host of the field value.
      * @param issuesFound The list of issues found for the field value.
      */
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
     {
         super.applyIssuesFound(valueHost, issuesFound); // add hasIssuesClass if needed
-        this.issuesFoundDisplay.apply(this.presentationElement, issuesFound,
+        this.messageFrame.apply(this.presentationElement, issuesFound,
             valueHost.valueHostsManager, valueHost);
     }
 

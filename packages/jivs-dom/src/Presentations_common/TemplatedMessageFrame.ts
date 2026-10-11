@@ -1,18 +1,18 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IssuesFoundDisplayBaseOptions, jivsErrorMessagesContainerClass } from './IssuesFoundDisplayBase';
+import { MessageFrameBaseOptions, jivsErrorMessagesContainerClass } from './MessageFrameBase';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
+import { MessageFrameBase } from './MessageFrameBase';
 
 /**
- * A templated approach to displaying issues found, allowing customization of the presentation using templates.
+ * A templated approach to building the content of the Message Frame, 
+ * by supplying an HTML string template containing tokens for dynamic content.
  * It supports optional header and footer sections.
- * It takes a single string containing HTML and tokens. It replaces the tokens with values from the provided context.
  * For the header, it replaces the token {Header} with the provided headerText and headerTextl10n properties.
  * For the footer, it replaces the token {Footer} with the provided footerText and footerTextl10n properties.
  * For the error messages, it replaces {IssuesFound} with the formatted error message content
- * adapted from the getErrorMessageContent method of the IssuesFoundDisplayBase class.
+ * adapted from the getErrorMessageContent method of the MessageFrameBase class.
  * 
  * Header and footer tokens are optional but if you supply them in the template, 
  * you should provide the corresponding text and localization properties.
@@ -20,11 +20,11 @@ import { IssuesFoundDisplayBase } from './IssuesFoundDisplayBase';
  * You can use static text instead of tokens if you prefer in header and footer, but you will not
  * get the benefits of localization or support of dynamic values like issue count or field labels.
  */
-export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
+export class TemplatedMessageFrame extends MessageFrameBase
 {
 
     /**
-     * Initializes a new instance of the TemplatedIssuesFoundDisplay class.
+     * Initializes a new instance of the TemplatedMessageFrame class.
      * 
      * ## Options
      * headerText - The text that replaces the {Header} token. It can contain HTML. 
@@ -38,9 +38,9 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
      * 
      * @param template - Template containing HTML and tokens of {Header}, {Footer}, and {IssuesFound}.
      * Subclasses that generate their own templates should pass the empty string.
-     * @param options - The options for configuring the templated issues found display.
+     * @param options - The options for configuring the templated Message Frame.
      */
-    constructor(template: string, options?: TemplatedIssuesFoundDisplayOptions) //yes, required where most options are optional
+    constructor(template: string, options?: TemplatedMessageFrameOptions) //yes, required where most options are optional
     {
         super(options);
         this.template = template;   // will update properties dependent on the template, like header and footer tokens
@@ -189,7 +189,7 @@ export class TemplatedIssuesFoundDisplay extends IssuesFoundDisplayBase
     }
 }
 
-export interface TemplatedIssuesFoundDisplayOptions extends IssuesFoundDisplayBaseOptions
+export interface TemplatedMessageFrameOptions extends MessageFrameBaseOptions
 {
 
     /**

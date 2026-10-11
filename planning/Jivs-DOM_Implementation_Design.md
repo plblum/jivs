@@ -2150,8 +2150,8 @@ Inline error displays use only the first two responsibilities. Triggered and pop
 
 | Type | Responsibility |
 |---|---|
-| `IIssuesFoundDisplay` | Creates the Issue Found content placed into an element selected by the presentation. |
-| `ErrorMessageDisplayPresentationBase` | Common Field Presentation base for `ElementRole.error`. Owns the injected `IIssuesFoundDisplay`, initializes common CSS, and routes validation state to `applyIssuesFound()` or `removeIssuesFound()`. |
+| `IMessageFrame` | Creates the Issue Found content placed into an element selected by the presentation. |
+| `ErrorMessageDisplayPresentationBase` | Common Field Presentation base for `ElementRole.error`. Owns the injected `IMessageFrame`, initializes common CSS, and routes validation state to `applyIssuesFound()` or `removeIssuesFound()`. |
 | `InlineErrorMessageDisplayPresentation` | Places Issue Found content directly into the installed presentation element. It does not use triggers. |
 | `IErrorMessageDisplayController` | Defines the `open()`, `close()`, and `toggle()` operations invoked by triggers and popup coordination. |
 | `IErrorMessageDisplayTriggerContext` | Supplies one operation with its anchor, DOM services, Field Value Host, and controller. |
@@ -2174,7 +2174,7 @@ flowchart TB
     BASE("ErrorMessageDisplayPresentationBase")
     INLINE("InlineErrorMessageDisplayPresentation")
     TRIGGERED("TriggeredErrorMessageDisplayPresentationBase")
-    DISPLAY("IIssuesFoundDisplay")
+    DISPLAY("IMessageFrame")
 
     CONTROLLER("IErrorMessageDisplayController")
     TRIGGERS("IErrorMessageDisplayTrigger[]")
@@ -2209,7 +2209,7 @@ flowchart TB
 
 * the installed presentation element;
 * its `IJivsDomElement` anchor;
-* a fresh `IIssuesFoundDisplay`;
+* a fresh `IMessageFrame`;
 * the presentation and Issue Found CSS class names.
 
 Initialization occurs during the first `apply()` call because the Field Value Host and its DOM services are then available.
@@ -2217,7 +2217,7 @@ Initialization occurs during the first `apply()` call because the Field Value Ho
 Common initialization:
 
 1. Adds `jivs-errormessagedisplay`.
-2. Supplies DOM services to the injected `IIssuesFoundDisplay`.
+2. Supplies DOM services to the injected `IMessageFrame`.
 3. Allows subclasses to perform additional one-time initialization.
 
 Each `apply()` call first removes the earlier Issue Found state. When `state.issuesFound` contains entries, it invokes `applyIssuesFound()`. Otherwise, it leaves the presentation without its Issue Found state.
@@ -2231,7 +2231,7 @@ The common base manages the `jivs-has-issues` class but does not assume where Is
 When issues exist, it:
 
 1. Applies the common Issue Found CSS state.
-2. Passes the element and issues to `IIssuesFoundDisplay.apply()`.
+2. Passes the element and issues to `IMessageFrame.apply()`.
 
 When issues are removed, it:
 
@@ -2454,7 +2454,7 @@ The following aspects remain unresolved:
 
 * whether the presentation generates its own icon or other visible popup trigger;
 * the popup’s internal structure, including any header, content container, footer, and presentation-specific elements;
-* which generated element is supplied to `IIssuesFoundDisplay` as its content target;
+* which generated element is supplied to `IMessageFrame` as its content target;
 * whether the popup is created as a descendant, sibling, or separately positioned element associated with the installation element;
 * whether popup elements are created during installation or lazily when first opened;
 * which generated elements, identifiers, and other resources the presentation retains;

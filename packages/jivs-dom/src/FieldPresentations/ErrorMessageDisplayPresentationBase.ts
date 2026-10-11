@@ -3,7 +3,7 @@ import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfa
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
+import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
 
@@ -32,29 +32,29 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
      * @param element The DOM element that this presentation is associated with.
      * @param anchor The element containing the IJivsDomElement wrapper.
      * It is often the same as the element itself.
-     * @param issuesFoundDisplay The display component for issues found.
+     * @param messageFrame The display component for issues found.
      * @param variationClass The CSS class for the presentation element.
      * @param hasIssuesClass The CSS class applied when issues are found.
      */
     constructor(element: HTMLElement, 
-        issuesFoundDisplay: IIssuesFoundDisplay,
+        messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
         anchor?: IJivsDomElement | null)
     {
         super(element, options, anchor);
-        assertNotNull(issuesFoundDisplay, 'issuesFoundDisplay');
-        this._issuesFoundDisplay = issuesFoundDisplay;
+        assertNotNull(messageFrame, 'messageFrame');
+        this._messageFrame = messageFrame;
     }
 
     /**
      * Presentation specific for displaying the Issues Found.
      * Required parameter of the constructor.
      */
-    protected get issuesFoundDisplay(): IIssuesFoundDisplay
+    protected get messageFrame(): IMessageFrame
     {
-        return this._issuesFoundDisplay;
+        return this._messageFrame;
     }
-    private _issuesFoundDisplay: IIssuesFoundDisplay;
+    private _messageFrame: IMessageFrame;
     
     /**
      * A style class name that is applied when issues are found.
@@ -78,7 +78,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     public override init(valueHostsManager: IValueHostsManager): void
     {
         super.init(valueHostsManager);
-        this.issuesFoundDisplay.setDomServices(valueHostsManager.services.domServices);        
+        this.messageFrame.setDomServices(valueHostsManager.services.domServices);        
     }
 
     /**

@@ -2,52 +2,49 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import type { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
+import type { IMessageFrame } from '../Interfaces/IMessageFrame';
 import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
- * Base class for displaying issues found in fields or forms.
- * Implements the IIssuesFoundDisplay interface and provides a common structure for derived classes.
+ * Implements the IMessageFrame interface and provides a common structure for derived classes.
  * 
- * This class supplies a few general utilities and structure that can be leveraged by derived classes to display issues consistently.
+ * Both FieldPresentation and FormPresentation classes need a common approach to 
+ * formatting the issues found in the field or form.
+ * - The Error Message Container, which contains the actual error message HTML.
+ * - The Message Frame, which wraps around the Error Message Container and may include
+ *   more HTML like headers, footers, and icons.
+ *   It also gets the Error Message Container content and injects it into the appropriate location 
+ *   within the Message Frame.
  * 
- * The content is injected into a containing element that is used to show and hide it, and establish ARIA roles and properties for accessibility.
+ * This class supplies a few general utilities and structure that can be leveraged 
+ * by derived classes to display issues consistently.
+ * 
+ * The content is injected into a containing element that is used to show and hide it.
  * 
  * The content is typically shaped around these parts:
  * 1. Header: Optional section for a title or summary of the issues.
- *      - Suggested containing tag: <header>
- * 2. Body: Main section where the list of issues is displayed.
- *      - Usually a span or ul, depending on the structure of the issues list. It is often created through domServices.issuesFoundFormatterService
+ * 2. Message Content: Main section where the list of issues is displayed.
+ *      - Usually a span or ul, depending on the structure of the issues list. 
+ *        This class uses domServices.issuesFoundFormatterService to generate it.
  * 3. Footer: Optional section for additional information or actions related to the issues.
- *      - Suggested containing tag: <footer>
  * ```html
  * <!-- DEVELOPER CONTROLS THIS OUTER WRAPPER (e.g., they might make this a <section>) -->
  * <div class="developer-outer-container" role="status" aria-atomic="true">
- *   <header>
- *     <h2>Form Submission Errors</h2>
- *   </header>
+ *   <div class='jivs-header'>Form Submission Errors</div>
  * 
- *   <div class="jivs-error-messages-container">
- *     <ul>
- *       <li>Email is required.</li>
- *       <li>Password is too short.</li>
- *     </ul>
- *   </div>
+ *   <!-- Error messages container injected here -->
  * 
- *   <footer>
- *     <p>Please fix these issues and try again.</p>
- *   </footer>
+ *   <div class='jivs-footer'>Please fix these issues and try again.</div>
  * </div>
  * ```
- * The 'jivs-error-messages-container' class is used to wrap the list of error messages consistently across the application.
  * 
  * ## Options
- * useSummaryMessages - Whether to use summary messages instead of detailed messages.
- * messagesLimit - The maximum number of messages to display, if any.
+ * - useSummaryMessages - Whether to use summary messages instead of detailed messages.
+ * - messagesLimit - The maximum number of messages to display, if any.
  */
-export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
+export abstract class MessageFrameBase implements IMessageFrame
 {
-    constructor(options?: IssuesFoundDisplayBaseOptions)
+    constructor(options?: MessageFrameBaseOptions)
     {
         this._useSummaryMessages = options?.useSummaryMessages ?? false;
         this._messagesLimit = options?.messagesLimit;
@@ -142,7 +139,7 @@ export abstract class IssuesFoundDisplayBase implements IIssuesFoundDisplay
  */
 export const jivsErrorMessagesContainerClass = 'jivs-error-messages-container';
 
-export interface IssuesFoundDisplayBaseOptions
+export interface MessageFrameBaseOptions
 {
     /**
      * Whether to use summary messages for the issues found.

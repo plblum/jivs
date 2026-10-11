@@ -6,12 +6,18 @@ import { IJivsDomServices } from './JivsDomServices';
 /**
  * Both FieldPresentation and FormPresentation classes need a common approach to 
  * formatting the issues found in the field or form.
- * This interface defines the contract for displaying issues found in fields or forms.
+ * - The Error Message Container, which contains the actual error message HTML.
+ * - The Message Frame, which wraps around the Error Message Container and may include
+ *   more HTML like headers, footers, and icons.
+ *   It also gets the Error Message Container content and injects it into the appropriate location 
+ *   within the Message Frame.
+ * 
+ * This interface defines the contract for the Message Frame.
  * 
  * Implementations may provide ways to include headers, footers, tokens in text,
  * and text localization (through jivs-engine's ErrorMessageService)
  */
-export interface IIssuesFoundDisplay
+export interface IMessageFrame
 {
     /**
      * Sets the DOM services instance to be used for rendering and formatting issues.

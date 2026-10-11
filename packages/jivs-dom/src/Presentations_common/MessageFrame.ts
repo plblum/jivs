@@ -1,19 +1,17 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { IssuesFoundDisplayBase, IssuesFoundDisplayBaseOptions } from './IssuesFoundDisplayBase';
+import { MessageFrameBase, MessageFrameBaseOptions } from './MessageFrameBase';
 
 /**
- * Displays the error messages from the issuesFound list as the immediate child of the specified container element.
- * It uses the IssuesFoundFormatterService to format the error messages.
+ * The most basic of Message Frames. It is just the container element with
+ * the Error Message Container inside it.
  * 
- * It has limited customization options compared to templated displays via TemplatedIssuesFoundDisplay.
- * 
- * It applies the 'jivs-issuesfounddisplay' class to the container element.
+ * It applies the 'jivs-messageframe' class to the container element.
  */
-export class IssuesFoundDisplay extends IssuesFoundDisplayBase
+export class MessageFrame extends MessageFrameBase
 {
-    constructor(options?: IssuesFoundDisplayOptions)
+    constructor(options?: MessageFrameOptions)
     {
         super(options);
     }
@@ -24,11 +22,11 @@ export class IssuesFoundDisplay extends IssuesFoundDisplayBase
     public override apply(containerElement: HTMLElement, issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): void
     {
         let resolvedText = this.getErrorMessageContent(issuesFound, valueHostsManager, fieldValueHost);
-        containerElement.classList.add('jivs-issuesfounddisplay');
+        containerElement.classList.add('jivs-messageframe');
         containerElement.innerHTML = resolvedText;
     }
 }
 
-export interface IssuesFoundDisplayOptions extends IssuesFoundDisplayBaseOptions
+export interface MessageFrameOptions extends MessageFrameBaseOptions
 {
 }

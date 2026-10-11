@@ -1,16 +1,15 @@
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import { LayoutIssuesFoundDisplayBase, LayoutIssuesFoundDisplayBaseOptions } from './LayoutIssuesFoundDisplayBase';
+import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutMessageFrameBase';
 
 
 /**
- * A classic appearance of issues found displays is to use one icon to the side of 
- * the error messages container.
+ * A Message Frame with an icon column and a content column.
  * 
  * It has a 2 column pattern with the icon in the first column and the error messages container in the second column.
  * The second column may have an optional header followed by the list of error messages.
  * 
  * ```html
- * <div class="jivs-iconissuesfounddisplay [outerClasses]">
+ * <div class="jivs-iconmessageframe [outerClasses]">
  *     <div class='jivs-column1'>
  *         <!-- represents the icon element. See below -->
  *     </div>
@@ -44,7 +43,7 @@ import { LayoutIssuesFoundDisplayBase, LayoutIssuesFoundDisplayBaseOptions } fro
  *     </div>
  * ```
  * It has these fixed style sheet classes:
- * - jivs-iconissuesfounddisplay: The outer element.
+ * - jivs-iconmessageframe: The outer element.
  * - jivs-column1: The first column containing the icon element.
  * - jivs-column2: The second column containing the error messages container.
  * - jivs-error-messages-container: The container for the list of error messages.
@@ -79,26 +78,27 @@ import { LayoutIssuesFoundDisplayBase, LayoutIssuesFoundDisplayBaseOptions } fro
  *     </div>
  * ```
  */
-export class IconIssuesFoundDisplay extends LayoutIssuesFoundDisplayBase
+export class IconMessageFrame extends LayoutMessageFrameBase
 {
     /**
-     * Creates an icon issues found display with the supplied parameters.
+     * Creates a Message Frame with two columns: icon and content.
+     * The icon column is resolved from the iconContent or imageSrc properties.
      * Only one of iconContent or imageSrc will be used. If both are supplied, iconContent takes precedence.
      * 
      * ## Options
-     * outerClasses - The CSS classes for the outer container element.
-     *      This class will always insert 'jivs-iconissuesfounddisplay' into the outer container's CSS classes.
-     * iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
-     * imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
-     * headerText - The text to use for the header section. It can contain HTML. 
+     * - outerClasses - The CSS classes for the outer container element.
+     *      This class will always insert 'jivs-iconmessageframe' into the outer container's CSS classes.
+     * - iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
+     * - imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
+     * - headerText - The text to use for the header section. It can contain HTML. 
      *      Be sure to HTML encode where necessary.
-     * headerTextl10n - The localization key for the header text.
-     * useSummaryMessages - Whether to use summary messages.
-     * messagesLimit - The limit for the number of messages to display.
+     * - headerTextl10n - The localization key for the header text.
+     * - useSummaryMessages - Whether to use summary messages.
+     * - messagesLimit - The limit for the number of messages to display.
      * 
-     * @param options - The options for configuring the icon issues found display.
+     * @param options - The options for configuring the icon Message Frame.
      */
-    constructor(options?: IconIssuesFoundDisplayOptions)
+    constructor(options?: IconMessageFrameOptions)
     {
         super(options);
         this._iconContent = options?.iconContent;
@@ -117,7 +117,7 @@ export class IconIssuesFoundDisplay extends LayoutIssuesFoundDisplayBase
 
     protected override gatherOuterClasses(list: string[]): void
     {
-        list.push('jivs-iconissuesfounddisplay');
+        list.push('jivs-iconmessageframe');
     }
 
     protected override generateTemplateContent(): string
@@ -151,7 +151,7 @@ export class IconIssuesFoundDisplay extends LayoutIssuesFoundDisplayBase
 
 }
 
-export interface IconIssuesFoundDisplayOptions extends Omit<LayoutIssuesFoundDisplayBaseOptions, 'footerText' | 'footerTextl10n'>
+export interface IconMessageFrameOptions extends Omit<LayoutMessageFrameBaseOptions, 'footerText' | 'footerTextl10n'>
 {
     /**
      * The content for the icon section. It can contain HTML.

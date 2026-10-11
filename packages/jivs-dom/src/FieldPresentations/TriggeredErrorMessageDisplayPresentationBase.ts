@@ -2,7 +2,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IIssuesFoundDisplay } from '../Interfaces/IIssuesFoundDisplay';
+import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
@@ -35,12 +35,12 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     implements IErrorMessageDisplayController
 {
     constructor(element: HTMLElement,
-        issuesFoundDisplay: IIssuesFoundDisplay,
+        messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: TriggeredErrorMessageDisplayPresentationBaseOptions,
         anchor?: IJivsDomElement)
     {
-        super(element, issuesFoundDisplay, options, anchor);
+        super(element, messageFrame, options, anchor);
         this._triggers = triggers ?? [];
     }
 
