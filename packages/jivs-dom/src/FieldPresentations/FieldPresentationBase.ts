@@ -152,7 +152,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     /**
      * Use in the constructor to convert style sheet class options into an array of individual CSS classes.
      * If the input is a space-delimited string of classes, it will be split into an array of individual classes.
-     * @param styleClass The style classes. When just a string, they are treated as a space-delimited list of individual classes.
+     * @param styleClass The CSS classes. When just a string, they are treated as a space-delimited list of individual classes.
      * If the input is null or undefined, an empty array will be returned.
      * @returns An array of individual CSS classes derived from the input.
      */

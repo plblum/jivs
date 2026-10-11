@@ -14,9 +14,9 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * Typically they are an empty span tag with a specific CSS class to indicate the required status.
  * Also typical is to include the textual content in the span tag, and the CSS class will style it accordingly.
  * 
- * This implementation can work either way, although our default style class expects an empty span tag with the appropriate CSS class.
+ * This implementation can work either way, although our default CSS class expects an empty span tag with the appropriate CSS class.
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-indicator', 'jivs-editor', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

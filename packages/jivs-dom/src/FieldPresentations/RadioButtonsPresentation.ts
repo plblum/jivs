@@ -26,7 +26,7 @@ import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
  * 
  * That includes these type= attribute values: radio
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-editor-radiobuttons', 'jivs-editor', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

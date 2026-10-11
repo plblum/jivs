@@ -10,7 +10,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
 /**
  * Presentation for HTML textarea tags.
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-editor-textarea', 'jivs-editor', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

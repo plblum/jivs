@@ -46,8 +46,8 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * The element passed to the constructor is the wrapper and remains the
  * presentation element. 
  * 
- * ## Style Classes
- * Style classes are applied to the wrapper (the anchor).
+ * ## CSS Classes
+ * CSS classes are applied to the wrapper (the anchor).
  * - persistent classes: `jivs-wrapped-editor`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

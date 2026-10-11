@@ -13,8 +13,8 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * intended to call out the region as containing an error.
  * Specific to ElementRole.container.
  * 
- * ## Style Classes
- * Style classes are applied to the wrapper (the anchor).
+ * ## CSS Classes
+ * CSS classes are applied to the wrapper (the anchor).
  * - persistent classes: `jivs-fieldcontainer`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

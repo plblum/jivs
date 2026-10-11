@@ -16,7 +16,7 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  *
- * ## Style Classes
+ * ## CSS Classes
  * 
  * Registered with FieldPresentationFactory as presentation name 'selectEditor'.
  * SelectAdapterDefinition should use this presentation name: 'selectEditor'.

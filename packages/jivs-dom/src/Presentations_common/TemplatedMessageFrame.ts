@@ -1,6 +1,6 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { MessageFrameBaseOptions, jivsErrorMessagesContainerClass } from './MessageFrameBase';
+import { MessageFrameBaseOptions, jivsMessageContentClass } from './MessageFrameBase';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { MessageFrameBase } from './MessageFrameBase';
@@ -119,12 +119,12 @@ export class TemplatedMessageFrame extends MessageFrameBase
 
     /**
      * When true, the Field Presentation needs to update its container element to
-     * include class 'jivs-error-messages-container'.
-     * Determined by searching the template for the 'jivs-error-messages-container' string.
+     * include class 'jivs-messagecontent'.
+     * Determined by searching the template for the 'jivs-messagecontent' string.
      */
     public needsContainerUpdate(): boolean
     {
-        return this.template?.length > 0 && this.template.includes(jivsErrorMessagesContainerClass);
+        return this.template?.length > 0 && !this.template.includes(jivsMessageContentClass);
     }
 
     /**
@@ -170,7 +170,7 @@ export class TemplatedMessageFrame extends MessageFrameBase
         assertNotNull(containerElement, 'containerElement');
         let template = this.template;
         if (template === '') {
-            template = this.generateTemplate();
+            template = this.template = this.generateTemplate();
         }
         assertNotNull(template, 'template');
         if (this._hasHeaderToken) {

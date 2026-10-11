@@ -12,7 +12,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * That includes these type= attribute values: text, password, email, number, search, tel, url,
  *    date, datetime-local, month, week, and time.
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-editor-input', 'jivs-editor', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

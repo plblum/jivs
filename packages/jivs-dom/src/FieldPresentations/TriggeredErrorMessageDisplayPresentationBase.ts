@@ -15,7 +15,7 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * This class represents trigger actions in these methods: open(), close(), and toggle().
  * It handles timer-based delays for showing and hiding the error messages.
  * 
- * It introduces the 'jivs-open' style class name for indicating when the error message display is open.
+ * It introduces the 'jivs-open' CSS class for indicating when the error message display is open.
  * 
  * The triggers are supplied as a list of IErrorMessageDisplayTrigger instances.
  * Each installs event handlers that invoke any of the functions found on this class
@@ -24,7 +24,7 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * Trigger installation only happens once, during the first call to apply() on the presentation.
  * (Not using the init function because it doesn't have the necessary parameters to fully realize an installation.)
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-triggered-error-message-display', 'jivs-errormessagedisplay'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

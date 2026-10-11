@@ -9,7 +9,7 @@ import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 
 /**
  * Presentation for HTML label tags or tags used for labels.
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-label', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

@@ -10,10 +10,10 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  * 
  * Both FieldPresentation and FormPresentation classes need a common approach to 
  * formatting the issues found in the field or form.
- * - The Error Message Container, which contains the actual error message HTML.
- * - The Message Frame, which wraps around the Error Message Container and may include
+ * - The Message Content, which contains the actual error message HTML.
+ * - The Message Frame, which wraps around the Message Content and may include
  *   more HTML like headers, footers, and icons.
- *   It also gets the Error Message Container content and injects it into the appropriate location 
+ *   It also gets the Message Content content and injects it into the appropriate location 
  *   within the Message Frame.
  * 
  * This class supplies a few general utilities and structure that can be leveraged 
@@ -32,7 +32,7 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  * <div class="developer-outer-container" role="status" aria-atomic="true">
  *   <div class='jivs-header'>Form Submission Errors</div>
  * 
- *   <!-- Error messages container injected here -->
+ *   <!-- Message Content injected here -->
  * 
  *   <div class='jivs-footer'>Please fix these issues and try again.</div>
  * </div>
@@ -81,7 +81,7 @@ export abstract class MessageFrameBase implements IMessageFrame
 
     /**
      * When true, the Field Presentation needs to update its container element to
-     * include class 'jivs-error-messages-container'.
+     * include class 'jivs-messagecontent'.
      */
     public abstract needsContainerUpdate(): boolean;    
 
@@ -135,9 +135,10 @@ export abstract class MessageFrameBase implements IMessageFrame
 }
 
 /**
- * The CSS class used for the container wrapping error messages.
+ * The CSS class used for the Messages Content section,
+ * applied to outer element.
  */
-export const jivsErrorMessagesContainerClass = 'jivs-error-messages-container';
+export const jivsMessageContentClass = 'jivs-messagecontent';
 
 export interface MessageFrameBaseOptions
 {

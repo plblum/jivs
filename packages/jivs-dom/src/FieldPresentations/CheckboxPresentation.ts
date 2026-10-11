@@ -11,7 +11,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Presentation for HTML input tags that feature a checkbox.
  * That includes these type= attribute values: checkbox
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-editor-checkbox', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

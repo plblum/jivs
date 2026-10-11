@@ -1851,7 +1851,7 @@ There are several strategies for customizing stateful classes:
        outline: 1px dotted red;
    }
    ```
-#### Field Presentation Classes and their Style Classes
+#### Field Presentation Classes and their CSS Classes
 |Class name|Inherits|Target|PersistantClass|Behavior Classes|
 |----------|--------|------|---------------|----------------|
 |FieldPresentationBase|AdapterBase|n/a|n/a|n/a|
@@ -2060,7 +2060,7 @@ jivs-dom.css supplies these style sheet class names to use with the class proper
 Implementations of IsValidFieldPresentationBase have these responsibilities:
 - Provide a persistent class name through gatherPersistentClasses() to associate the HTML with the class you are creating.
 - Provide either the default value or null for not used for each of the invalidClass, validatedClass, correctedClass, and requiredClass in their respective default() functions.
-- Update jivs-dom.css with any specific implementation for those style classes they're using.
+- Update jivs-dom.css with any specific implementation for those CSS classes they're using.
 
 WrappedIsValidFieldPresentationBase inherits IsValidFieldPresentationBase to cover a use case where you have an Editor within a containing tag called the "Wrapper", where the wrapper element is consider part of the editor widget.
 

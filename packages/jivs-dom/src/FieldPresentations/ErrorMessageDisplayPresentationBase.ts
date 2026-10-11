@@ -11,14 +11,14 @@ import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPres
  * Base class for error message display Field presentations.
  * At this level, its apply() function determines if there are issues
  * by checking validationstate.issuesFound?.count > 0.
- * It updates the style class with 'jivs-has-issues' when issues are found
+ * It updates the CSS classes with 'jivs-has-issues' when issues are found
  * and removes it when no issues are found.
  * 
  * It provides these methods that are expected to be inherited by subclasses.
  * - applyIssuesFound()
  * - removeIssuesFound()
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-errormessagedisplay'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
@@ -57,7 +57,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     private _messageFrame: IMessageFrame;
     
     /**
-     * A style class name that is applied when issues are found.
+     * A CSS class that is applied when issues are found.
      * Defaults to 'jivs-has-issues' if not provided in the constructor.
      */
     public get hasIssuesClass(): string[]
@@ -92,7 +92,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
 
     /**
      * Applies the issues found to the presentation, typically by updating the visual state.
-     * Subclasses will use IssueFoundDisplay to populate the content of the error message display
+     * Subclasses will use MessageFrame to populate the content of the error message display
      * because the target element may be a different element than presentationElement, such as
      * a new element intended to be the host of a popup.
      * @param valueHost The host of the field value.

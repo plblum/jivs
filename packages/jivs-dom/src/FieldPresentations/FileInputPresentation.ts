@@ -10,7 +10,7 @@ import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
  * Presentation for HTML input tags that feature a file input.
  * That includes these type= attribute values: file.
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - persistent classes: 'jivs-editor-file-input', 'jivs-isvalidpresentation', 'jivs-editor'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

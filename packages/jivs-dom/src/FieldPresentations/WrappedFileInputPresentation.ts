@@ -11,8 +11,8 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
 /**
  * Presentation for HTML input type='file' element contained within a specific wrapper.
  * 
- * ## Style Classes
- * Style classes are applied to the wrapper (the anchor).
+ * ## CSS Classes
+ * CSS classes are applied to the wrapper (the anchor).
  * - persistent classes: `jivs-wrapped-editor-file-input`, `jivs-wrapped-editor`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

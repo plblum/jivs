@@ -4,7 +4,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
 /**
  * Base class for editor field presentations (role='editor')
  * 
- * ## Style Classes
+ * ## CSS Classes
  * - permenant classes: 'jivs-editor', 'jivs-isvalidpresentation' + subclass supplied permanent classes
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.

@@ -6,7 +6,7 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  * ```html
  * <div class="jivs-headerfootermessageframe [outerClasses]">
  *      <div class='jivs-header'>{Header}</div>
- *      <div class="jivs-error-messages-container">{IssuesFound}</div>
+ *      <div class="jivs-messagecontent">{IssuesFound}</div>
  *      <div class='jivs-footer'>{Footer}</div>
  * </div>
  * ```

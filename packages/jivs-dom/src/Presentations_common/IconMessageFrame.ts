@@ -5,7 +5,7 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
 /**
  * A Message Frame with an icon column and a content column.
  * 
- * It has a 2 column pattern with the icon in the first column and the error messages container in the second column.
+ * It has a 2 column pattern with the icon in the first column and the Message Content in the second column.
  * The second column may have an optional header followed by the list of error messages.
  * 
  * ```html
@@ -14,11 +14,7 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  *         <!-- represents the icon element. See below -->
  *     </div>
  *     <div class='jivs-column2'>
- *          <div class='jivs-error-messages-container'>
- *               <ul>
- *                   <li>Error message here</li>
- *               </ul>
- *          </div>
+ *          <!-- Message Content injected here -->
  *     </div>
  * </div>
  * ```
@@ -26,27 +22,21 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  * ```html
  *     <div class='jivs-column2'>
  *          <div class='jivs-header'>{Header}</div>
- *          <div class='jivs-error-messages-container'>
- *               <ul>
- *                   <li>Error message here</li>
- *               </ul>
- *          </div>
+ *          <!-- Message Content injected here -->
  *     </div>
  * ```
  * Example using a single issue with header:
  * ```html
  *     <div class='jivs-column2'>
  *          <div class='jivs-header'>{Header}</div>
- *          <div class='jivs-error-messages-container'>
- *               <span>Error message here</span>
- *          </div>
+ *          <!-- Message Content injected here -->
  *     </div>
  * ```
  * It has these fixed style sheet classes:
  * - jivs-iconmessageframe: The outer element.
  * - jivs-column1: The first column containing the icon element.
- * - jivs-column2: The second column containing the error messages container.
- * - jivs-error-messages-container: The container for the list of error messages.
+ * - jivs-column2: The second column containing the Message Content.
+ * - jivs-messagecontent: The container for the list of error messages.
  * - jivs-icon: The element representing the icon within the first column.
  * - jivs-header: The optional header within the second column.
  * 
@@ -117,6 +107,7 @@ export class IconMessageFrame extends LayoutMessageFrameBase
 
     protected override gatherOuterClasses(list: string[]): void
     {
+        super.gatherOuterClasses(list);
         list.push('jivs-iconmessageframe');
     }
 

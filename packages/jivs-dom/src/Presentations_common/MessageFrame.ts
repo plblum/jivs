@@ -5,7 +5,7 @@ import { MessageFrameBase, MessageFrameBaseOptions } from './MessageFrameBase';
 
 /**
  * The most basic of Message Frames. It is just the container element with
- * the Error Message Container inside it.
+ * the Message Content inside it.
  * 
  * It applies the 'jivs-messageframe' class to the container element.
  */
