@@ -1703,7 +1703,7 @@ Presentation installation occurs after the `ValueHostsManager` and its `IFieldVa
 
 Although `ValueHostValidationState` includes the group that caused validation, `FieldValidationDispatcher` does not perform group routing. A field presentation is already scoped to one `IFieldValueHost` and reflects that field's current state regardless of which validation group produced it.
 
-FieldPresention adapters also can supply their own ARIA guidance as they may have a presentation that does not support our defaults.
+Field Presentation adapters can also supply their own ARIA guidance when their generated structure does not support the default behavior.
 
 #### Field Presentation Interface and Base Class
 
@@ -1715,10 +1715,10 @@ interface IFieldPresentation {
         state: ValueHostValidationState
     ): void;
 
-    getStaticAriaUpdater():
+    getStaticAriaElementUpdater():
         IAriaStaticUpdater | null;
 
-    getValidationStateAriaUpdater():
+    getValidationStateAriaElementUpdater():
         IAriaValidationStateUpdater | null;
 }
 
@@ -1727,7 +1727,9 @@ abstract class FieldPresentationBase<
 > implements IFieldPresentation {
 
     public constructor(
-        element: TElement, options?: FieldPresentationBaseOptions, anchor: IJivsDomElement
+        element: TElement,
+        options?: FieldPresentationBaseOptions,
+        anchor?: IJivsDomElement | null
     ) {
     }
 
@@ -1738,12 +1740,12 @@ abstract class FieldPresentationBase<
         state: ValueHostValidationState
     ): void;
 
-    public getStaticAriaUpdater(): IAriaStaticUpdater | null
+    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }
 
-    public getValidationStateAriaUpdater(): IAriaValidationStateUpdater | null
+    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
     {
         return null;
     }    
@@ -1779,88 +1781,63 @@ The presentation retains its element but does not retain the `IFieldValueHost` o
 
 Applications may implement `IFieldPresentation` directly or derive from `FieldPresentationBase`.
 
-The style sheet classes are installed as described [below](#style-class-strategy). The user can supply their own classes in addition to the fixed ones through the `variationClasses` property on the options.
+The style sheet classes are installed as described [below](#css-class-strategy). The user can supply their own classes in addition to the fixed ones through the `variationClasses` property on the options.
 
 The optional ARIA getters allow a presentation whose generated HTML requires specialized accessibility behavior to supply immutable updater instances. A getter returning `null` means that the presentation supplies no specialized updater of that kind. The presentation itself does not mutate ARIA attributes through these getters.
 
-#### Style Class Strategy
+#### CSS Class Strategy
 ##### Persistent classes
-A Persistent class is a CSS class that remains applied to the presentation element throughout its lifecycle, 
-regardless of the field's validation state. The init() function will gather and apply these persistent classes to the presentation element
-using `gatherPersistentClasses()` to retrieve each persistent class.
-All class names should follow the 'jivs-' prefix convention to maintain consistency across the field presentations.
- 
-- Concrete field presentations should define their own persistent classes.
-- Base classes should also define their persistent classes if they provide any foundational styling or behavior.
-- Expect that all persistent classes from the concrete class up through the inheritance chain to be collected and applied to the presentation element.
+A persistent class remains applied to the presentation element throughout its installed lifetime, regardless of validation state. `FieldPresentationBase.init()` gathers these classes through `gatherPersistentClasses()` and then applies the classes supplied through `variationClasses`.
 
-    For example, ErrorMessageDisplayPresentationBase supplies 'jivs-errormessagedisplay' and its subclass InlineErrorMessageDisplayPresentation     supplies 'jivs-inlineerrormessagedisplay'.
-    You should setup up your CSS files to include these persistent classes prior to adding your own.
-    ```css
-    .jivs-errormessagedisplay.jivs-inlineerrormessagedisplay.my-custom-class {
-        // Inline error message display styling
-    }
-    ```
-- Add your own custom classes through the `variationClasses` option when constructing the field presentation.
+Concrete presentations and their base classes contribute identifiers for the behavior they provide. For example, `ErrorMessageDisplayPresentationBase` contributes `jivs-errormessagedisplay`, while `InlineErrorMessageDisplayPresentation` contributes `jivs-inlineerrormessagedisplay`.
+
+A subclass overriding `gatherPersistentClasses()` must call its base implementation before adding its own classes:
+
+```ts
+protected override gatherPersistentClasses(list: string[]): void
+{
+    super.gatherPersistentClasses(list);
+    list.push('jivs-inlineerrormessagedisplay');
+}
+```
+
+Applications add persistent customizations through `variationClasses` when constructing a presentation.
 
 ##### Stateful classes
-Stateful classes are CSS classes that are applied to the presentation element based on specific states of the field.
-These classes may change dynamically as the field's state changes, such as when it becomes focused, invalid, or disabled.
-There are fixed stateful classes that jivs-dom manages:
- - 'jivs-invalid' - For when ValidationState.isValid = false. Not used for error message displays (role='error').
- - 'jivs-has-errors' - For when ValidationState.issuesFound.length > 0. Only used for error message displays.
- - 'jivs-validated' - For when ValidationState.status = Valid to indicate that the field has been successfully validated. Not used for error message displays.
- - 'jivs-corrected' - For when a previously invalid field has been corrected and is now valid. Not used for error message displays.
- - 'jivs-required' - For when FieldValueHost.required = true. Not used for error message displays.
- 
-There are several strategies for customizing stateful classes:
-1. Do not change the fixed stateful class. Let it only be used to change the state, usually by removing or applying display: none.
-   Instead, create your own custom stateful classes to handle all visualizations. Add each new class to the variationClasses option when constructing the field presentation.
-   ```css
-   .jivs-errormessagedisplay: not(.jivs-has-errors) {
-       display: none;
-   }
-   .jivs-errormessagedisplay.jivs-has-errors {
-     // do not change this class. Always create custom stateful classes for additional visualizations.
-   }
-   .jivs-errormessagedisplay.jivs-has-errors.my-custom-stateful-class {
-       color: red;
-   }
-   ```
-2. Change the fixed stateful class to support visualizations, ensuring it still correctly handles visibility.
-   The variationClasses option does not need to be updated.
-   ```css
-   .jivs-errormessagedisplay: not(.jivs-has-errors) {
-       display: none;
-   }
-   .jivs-errormessagedisplay.jivs-has-errors {
-       color: red;
-   }
-   ```
-3. Combine both approaches by using fixed stateful classes for essential state changes and custom stateful classes for additional visualizations.
-   In this case, be careful that a specific style defined in the fixed stateful class does not conflict with the custom stateful classes
-   because CSS cannot guarantee the order of precedence for conflicting styles.
-   ```css
-   .jivs-errormessagedisplay: not(.jivs-has-errors) {
-       display: none;
-   }
-   .jivs-errormessagedisplay.jivs-has-errors {
-       color: red;
-   }
-   .jivs-errormessagedisplay.jivs-has-errors.my-custom-stateful-class {
-       outline: 1px dotted red;
-   }
-   ```
+Stateful classes are added and removed as presentation state changes.
+
+| CSS class | State |
+|---|---|
+| `jivs-invalid` | `ValueHostValidationState.isValid` is `false`. |
+| `jivs-validated` | Validation completed with `ValidationStatus.Valid`. |
+| `jivs-corrected` | A previously invalid value has been corrected. |
+| `jivs-required` | `IFieldValueHost.required` is `true`. |
+| `jivs-has-issues` | The current validation state contains one or more issues. |
+| `jivs-open` | A triggered presentation is open. |
+
+The first four belong to presentations derived from `IsValidFieldPresentationBase`. Error Message Display presentations use `jivs-has-issues`; triggered Error Message Displays additionally use `jivs-open`.
+
+The supplied stylesheet uses stateful classes for essential behavior and persistent variation classes for optional appearance. Its selectors generally use `:where()` so application selectors can override them without escalating specificity.
+
+For example, the absence of `jivs-has-issues` hides an Error Message Display:
+
+```css
+:where(.jivs-errormessagedisplay:not(.jivs-has-issues)) {
+    display: none;
+}
+```
+
 #### Field Presentation Classes and their CSS Classes
-|Class name|Inherits|Target|PersistantClass|Behavior Classes|
-|----------|--------|------|---------------|----------------|
-|FieldPresentationBase|AdapterBase|n/a|n/a|n/a|
-|IsValidFieldPresentationBase|FieldPresentationBase|Non-editors|jivs-isvalidpresentation|jivs-invalid,jivs-validated,jivs-corrected,jivs-required|
-|EditorFieldPresentationBase|IsValidFieldPresentationBase|editors|jivs-editor|inherited|
-|WrappedEditorFieldPresentationBase|IsValidFieldPresentationBase|wrapped editors|jivs-wrapped-editor|inherited|
-|ErrorMessageDisplayPresentationBase|FieldPresentationBase|error message display|jivs-errormessagedisplay|jivs-has-errors|
-|TriggeredErrorMessageDisplayPresentationBase|ErrorMessageDisplayPresentationBase|error message display|jivs-triggered-error-message-display|jivs-open, inherited|
-|PopupErrorMessageDisplayPresentationBase|TriggeredErrorMessageDisplayPresentationBase|error message display with popups|jivs-popup-error-message-display|inherited|
+|Class name|Inherits|Target|Persistent class|Stateful classes|
+|---|---|---|---|---|
+|`FieldPresentationBase`|`AdapterBase`|Any field presentation|Supplied by subclasses|Supplied by subclasses|
+|`IsValidFieldPresentationBase`|`FieldPresentationBase`|Validity-oriented presentations|`jivs-isvalidpresentation`|`jivs-invalid`, optionally `jivs-validated`, `jivs-corrected`, and `jivs-required`|
+|`EditorFieldPresentationBase`|`IsValidFieldPresentationBase`|Editors|`jivs-editor`|Inherited|
+|`WrappedEditorFieldPresentationBase`|`IsValidFieldPresentationBase`|Editor wrappers|`jivs-wrapped-editor`|Inherited|
+|`ErrorMessageDisplayPresentationBase`|`FieldPresentationBase`|Error Message Displays|`jivs-errormessagedisplay`|`jivs-has-issues`|
+|`InlineErrorMessageDisplayPresentation`|`ErrorMessageDisplayPresentationBase`|Inline Error Message Displays|`jivs-inlineerrormessagedisplay`|Inherited|
+|`TriggeredErrorMessageDisplayPresentationBase`|`ErrorMessageDisplayPresentationBase`|Trigger-controlled Error Message Displays|`jivs-triggered-error-message-display`|`jivs-open`, inherited|
+|`PopupErrorMessageDisplayPresentationBase`|`TriggeredErrorMessageDisplayPresentationBase`|Popup Error Message Displays|`jivs-popup-error-message-display`|Inherited|
 
 Concrete implementations of IsValidFieldPresentationBase:
 FieldContainerPresentation, LabelPresentation, RequiredIndicatorPresentation
@@ -1868,7 +1845,7 @@ FieldContainerPresentation, LabelPresentation, RequiredIndicatorPresentation
 Concrete implementations of EditorFieldPresentationBase:
 CheckboxPresentation, FileInputPresentation, RadioButtonsPresentation, SelectPresentation, TextAreaPresentation, TextInputPresentation
 
-Concrete implementations of WrapperEditorFieldPresentationBase:
+Concrete implementations of `WrappedEditorFieldPresentationBase`:
 WrapperCheckboxPresentation, WrapperFileInputPresentation, WrapperRadioButtonsPresentation, WrapperSelectPresentation, WrapperTextAreaPresentation, WrapperTextInputPresentation
 
 Concrete implementations of ErrorMessageDisplayPresentationBase:
@@ -2062,97 +2039,186 @@ Implementations of IsValidFieldPresentationBase have these responsibilities:
 - Provide either the default value or null for not used for each of the invalidClass, validatedClass, correctedClass, and requiredClass in their respective default() functions.
 - Update jivs-dom.css with any specific implementation for those CSS classes they're using.
 
-WrappedIsValidFieldPresentationBase inherits IsValidFieldPresentationBase to cover a use case where you have an Editor within a containing tag called the "Wrapper", where the wrapper element is consider part of the editor widget.
+`WrappedEditorFieldPresentationBase` inherits `IsValidFieldPresentationBase` for an editor contained by a wrapper element that participates in the editor widget.
 
 ```ts
 <tag class='editorwrapper'>
    <input />
 </tag>
 ```
-It directs presentation to the wrapper element, not the editor element, which means the style class names are assigned to the wrapper.
+It directs presentation to the wrapper rather than the editor element, so presentation classes are assigned to the wrapper.
 
 #### Error Display Presentations
 
-##### Shared Issue-Display Construction
+##### Presentation Container, Message Frame, and Message Content
 
-Field Error Displays and the Validation Summary need substantially the same HTML-construction machinery. Shared base behavior should support:
+An error display separates three presentation responsibilities:
 
-* selecting an HTML template;
-* resolving template tokens;
-* obtaining localized presentation text;
-* generating Issue Found message HTML;
-* assigning the resulting HTML;
-* exposing issue state through CSS classes.
+| Part | Owner | Responsibility |
+|---|---|---|
+| Presentation Container | Field Presentation or Form Presentation | Connects the display to Jivs validation state and owns state, visibility, positioning, and presentation-variation classes. |
+| Message Frame | `IMessageFrame` implementation | Supplies the structure surrounding the messages, such as headers, footers, icons, and columns. |
+| Message Content | `IssuesFoundFormatterService` | Produces the actual error-message HTML from the supplied `IssueFound` objects. |
 
-Field and form presentations then supply their different contexts:
+For a Field Error Display, the Presentation Container is normally the application-supplied element having `data-jivs-role="error"`. The presentation applies its persistent, stateful, and variation classes to that element, while its injected `IMessageFrame` determines the displayed structure.
 
-* a Field Error Display can supply `{Label}`;
-* a Validation Summary can supply `{Count}`.
+Inline and popup presentations compose the layers differently:
 
-The exact inheritance and helper-class structure remains to be designed.
+```mermaid
+flowchart TB
+    INLINE_PRESENTATION["Inline Presentation Container"]
+    INLINE_FRAME["Message Frame"]
+    INLINE_CONTENT["Message Content"]
 
-##### Complete HTML Templates
+    POPUP_PRESENTATION["Popup Presentation Container"]
+    POPUP_TRIGGER["Popup trigger or anchor"]
+    POPUP["Popup"]
+    POPUP_FRAME["Message Frame"]
+    POPUP_CONTENT["Message Content"]
 
-Rather than prescribing separate header, message, and footer markup, the presentation should allow the application to supply the complete HTML within the generated container.
+    INLINE_PRESENTATION --> INLINE_FRAME
+    INLINE_FRAME --> INLINE_CONTENT
 
-Two templates are anticipated:
-
-* the normal template, including the multiple-issue case;
-* an optional single-issue template.
-
-When the single-issue template is blank or absent, the normal template is used.
-
-Templates may establish any required HTML structure, CSS classes, and inline presentation details. Tokens use the existing PascalCase convention. Anticipated tokens include:
-
-```text
-{HeaderHtml}
-{IssuesFound}
-{FooterHtml}
-{Label}
-{Count}
+    POPUP_PRESENTATION --> POPUP_TRIGGER
+    POPUP --> POPUP_FRAME
+    POPUP_FRAME --> POPUP_CONTENT
 ```
 
-Additional tokens may be introduced when the detailed design identifies a concrete need.
+The popup Presentation Container does not contain the Message Frame. It remains the Jivs-connected anchor or trigger. The popup mechanism receives the `IMessageFrame`, supplies a popup-owned target element to it, and uses the resulting Message Frame as the popup content.
 
-The complete template is structural HTML controlled by the developer. Human-readable static text used by the presentation must be localizable through `ErrorMessagesService`.
+This separation allows the same Message Frame and Message Content implementations to be used by inline displays, popup displays, and form-level presentations.
 
-##### Token Content and Encoding
+##### Message Frame Types
 
-`{Label}` is plain dynamic text and must be HTML-encoded before insertion.
+`IMessageFrame` defines initialization, container requirements, and application of a Message Frame:
 
-`{Count}` is a generated numeric value and can be inserted directly.
-
-`{IssuesFound}` is deliberately inserted as HTML. Its error messages and dynamic token values have already passed through the existing message-generation and encoding pipeline. The resulting HTML may contain intentional markup. For example:
-
-```text
-The {Label} is required.
+```ts
+interface IMessageFrame
+{
+    setDomServices(domServices: IJivsDomServices): void;
+    needsContainerUpdate(): boolean;
+    apply(
+        containerElement: HTMLElement,
+        issuesFound: IssueFound[],
+        valueHostsManager: IValueHostsManager,
+        fieldValueHost: IFieldValueHost | null
+    ): void;
+}
 ```
 
-may become:
+`setDomServices()` supplies the services used to format issues and resolve localized presentation text. `needsContainerUpdate()` reports whether the presentation must apply `jivs-messagecontent` to the target element. `apply()` builds the frame and assigns it to that target.
+
+| Type | Responsibility |
+|---|---|
+| `MessageFrameBase` | Supplies DOM-service access, Message Content generation, localized text resolution, summary-message selection, and message limits. |
+| `MessageFrame` | Provides the minimal frame containing only Message Content. |
+| `TemplatedMessageFrame` | Uses an application-supplied HTML template containing Message Frame tokens. |
+| `LayoutMessageFrameBase` | Generates a fixed outer layout, persistent frame classes, and the standard Message Content container. |
+| `HeaderFooterMessageFrame` | Generates an optional header, Message Content, and an optional footer. |
+| `IconMessageFrame` | Generates an icon column and a content column containing an optional header and Message Content. |
+
+The Message Frame hierarchy is:
+
+```mermaid
+classDiagram
+    class IMessageFrame {
+        <<interface>>
+    }
+    class MessageFrameBase {
+        <<abstract>>
+    }
+    class MessageFrame
+    class TemplatedMessageFrame
+    class LayoutMessageFrameBase {
+        <<abstract>>
+    }
+    class HeaderFooterMessageFrame
+    class IconMessageFrame
+
+    IMessageFrame <|.. MessageFrameBase
+    MessageFrameBase <|-- MessageFrame
+    MessageFrameBase <|-- TemplatedMessageFrame
+    TemplatedMessageFrame <|-- LayoutMessageFrameBase
+    LayoutMessageFrameBase <|-- HeaderFooterMessageFrame
+    LayoutMessageFrameBase <|-- IconMessageFrame
+```
+
+`MessageFrameBaseOptions` supplies `useSummaryMessages` and `messagesLimit`. `TemplatedMessageFrameOptions` adds localized or fallback header and footer text. `LayoutMessageFrameBaseOptions` adds `outerClasses`, which applies application classes to a generated Message Frame rather than to the Presentation Container.
+
+`MessageFrame` adds `jivs-messageframe` to its target and places Message Content directly into that element. Because it does not generate a separate Message Content wrapper, `needsContainerUpdate()` returns `true` so the presentation also applies `jivs-messagecontent` to the target.
+
+`HeaderFooterMessageFrame` generates:
 
 ```html
-The <span class="labelstyle">Book</span> is required.
+<div class="jivs-layoutmessageframe
+            jivs-headerfootermessageframe
+            [outerClasses]">
+    <div class="jivs-header">{Header}</div>
+    <div class="jivs-messagecontent">{IssuesFound}</div>
+    <div class="jivs-footer">{Footer}</div>
+</div>
 ```
 
+The header and footer elements are each omitted when their corresponding text and localization options are absent. Message Content is always present.
+
+`IconMessageFrame` generates:
+
+```html
+<div class="jivs-layoutmessageframe
+            jivs-iconmessageframe
+            [outerClasses]">
+    <div class="jivs-column1">
+        <span class="jivs-icon" aria-hidden="true"></span>
+    </div>
+    <div class="jivs-column2">
+        <div class="jivs-header">{Header}</div>
+        <div class="jivs-messagecontent">{IssuesFound}</div>
+    </div>
+</div>
+```
+
+Its optional header is omitted when no header text is configured. `iconContent` inserts supplied HTML into `span.jivs-icon`; otherwise `imageSrc` generates `img.jivs-icon`. When neither is supplied, the empty span allows CSS to provide a glyph through `::after`. `iconContent` takes precedence when both options are supplied.
+
+##### Message Frame Templates and Tokens
+
+`TemplatedMessageFrame` supports three structural tokens:
+
+| Token | Purpose |
+|---|---|
+| `{IssuesFound}` | Required location for generated Message Content HTML. |
+| `{Header}` | Optional location for resolved header text. |
+| `{Footer}` | Optional location for resolved footer text. |
+
+Resolved header and footer text can use `{Count}` for the number of supplied issues and `{Label}` for the HTML-encoded label of a supplied Field Value Host. Localized text selected through `headerTextl10n` and `footerTextl10n` supports the same tokens.
+
+`{IssuesFound}` is deliberately inserted as prepared HTML. Validation-message tokens are resolved before that insertion and may produce purpose-specific spans:
+
+```html
+The value for <span class="token label">Password</span> must contain at least
+<span class="token value">12</span> characters.
+```
+
+The common `token` class supports shared styling. The additional `label`, `parameter`, `value`, or `message` class identifies the token purpose. Detailed message-token resolution remains the responsibility of `jivs-engine` and `IssuesFoundFormatterService`.
 
 ##### Error Display Architecture
 
-The error-display foundation separates four responsibilities:
+The error-display foundation separates five responsibilities:
 
 * validation-state handling and common CSS state;
-* construction of Issue Found content;
+* construction of the Message Frame;
+* generation of Message Content;
 * event-driven opening and closing;
 * coordination between popup-capable presentations.
 
-Inline error displays use only the first two responsibilities. Triggered and popup presentations add triggers, transition state, delays, and manager-wide popup coordination.
+Inline error displays use the first three responsibilities. Triggered and popup presentations add triggers, transition state, delays, and manager-wide popup coordination.
 
 ##### Types and Responsibilities
 
 | Type | Responsibility |
 |---|---|
-| `IMessageFrame` | Creates the Issue Found content placed into an element selected by the presentation. |
+| `IMessageFrame` | Builds the reusable Message Frame in a target selected by the presentation. |
 | `ErrorMessageDisplayPresentationBase` | Common Field Presentation base for `ElementRole.error`. Owns the injected `IMessageFrame`, initializes common CSS, and routes validation state to `applyIssuesFound()` or `removeIssuesFound()`. |
-| `InlineErrorMessageDisplayPresentation` | Places Issue Found content directly into the installed presentation element. It does not use triggers. |
+| `InlineErrorMessageDisplayPresentation` | Places the Message Frame directly into the installed presentation element. It does not use triggers. |
 | `IErrorMessageDisplayController` | Defines the `open()`, `close()`, and `toggle()` operations invoked by triggers and popup coordination. |
 | `IErrorMessageDisplayTriggerContext` | Supplies one operation with its anchor, DOM services, Field Value Host, and controller. |
 | `ErrorMessageDisplayTriggerContext` | Standard context implementation. It can release its retained references through `dispose()`. |
@@ -2164,7 +2230,7 @@ Inline error displays use only the first two responsibilities. Triggered and pop
 | `IPopupService` | Coordinates controllers belonging to one `ValueHostsManager`. It supports controller registration, one-popup-at-a-time opening, forced closure, and disposal. |
 | `PopupService` | Standard manager-owned implementation of `IPopupService`. |
 
-No concrete popup presentation is defined at this stage. It will inherit `TriggeredErrorMessageDisplayPresentationBase` and provide the generated popup structure, content target, positioning, and core open/close behavior.
+No concrete popup presentation is defined at this stage. It will inherit `TriggeredErrorMessageDisplayPresentationBase`, pass its injected Message Frame to the popup mechanism, and provide the generated popup structure, content target, positioning, and core open/close behavior.
 
 ##### Type Relationships
 
@@ -2174,7 +2240,7 @@ flowchart TB
     BASE("ErrorMessageDisplayPresentationBase")
     INLINE("InlineErrorMessageDisplayPresentation")
     TRIGGERED("TriggeredErrorMessageDisplayPresentationBase")
-    DISPLAY("IMessageFrame")
+    FRAME("IMessageFrame")
 
     CONTROLLER("IErrorMessageDisplayController")
     TRIGGERS("IErrorMessageDisplayTrigger[]")
@@ -2188,7 +2254,7 @@ flowchart TB
     ANCHOR -->|"jivsFieldPresentation"| BASE
     INLINE -->|"extends"| BASE
     TRIGGERED -->|"extends"| BASE
-    BASE -->|"owns"| DISPLAY
+    BASE -->|"owns"| FRAME
 
     TRIGGERED -.->|"implements"| CONTROLLER
     TRIGGERED -->|"owns"| TRIGGERS
@@ -2210,28 +2276,26 @@ flowchart TB
 * the installed presentation element;
 * its `IJivsDomElement` anchor;
 * a fresh `IMessageFrame`;
-* the presentation and Issue Found CSS class names.
+* presentation options.
 
-Initialization occurs during the first `apply()` call because the Field Value Host and its DOM services are then available.
+During `init()`, the base implementation applies persistent and variation classes and supplies DOM services to the injected `IMessageFrame`.
 
-Common initialization:
+Only `apply()` has access to the `IFieldValueHost`. It performs any one-time initialization that requires the Field Value Host before processing the current state. Triggered presentations use this stage to install triggers and register with `IPopupService`.
 
-1. Adds `jivs-errormessagedisplay`.
-2. Supplies DOM services to the injected `IMessageFrame`.
-3. Allows subclasses to perform additional one-time initialization.
-
-Each `apply()` call first removes the earlier Issue Found state. When `state.issuesFound` contains entries, it invokes `applyIssuesFound()`. Otherwise, it leaves the presentation without its Issue Found state.
+Each `apply()` call first removes the earlier Issue Found state. When `state.issuesFound` contains entries, it invokes `applyIssuesFound()`; otherwise the presentation remains without Issue Found state.
 
 The common base manages the `jivs-has-issues` class but does not assume where Issue Found content belongs. An inline presentation uses the installed element. A popup presentation may use a generated popup content element.
 
 ##### Inline Error Messages
 
-`InlineErrorMessageDisplayPresentation` uses the installed presentation element as its content target.
+`InlineErrorMessageDisplayPresentation` adds `jivs-inlineerrormessagedisplay` and uses the installed presentation element as its Message Frame target.
+
+When `IMessageFrame.needsContainerUpdate()` returns `true`, the presentation also applies `jivs-messagecontent`. This supports a minimal `MessageFrame` that uses the Presentation Container directly as the Message Content container.
 
 When issues exist, it:
 
-1. Applies the common Issue Found CSS state.
-2. Passes the element and issues to `IMessageFrame.apply()`.
+1. Applies `jivs-has-issues`.
+2. Passes the Presentation Container and issues to `IMessageFrame.apply()`.
 
 When issues are removed, it:
 
@@ -2424,16 +2488,47 @@ It also handles a presentation in `opening` state by canceling its opening timer
 
 ##### CSS State
 
-The error-display foundation uses these standard CSS responsibilities:
+Error-display CSS follows the same three-layer division as its HTML.
+
+Presentation Container classes control display state, outer appearance, and positioning:
 
 | CSS class | Purpose |
 |---|---|
 | `jivs-errormessagedisplay` | Identifies every Error Message Display presentation. |
-| Presentation-specific class | Identifies the concrete inline or popup presentation. |
+| `jivs-inlineerrormessagedisplay` | Identifies an inline Error Message Display. |
+| `jivs-triggered-error-message-display` | Identifies a trigger-controlled Error Message Display. |
+| Presentation-specific class | Identifies a concrete popup or other specialized presentation. |
 | `jivs-has-issues` | Indicates that validation supplied one or more issues. |
 | `jivs-open` | Indicates that a triggered presentation is open. |
 
-The common base owns the general error-display and Issue Found classes. Concrete presentations own their presentation-specific class and the visual meaning of `jivs-open`.
+Applications pass outer appearance and positioning classes through `variationClasses`. The supplied stylesheet includes `jivs-inlineerrormessagedisplay-variant-accent`, `jivs-inlineerrormessagedisplay-variant-panel`, `jivs-position-below`, and `jivs-position-beside`.
+
+Message Frame classes identify generated structure:
+
+| CSS class | Purpose |
+|---|---|
+| `jivs-messageframe` | Basic `MessageFrame`. |
+| `jivs-layoutmessageframe` | Frame generated through `LayoutMessageFrameBase`. |
+| `jivs-headerfootermessageframe` | `HeaderFooterMessageFrame`. |
+| `jivs-iconmessageframe` | `IconMessageFrame`. |
+| `jivs-header` and `jivs-footer` | Generated frame header and footer. |
+| `jivs-column1` and `jivs-column2` | Icon and content columns. |
+| `jivs-icon` | Generated icon `span` or `img`. |
+
+Applications pass additional classes for a generated Message Frame through `outerClasses`. These classes are distinct from the Presentation Container's `variationClasses`.
+
+The element immediately containing formatter output has `jivs-messagecontent`. Resolved values within messages use `token` together with a purpose class such as `label`, `parameter`, `value`, or `message`.
+
+CSS variables follow the same ownership:
+
+| Variable prefix | Target |
+|---|---|
+| `--jivs-messagecontent-` | Message Content and resolved tokens. |
+| `--jivs-messageframe-` | Frame layout, headers, footers, and icons. |
+| `--jivs-variant-` | Presentation Container appearance variations. |
+| `--jivs-position-` | Presentation Container positioning variations. |
+
+`assets/jivs-dom.css` provides the complete selectors, defaults, alternatives, HTML examples, and customization guidance.
 
 ##### Remaining Popup Design
 
@@ -2464,6 +2559,7 @@ The following aspects remain unresolved:
 * how popup-specific CSS classes, icons, and other visual assets are configured.
 
 These decisions must also establish ownership and lifecycle rules for the generated elements. Once created, the popup structure is expected to remain presentation-owned state until the presentation is disposed, unless the concrete popup design identifies a reason to recreate it.
+
 
 
 ## Form Presentation Adapters
