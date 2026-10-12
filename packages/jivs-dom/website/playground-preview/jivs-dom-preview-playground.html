@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jivs DOM Error Message Display Preview Playground</title>
+    <link rel="stylesheet" href="./jivs-dom.css">
+
+    <!--
+        Playground-only styles.
+
+        These selectors provide the page chrome and field layout used by this
+        preview. They deliberately use the "preview-" prefix and do not belong
+        in jivs-dom.css.
+    -->
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #20242c;
+            background: #f5f7fa;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .preview-control-panel {
+            position: sticky;
+            z-index: 100;
+            top: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1.5rem;
+            padding: 0.75rem clamp(1rem, 4vw, 3rem);
+            border-bottom: 1px solid #cbd2dc;
+            background: rgba(255, 255, 255, 0.97);
+            box-shadow: 0 0.25rem 1rem rgba(25, 35, 55, 0.08);
+        }
+
+        .preview-control-panel fieldset {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem 0.75rem;
+            min-width: 0;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .preview-control-panel legend {
+            float: left;
+            margin-inline-end: 0.5rem;
+            font-weight: 700;
+        }
+
+        .preview-control-panel label {
+            white-space: nowrap;
+        }
+
+        .preview-control-panel select {
+            min-width: 9rem;
+            padding: 0.25rem 0.4rem;
+        }
+
+        .preview-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .preview-switch input {
+            width: 2.15rem;
+            height: 1.15rem;
+            accent-color: #365f91;
+        }
+
+        .preview-page {
+            width: min(78rem, calc(100% - 2rem));
+            margin: 0 auto;
+            padding: 2rem 0 5rem;
+        }
+
+        .preview-introduction,
+        .preview-example {
+            border: 1px solid #d9dee7;
+            border-radius: 0.6rem;
+            background: #fff;
+            box-shadow: 0 0.25rem 1.25rem rgba(25, 35, 55, 0.05);
+        }
+
+        .preview-introduction {
+            padding: clamp(1.25rem, 3vw, 2rem);
+        }
+
+        .preview-introduction h1 {
+            margin-top: 0;
+            line-height: 1.15;
+        }
+
+        .preview-introduction code,
+        .preview-example code {
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+
+        .preview-note {
+            padding: 0.75rem 1rem;
+            border-inline-start: 0.25rem solid #365f91;
+            background: #eef5ff;
+        }
+
+        .preview-navigation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+            margin-top: 1.25rem;
+        }
+
+        .preview-navigation a {
+            color: #244f82;
+        }
+
+        .preview-gallery {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .preview-example {
+            overflow: clip;
+        }
+
+        .preview-example-heading {
+            padding: 1.15rem 1.25rem 0;
+        }
+
+        .preview-example-heading h2 {
+            margin: 0;
+            font-size: 1.35rem;
+        }
+
+        .preview-example-heading p {
+            margin: 0.4rem 0 0;
+            color: #555f6e;
+        }
+
+        .preview-specimen {
+            margin: 1.1rem 1.25rem;
+            padding: clamp(1rem, 3vw, 1.5rem);
+            border: 1px dashed #aeb7c4;
+            border-radius: 0.4rem;
+            background: #fcfdff;
+        }
+
+        /* The surrounding field is application markup used only by this preview. */
+        .preview-field {
+            display: flex;
+            gap: 0.5rem 1.25rem;
+            min-width: 0;
+        }
+
+        .preview-field-stacked {
+            flex-direction: column;
+        }
+
+        .preview-field-side-by-side {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .preview-label-zone {
+            display: flex;
+            flex: 0 0 12rem;
+            align-items: baseline;
+            gap: 0.15rem;
+            min-width: 0;
+        }
+
+        .preview-field-stacked .preview-label-zone {
+            flex-basis: auto;
+        }
+
+        .preview-control-zone {
+            display: flex;
+            flex: 1 1 auto;
+            gap: 0.25rem 0.75rem;
+            min-width: 0;
+        }
+
+        .preview-field-stacked .preview-control-zone {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .preview-field-side-by-side .preview-control-zone {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+
+        .preview-editor-slot {
+            flex: 0 1 22rem;
+            min-width: 10rem;
+        }
+
+        .preview-field-stacked .preview-editor-slot {
+            flex-basis: auto;
+        }
+
+        .preview-editor-slot input[type="text"],
+        .preview-editor-slot input[type="file"],
+        .preview-editor-slot select,
+        .preview-editor-slot textarea {
+            width: 100%;
+            max-width: 24rem;
+            padding: 0.45rem 0.55rem;
+            font: inherit;
+        }
+
+        .preview-editor-slot textarea {
+            min-height: 5rem;
+            resize: vertical;
+        }
+
+        .preview-choice-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem 1rem;
+        }
+
+        .preview-choice-list label {
+            white-space: nowrap;
+        }
+
+        .preview-field-side-by-side .preview-error-slot {
+            flex: 1 1 24rem;
+            min-width: 12rem;
+        }
+
+        .preview-field-stacked .preview-error-slot {
+            width: min(100%, 38rem);
+        }
+
+        .preview-docs {
+            border-top: 1px solid #e0e4ea;
+            background: #fafbfc;
+        }
+
+        .preview-docs details {
+            border-bottom: 1px solid #e0e4ea;
+        }
+
+        .preview-docs details:last-child {
+            border-bottom: 0;
+        }
+
+        .preview-docs summary {
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .preview-code-wrap {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        .preview-code-wrap p {
+            margin-top: 0;
+            color: #555f6e;
+        }
+
+        .preview-code-wrap pre {
+            overflow: auto;
+            max-height: 30rem;
+            margin: 0;
+            padding: 1rem;
+            border-radius: 0.35rem;
+            color: #e8edf5;
+            background: #202631;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            white-space: pre;
+        }
+
+        .preview-class-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            max-width: calc(100% - 0.8rem);
+        }
+
+        .preview-class-list code {
+            display: inline-block;
+            padding: 0.2rem 0.45rem;
+            border: 1px solid #ccd3dc;
+            border-radius: 0.3rem;
+            background: #fff;
+        }
+
+        .preview-class-empty {
+            color: #697384;
+            font-style: italic;
+        }
+
+        @media (max-width: 52rem) {
+            .preview-field-side-by-side {
+                flex-direction: column;
+            }
+
+            .preview-field-side-by-side .preview-label-zone {
+                flex-basis: auto;
+            }
+
+            .preview-field-side-by-side .preview-control-zone {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 38rem) {
+            .preview-control-panel {
+                position: static;
+            }
+
+            .preview-field-side-by-side .preview-control-zone {
+                flex-direction: column;
+            }
+
+            .preview-editor-slot,
+            .preview-field-side-by-side .preview-error-slot {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form class="preview-control-panel" aria-label="Preview controls">
+        <fieldset>
+            <legend>State</legend>
+            <label><input type="radio" name="preview-state" value="undetermined"> Undetermined</label>
+            <label><input type="radio" name="preview-state" value="invalid" checked> Invalid</label>
+            <label><input type="radio" name="preview-state" value="validated"> Validated</label>
+            <label><input type="radio" name="preview-state" value="corrected"> Corrected</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Messages</legend>
+            <label><input type="radio" name="preview-messages" value="one"> One</label>
+            <label><input type="radio" name="preview-messages" value="multiple" checked> Multiple</label>
+        </fieldset>
+
+        <label>
+            <strong>Editor</strong>
+            <select id="preview-editor">
+                <option value="text" selected>Text</option>
+                <option value="select">Select</option>
+                <option value="textarea">Textarea</option>
+                <option value="checkbox">Checkbox</option>
+                <option value="radio">Radio buttons</option>
+                <option value="file">File</option>
+            </select>
+        </label>
+
+        <label class="preview-switch">
+            <input id="preview-wrapper" type="checkbox" role="switch">
+            Use wrapper
+        </label>
+
+        <label>
+            <strong>Indicator destination</strong>
+            <select id="preview-indicator-destination">
+                <option value="required" selected>Required indicator</option>
+                <option value="label">Label</option>
+                <option value="wrapped-editor">Wrapped editor</option>
+                <option value="container">Field container</option>
+            </select>
+        </label>
+
+        <label class="preview-switch">
+            <input id="preview-orientation" type="checkbox" role="switch">
+            Side-by-side
+        </label>
+    </form>
+
+    <main class="preview-page">
+        <section class="preview-introduction">
+            <h1>Jivs DOM Error Message Display Preview Playground</h1>
+            <p>
+                This page previews the HTML and CSS used by Jivs DOM field presentations.
+                It does not load or execute Jivs. jQuery applies representative presentation
+                classes and generates representative Message Frame and Message Content HTML so
+                the stylesheet can be developed before the runtime integration is ready.
+            </p>
+            <p class="preview-note">
+                The page links to the companion <code>jivs-dom.css</code> file in this folder.
+                Keep that file as an unchanged working copy of the package stylesheet. All
+                <code>preview-*</code> styles belong only to this page and are embedded here.
+            </p>
+            <p>
+                Use the control panel to apply the same field state, message count, editor,
+                wrapper choice, indicator destination, and field orientation to every
+                specimen. Open an example's details to see its factory registration, its
+                current live DOM, and the CSS class names currently present.
+            </p>
+            <nav class="preview-navigation" aria-label="Examples">
+                <a href="#example-basic">Basic MessageFrame</a>
+                <a href="#example-accent">Accent</a>
+                <a href="#example-panel">Panel</a>
+                <a href="#example-header-footer">Header and footer</a>
+                <a href="#example-icon-css">CSS icon</a>
+                <a href="#example-icon-content">Supplied icon content</a>
+            </nav>
+        </section>
+
+        <div id="preview-gallery" class="preview-gallery"></div>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+    <script>
+        'use strict';
+
+        $(function () {
+            const examples = [
+                {
+                    id: 'basic',
+                    title: 'Basic MessageFrame',
+                    description: 'The Presentation Container is also the Message Frame and Message Content container. No nested frame element is generated.',
+                    presentationName: 'previewBasicErrors',
+                    frame: 'message',
+                    variations: []
+                },
+                {
+                    id: 'accent',
+                    title: 'Accent appearance',
+                    description: 'Adds the supplied accent variation to the Inline Error Message Display Presentation Container.',
+                    presentationName: 'previewAccentErrors',
+                    frame: 'message',
+                    variations: ['jivs-inlineerrormessagedisplay-variant-accent']
+                },
+                {
+                    id: 'panel',
+                    title: 'Panel appearance',
+                    description: 'Adds the supplied panel variation to the Inline Error Message Display Presentation Container.',
+                    presentationName: 'previewPanelErrors',
+                    frame: 'message',
+                    variations: ['jivs-inlineerrormessagedisplay-variant-panel']
+                },
+                {
+                    id: 'header-footer',
+                    title: 'HeaderFooterMessageFrame',
+                    description: 'Generates a layout frame containing a header, Message Content, and footer.',
+                    presentationName: 'previewHeaderFooterErrors',
+                    frame: 'headerFooter',
+                    variations: ['jivs-inlineerrormessagedisplay-variant-panel']
+                },
+                {
+                    id: 'icon-css',
+                    title: 'IconMessageFrame without a header',
+                    description: 'Leaves the icon span empty so jivs-dom.css can supply its glyph through .jivs-icon:empty::after.',
+                    presentationName: 'previewCssIconErrors',
+                    frame: 'iconCss',
+                    variations: ['jivs-inlineerrormessagedisplay-variant-panel']
+                },
+                {
+                    id: 'icon-content',
+                    title: 'IconMessageFrame with a header',
+                    description: 'Supplies iconContent and generates a header above the Message Content in the second column.',
+                    presentationName: 'previewContentIconErrors',
+                    frame: 'iconContent',
+                    variations: ['jivs-inlineerrormessagedisplay-variant-panel']
+                }
+            ];
+
+            const editorDefinitions = {
+                text: {
+                    label: 'Display name',
+                    classSuffix: 'input',
+                    control: function (context) {
+                        return '<input id="' + context.editorId + '" type="text" value="A" autocomplete="off">';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return 'The value for ' + labelHtml + ' must contain at least <span class="token value">3</span> characters.';
+                    },
+                    secondCode: 'StringLength'
+                },
+                select: {
+                    label: 'Country',
+                    classSuffix: 'select',
+                    control: function (context) {
+                        return '<select id="' + context.editorId + '">' +
+                            '<option value="">Select a country</option>' +
+                            '<option value="US">United States</option>' +
+                            '<option value="CA">Canada</option>' +
+                            '</select>';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return 'Choose a listed value for ' + labelHtml + '.';
+                    },
+                    secondCode: 'AllowedValue'
+                },
+                textarea: {
+                    label: 'Comments',
+                    classSuffix: 'textarea',
+                    control: function (context) {
+                        return '<textarea id="' + context.editorId + '">Too short</textarea>';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return 'The value for ' + labelHtml + ' must contain at least <span class="token value">20</span> characters.';
+                    },
+                    secondCode: 'StringLength'
+                },
+                checkbox: {
+                    label: 'Accept terms',
+                    classSuffix: 'checkbox',
+                    control: function (context) {
+                        return '<label><input id="' + context.editorId + '" type="checkbox"> I agree to the terms</label>';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return labelHtml + ' must be selected before continuing.';
+                    },
+                    secondCode: 'MustBeTrue'
+                },
+                radio: {
+                    label: 'Preferred contact method',
+                    classSuffix: 'radiobuttons',
+                    control: function (context) {
+                        return '<div class="preview-choice-list" data-editorstyle="radiogroup">' +
+                            '<label><input id="' + context.editorId + '-email" type="radio" name="' + context.radioName + '" value="email"> Email</label>' +
+                            '<label><input id="' + context.editorId + '-phone" type="radio" name="' + context.radioName + '" value="phone"> Phone</label>' +
+                            '</div>';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return 'Choose one option for ' + labelHtml + '.';
+                    },
+                    secondCode: 'SelectionRequired'
+                },
+                file: {
+                    label: 'Supporting document',
+                    classSuffix: 'file-input',
+                    control: function (context) {
+                        return '<input id="' + context.editorId + '" type="file">';
+                    },
+                    secondMessage: function (labelHtml) {
+                        return 'Choose a supported file for ' + labelHtml + '.';
+                    },
+                    secondCode: 'FileType'
+                }
+            };
+
+            function buildGallery() {
+                const $gallery = $('#preview-gallery').empty();
+
+                examples.forEach(function (example) {
+                    const article =
+                        '<article id="example-' + example.id + '" class="preview-example" data-example-id="' + example.id + '">' +
+                            '<div class="preview-example-heading">' +
+                                '<h2>' + escapeHtml(example.title) + '</h2>' +
+                                '<p>' + escapeHtml(example.description) + '</p>' +
+                            '</div>' +
+                            '<div class="preview-specimen" data-preview-specimen></div>' +
+                            '<div class="preview-docs">' +
+                                '<details>' +
+                                    '<summary>Factory registration</summary>' +
+                                    '<div class="preview-code-wrap">' +
+                                        '<p>Register this presentation name before SimpleDOM installs the field.</p>' +
+                                        '<pre><code data-registration-code></code></pre>' +
+                                    '</div>' +
+                                '</details>' +
+                                '<details>' +
+                                    '<summary>Current Jivs-SimpleDOM HTML</summary>' +
+                                    '<div class="preview-code-wrap">' +
+                                        '<p>This source is serialized from the live field above after the current controls are applied.</p>' +
+                                        '<pre><code data-html-code></code></pre>' +
+                                    '</div>' +
+                                '</details>' +
+                                '<details>' +
+                                    '<summary>CSS classes and selectors used</summary>' +
+                                    '<div class="preview-code-wrap">' +
+                                        '<p>Use these names to locate the applicable declarations in the companion <code>jivs-dom.css</code>.</p>' +
+                                        '<ul class="preview-class-list" data-class-list></ul>' +
+                                    '</div>' +
+                                '</details>' +
+                            '</div>' +
+                        '</article>';
+
+                    $gallery.append(article);
+                });
+            }
+
+            function getSettings() {
+                return {
+                    state: $('input[name="preview-state"]:checked').val(),
+                    messages: $('input[name="preview-messages"]:checked').val(),
+                    editor: $('#preview-editor').val(),
+                    wrapped: $('#preview-wrapper').prop('checked'),
+                    indicatorDestination: $('#preview-indicator-destination').val(),
+                    sideBySide: $('#preview-orientation').prop('checked')
+                };
+            }
+
+            function invalidClass(state) {
+                return state === 'invalid' ? 'jivs-invalid' : '';
+            }
+
+            function indicatorClasses(settings, destination) {
+                if (settings.indicatorDestination !== destination ||
+                    (destination === 'wrapped-editor' && !settings.wrapped)) {
+                    return '';
+                }
+
+                return joinClasses(
+                    'jivs-required',
+                    settings.state === 'validated' ? 'jivs-validated' : '',
+                    settings.state === 'corrected' ? 'jivs-corrected' : ''
+                );
+            }
+
+            function joinClasses() {
+                return Array.prototype.slice.call(arguments)
+                    .flatMap(function (value) {
+                        return Array.isArray(value) ? value : String(value || '').split(/\s+/);
+                    })
+                    .filter(Boolean)
+                    .join(' ');
+            }
+
+            function buildField(example, settings) {
+                const editor = editorDefinitions[settings.editor];
+                const fieldName = 'Preview' + toPascalCase(example.id);
+                const fieldToken = 'preview-' + example.id;
+                const editorId = fieldToken + '-editor';
+                const labelFor = editor.classSuffix === 'radiobuttons' ? editorId + '-email' : editorId;
+                const currentInvalidClass = invalidClass(settings.state);
+                const fieldClass = joinClasses(
+                    'preview-field',
+                    settings.sideBySide ? 'preview-field-side-by-side' : 'preview-field-stacked',
+                    'jivs-isvalidpresentation',
+                    'jivs-fieldcontainer',
+                    currentInvalidClass,
+                    indicatorClasses(settings, 'container')
+                );
+                const labelClass = joinClasses(
+                    'jivs-isvalidpresentation',
+                    'jivs-label',
+                    currentInvalidClass,
+                    indicatorClasses(settings, 'label')
+                );
+                const indicatorClass = joinClasses(
+                    'jivs-isvalidpresentation',
+                    'jivs-indicator',
+                    indicatorClasses(settings, 'required')
+                );
+                const positionClass = settings.sideBySide ? 'jivs-position-beside' : 'jivs-position-below';
+                const context = {
+                    editorId: editorId,
+                    radioName: fieldToken + '-choice'
+                };
+
+                return '<div class="' + fieldClass + '" data-field="' + fieldName + '" data-jivs-role="container">' +
+                    '<div class="preview-label-zone">' +
+                        '<label class="' + labelClass + '" for="' + labelFor + '" data-field="' + fieldName + '" data-jivs-role="label">' +
+                            escapeHtml(editor.label) +
+                        '</label>' +
+                        '<span class="' + indicatorClass + '" aria-hidden="true" data-field="' + fieldName + '" data-jivs-role="required"></span>' +
+                    '</div>' +
+                    '<div class="preview-control-zone">' +
+                        '<div class="preview-editor-slot">' +
+                            buildEditor(editor, context, fieldName, currentInvalidClass, settings) +
+                        '</div>' +
+                        '<div class="preview-error-slot">' +
+                            buildErrorDisplay(example, settings, editor, fieldName, positionClass) +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            function buildEditor(editor, context, fieldName, currentInvalidClass, settings) {
+                const controlHtml = editor.control(context);
+
+                if (settings.wrapped) {
+                    return '<div class="' + joinClasses(
+                        'jivs-isvalidpresentation',
+                        'jivs-wrapped-editor',
+                        'jivs-wrapped-editor-' + editor.classSuffix,
+                        currentInvalidClass,
+                        indicatorClasses(settings, 'wrapped-editor')
+                    ) + '" data-field="' + fieldName + '" data-jivs-role="editor">' +
+                        controlHtml +
+                    '</div>';
+                }
+
+                if (editor.classSuffix === 'radiobuttons') {
+                    const $group = $(controlHtml);
+                    $group.attr({
+                        'data-field': fieldName,
+                        'data-jivs-role': 'editor'
+                    });
+                    $group.find('input[type="radio"]').addClass(joinClasses(
+                        'jivs-isvalidpresentation',
+                        'jivs-editor',
+                        'jivs-editor-radiobuttons',
+                        currentInvalidClass
+                    ));
+                    return $('<div>').append($group).html();
+                }
+
+                const $control = $(controlHtml);
+                const $presentationElement = editor.classSuffix === 'checkbox'
+                    ? $control.find('input[type="checkbox"]')
+                    : $control;
+
+                $presentationElement
+                    .addClass(joinClasses(
+                        'jivs-isvalidpresentation',
+                        'jivs-editor',
+                        'jivs-editor-' + editor.classSuffix,
+                        currentInvalidClass
+                    ))
+                    .attr({
+                        'data-field': fieldName,
+                        'data-jivs-role': 'editor'
+                    });
+
+                return $('<div>').append($control).html();
+            }
+
+            function buildErrorDisplay(example, settings, editor, fieldName, positionClass) {
+                const hasIssues = settings.state === 'invalid';
+                const presentationClasses = joinClasses(
+                    'jivs-errormessagedisplay',
+                    'jivs-inlineerrormessagedisplay',
+                    positionClass,
+                    example.variations,
+                    example.frame === 'message' ? 'jivs-messagecontent' : '',
+                    example.frame === 'message' && hasIssues ? 'jivs-messageframe' : '',
+                    hasIssues ? 'jivs-has-issues' : ''
+                );
+
+                let content = '';
+                if (hasIssues) {
+                    const messageContent = buildMessageContent(editor, fieldName, settings.messages);
+                    content = buildMessageFrame(example.frame, messageContent, settings.messages);
+                }
+
+                return '<div class="' + presentationClasses + '"' +
+                    ' data-field="' + fieldName + '"' +
+                    ' data-jivs-role="error"' +
+                    ' data-jivs-presentation="' + example.presentationName + '">' +
+                    content +
+                '</div>';
+            }
+
+            function buildMessageFrame(frame, messageContent, messageCount) {
+                if (frame === 'message') {
+                    return messageContent;
+                }
+
+                if (frame === 'headerFooter') {
+                    return '<div class="jivs-layoutmessageframe jivs-headerfootermessageframe">' +
+                        '<div class="jivs-header">Please correct this field.</div>' +
+                        '<div class="jivs-messagecontent">' + messageContent + '</div>' +
+                        '<div class="jivs-footer">Resolve ' + (messageCount === 'one' ? 'this message' : 'these messages') + ' before continuing.</div>' +
+                    '</div>';
+                }
+
+                if (frame === 'iconCss') {
+                    return '<div class="jivs-iconmessageframe">' +
+                        '<div class="jivs-column1"><span class="jivs-icon" aria-hidden="true"></span></div>' +
+                        '<div class="jivs-column2">' +
+                            '<div class="jivs-messagecontent">' + messageContent + '</div>' +
+                        '</div>' +
+                    '</div>';
+                }
+
+                return '<div class="jivs-iconmessageframe">' +
+                    '<div class="jivs-column1"><span class="jivs-icon" aria-hidden="true">&#x2716;</span></div>' +
+                    '<div class="jivs-column2">' +
+                        '<div class="jivs-header">This field needs attention.</div>' +
+                        '<div class="jivs-messagecontent">' + messageContent + '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            function buildMessageContent(editor, fieldName, count) {
+                const labelHtml = '<span class="token label">' + escapeHtml(editor.label) + '</span>';
+                const first = '<span data-errorcode="Required" data-identifier="' + fieldName + '" data-severity="error">' +
+                    labelHtml + ' is required.</span>';
+
+                if (count === 'one') {
+                    return first;
+                }
+
+                return '<ul>' +
+                    '<li data-errorcode="Required" data-identifier="' + fieldName + '" data-severity="error">' +
+                        labelHtml + ' is required.</li>' +
+                    '<li data-errorcode="' + editor.secondCode + '" data-identifier="' + fieldName + '" data-severity="error">' +
+                        editor.secondMessage(labelHtml) + '</li>' +
+                '</ul>';
+            }
+
+            function registrationFor(example, settings) {
+                const positionClass = settings.sideBySide ? 'jivs-position-beside' : 'jivs-position-below';
+                const variations = example.variations.concat(positionClass);
+                let frameCode = 'new MessageFrame()';
+
+                if (example.frame === 'headerFooter') {
+                    frameCode = [
+                        'new HeaderFooterMessageFrame({',
+                        "            headerText: 'Please correct this field.',",
+                        "            footerText: 'Resolve these messages before continuing.'",
+                        '        })'
+                    ].join('\n');
+                }
+                else if (example.frame === 'iconCss') {
+                    frameCode = 'new IconMessageFrame()';
+                }
+                else if (example.frame === 'iconContent') {
+                    frameCode = [
+                        'new IconMessageFrame({',
+                        "            headerText: 'This field needs attention.',",
+                        "            iconContent: '&#x2716;'",
+                        '        })'
+                    ].join('\n');
+                }
+
+                return [
+                    'domServices.fieldPresentationFactory.register(',
+                    "    '" + example.presentationName + "',",
+                    '    element => new InlineErrorMessageDisplayPresentation(',
+                    '        element,',
+                    '        ' + frameCode,
+                    '        {',
+                    '            variationClasses: [',
+                    variations.map(function (name) { return "                '" + name + "'"; }).join(',\n'),
+                    '            ]',
+                    '        }',
+                    '    )',
+                    ');'
+                ].join('\n');
+            }
+
+            function renderAll() {
+                const settings = getSettings();
+
+                examples.forEach(function (example) {
+                    const $article = $('[data-example-id="' + example.id + '"]');
+                    const $specimen = $article.find('[data-preview-specimen]');
+                    $specimen.html(buildField(example, settings));
+
+                    const $field = $specimen.find('.preview-field').first();
+                    $article.find('[data-registration-code]').text(registrationFor(example, settings));
+                    $article.find('[data-html-code]').text(formatHtml($field.prop('outerHTML')));
+                    renderClassList($article.find('[data-class-list]'), $field, example, settings);
+                });
+            }
+
+            function renderClassList($list, $field, example, settings) {
+                const names = new Set();
+
+                $field.find('*').addBack().each(function () {
+                    this.classList.forEach(function (name) {
+                        if (name.indexOf('jivs-') === 0 || name === 'token' ||
+                            name === 'label' || name === 'parameter' ||
+                            name === 'value' || name === 'message') {
+                            names.add('.' + name);
+                        }
+                    });
+                });
+
+                if (settings.state === 'invalid' && settings.messages === 'multiple') {
+                    names.add('.jivs-messagecontent > ul > li::marker');
+                }
+                if (settings.state === 'invalid' && example.frame === 'iconCss') {
+                    names.add('.jivs-icon:empty::after');
+                }
+                if (settings.editor === 'file') {
+                    names.add("input[type='file']::file-selector-button");
+                }
+
+                $list.empty();
+                Array.from(names).sort().forEach(function (name) {
+                    $('<li>').append($('<code>').text(name)).appendTo($list);
+                });
+
+                if (!names.size) {
+                    $('<li class="preview-class-empty">No Jivs classes are present.</li>').appendTo($list);
+                }
+            }
+
+            function formatHtml(html) {
+                const tokens = html
+                    .replace(/>\s*</g, '><')
+                    .replace(/</g, '\n<')
+                    .trim()
+                    .split('\n');
+                const voidElements = /^<(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)\b/i;
+                let depth = 0;
+                const lines = [];
+
+                tokens.forEach(function (token) {
+                    const trimmed = token.trim();
+                    if (!trimmed) {
+                        return;
+                    }
+
+                    if (/^<\//.test(trimmed)) {
+                        depth = Math.max(0, depth - 1);
+                    }
+
+                    lines.push('    '.repeat(depth) + trimmed);
+
+                    const opensElement = /^<[^!/?][^>]*>/.test(trimmed);
+                    const closesOnSameLine = /^<([a-z0-9-]+)\b[^>]*>.*<\/\1>$/i.test(trimmed);
+                    const selfClosing = /\/>$/.test(trimmed) || voidElements.test(trimmed);
+                    if (opensElement && !closesOnSameLine && !selfClosing && !/^<\//.test(trimmed)) {
+                        depth += 1;
+                    }
+                });
+
+                return lines.join('\n');
+            }
+
+            function toPascalCase(value) {
+                return value.split('-').map(function (part) {
+                    return part.charAt(0).toUpperCase() + part.slice(1);
+                }).join('');
+            }
+
+            function escapeHtml(value) {
+                return $('<div>').text(value).html();
+            }
+
+            buildGallery();
+            renderAll();
+
+            $('.preview-control-panel').on('change', 'input, select', renderAll);
+        });
+    </script>
+</body>
+</html>

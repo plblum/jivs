@@ -162,7 +162,7 @@ export interface IEditorAdapterDefinition
      * This instance is considered immutable.
      * @returns An IAriaStaticUpdater instance, or null if none is available.
      */
-    getStaticAriaElementUpdater(): IAriaStaticUpdater | null;
+    getStaticAriaUpdater(): IAriaStaticUpdater | null;
 
     /**
      * Gets the validation state ARIA element updater associated with this adapter definition, if any.
@@ -172,7 +172,7 @@ export interface IEditorAdapterDefinition
      * This instance is considered immutable.
      * @returns An IAriaValidationStateUpdater instance, or null if none is available.
      */
-    getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null;
+    getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null;
 
 
 }

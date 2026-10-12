@@ -17,7 +17,7 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - implement apply() to update the field presentation based on the value host and its validation state.
  * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
  *   such as the host of the CSS class names.
- * - optionally override getStaticAriaElementUpdater() and getValidationStateAriaElementUpdater() 
+ * - optionally override getStaticAriaUpdater() and getAriaValidationStateUpdater() 
  *   to provide ARIA updates on another element than the anchor.
  * 
  * ## CSS Class rules
@@ -227,7 +227,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * ARIA attributes placed in a different element than the anchor.
      * @returns The static ARIA element updater, or null to use the default updater.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    public getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }
@@ -236,7 +236,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * ARIA attributes placed in a different element than the anchor.
      * @returns The validation state ARIA element updater, or null to use the default updater.
      */
-    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
+    public getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null
     {
         return null;
     }

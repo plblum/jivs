@@ -30,9 +30,11 @@
     /* Editor styles */
     --jivs-invalid-editor-border-color: var(--jivs-root-invalid-color);
     --jivs-invalid-editor-color: var(--jivs-root-invalid-text-color);
-    --jivs-invalid-editor-background-color: #fff4f4; /* Overridden below as: color-mix(in srgb, var(--jivs-root-invalid-color) 8%, white); */
-    --jivs-invalid-choice-editor-accent-color: var(--jivs-root-invalid-color);    
+    --jivs-invalid-editor-background-color: #fff4f4;
+    /* Overridden below as: color-mix(in srgb, var(--jivs-root-invalid-color) 8%, white); */
+    --jivs-invalid-choice-editor-accent-color: var(--jivs-root-invalid-color);
     --jivs-invalid-choice-editor-box-shadow: 0 0 0 2px var(--jivs-root-invalid-color);
+    --jivs-wrapped-editor-align-items: baseline;
 
     /* Label and field container styles */
     --jivs-invalid-label-color: var(--jivs-root-invalid-text-color);
@@ -45,15 +47,17 @@
     --jivs-indicator-font-size: 1em;
     --jivs-indicator-font-weight: 700;
     --jivs-indicator-line-height: 1;
-    --jivs-indicator-vertical-align: middle;
+    --jivs-indicator-vertical-align: baseline;
 
     /* Indicator styles - for required, validated, and corrected states */
     --jivs-required-color: var(--jivs-root-invalid-color);
-    --jivs-required-content: '*'; /* Alternatives: '\25CF' (solid circle) and '\2022' (bullet). */
+    --jivs-required-content: '*';
+    /* Alternatives: '\25CF' (solid circle) and '\2022' (bullet). */
     --jivs-validated-color: green;
-    --jivs-validated-content: '\2714\FE0E';  /* Alternative: '\2713' (lighter weight checkmark). */
+    --jivs-validated-content: '\2714\FE0E';
+    /* Alternative: '\2713' (lighter weight checkmark). */
     --jivs-corrected-color: var(--jivs-validated-color);
-    --jivs-corrected-content: '\2714\FE0E';    
+    --jivs-corrected-content: '\2714\FE0E';
 
     /* Error Message Display and Validation Summary widgets 
        There are 3 levels of depth in these:
@@ -139,7 +143,7 @@
     :root {
         --jivs-variant-panel-background-color:
             color-mix(in srgb, var(--jivs-messagecontent-color) 8%, transparent);
-        --jivs-invalid-editor-background-color: 
+        --jivs-invalid-editor-background-color:
             color-mix(in srgb, var(--jivs-root-invalid-color) 8%, white);
     }
 }
@@ -268,6 +272,20 @@
  *     color: var(--jivs-invalid-editor-color);
  * }
  */
+/* Wrapped Editor using required, validated, or corrected states */
+/* This targets positioning of the indicators found in the ::after */
+:where(.jivs-wrapped-editor.jivs-required,
+    .jivs-wrapped-editor.jivs-validated,
+    .jivs-wrapped-editor.jivs-corrected) {
+    display: flex;
+    align-items: var(--jivs-wrapped-editor-align-items);
+}
+
+:where(.jivs-wrapped-editor.jivs-required,
+    .jivs-wrapped-editor.jivs-validated,
+    .jivs-wrapped-editor.jivs-corrected)::after {
+    flex: 0 0 auto;
+}
 
 /*---- LABEL ROLE ---------------*/
 /*
@@ -347,7 +365,7 @@
  * jivs-indicator
  */
 
- /* 
+/* 
  * Our design is to use the ::after pseudo-element for the visual indicators
  * whether you use a Required Indicator widget or attach to a wrapped Editor. 
  * For the Required Indicator, the element hosting it will have nothing to display itself; 
@@ -355,7 +373,7 @@
  * For the wrapped Editor, the wrapping element has the ::after pseudo-element.
  */
 
- /* For the RequiredIndicatorPresentation */
+/* For the RequiredIndicatorPresentation */
 .jivs-isvalidpresentation.jivs-indicator {
     /* Want the empty host element to have no visuals - don't let it inherit your styles */
     all: initial;
@@ -492,10 +510,10 @@
  * </div>
  */
 
- /* --- Error Message Displays Presentations ---
+/* --- Error Message Displays Presentations ---
  These are subclasses of FieldPresentationBase. */
 
- /**
+/**
   * All FieldPresentations for Error Message Displays.
   * CSS classes:
   * - 'jivs-errormessagedisplay'
@@ -508,7 +526,7 @@
     display: none;
 }
 
- /**
+/**
  * InlineErrorMessageDisplayPresentation
  * For displaying error messages without using a popup.
  * 
@@ -573,7 +591,7 @@
  *     'jivs-position-below'
  * ]
  */
-:where(.jivs-position-below) {
+:where(.jivs-position-below.jivs-has-issues) {
     display: block;
     margin-block-start: var(--jivs-position-below-gap);
 }
@@ -581,7 +599,7 @@
 /* Beside uses inline-block placement. Top alignment handles multi-message and
  * header displays; set the vertical-align variable to middle for a compact
  * single-message display. */
-:where(.jivs-position-beside) {
+:where(.jivs-position-beside.jivs-has-issues) {
     display: inline-block;
     margin-inline-start: var(--jivs-position-beside-gap);
     vertical-align: var(--jivs-position-beside-vertical-align);
@@ -666,6 +684,7 @@
     flex: 0 0 auto;
     border: var(--jivs-messageframe-icon-column-border);
 }
+
 :where(.jivs-iconmessageframe)> :where(.jivs-column1)> :where(span.jivs-icon) {
     color: var(--jivs-messageframe-icon-color);
     font-family: var(--jivs-messageframe-icon-font-family);
@@ -673,11 +692,13 @@
     font-weight: var(--jivs-messageframe-icon-font-weight);
     line-height: 1;
 }
+
 :where(.jivs-iconmessageframe)> :where(.jivs-column1)> :where(img.jivs-icon) {
     inline-size: var(--jivs-messageframe-icon-img-size);
     block-size: var(--jivs-messageframe-icon-img-size);
     object-fit: contain;
 }
+
 :where(.jivs-iconmessageframe)> :where(.jivs-column2) {
     display: flex;
     flex: 1 1 auto;
@@ -685,6 +706,7 @@
     gap: var(--jivs-messageframe-section-gap);
     min-inline-size: 0;
 }
+
 :where(.jivs-iconmessageframe)> :where(.jivs-column2)> :where(.jivs-header) {
     color: var(--jivs-messageframe-header-color);
     font-size: var(--jivs-messageframe-header-font-size);
@@ -766,6 +788,7 @@
     color: var(--jivs-messagecontent-token-color);
     font-weight: var(--jivs-messagecontent-token-font-weight);
 }
+
 /*
 :where(.jivs-messagecontent) :where(span.token.label) { }
 :where(.jivs-messagecontent) :where(span.token.parameter) { }

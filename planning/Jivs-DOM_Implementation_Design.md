@@ -1715,10 +1715,10 @@ interface IFieldPresentation {
         state: ValueHostValidationState
     ): void;
 
-    getStaticAriaElementUpdater():
+    getStaticAriaUpdater():
         IAriaStaticUpdater | null;
 
-    getValidationStateAriaElementUpdater():
+    getAriaValidationStateUpdater():
         IAriaValidationStateUpdater | null;
 }
 
@@ -1740,12 +1740,12 @@ abstract class FieldPresentationBase<
         state: ValueHostValidationState
     ): void;
 
-    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    public getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }
 
-    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
+    public getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null
     {
         return null;
     }    
@@ -3717,9 +3717,9 @@ The service does not retain an `IElementRegistry`, `IFieldValueHost`, `ValueHost
 
 1. Resolves the ValidationState Updater, using the first found here:
     - Editor adapter definition (not available on non-editor roles): 
-        jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater()
+        jivsEditorAdapterDefinition.getAriaValidationStateUpdater()
     - Field presentation: 
-        jivsFieldPresentation.getValidationStateAriaElementUpdater()
+        jivsFieldPresentation.getAriaValidationStateUpdater()
     - AriaServices' default updaters based on role:
         jivsElementRole
 2. Executes the updater's applyValidationState or logs a warning when not found.

@@ -85,7 +85,7 @@ export class WrappedRadioButtonsAdapterDefinition extends WrappedInputAdapterDef
         return editor as HTMLElement;
     }
 
-    override getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    override getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return new WrappedRadioButtonsAriaStaticUpdater();
     }

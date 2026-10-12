@@ -53,7 +53,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
         super.gatherPersistentClasses(list);
         list.push('jivs-indicator');
     }
-    override getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    override getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return new RequiredIndicatorAriaStaticUpdater();
     }

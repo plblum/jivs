@@ -72,7 +72,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getStaticAriaElementUpdater(): IAriaStaticUpdater | null;
+    getStaticAriaUpdater(): IAriaStaticUpdater | null;
 
     /**
      * Allows a presentation whose generated HTML requires specialized accessibility behavior 
@@ -80,7 +80,7 @@ export interface IFieldPresentation
      * both mean that the presentation supplies no specialized updater of that kind. 
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
-    getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null;
+    getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null;
 }
 
 /**

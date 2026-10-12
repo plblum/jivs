@@ -256,25 +256,25 @@ export abstract class EditorAdapterDefinitionBase
     public abstract createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement | null): IValueAdapter | null;
 
     /**
-     * The Aria system uses a default Static Element Updater that may not
+     * The Aria system uses a default Aria Static Updater that may not
      * correctly locate the right element to assign its attributes. 
-     * In that case, develop a custom Static Element Updater and return it from this method.
-     * @returns a new instance of the Static Element Updater 
+     * In that case, develop a custom Aria Static Updater and return it from this method.
+     * @returns a new instance of the Aria Static Updater 
      * or null if the default one is sufficient.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    public getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return new EditorAriaStaticUpdater();
     }
     /**
-     * The Aria system uses a default Validation State Element Updater that may not
+     * The Aria system uses a default Validation State Updater that may not
      * correctly locate the right element to assign its attributes. 
-     * In that case, develop a custom Validation State Element Updater and 
+     * In that case, develop a custom Validation State Updater and 
      * return it from this method.
-     * @returns a new instance of the Validation State Element Updater 
+     * @returns a new instance of the Validation State Updater 
      * or null if the default one is sufficient.
      */
-    public getValidationStateAriaElementUpdater(): IAriaValidationStateUpdater | null
+    public getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null
     {
         return new EditorAriaValidationStateUpdater();
     }    

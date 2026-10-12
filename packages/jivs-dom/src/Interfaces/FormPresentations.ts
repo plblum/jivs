@@ -59,7 +59,7 @@ export interface IFormPresentation
      * Typically used when the element identified by this presentation uses another element
      * for its static ARIA attributes.
      */
-    getStaticAriaElementUpdater(): IAriaStaticUpdater | null;
+    getStaticAriaUpdater(): IAriaStaticUpdater | null;
 }
 
 /**

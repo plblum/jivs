@@ -63,9 +63,9 @@ export interface IAriaService
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
-     *      jivsEditorAdapterDefinition.getStaticAriaElementUpdater()
+     *      jivsEditorAdapterDefinition.getStaticAriaUpdater()
      * 2. Field presentation: 
-     *      jivsFieldPresentation.getStaticAriaElementUpdater()
+     *      jivsFieldPresentation.getStaticAriaUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
      * When none are found, nothing happens because its common to have roles and elements
@@ -88,9 +88,9 @@ export interface IAriaService
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
-     *      jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater()
+     *      jivsEditorAdapterDefinition.getAriaValidationStateUpdater()
      * 2. Field presentation: 
-     *      jivsFieldPresentation.getValidationStateAriaElementUpdater()
+     *      jivsFieldPresentation.getAriaValidationStateUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
      * When none are found, nothing happens because its common to have roles and elements

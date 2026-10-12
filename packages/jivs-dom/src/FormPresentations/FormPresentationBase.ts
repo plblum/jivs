@@ -17,7 +17,7 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - implement apply() to update the form presentation based on the validation state.
  * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
  *   such as the host of the CSS class names.
- * - optionally override getStaticAriaElementUpdater()
+ * - optionally override getStaticAriaUpdater()
  *   to provide ARIA updates on another element than the anchor.
  */
 export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJivsDomElement>
@@ -135,7 +135,7 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
      * @returns The static ARIA element updater, or null if not available,
      * which means use the default Aria Static Updater.
      */
-    public getStaticAriaElementUpdater(): IAriaStaticUpdater | null
+    public getStaticAriaUpdater(): IAriaStaticUpdater | null
     {
         return null;
     }

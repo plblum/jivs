@@ -173,27 +173,27 @@ The existing Adapter Definition and presentation contracts expose optional updat
 interface IEditorAdapterDefinition {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaUpdater?():
         IAriaStaticUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getAriaValidationStateUpdater?():
         IAriaValidationStateUpdater | null;
 }
 
 interface IFieldPresentation {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaUpdater?():
         IAriaStaticUpdater | null;
 
-    getValidationStateAriaElementUpdater?():
+    getAriaValidationStateUpdater?():
         IAriaValidationStateUpdater | null;
 }
 
 interface IFormPresentation {
     // Existing members.
 
-    getStaticAriaElementUpdater?():
+    getStaticAriaUpdater?():
         IAriaStaticUpdater | null;
 }
 ```

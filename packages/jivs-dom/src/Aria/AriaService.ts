@@ -212,9 +212,9 @@ export class AriaService extends DomServiceBase
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
-     *      jivsEditorAdapterDefinition.getStaticAriaElementUpdater()
+     *      jivsEditorAdapterDefinition.getStaticAriaUpdater()
      * 2. Field presentation: 
-     *      jivsFieldPresentation.getStaticAriaElementUpdater()
+     *      jivsFieldPresentation.getStaticAriaUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
      * When none are found, nothing happens because its common to have roles and elements
@@ -264,13 +264,13 @@ export class AriaService extends DomServiceBase
         let staticUpdater: IAriaStaticUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)
         {
-            staticUpdater = element.jivsEditorAdapterDefinition.getStaticAriaElementUpdater() ?? null;
+            staticUpdater = element.jivsEditorAdapterDefinition.getStaticAriaUpdater() ?? null;
         }
         // NOTE: Element may have either a field presentation or a form presentation, but not both.
         if (!staticUpdater && element.jivsFieldPresentation)
-            staticUpdater = element.jivsFieldPresentation.getStaticAriaElementUpdater() ?? null;
+            staticUpdater = element.jivsFieldPresentation.getStaticAriaUpdater() ?? null;
         if (!staticUpdater && element.jivsFormPresentation)
-            staticUpdater = element.jivsFormPresentation.getStaticAriaElementUpdater() ?? null;
+            staticUpdater = element.jivsFormPresentation.getStaticAriaUpdater() ?? null;
         if (!staticUpdater && element.jivsElementRole)
         {
             staticUpdater = this.staticUpdatersByRole.get(element.jivsElementRole) ?? null;
@@ -286,9 +286,9 @@ export class AriaService extends DomServiceBase
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
-     *      jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater()
+     *      jivsEditorAdapterDefinition.getAriaValidationStateUpdater()
      * 2. Field presentation: 
-     *      jivsFieldPresentation.getValidationStateAriaElementUpdater()
+     *      jivsFieldPresentation.getAriaValidationStateUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
      * When none are found, nothing happens because its common to have roles and elements
@@ -334,11 +334,11 @@ export class AriaService extends DomServiceBase
         let ValidationStateUpdater: IAriaValidationStateUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)
         {
-            ValidationStateUpdater = element.jivsEditorAdapterDefinition.getValidationStateAriaElementUpdater() ?? null;
+            ValidationStateUpdater = element.jivsEditorAdapterDefinition.getAriaValidationStateUpdater() ?? null;
         }
 
         if (!ValidationStateUpdater && element.jivsFieldPresentation)
-            ValidationStateUpdater = element.jivsFieldPresentation.getValidationStateAriaElementUpdater() ?? null;
+            ValidationStateUpdater = element.jivsFieldPresentation.getAriaValidationStateUpdater() ?? null;
         if (!ValidationStateUpdater && element.jivsElementRole)
         {
             ValidationStateUpdater = this.validationStateUpdatersByRole.get(element.jivsElementRole) ?? null;
