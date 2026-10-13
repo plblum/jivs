@@ -25,6 +25,13 @@ export interface IErrorMessageDisplayController
     open(context: IErrorMessageDisplayTriggerContext, delay: number): void;
 
     /**
+     * Final action of opening that is invoked after the presentation has completed its opening transition.
+     * Internally, the open() method is expected to call this.
+     * In this class, it adds the appropriate CSS classes to indicate the open state.
+     */
+    opened(): void;
+
+    /**
      * Requests the presentation to go into its closed state.
      * @param delay The delay in milliseconds before attempting to close the presentation.
      * The UI experience may be improved by offering a slight delay before closing the presentation, 
@@ -34,11 +41,29 @@ export interface IErrorMessageDisplayController
     close(context: IErrorMessageDisplayTriggerContext, delay: number): void;
 
     /**
+     * Final action of closing that is invoked after the presentation has completed its closing transition.
+     * This is used by Presentation wrap up.
+     * It should not attempt to modify the presentation state or trigger additional open/close actions.
+     * Example usage: PopupErrorMessageDisplayPresentation.close() expects to close an open popup.
+     * If a popup library closes the popup independently, it should call this to ensure 
+     * PopupErrorMessageDisplayPresentation removes its CSS classes and disposes the IPopupContext.
+     * Internally, the close() method is expected to call this.
+     */
+    closed(): void;
+
+    /**
      * Toggles the presentation between its open and closed states.
      * @param openDelay The delay in milliseconds before attempting to open the presentation.
      * @param closeDelay The delay in milliseconds before attempting to close the presentation.
      */
     toggle(context: IErrorMessageDisplayTriggerContext, openDelay: number, closeDelay: number): void;
+
+    /**
+     * Cancels any previously scheduled delayed close operation for the presentation.
+     * Targets the PopupMechanism which knows if there is a mouseover or click on the popup
+     * which means the delayed close can be canceled if the user interacts with the popup, preventing it from closing prematurely.
+     */
+    cancelDelayedClose(): void;
 }   
 
 /**
