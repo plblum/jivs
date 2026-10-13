@@ -149,7 +149,11 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     protected ensureValueHostInitializedWorker(valueHost: IFieldValueHost): void
     {
     }
-
+    public override dispose(): void
+    {
+        super.dispose();
+        this._messageFrame = undefined as any;
+    }
 }
 
 export interface ErrorMessageDisplayPresentationBaseOptions extends FieldPresentationBaseOptions

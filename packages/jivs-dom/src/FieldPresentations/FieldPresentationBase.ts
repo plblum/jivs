@@ -45,7 +45,7 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * These classes may change dynamically as the field's state changes, such as when it becomes focused, invalid, or disabled.
  * There are fixed stateful classes that jivs-dom manages:
  *  - 'jivs-invalid' - For when ValidationState.isValid = false. Not used for error message displays (role='error').
- *  - 'jivs-has-errors' - For when ValidationState.issuesFound.length > 0. Only used for error message displays.
+ *  - 'jivs-has-issues' - For when ValidationState.issuesFound.length > 0. Only used for error message displays.
  *  - 'jivs-validated' - For when ValidationState.status = Valid to indicate that the field has been successfully validated. Not used for error message displays.
  *  - 'jivs-corrected' - For when a previously invalid field has been corrected and is now valid. Not used for error message displays.
  *  - 'jivs-required' - For when FieldValueHost.required = true. Not used for error message displays.
@@ -241,6 +241,10 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
         return null;
     }
 
+    public override dispose(): void
+    {
+        super.dispose();
+    }
 }
 
 /**

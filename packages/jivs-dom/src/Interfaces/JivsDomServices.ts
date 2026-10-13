@@ -21,7 +21,7 @@ import { ElementRole } from './Types';
 import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
 import { IPresentationFactory } from './Presentations_common';
 import { IElementRegistry } from './ElementRegistry';
-import { IPopupService } from './PopupService';
+import { IPopupMechanism, IPopupService } from './PopupErrorMessageDisplays';
 
 
 /**
@@ -98,6 +98,15 @@ export interface IJivsDomServices
      * error message content.
      */
     issuesFoundFormatterService: IIssuesFoundFormatterService;
+
+    /**
+     * Gets the popup mechanism responsible for displaying popup error messages.
+     * Implementations are usually connected to a specific popup library or
+     * approach of using native DOM elements and custom logic to display popups.
+     * It is optional and may not be configured in all environments.
+     * Typically, it is a singleton set up during app initialization.
+     */
+    popupMechanism: IPopupMechanism | null;
 
     /**
      * Provides a logging facade for all services that retain IJivsDomServices.

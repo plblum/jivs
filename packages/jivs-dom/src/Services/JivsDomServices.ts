@@ -30,7 +30,7 @@ import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
 import { IssuesFoundFormatterService } from './IssuesFoundFormatterService';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { ElementRegistry } from '../FormInstaller/ElementRegistry';
-import { IPopupService } from '../Interfaces/PopupService';
+import { IPopupMechanism, IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 import { PopupService } from './PopupService';
 /**
  * @inheritdoc jivs-dom/Types/JivsDomServices
@@ -186,6 +186,23 @@ export class JivsDomServices extends ServiceWithAccessorBase
         return new IssuesFoundFormatterService(this);
     }
     private _issuesFoundFormatterService: IIssuesFoundFormatterService | undefined = undefined;
+
+    /**
+     * Gets the popup mechanism responsible for displaying popup error messages.
+     * Implementations are usually connected to a specific popup library or
+     * approach of using native DOM elements and custom logic to display popups.
+     * It is optional and may not be configured in all environments.
+     * Typically, it is a singleton set up during app initialization.
+     */
+    public get popupMechanism(): IPopupMechanism | null
+    {
+        return this._popupMechanism;
+    }
+    public set popupMechanism(value: IPopupMechanism | null)
+    {
+        this._popupMechanism = value;
+    }
+    private _popupMechanism: IPopupMechanism | null = null;
 
     /**
      * Provides a logging facade for all services that retain IJivsDomServices.
@@ -356,4 +373,12 @@ export class JivsDomServices extends ServiceWithAccessorBase
         return new FormPresentationFactory(this);
     }
 
+    override dispose(): void
+    {
+        // There is an order of operations
+        // where IPopupService may not execute popup mechanism after this.
+        // ValueHostsManager.dispose may run after this point and it disposes IPopupService.
+        this.popupMechanism?.dispose();
+        this._popupMechanism = null;
+    }
 }

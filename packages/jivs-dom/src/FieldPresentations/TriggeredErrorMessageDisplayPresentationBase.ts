@@ -6,6 +6,7 @@ import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
+import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 
 /**
  * A base class for error message display presentations that are triggered by specific events or conditions,
@@ -70,19 +71,28 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     protected override ensureValueHostInitializedWorker(valueHost: IFieldValueHost): void
     {
         super.ensureValueHostInitializedWorker(valueHost);
-        const context = this.createTriggerContext(valueHost);
+        this._triggerContext = this.createTriggerContext(valueHost);    // expected to be immutable 
         for (const trigger of this._triggers)
         {
-            trigger.install(context);
+            trigger.install(this._triggerContext);
         }
-        context.domServices.getPopupService(context.valueHost.valueHostsManager).register(
-            this, () => this.createTriggerContext(valueHost));  // popupService knows to dispose this context
-/*  trigger.install passes context into event handlers, so this instance has a long lifecycle.
-    Keep in mind dispose is there to assist garbage collection by releasing the context when it is no longer needed.
-    So its OK we never dispose this instance anywhere.
-        context.dispose();
-*/        
+        this._popupService = this._triggerContext.domServices.getPopupService(
+            this._triggerContext.valueHost.valueHostsManager);
+        this._popupService?.register(
+            this, () => this.triggerContext!);  
     }
+
+    /**
+     * Gets the current trigger context associated with this presentation.
+     * Lifecycle: created when ensureValueHostInitializedWorker is called; disposed by dispose().
+     */
+    protected get triggerContext() : IErrorMessageDisplayTriggerContext | undefined
+    {
+        return this._triggerContext;
+    }
+    private _triggerContext?: IErrorMessageDisplayTriggerContext;
+
+    private _popupService?: IPopupService;
 
 
     protected createTriggerContext(valueHost: IFieldValueHost): IErrorMessageDisplayTriggerContext
@@ -98,21 +108,30 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
     {
         super.applyIssuesFound(valueHost, issuesFound);
+        this.triggerContext!.issuesFound = issuesFound;
+    }
+
+    protected override removeIssuesFound(): void
+    {
+        super.removeIssuesFound();
+        this.triggerContext!.issuesFound = null;
+        
     }
 
     override apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void
     {
+        // need to retain an open state.
+        let wasOpen = this.triggerState === TriggerState.open ||
+            this.triggerState === TriggerState.closing;
         super.apply(valueHost, state);
 
-        if (!state.issuesFound?.length) // we cannot depend on isOpen state due to async setup
+        if (this.triggerContext)
         {
-            const context = this.createTriggerContext(valueHost);
-            try {
-                this.close(context, 0); // no delay!
-            } finally {
-                context.dispose();
-            }
-        }        
+                // close and reopen forces fresh content from MessageFrame to be available
+            this.close(this.triggerContext, 0); // no delay!
+            if (wasOpen && this.triggerContext.issuesFound && this.triggerContext.issuesFound?.length > 0)
+                this.open(this.triggerContext, 0); // no delay!
+        }
     }
 
 //#region IErrorMessageDisplayController Implementation
@@ -181,6 +200,9 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
                 }, delay);
             }
         }
+        // don't allow starting if there are no issues found...
+        if (!this.triggerContext?.issuesFound?.length)
+            return;
         let self = this;
         switch (this.triggerState)
         {
@@ -359,7 +381,16 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
         }
     }
 //#endregion IErrorMessageDisplayController Implementation
-
+    public override dispose(): void
+    {
+        this.cancelScheduledTransition();
+        this._popupService?.unregister(this);
+        this._popupService = undefined;
+        super.dispose();
+        this._triggers = undefined as any;
+        this._triggerContext?.dispose();
+        this._triggerContext = undefined;
+    }
 
 }
 

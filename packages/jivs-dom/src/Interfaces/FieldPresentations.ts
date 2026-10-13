@@ -81,6 +81,11 @@ export interface IFieldPresentation
      * The presentation itself does not mutate ARIA attributes through these getters.
      */
     getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null;
+
+    /**
+     * Allows for release of resources and nulling properties to facilitate garbage collection.
+     */
+    dispose(): void;
 }
 
 /**

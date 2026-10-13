@@ -36,7 +36,7 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     {
         return this._element;
     }
-    private readonly _element: TElement;
+    private _element: TElement;
 
     /**
      * The element containing the IJivsDomElement wrapper.
@@ -46,5 +46,18 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     {
         return this._anchor;
     }
-    private readonly _anchor: IJivsDomElement;
+    private _anchor: IJivsDomElement;
+
+    /**
+     * Allows for release of resources and nulling properties to facilitate garbage collection.
+     * WARNING: Currently (v0.22) nothing calls this.
+     * Each Adapter class is on IJivsDomElement which means its properties are directly on HTMLElement.
+     * If it was easy to get an event upon detachment of the element from the DOM, this method could be called to release adapters automatically.
+     * Fortunately, dispose is mostly to speed up garbage collection.
+     */
+    public dispose(): void
+    {
+        this._element = undefined as any;
+        this._anchor = undefined as any;
+    }    
 }

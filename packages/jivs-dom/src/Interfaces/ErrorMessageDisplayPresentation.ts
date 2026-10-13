@@ -1,6 +1,7 @@
+import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IJivsDomElement } from './IJivsDomElement';
 import { IJivsDomServices } from './JivsDomServices';
-import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
 /**
  * Provides targets for invoking trigger actions on error message displays.
@@ -76,6 +77,7 @@ export interface IErrorMessageDisplayTriggerContext
     readonly domServices: IJivsDomServices;
     readonly valueHost: IFieldValueHost;
     readonly controller: IErrorMessageDisplayController;
+    issuesFound: IssueFound[] | null;
 
     dispose(): void;
 }

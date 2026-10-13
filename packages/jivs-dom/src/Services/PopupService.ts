@@ -1,5 +1,5 @@
 import { IErrorMessageDisplayController } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IPopupService, TriggerContextFactory } from '../Interfaces/PopupService';
+import { IPopupService, TriggerContextFactory } from '../Interfaces/PopupErrorMessageDisplays';
 
 /**
  * A service responsible for managing popups associated with FieldPresentations 
@@ -24,6 +24,15 @@ export class PopupService implements IPopupService
         this._registeredControllers.set(controller, contextFactory);
     }
 
+    /**
+     * Unregisters a popup error message display controller from the service.
+     * @param controller The error message display controller to unregister.
+     */
+    public unregister(controller: IErrorMessageDisplayController): void
+    {
+        this._registeredControllers.delete(controller);
+    }
+
     private _registeredControllers: Map<IErrorMessageDisplayController, TriggerContextFactory> = new Map();
 
     /**
@@ -35,12 +44,7 @@ export class PopupService implements IPopupService
     {
         for (const [ctrl, contextFactory] of this._registeredControllers.entries()) {
             if (ctrl !== controller) {
-                const context = contextFactory();
-                try {
-                    ctrl.close(context, 0);
-                } finally {
-                    context.dispose();
-                }
+                ctrl.close(contextFactory(), 0);
             }
         }
     }
@@ -50,12 +54,7 @@ export class PopupService implements IPopupService
     public closePopups(): void
     {
         for (const [ctrl, contextFactory] of this._registeredControllers.entries()) {
-            const context = contextFactory();
-            try {
-                ctrl.close(context, 0);
-            } finally {
-                context.dispose();
-            }
+            ctrl.close(contextFactory(), 0);
         }
     }
     /**

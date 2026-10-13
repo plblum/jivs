@@ -2,6 +2,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { IErrorMessageDisplayController, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTriggerContext
 {
@@ -38,11 +39,22 @@ export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTr
     private _valueHost?: IFieldValueHost;
     private _controller?: IErrorMessageDisplayController;
 
+    public get issuesFound(): IssueFound[] | null
+    {
+        return this._issuesFound;
+    }
+    public set issuesFound(value: IssueFound[] | null)
+    {
+        this._issuesFound = value;
+    }
+    private _issuesFound: IssueFound[] | null = null;
+
     public dispose(): void
     {
         this._valueHost = undefined;
         this._anchorElement = undefined;
         this._domServices = undefined;
         this._controller = undefined;
+        this._issuesFound = null;
     }
 }
