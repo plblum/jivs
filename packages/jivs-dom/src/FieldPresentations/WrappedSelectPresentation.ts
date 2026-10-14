@@ -5,7 +5,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
+import { WrappedEditorFieldPresentationBase, WrappedEditorFieldPresentationBaseOptions } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -22,10 +22,10 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'wrappedSelectEditor'.
  * WrappedSelectAdapterDefinition should use this presentation name: 'wrappedSelectEditor'.
  */
-export class WrappedSelectPresentation extends WrappedEditorFieldPresentationBase
+export class WrappedSelectPresentation extends WrappedEditorFieldPresentationBase<WrappedEditorFieldPresentationBaseOptions>
 {
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: WrappedEditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

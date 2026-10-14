@@ -28,7 +28,8 @@ import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBas
  * </div>
  * ```
  */
-export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPresentationBase
+export class InlineErrorMessageDisplayPresentation
+    extends ErrorMessageDisplayPresentationBase<ErrorMessageDisplayPresentationBaseOptions>
 {
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,

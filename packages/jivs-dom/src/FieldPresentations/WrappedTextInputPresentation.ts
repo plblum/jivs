@@ -5,7 +5,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
+import { WrappedEditorFieldPresentationBase, WrappedEditorFieldPresentationBaseOptions } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -24,10 +24,10 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'wrappedInputEditor'.
  * WrappedInputAdapterDefinition should use this presentation name: 'wrappedInputEditor'.
  */
-export class WrappedTextInputPresentation extends WrappedEditorFieldPresentationBase
+export class WrappedTextInputPresentation extends WrappedEditorFieldPresentationBase<WrappedEditorFieldPresentationBaseOptions>
 {
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: WrappedEditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

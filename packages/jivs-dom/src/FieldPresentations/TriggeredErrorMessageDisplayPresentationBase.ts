@@ -32,13 +32,15 @@ import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
  * - stateful classes: 'jivs-open', 'jivs-has-issues'
  *
  */
-export abstract class TriggeredErrorMessageDisplayPresentationBase extends ErrorMessageDisplayPresentationBase
+export abstract class TriggeredErrorMessageDisplayPresentationBase
+    <TOptions extends TriggeredErrorMessageDisplayPresentationBaseOptions>
+    extends ErrorMessageDisplayPresentationBase<TOptions>
     implements IErrorMessageDisplayController
 {
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
-        options?: TriggeredErrorMessageDisplayPresentationBaseOptions,
+        options?: TOptions,
         jivsElement?: IJivsElement)
     {
         super(element, messageFrame, options, jivsElement);

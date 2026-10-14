@@ -23,7 +23,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * 
  * Registered with FieldPresentationFactory as presentation name 'fieldContainer'.
  */
-export class FieldContainerPresentation extends IsValidFieldPresentationBase
+export class FieldContainerPresentation extends IsValidFieldPresentationBase<FieldContainerPresentationOptions>
 {
     /**
      * Constructor for the FieldContainerPresentation class.
@@ -34,7 +34,7 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: FieldContainerPresentationOptions,
         jivsElement?: IJivsElement | null
     )
     {
@@ -52,3 +52,5 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
  * For registering this presentation with the FieldPresentationFactory.
  */
 export const defaultFieldContainerPresentationName = 'fieldContainer';
+
+export interface FieldContainerPresentationOptions extends IsValidFieldPresentationOptions {}

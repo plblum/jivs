@@ -12,7 +12,10 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/IsValidFieldPresentationBase} for more guidance.
  * 
  */
-export abstract class EditorFieldPresentationBase<TElement extends HTMLElement = HTMLElement> extends IsValidFieldPresentationBase<TElement>
+export abstract class EditorFieldPresentationBase<
+    TOptions extends EditorFieldPresentationBaseOptions,
+    TElement extends HTMLElement = HTMLElement>
+    extends IsValidFieldPresentationBase<TOptions, TElement>
 {
     /**
      * Constructor for EditorFieldPresentationBase class.
@@ -24,7 +27,7 @@ export abstract class EditorFieldPresentationBase<TElement extends HTMLElement =
      * When null, it indicates that element itself is used as the Jivs DOM element.
      */
     constructor(element: TElement,
-        options? : IsValidFieldPresentationOptions,
+        options? : TOptions,
         // intentionally last as its usually called from internal code
         jivsElement: IJivsElement | null = null
     )
@@ -38,3 +41,5 @@ export abstract class EditorFieldPresentationBase<TElement extends HTMLElement =
         list.push('jivs-editor');
     }
 }
+
+export interface EditorFieldPresentationBaseOptions extends IsValidFieldPresentationOptions {}

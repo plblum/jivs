@@ -4,7 +4,7 @@
  */
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a file input.
@@ -20,7 +20,7 @@ import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
  * Registered with FieldPresentationFactory as presentation name 'fileInputEditor'.
  * InputAdapterDefinition should use this presentation name: 'fileInputEditor'.
  */
-export class FileInputPresentation extends EditorFieldPresentationBase
+export class FileInputPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
 {
     /**
      * Constructor for the FileInputPresentation class.
@@ -29,7 +29,7 @@ export class FileInputPresentation extends EditorFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: EditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

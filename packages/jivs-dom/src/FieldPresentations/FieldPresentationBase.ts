@@ -10,6 +10,7 @@ import { AdapterBase } from '../Adapters/AdapterBase';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
+import { PresentationBase, PresentationBaseOptions } from '../Presentations_common/PresentationBase';
 /**
  * Base class for field presentations.
  * 
@@ -89,8 +90,9 @@ import { IJivsElement } from '../Interfaces/IJivsElement';
  *    }
  *    ```
  */
-export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLElement>
-    extends AdapterBase<TElement>
+export abstract class FieldPresentationBase<TOptions extends FieldPresentationBaseOptions,
+    TElement extends HTMLElement = HTMLElement>
+    extends PresentationBase<TOptions, TElement>
     implements IFieldPresentation
 {
     /**
@@ -99,119 +101,9 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
      * @param jivsElement The element containing the IJivsElement structure.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, options?: FieldPresentationBaseOptions, jivsElement?: IJivsElement | null)
+    public constructor(element: TElement, options?: TOptions, jivsElement?: IJivsElement | null)
     {
-        super(element, jivsElement ?? null);
-        this._variationClasses = FieldPresentationBase.toStyleClassNameArray(options?.variationClasses);
-    }
-
-    /**
-     * The element property may not always represent the actual presentation element.
-     * Use this property to access the element that should be used for presentation purposes.
-     * Designed to allow the element to be switched as the widget may discard and rebuild itself.
-     */
-    protected get presentationElement(): HTMLElement
-    {
-        return this.resolvePresentationElement(this.element);
-    }
-
-    /**
-     * Resolves the actual presentation element for the field presentation.
-     * @param element The element to resolve as the presentation element.
-     * @returns The resolved presentation element.
-     * The default implementation returns the element itself.
-     */
-    protected resolvePresentationElement(element: TElement): HTMLElement
-    {
-        return element;
-    }
-
-
-    /**
-     * Utility method to add a list of CSS classes to the presentation element.
-     * @param list The list of CSS classes to add to the presentation element.
-     */
-    protected addClasses(list: string[]): void
-    {
-        for (let cls of list)
-        {
-            this.presentationElement.classList.add(cls);
-        }
-    }
-    /**
-     * Utility method to remove a list of CSS classes from the presentation element.
-     * @param list The list of CSS classes to remove from the presentation element.
-     */
-    protected removeClasses(list: string[]): void
-    {
-        for (let cls of list)
-        {
-            this.presentationElement.classList.remove(cls);
-        }
-    }
-    /**
-     * Use in the constructor to convert style sheet class options into an array of individual CSS classes.
-     * If the input is a space-delimited string of classes, it will be split into an array of individual classes.
-     * @param styleClass The CSS classes. When just a string, they are treated as a space-delimited list of individual classes.
-     * If the input is null or undefined, an empty array will be returned.
-     * @returns An array of individual CSS classes derived from the input.
-     */
-    public static toStyleClassNameArray(styleClass: string | string[] | null | undefined): string[]
-    {
-        if (Array.isArray(styleClass))
-        {
-            return [...styleClass]; // clone to avoid mutation of the original array
-        }
-        else if (typeof styleClass === 'string')
-        { // this can be a space delimited list of classes
-            return styleClass.split(' ').filter(cls => cls.length > 0);
-        }
-        return [];
-    }
-
-    /**
-     * Style sheet class names to add to the presentation element that will always be present.
-     * Defaults to an empty array.
-     * The FieldPresentationClass will add its own with predefined names. When building
-     * CSS, combine the fixed names with the variationClasses provided here.
-     * ```css
-     * .jivs-errormessagedisplay.my-variation-class
-     * {
-     *   // styles
-     * }
-     */
-    protected get variationClasses(): string[]
-    {
-        return this._variationClasses;
-    }
-    private _variationClasses: string[];
-
-    /**
-     * Initializes the field presentation. 
-     * This method should be implemented by derived classes to perform any necessary setup logic.
-     * The default implementation does nothing.
-     */
-    public init(valueHostsManager: IValueHostsManager): void
-    {
-        let persistentClasses: string[] = [];
-        this.gatherPersistentClasses(persistentClasses);
-        // placed outside of gatherPersistentClasses to ensure it is always added last
-        // for visual appeal only.
-        if (this.variationClasses.length > 0)
-        {
-            persistentClasses.push(...this.variationClasses);
-        }        
-        this.addClasses(persistentClasses);          
-    }
-
-    /**
-     * Gathers all persistent classes that should be applied to the presentation element.
-     * Override this method to add more persistent classes as needed but
-     * be sure to call the base implementation to include the default persistent classes.
-     * @param list 
-     */
-    protected gatherPersistentClasses(list: string[]): void
-    {
+        super(element, options, jivsElement);
     }
 
     /**
@@ -250,19 +142,6 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
 /**
  * Options for configuring the base field presentation.
  */
-export interface FieldPresentationBaseOptions
+export interface FieldPresentationBaseOptions extends PresentationBaseOptions
 {
-    /**
-     * Style sheet class names to add to the presentation element that will always be present.
-     * Defaults to an empty array.
-     * The FieldPresentationClass will add its own with predefined names. When building
-     * CSS, combine the fixed names with the variationClasses provided here.
-     * ```css
-     * .jivs-errormessagedisplay.my-variation-class
-     * {
-     *   // styles
-     * }
-     * ```
-     */
-    variationClasses?: string[] | string | null;
 }

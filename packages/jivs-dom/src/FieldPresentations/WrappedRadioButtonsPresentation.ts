@@ -5,7 +5,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
+import { WrappedEditorFieldPresentationBase, WrappedEditorFieldPresentationBaseOptions } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -22,10 +22,10 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'wrappedRadioButtonsEditor'.
  * WrappedRadioButtonsAdapterDefinition should use this presentation name: 'wrappedRadioButtonsEditor'.
  */
-export class WrappedRadioButtonsPresentation extends WrappedEditorFieldPresentationBase
+export class WrappedRadioButtonsPresentation extends WrappedEditorFieldPresentationBase<WrappedEditorFieldPresentationBaseOptions>
 {
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: WrappedEditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

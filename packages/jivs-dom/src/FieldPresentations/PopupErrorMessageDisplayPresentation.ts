@@ -49,8 +49,10 @@ import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation
  * by specifying a different Anchor element through the anchorSelector option.
  * 
  */
-export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object = object>
-    extends TriggeredErrorMessageDisplayPresentationBase
+export class PopupErrorMessageDisplayPresentation<
+    TPopupOptions extends object = object,
+    TOptions extends PopupErrorMessageDisplayPresentationOptions<TPopupOptions> = PopupErrorMessageDisplayPresentationOptions<TPopupOptions>>
+    extends TriggeredErrorMessageDisplayPresentationBase<TOptions>
 {
 
     constructor(
@@ -58,34 +60,32 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
         errorIndicator: IErrorIndicatorContent,
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
-        options?: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>,
+        options?: TOptions,
         jivsElement?: IJivsElement
     )
     {
         super(element, messageFrame, triggers, options, jivsElement);
         assertNotNull(errorIndicator, 'errorIndicator');
-        if (!options) options = {} as PopupErrorMessageDisplayPresentationOptions<TPopupOptions>;
-        this._popupOptions = options.popupOptions ?? {} as TPopupOptions;
-        this._anchorSelector = options.anchorSelector;
+        this._popupOptions = this.options.popupOptions ?? {} as TPopupOptions;
         this._errorIndicator = errorIndicator;
-        this.reviseTriggers(options);
+        this.reviseTriggers(this.options);
+    }
+
+    protected override getOptionDefaults(): Partial<TOptions>
+    {
+        let superDefaults = super.getOptionDefaults();
+        return {
+            ...superDefaults,
+            mouseoverEnabled: false,
+            mouseoverDelay: defaultMouseoverDelay,
+            mouseoutDelay: defaultMouseoutDelay
+        };
     }
     protected get errorIndicator(): IErrorIndicatorContent
     {
         return this._errorIndicator;
     }
     private _errorIndicator: IErrorIndicatorContent;
-
-    protected reviseTriggers(options: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>)
-    {
-        // Implementation for revising triggers based on the provided options.
-        this.triggers.push(new ErrorMessageDisplayClickTrigger());
-        if (options.mouseoverEnabled)
-        {
-            this.triggers.push(new ErrorMessageDisplayMouseOverTrigger(options.mouseoverDelay ?? defaultMouseoverDelay));
-            this.triggers.push(new ErrorMessageDisplayMouseOutTrigger(options.mouseoutDelay ?? defaultMouseoutDelay));
-        }
-    }
 
     protected get domServices(): IJivsDomServices | undefined
     {
@@ -105,11 +105,6 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
     }
     private _popupOptions?: TPopupOptions;
 
-    protected get anchorSelector(): string | undefined
-    {
-        return this._anchorSelector;
-    }
-    private _anchorSelector?: string;
 
     private _elementRegistry?: IElementRegistry;
 
@@ -119,7 +114,18 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
         list.push('jivs-popuperrormessagedisplay');
     }
 
-    override init(valueHostsManager: IValueHostsManager): void
+    protected reviseTriggers(options: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>)
+    {
+        // Implementation for revising triggers based on the provided options.
+        this.triggers.push(new ErrorMessageDisplayClickTrigger());
+        if (options.mouseoverEnabled)
+        {
+            this.triggers.push(new ErrorMessageDisplayMouseOverTrigger(options.mouseoverDelay ?? defaultMouseoverDelay));
+            this.triggers.push(new ErrorMessageDisplayMouseOutTrigger(options.mouseoutDelay ?? defaultMouseoutDelay));
+        }
+    }
+
+    public override init(valueHostsManager: IValueHostsManager): void
     {
         super.init(valueHostsManager);
         this._domServices = valueHostsManager.services.domServices;
@@ -196,9 +202,9 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
 
     protected resolveAnchorElement(): HTMLElement
     {
-        if (this.anchorSelector)
+        if (this.options.anchorSelector)
         {
-            let anchorElement = document.querySelector(this.anchorSelector) as HTMLElement | null;
+            let anchorElement = document.querySelector(this.options.anchorSelector) as HTMLElement | null;
             if (anchorElement instanceof HTMLElement)
                 return anchorElement;
         }

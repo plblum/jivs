@@ -25,7 +25,8 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * 
  * Registered with FieldPresentationFactory as presentation name 'requiredIndicator'.
  */
-export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
+export class RequiredIndicatorPresentation<TOptions extends RequiredIndicatorPresentationOptions = RequiredIndicatorPresentationOptions>
+    extends IsValidFieldPresentationBase<TOptions, HTMLElement>
 {
     /**
      * Constructor for the RequiredIndicatorPresentation class.
@@ -34,7 +35,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: TOptions,
         jivsElement?: IJivsElement | null
     )
     {
@@ -43,9 +44,13 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
         super(element, options, jivsElement);
     }
 
-    protected override get requiredClassEnabled(): boolean
+    protected override getOptionDefaults(): Partial<TOptions>
     {
-        return true;
+        let superDefaults = super.getOptionDefaults();
+        return {
+            ...superDefaults,
+            requiredClassEnabled: true
+        };
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -63,3 +68,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
  * For registering this presentation with the FieldPresentationFactory
  */
 export const defaultRequiredIndicatorPresentationName = 'requiredIndicator';
+
+export interface RequiredIndicatorPresentationOptions extends IsValidFieldPresentationOptions
+{
+}

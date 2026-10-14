@@ -5,7 +5,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
+import { WrappedEditorFieldPresentationBase, WrappedEditorFieldPresentationBaseOptions } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -24,10 +24,11 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'wrappedCheckboxEditor'.
  * WrappedCheckboxAdapterDefinition should use this presentation name: 'wrappedCheckboxEditor'.
  */
-export class WrappedCheckboxPresentation extends WrappedEditorFieldPresentationBase
+export class WrappedCheckboxPresentation
+    extends WrappedEditorFieldPresentationBase<WrappedEditorFieldPresentationBaseOptions>
 {
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: WrappedEditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

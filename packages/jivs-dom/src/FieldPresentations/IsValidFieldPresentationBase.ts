@@ -37,28 +37,35 @@ import { IJivsElement } from '../Interfaces/IJivsElement';
  * - valueHost.required = true: 
  *   'jivs-required' class is applied.
  */
-export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
-    extends FieldPresentationBase<TElement>
+export abstract class IsValidFieldPresentationBase<
+    TOptions extends IsValidFieldPresentationOptions,
+    TElement extends HTMLElement = HTMLElement>
+    extends FieldPresentationBase<TOptions, TElement>
 {
     /**
      * Constructor for IsValidFieldPresentationBase class.
      * @param element The HTML element associated with this field presentation.
      * @param options Configuration options for the field presentation.
-     * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses 
-     * the default supplied by this class or a derived class.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      * When null, it indicates that element itself is used as the Jivs DOM element.
      */
-    constructor(element: TElement,
-        options? : IsValidFieldPresentationOptions,
+    constructor(element: TElement, options? : TOptions,
         // intentionally last as its usually called from internal code
         jivsElement: IJivsElement | null = null
     )
     {
         super(element, options, jivsElement);
-        this._validatedClassEnabled = options?.validatedClassEnabled ?? this.defaultValidatedClassEnabled();
-        this._correctedClassEnabled = options?.correctedClassEnabled ?? this.defaultCorrectedClassEnabled();
-        this._requiredClassEnabled = options?.requiredClassEnabled ?? this.defaultRequiredClassEnabled();
+    }
+
+    protected override getOptionDefaults(): Partial<TOptions>
+    {
+        let superDefaults = super.getOptionDefaults();
+        return {
+            ...superDefaults,
+            validatedClassEnabled: false,
+            correctedClassEnabled: false,
+            requiredClassEnabled: false
+        } as Partial<TOptions>;
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -88,23 +95,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     }
 
     /**
-     * Indicates whether the validated CSS class should be applied.
-     * Validated CSS Class is an optional feature.
-     * Its value can be set by options.validatedClassEnabled.
-     * If not set there, it uses a default supplied by this class or a derived class.
-     */
-    protected get validatedClassEnabled(): boolean
-    {
-        return this._validatedClassEnabled;
-    }
-    private _validatedClassEnabled: boolean;
-
-    protected defaultValidatedClassEnabled(): boolean
-    {
-        return false;
-    }
-
-    /**
      * CSS class added when the field is valid and state.corrected is true.
      *
      * Corrected state indicates that previously invalid validation results have
@@ -116,22 +106,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     protected get correctedClass(): string[] 
     {
         return ['jivs-corrected'];
-    }
-    /**
-     * Indicates whether the corrected CSS class should be applied.
-     * Corrected CSS Class is an optional feature.
-     * Its value can be set by options.correctedClassEnabled.
-     * If not set there, it uses a default supplied by this class or a derived class.
-     */
-    protected get correctedClassEnabled(): boolean
-    {
-        return this._correctedClassEnabled;
-    }
-    private _correctedClassEnabled: boolean;
-
-    protected defaultCorrectedClassEnabled(): boolean
-    {
-        return false;
     }
 
     /**
@@ -146,24 +120,6 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     {
         return ['jivs-required'];
     }
-
-    /**
-     * Indicates whether the required CSS class should be applied.
-     * Required CSS Class is an optional feature.
-     * Its value can be set by options.requiredClassEnabled.
-     * If not set there, it uses a default supplied by this class or a derived class.
-     */
-    protected get requiredClassEnabled(): boolean
-    {
-        return this._requiredClassEnabled;
-    }
-    private _requiredClassEnabled: boolean;
-
-    protected defaultRequiredClassEnabled(): boolean
-    {
-        return false;
-    }
-
 
     /**
      * Synchronizes the configured CSS classes with the current required and
@@ -202,17 +158,17 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
         {
             this.addClasses(this.invalidClass);
         }
-        else if (state.corrected && this.correctedClassEnabled)
+        else if (state.corrected && this.options.correctedClassEnabled)
         {
             this.addClasses(this.correctedClass);
         }
         else if (state.status === ValidationStatus.Valid)   // fallback for when corrected is setup but without css name
         {
-            if (this.validatedClassEnabled)
+            if (this.options.validatedClassEnabled)
                 this.addClasses(this.validatedClass);
         }
 
-        if (valueHost.required && this.requiredClassEnabled)
+        if (valueHost.required && this.options.requiredClassEnabled)
             this.addClasses(this.requiredClass);
 
     }    

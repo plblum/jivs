@@ -9,7 +9,8 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
+
 
 /**
  * Presentation for HTML input tags that feature a radio button.
@@ -36,7 +37,7 @@ import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
  * Registered with FieldPresentationFactory as presentation name 'radiobuttonsEditor'.
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
  */
-export class RadioButtonsPresentation extends EditorFieldPresentationBase
+export class RadioButtonsPresentation extends EditorFieldPresentationBase<RadioButtonsFieldPresentationOptions>
 {
     /**
      * Creates an instance of the RadioButtonsPresentation class.
@@ -49,19 +50,7 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase
         jivsElement?: IJivsElement | null
     )
     {
-        super(
-            radioButton,
-            {
-                variationClasses: options?.presentationClass,
-
-        // not used for radio buttons presentation:
-                correctedClassEnabled: false,
-                requiredClassEnabled: false,
-                validatedClassEnabled: false
-            },
-            jivsElement
-        );
-
+        super(radioButton, options, jivsElement);
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -104,8 +93,7 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase
  */
 export const defaultRadioButtonsPresentationName = 'radiobuttonsEditor';
 
-export interface RadioButtonsFieldPresentationOptions
+export interface RadioButtonsFieldPresentationOptions extends
+    Omit<EditorFieldPresentationBaseOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>
 {
-    invalidClass?: string; // does not support null - must always provide a valid CSS class for invalid state
-    presentationClass?: string | null;
 }

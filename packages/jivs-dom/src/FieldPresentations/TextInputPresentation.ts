@@ -4,7 +4,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -22,7 +22,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'inputEditor'.
  * InputAdapterDefinition should use this presentation name: 'inputEditor'.
  */
-export class TextInputPresentation extends EditorFieldPresentationBase
+export class TextInputPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
 {
     /**
      * Constructor for the TextInputPresentation class.
@@ -31,7 +31,7 @@ export class TextInputPresentation extends EditorFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: EditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

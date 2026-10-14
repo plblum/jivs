@@ -4,7 +4,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -20,7 +20,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Registered with FieldPresentationFactory as presentation name 'textareaEditor'.
  * TextAreaAdapterDefinition should use this presentation name: 'textareaEditor'.
  */
-export class TextAreaPresentation extends EditorFieldPresentationBase
+export class TextAreaPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
 {
     /**
      * Constructor for the TextAreaPresentation class.
@@ -29,7 +29,7 @@ export class TextAreaPresentation extends EditorFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: EditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

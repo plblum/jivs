@@ -18,7 +18,8 @@ import type { IJivsElement } from '../Interfaces/IJivsElement';
  * 
  * Registered with FieldPresentationFactory as presentation name 'label'.
  */
-export class LabelPresentation extends IsValidFieldPresentationBase
+export class LabelPresentation<TOptions extends LabelPresentationOptions = LabelPresentationOptions>
+    extends IsValidFieldPresentationBase<TOptions, HTMLElement>
 {
     /**
      * Constructor for the LabelPresentation class.
@@ -28,7 +29,7 @@ export class LabelPresentation extends IsValidFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: TOptions,
         jivsElement?: IJivsElement | null
     )
     {
@@ -46,3 +47,7 @@ export class LabelPresentation extends IsValidFieldPresentationBase
  * and consumed as default for LabelAdapterDefinition.
  */
 export const defaultLabelPresentationName = 'label';
+
+export interface LabelPresentationOptions extends IsValidFieldPresentationOptions
+{
+}

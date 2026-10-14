@@ -61,8 +61,10 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * }
  * ```
  */
-export abstract class WrappedEditorFieldPresentationBase<TElement extends HTMLElement = HTMLElement>
-    extends IsValidFieldPresentationBase<TElement>
+export abstract class WrappedEditorFieldPresentationBase<
+    TOptions extends WrappedEditorFieldPresentationBaseOptions,
+    TElement extends HTMLElement = HTMLElement>
+    extends IsValidFieldPresentationBase<TOptions, TElement>
 {
     /**
      * Creates a wrapped-editor presentation.
@@ -73,7 +75,7 @@ export abstract class WrappedEditorFieldPresentationBase<TElement extends HTMLEl
      */
     public constructor(
         element: TElement,
-        options?: WrappedEditorFieldPresentationBaseOptions,
+        options?: TOptions,
         // intentionally placed last because its usually used internally
         jivsElement?: IJivsElement | null
     )

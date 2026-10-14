@@ -25,7 +25,9 @@ import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPres
  * - stateful classes: 'jivs-has-issues'
  * 
  */
-export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentationBase
+export abstract class ErrorMessageDisplayPresentationBase
+    <TOptions extends ErrorMessageDisplayPresentationBaseOptions>
+    extends FieldPresentationBase<TOptions, HTMLElement>
 {
     /**
      * Initializes a new instance of the error message display presentation.
@@ -38,7 +40,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
      */
     constructor(element: HTMLElement, 
         messageFrame: IMessageFrame,
-        options?: ErrorMessageDisplayPresentationBaseOptions,
+        options?: TOptions,
         jivsElement?: IJivsElement | null)
     {
         super(element, options, jivsElement);

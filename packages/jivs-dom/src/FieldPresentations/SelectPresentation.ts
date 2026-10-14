@@ -4,7 +4,7 @@
  */
 
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
-import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
@@ -21,7 +21,7 @@ import type { IJivsElement } from '../Interfaces/IJivsElement';
  * Registered with FieldPresentationFactory as presentation name 'selectEditor'.
  * SelectAdapterDefinition should use this presentation name: 'selectEditor'.
  */
-export class SelectPresentation extends EditorFieldPresentationBase
+export class SelectPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
 {
     /**
      * Constructor for the SelectPresentation class.
@@ -30,7 +30,7 @@ export class SelectPresentation extends EditorFieldPresentationBase
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
-        options?: IsValidFieldPresentationOptions,
+        options?: EditorFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

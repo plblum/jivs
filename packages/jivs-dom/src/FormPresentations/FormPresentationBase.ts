@@ -5,10 +5,11 @@
 import type { ValidationState } from '@plblum/jivs-engine/build/interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/interfaces/ValueHostsManager';
 import { groupsMatch } from '@plblum/jivs-engine/build/Utilities/Utilities';
-import { AdapterBase } from '../Adapters/AdapterBase';
+import { PresentationBase } from '../Presentations_common/PresentationBase';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IFormPresentation } from '../Interfaces/FormPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
+import { PresentationBaseOptions } from '../Presentations_common/PresentationBase';
 
 /**
  * Base class for form presentations that handles validation state application.
@@ -20,47 +21,23 @@ import { IJivsElement } from '../Interfaces/IJivsElement';
  * - optionally override getStaticAriaUpdater()
  *   to provide ARIA updates on another element than the presentation element.
  */
-export abstract class FormPresentationBase<TElement extends IJivsElement = IJivsElement>
-    extends AdapterBase<TElement>
+export abstract class FormPresentationBase<
+    TOptions extends FormPresentationBaseOptions,
+    TElement extends IJivsElement = IJivsElement>
+    extends PresentationBase<TOptions, TElement>
     implements IFormPresentation
 {
-    private _respondToWildcardGroup: boolean = false;
 
-    public get respondToWildcardGroup(): boolean
+    public constructor(element: TElement, options?: TOptions, jivsElement?: IJivsElement)
     {
-        return this._respondToWildcardGroup;
+        super(element, options, jivsElement);
     }
 
-    public constructor(element: TElement, jivsElement: IJivsElement | null, respondToWildcardGroup: boolean = false)
+    protected override getOptionDefaults(): Partial<TOptions>
     {
-        super(element, jivsElement);
-        this._respondToWildcardGroup = respondToWildcardGroup;
-    }
-
-    /**
-     * The element property may not always represent the actual presentation element.
-     * Use this property to access the element that should be used for presentation purposes.
-     * Designed to allow the element to be switched as the widget may discard and rebuild itself.
-     */
-    protected get presentationElement(): TElement
-    {
-        return this.resolvePresentationElement(this.element);
-    }
-
-    /**
-     * Resolves the actual presentation element for the field presentation.
-     * @param element The element to resolve as the presentation element.
-     * @returns The resolved presentation element.
-     * The default implementation returns the element itself.
-     */
-    protected resolvePresentationElement(element: TElement): TElement
-    {
-        return element;
-    }
-
-    public init(valueHostsManager: IValueHostsManager): void
-    {
-        // nothing in the base
+        return {
+            respondToWildcardGroup: false
+        } as Partial<TOptions>;
     }
 
     /**
@@ -85,7 +62,7 @@ export abstract class FormPresentationBase<TElement extends IJivsElement = IJivs
         // Handle the case where the presentation group is not a wildcard but the state group is a wildcard.
         if (!presentationIsWildcard && stateIsWildcard)
         {
-            if (!this.respondToWildcardGroup)
+            if (!this.options.respondToWildcardGroup)
             {
                 return;
             }
@@ -139,4 +116,16 @@ export abstract class FormPresentationBase<TElement extends IJivsElement = IJivs
     {
         return null;
     }
+}
+
+export interface FormPresentationBaseOptions extends PresentationBaseOptions
+{
+    /**
+     * Indicates whether the form presentation should respond to wildcard validation groups
+     * when it has been configured for a specific validation group.
+     * So it has two possible behaviors depending on this setting:
+     * - just issues for the validation group
+     * - all validation groups when validation without specifying a group occurs.
+     */
+    respondToWildcardGroup?: boolean;
 }
