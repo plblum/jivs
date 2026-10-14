@@ -29,10 +29,10 @@ export class HeaderFooterMessageFrame extends LayoutMessageFrameBase
      *       into the outer container's CSS classes.
      * - headerHtml - Used WITHIN a generated <div class='jivs-header'> tag
      *   Expects HTML, so HTML encode where appropriate.
-     * - headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
+     * - headerHtmll10n - The localization key for the header text.
      * - footerHtml - Used WITHIN a generated <div class='jivs-footer'> tag
      *   Expects HTML, so HTML encode where appropriate.
-     * - footerHtmll10n - The localization key for the footer text. Defaults to 'messageframe-footer'.
+     * - footerHtmll10n - The localization key for the footer text.
      * - useSummaryMessages 
      * - messagesLimit 
      * @param options The options for configuring the header and footer Message Frame.

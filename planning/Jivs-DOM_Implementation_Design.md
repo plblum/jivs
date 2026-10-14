@@ -2191,9 +2191,9 @@ Its optional header is omitted when no header text is configured. `iconContent` 
 
 TemplatedMessageFrameOptions include:
 - headerHtml - The text that replaces the {Header} token. It can contain HTML. Be sure to HTML encode where necessary.
-- headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
+- headerHtmll10n - The localization key for the header text. 
 - footerHtml - The text that replaces the {Footer} token. It can contain HTML. Be sure to HTML encode where necessary.
-- footerHtmll10n - The localization key for the footer text. Defaults to 'messageframe-footer'.
+- footerHtmll10n - The localization key for the footer text. 
 - useSummaryMessages - Whether to use summary messages instead of detailed messages.
 - messagesLimit - The maximum number of messages to display, if any.
 

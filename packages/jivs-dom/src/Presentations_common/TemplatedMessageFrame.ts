@@ -33,11 +33,9 @@ export class TemplatedMessageFrame extends MessageFrameBase
      * headerHtml - The text that replaces the {Header} token. It can contain HTML. 
      *      Be sure to HTML encode where necessary.
      * headerHtmll10n - The localization key for the header text.
-     *      Defaults to 'messageframe-header'.
      * footerHtml - The text that replaces the {Footer} token. 
      *      It can contain HTML. Be sure to HTML encode where necessary.
      * footerHtmll10n - The localization key for the footer text.
-     *      Defaults to 'messageframe-footer'.
      * useSummaryMessages - Whether to use summary messages instead of detailed messages.
      * messagesLimit - The maximum number of messages to display, if any.
      * 
@@ -51,9 +49,9 @@ export class TemplatedMessageFrame extends MessageFrameBase
         this.template = template;   // will update properties dependent on the template, like header and footer tokens
         // if template= '', a subclass must provide the template.
         this._headerHtml = options?.headerHtml ?? '';
-        this._headerHtmll10n = options?.headerHtmll10n ?? 'messageframe-header';
+        this._headerHtmll10n = options?.headerHtmll10n ?? '';
         this._footerHtml = options?.footerHtml ?? '';
-        this._footerHtmll10n = options?.footerHtmll10n ?? 'messageframe-footer';
+        this._footerHtmll10n = options?.footerHtmll10n ?? '';
 
     }
     /**

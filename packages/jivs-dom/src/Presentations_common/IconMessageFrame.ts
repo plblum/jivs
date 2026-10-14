@@ -82,7 +82,7 @@ export class IconMessageFrame extends LayoutMessageFrameBase
      * - imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
      * - headerHtml - The text to use for the header section. It can contain HTML. 
      *      Be sure to HTML encode where necessary.
-     * - headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
+     * - headerHtmll10n - The localization key for the header text.
      * - useSummaryMessages - Whether to use summary messages.
      * - messagesLimit - The limit for the number of messages to display.
      * 

@@ -129,7 +129,7 @@ export abstract class MessageFrameBase implements IMessageFrame
             valueHostsManager, issuesFound, this.useSummaryMessages, this.messagesLimit);
     }
 
-    abstract apply(containerElement: HTMLElement, issuesFound: IssueFound[],
+    public abstract apply(containerElement: HTMLElement, issuesFound: IssueFound[],
         valueHostsManager: IValueHostsManager,
         fieldValueHost: IFieldValueHost | null): void;
 }

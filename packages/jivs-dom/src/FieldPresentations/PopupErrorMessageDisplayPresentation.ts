@@ -11,6 +11,10 @@ import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMe
 import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
 import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
+import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -51,6 +55,7 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
 
     constructor(
         element: HTMLElement,
+        errorIndicator: IErrorIndicatorContent,
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>,
@@ -58,11 +63,19 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
     )
     {
         super(element, messageFrame, triggers, options, anchor);
+        assertNotNull(errorIndicator, 'errorIndicator');
         if (!options) options = {} as PopupErrorMessageDisplayPresentationOptions<TPopupOptions>;
         this._popupOptions = options.popupOptions ?? {} as TPopupOptions;
         this._anchorSelector = options.anchorSelector;
+        this._errorIndicator = errorIndicator;
         this.reviseTriggers(options);
     }
+    protected get errorIndicator(): IErrorIndicatorContent
+    {
+        return this._errorIndicator;
+    }
+    private _errorIndicator: IErrorIndicatorContent;
+
     protected reviseTriggers(options: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>)
     {
         // Implementation for revising triggers based on the provided options.
@@ -108,6 +121,22 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
             throw new Error('Popup mechanism not available in DOM services.');
         this._popupMechanism = this.domServices.popupMechanism;
         this._elementRegistry = this.domServices.getElementRegistry(valueHostsManager);
+        this.errorIndicator.setDomServices(this.domServices!);
+    }
+
+    protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
+    {
+        // change content before making it visible in ancestors
+        this.errorIndicator.apply(this.presentationElement,
+            issuesFound, valueHost.valueHostsManager, valueHost);
+
+        super.applyIssuesFound(valueHost, issuesFound);
+    }
+
+    protected override removeIssuesFound(): void
+    {
+        super.removeIssuesFound();
+        this.presentationElement.textContent = '';
     }
 
     /**
