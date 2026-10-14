@@ -62,7 +62,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     protected override gatherPersistentClasses(list: string[]): void
     {
         super.gatherPersistentClasses(list);
-        list.push('jivs-triggered-error-message-display');
+        list.push('jivs-triggerederrormessagedisplay');
     }
     /**
      * Ensures that all triggers are installed for the given field value host.

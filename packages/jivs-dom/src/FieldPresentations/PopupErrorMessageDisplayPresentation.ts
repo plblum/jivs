@@ -113,6 +113,12 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
 
     private _elementRegistry?: IElementRegistry;
 
+    protected override gatherPersistentClasses(list: string[]): void
+    {
+        super.gatherPersistentClasses(list);
+        list.push('jivs-popuperrormessagedisplay');
+    }
+
     override init(valueHostsManager: IValueHostsManager): void
     {
         super.init(valueHostsManager);
@@ -241,6 +247,7 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
         this._domServices = undefined as any;
         this._popupMechanism = undefined as any;
         this._elementRegistry = undefined as any;
+        this._errorIndicator = undefined as any;
     }
 }
 
