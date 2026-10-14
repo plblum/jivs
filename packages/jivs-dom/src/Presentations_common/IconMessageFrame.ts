@@ -80,9 +80,9 @@ export class IconMessageFrame extends LayoutMessageFrameBase
      *      This class will always insert 'jivs-iconmessageframe' into the outer container's CSS classes.
      * - iconContent - The HTML content for the icon element. Ensure HTML encoding where appropriate.
      * - imageSrc  - Makes an img tag with this as the src for the icon element. Optional.
-     * - headerText - The text to use for the header section. It can contain HTML. 
+     * - headerHtml - The text to use for the header section. It can contain HTML. 
      *      Be sure to HTML encode where necessary.
-     * - headerTextl10n - The localization key for the header text.
+     * - headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
      * - useSummaryMessages - Whether to use summary messages.
      * - messagesLimit - The limit for the number of messages to display.
      * 
@@ -142,7 +142,7 @@ export class IconMessageFrame extends LayoutMessageFrameBase
 
 }
 
-export interface IconMessageFrameOptions extends Omit<LayoutMessageFrameBaseOptions, 'footerText' | 'footerTextl10n'>
+export interface IconMessageFrameOptions extends Omit<LayoutMessageFrameBaseOptions, 'footerHtml' | 'footerHtmll10n'>
 {
     /**
      * The content for the icon section. It can contain HTML.

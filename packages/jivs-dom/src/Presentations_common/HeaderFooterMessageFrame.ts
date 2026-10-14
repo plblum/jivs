@@ -10,10 +10,10 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  *      <div class='jivs-footer'>{Footer}</div>
  * </div>
  * ```
- * When you supply headerText, it will be within a generated <div class='jivs-header'> tag. 
- * No <div class='jivs-header'> if there is no headerText or headerTextl10n.
- * When you supply footerText, it will be within a generated <div class='jivs-footer'> tag. 
- * No <div class='jivs-footer'> if there is no footerText or footerTextl10n.
+ * When you supply headerHtml, it will be within a generated <div class='jivs-header'> tag. 
+ * No <div class='jivs-header'> if there is no headerHtml or headerHtmll10n.
+ * When you supply footerHtml, it will be within a generated <div class='jivs-footer'> tag. 
+ * No <div class='jivs-footer'> if there is no footerHtml or footerHtmll10n.
  * 
  * This class will always inject 'jivs-headerfootermessageframe' into the outer container's CSS classes.
  * You can add more CSS classes through the outerClasses parameter.
@@ -27,10 +27,12 @@ export class HeaderFooterMessageFrame extends LayoutMessageFrameBase
      * - outerClasses - The CSS classes for the outer container element. 
      *       This class will always insert 'jivs-headerfootermessageframe' 
      *       into the outer container's CSS classes.
-     * - headerText - Used WITHIN a generated <div class='jivs-header'> tag
-     * - headerTextl10n 
-     * - footerText - Used WITHIN a generated <div class='jivs-footer'> tag
-     * - footerTextl10n 
+     * - headerHtml - Used WITHIN a generated <div class='jivs-header'> tag
+     *   Expects HTML, so HTML encode where appropriate.
+     * - headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
+     * - footerHtml - Used WITHIN a generated <div class='jivs-footer'> tag
+     *   Expects HTML, so HTML encode where appropriate.
+     * - footerHtmll10n - The localization key for the footer text. Defaults to 'messageframe-footer'.
      * - useSummaryMessages 
      * - messagesLimit 
      * @param options The options for configuring the header and footer Message Frame.

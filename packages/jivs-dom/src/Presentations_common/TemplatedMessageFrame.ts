@@ -9,8 +9,11 @@ import { MessageFrameBase } from './MessageFrameBase';
  * A templated approach to building the content of the Message Frame, 
  * by supplying an HTML string template containing tokens for dynamic content.
  * It supports optional header and footer sections.
- * For the header, it replaces the token {Header} with the provided headerText and headerTextl10n properties.
- * For the footer, it replaces the token {Footer} with the provided footerText and footerTextl10n properties.
+ * For the header, it replaces the token {Header} with the provided headerHtml and headerHtmll10n properties.
+ * headerHtmll10n defaults to 'messageframe-header'.    
+ * For the footer, it replaces the token {Footer} with the provided footerHtml and footerHtmll10n properties.
+ * footerHtmll10n defaults to 'messageframe-footer'.
+ * 
  * For the error messages, it replaces {IssuesFound} with the formatted error message content
  * adapted from the getErrorMessageContent method of the MessageFrameBase class.
  * 
@@ -27,12 +30,14 @@ export class TemplatedMessageFrame extends MessageFrameBase
      * Initializes a new instance of the TemplatedMessageFrame class.
      * 
      * ## Options
-     * headerText - The text that replaces the {Header} token. It can contain HTML. 
+     * headerHtml - The text that replaces the {Header} token. It can contain HTML. 
      *      Be sure to HTML encode where necessary.
-     * headerTextl10n - The localization key for the header text.
-     * footerText - The text that replaces the {Footer} token. 
+     * headerHtmll10n - The localization key for the header text.
+     *      Defaults to 'messageframe-header'.
+     * footerHtml - The text that replaces the {Footer} token. 
      *      It can contain HTML. Be sure to HTML encode where necessary.
-     * footerTextl10n - The localization key for the footer text.
+     * footerHtmll10n - The localization key for the footer text.
+     *      Defaults to 'messageframe-footer'.
      * useSummaryMessages - Whether to use summary messages instead of detailed messages.
      * messagesLimit - The maximum number of messages to display, if any.
      * 
@@ -45,10 +50,10 @@ export class TemplatedMessageFrame extends MessageFrameBase
         super(options);
         this.template = template;   // will update properties dependent on the template, like header and footer tokens
         // if template= '', a subclass must provide the template.
-        this._headerText = options?.headerText ?? '';
-        this._headerTextl10n = options?.headerTextl10n ?? '';
-        this._footerText = options?.footerText ?? '';
-        this._footerTextl10n = options?.footerTextl10n ?? '';
+        this._headerHtml = options?.headerHtml ?? '';
+        this._headerHtmll10n = options?.headerHtmll10n ?? 'messageframe-header';
+        this._footerHtml = options?.footerHtml ?? '';
+        this._footerHtmll10n = options?.footerHtmll10n ?? 'messageframe-footer';
 
     }
     /**
@@ -71,47 +76,47 @@ export class TemplatedMessageFrame extends MessageFrameBase
     }
     private _template: string = '';
 
-    protected get headerText(): string
+    protected get headerHtml(): string
     {
-        return this._headerText;
+        return this._headerHtml;
     }
-    protected set headerText(value: string)
+    protected set headerHtml(value: string)
     {
-        this._headerText = value ?? '';
+        this._headerHtml = value ?? '';
     }
-    protected get headerTextl10n(): string
+    protected get headerHtmll10n(): string
     {
-        return this._headerTextl10n;
+        return this._headerHtmll10n;
     }
-    protected set headerTextl10n(value: string)
+    protected set headerHtmll10n(value: string)
     {
-        this._headerTextl10n = value ?? '';
+        this._headerHtmll10n = value ?? '';
     }
-    protected get footerText(): string
+    protected get footerHtml(): string
     {
-        return this._footerText;
+        return this._footerHtml;
     }
-    protected set footerText(value: string)
+    protected set footerHtml(value: string)
     {
-        this._footerText = value ?? '';
+        this._footerHtml = value ?? '';
     }
-    protected get footerTextl10n(): string
+    protected get footerHtmll10n(): string
     {
-        return this._footerTextl10n;
+        return this._footerHtmll10n;
     }
-    protected set footerTextl10n(value: string)
+    protected set footerHtmll10n(value: string)
     {
-        this._footerTextl10n = value ?? '';
+        this._footerHtmll10n = value ?? '';
     }
 
     protected get hasHeaderText(): boolean
     {
-        return this._headerText || this._headerTextl10n ? true : false;
+        return this._headerHtml || this._headerHtmll10n ? true : false;
     }
 
     protected get hasFooterText(): boolean
     {
-        return this._footerText || this._footerTextl10n ? true : false;
+        return this._footerHtml || this._footerHtmll10n ? true : false;
     }
 
     private _hasHeaderToken: boolean = false;
@@ -137,10 +142,10 @@ export class TemplatedMessageFrame extends MessageFrameBase
      */
     protected getHeaderContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
-        return this.resolveText(this._headerTextl10n, this._headerText, issuesFound, valueHostsManager, fieldValueHost);
+        return this.resolveText(this._headerHtmll10n, this._headerHtml, issuesFound, valueHostsManager, fieldValueHost);
     }
-    private _headerText: string = '';
-    private _headerTextl10n: string = '';
+    private _headerHtml: string = '';
+    private _headerHtmll10n: string = '';
     
     /**
      * The footer text to be displayed. It can contain HTML and expects the source Footer text 
@@ -152,10 +157,10 @@ export class TemplatedMessageFrame extends MessageFrameBase
      */
     protected getFooterContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
-        return this.resolveText(this._footerTextl10n, this._footerText, issuesFound, valueHostsManager, fieldValueHost);
+        return this.resolveText(this._footerHtmll10n, this._footerHtml, issuesFound, valueHostsManager, fieldValueHost);
     }
-    private _footerText: string = '';
-    private _footerTextl10n: string = '';
+    private _footerHtml: string = '';
+    private _footerHtmll10n: string = '';
 
     /**
      * Applies the template to the specified container element, replacing tokens with the appropriate content.
@@ -196,24 +201,24 @@ export interface TemplatedMessageFrameOptions extends MessageFrameBaseOptions
      * The text to be displayed in the header section. It will replace the {Header} token in the template.
      * It can contain HTML and expects the source text to already be HTML encoded where needed.
      */
-    headerText?: string | null;
+    headerHtml?: string | null;
     /**
      * The localized text to be displayed in the header section. It will replace the {Header} token in the template.
      * It can contain HTML and expects the source text to already be HTML encoded where needed.
      * The mapping is setup in the ErrorMessagesService. If not found there for the active culture,
-     * it will fall back to headerText.
+     * it will fall back to headerHtml.
      */
-    headerTextl10n?: string | null;
+    headerHtmll10n?: string | null;
     /**
      * The text to be displayed in the footer section. It will replace the {Footer} token in the template.
      * It can contain HTML and expects the source text to already be HTML encoded where needed.
      */
-    footerText?: string | null;
+    footerHtml?: string | null;
     /**
      * The localized text to be displayed in the footer section. It will replace the {Footer} token in the template.
      * It can contain HTML and expects the source text to already be HTML encoded where needed.
      * The mapping is setup in the ErrorMessagesService. If not found there for the active culture,
-     * it will fall back to footerText.
+     * it will fall back to footerHtml.
      */
-    footerTextl10n?: string | null;
+    footerHtmll10n?: string | null;
 }

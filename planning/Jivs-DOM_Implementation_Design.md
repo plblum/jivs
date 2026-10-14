@@ -2189,7 +2189,15 @@ Its optional header is omitted when no header text is configured. `iconContent` 
 | `{Header}` | Optional location for resolved header text. |
 | `{Footer}` | Optional location for resolved footer text. |
 
-Resolved header and footer text can use `{Count}` for the number of supplied issues and `{Label}` for the HTML-encoded label of a supplied Field Value Host. Localized text selected through `headerTextl10n` and `footerTextl10n` supports the same tokens.
+TemplatedMessageFrameOptions include:
+- headerHtml - The text that replaces the {Header} token. It can contain HTML. Be sure to HTML encode where necessary.
+- headerHtmll10n - The localization key for the header text. Defaults to 'messageframe-header'.
+- footerHtml - The text that replaces the {Footer} token. It can contain HTML. Be sure to HTML encode where necessary.
+- footerHtmll10n - The localization key for the footer text. Defaults to 'messageframe-footer'.
+- useSummaryMessages - Whether to use summary messages instead of detailed messages.
+- messagesLimit - The maximum number of messages to display, if any.
+
+Resolved header and footer text can use `{Count}` for the number of supplied issues and `{Label}` for the HTML-encoded label of a supplied Field Value Host. Localized text selected through `headerHtmll10n` and `footerHtmll10n` supports the same tokens.
 
 `{IssuesFound}` is deliberately inserted as prepared HTML. Validation-message tokens are resolved before that insertion and may produce purpose-specific spans:
 
