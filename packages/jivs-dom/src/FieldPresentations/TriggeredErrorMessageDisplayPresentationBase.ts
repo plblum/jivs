@@ -18,7 +18,8 @@ import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
  * 
  * It introduces the 'jivs-open' CSS class for indicating when the error message display is open.
  * 
- * The triggers are supplied as a list of IErrorMessageDisplayTrigger instances.
+ * The triggers are supplied as a list of IErrorMessageDisplayTrigger instances
+ * found in options.triggers.
  * Each installs event handlers that invoke any of the functions found on this class
  * through IErrorMessageDisplayController: open(), close(), and toggle().
  * 
@@ -39,23 +40,31 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
 {
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,
-        triggers: IErrorMessageDisplayTrigger[],
-        options?: TOptions,
-        jivsElement?: IJivsElement)
+        options?: TOptions)
     {
-        super(element, messageFrame, options, jivsElement);
-        this._triggers = triggers ?? [];
+        super(element, messageFrame, options);
+        // if the default for triggers was null, don't let that cause an exception!
+        this.options.triggers = this.options.triggers ?? [];
     }
 
-    /**
-     * Gets the list of triggers associated with this presentation.
-     * Can be an empty array so long as another mechanism is responsible for calling open().
-     */
-    protected get triggers(): IErrorMessageDisplayTrigger[]
+    protected override getOptionDefaults(): Partial<TOptions>
     {
-        return this._triggers;
+        let superDefaults = super.getOptionDefaults();
+        return {
+            ...superDefaults,
+            triggers: []
+        };
     }
-    private _triggers: IErrorMessageDisplayTrigger[];
+
+    // /**
+    //  * Gets the list of triggers associated with this presentation.
+    //  * Can be an empty array so long as another mechanism is responsible for calling open().
+    //  */
+    // protected get triggers(): IErrorMessageDisplayTrigger[]
+    // {
+    //     return this._triggers;
+    // }
+    // private _triggers: IErrorMessageDisplayTrigger[];
 
     protected get openClass(): string[]
     {
@@ -74,7 +83,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
     {
         super.ensureValueHostInitializedWorker(valueHost);
         this._triggerContext = this.createTriggerContext(valueHost);    // expected to be immutable 
-        for (const trigger of this._triggers)
+        for (const trigger of this.options.triggers!)
         {
             trigger.install(this._triggerContext);
         }
@@ -389,7 +398,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
         this._popupService?.unregister(this);
         this._popupService = undefined;
         super.dispose();
-        this._triggers = undefined as any;
         this._triggerContext?.dispose();
         this._triggerContext = undefined;
     }
@@ -398,4 +406,8 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
 
 export interface TriggeredErrorMessageDisplayPresentationBaseOptions extends ErrorMessageDisplayPresentationBaseOptions
 {
+    /**
+     * The list of triggers that determine when the error message display should be shown or hidden.
+     */
+    triggers?: IErrorMessageDisplayTrigger[];
 }

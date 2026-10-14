@@ -160,6 +160,12 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     {
     }
 
+    override dispose(): void
+    {
+        super.dispose();
+        this._options = undefined as any;
+    }
+
 }
 
 /**

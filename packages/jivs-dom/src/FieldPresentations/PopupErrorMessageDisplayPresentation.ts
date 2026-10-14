@@ -59,16 +59,14 @@ export class PopupErrorMessageDisplayPresentation<
         element: HTMLElement,
         errorIndicator: IErrorIndicatorContent,
         messageFrame: IMessageFrame,
-        triggers: IErrorMessageDisplayTrigger[],
-        options?: TOptions,
-        jivsElement?: IJivsElement
+        options?: TOptions
     )
     {
-        super(element, messageFrame, triggers, options, jivsElement);
+        super(element, messageFrame, options);
         assertNotNull(errorIndicator, 'errorIndicator');
         this._popupOptions = this.options.popupOptions ?? {} as TPopupOptions;
         this._errorIndicator = errorIndicator;
-        this.reviseTriggers(this.options);
+        this.reviseTriggers(this.options.triggers!);
     }
 
     protected override getOptionDefaults(): Partial<TOptions>
@@ -114,14 +112,14 @@ export class PopupErrorMessageDisplayPresentation<
         list.push('jivs-popuperrormessagedisplay');
     }
 
-    protected reviseTriggers(options: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>)
+    protected reviseTriggers(triggers: IErrorMessageDisplayTrigger[])
     {
         // Implementation for revising triggers based on the provided options.
-        this.triggers.push(new ErrorMessageDisplayClickTrigger());
-        if (options.mouseoverEnabled)
+        triggers.push(new ErrorMessageDisplayClickTrigger());
+        if (this.options.mouseoverEnabled)
         {
-            this.triggers.push(new ErrorMessageDisplayMouseOverTrigger(options.mouseoverDelay ?? defaultMouseoverDelay));
-            this.triggers.push(new ErrorMessageDisplayMouseOutTrigger(options.mouseoutDelay ?? defaultMouseoutDelay));
+            triggers.push(new ErrorMessageDisplayMouseOverTrigger(this.options.mouseoverDelay ?? defaultMouseoverDelay));
+            triggers.push(new ErrorMessageDisplayMouseOutTrigger(this.options.mouseoutDelay ?? defaultMouseoutDelay));
         }
     }
 

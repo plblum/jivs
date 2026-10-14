@@ -32,18 +32,15 @@ export abstract class ErrorMessageDisplayPresentationBase
     /**
      * Initializes a new instance of the error message display presentation.
      * @param element The DOM element that this presentation is associated with.
-     * @param jivsElement The element containing the IJivsElement structure.
-     * It is often the same as the element itself.
      * @param messageFrame The display component for issues found.
      * @param variationClass The CSS class for the presentation element.
      * @param hasIssuesClass The CSS class applied when issues are found.
      */
     constructor(element: HTMLElement, 
         messageFrame: IMessageFrame,
-        options?: TOptions,
-        jivsElement?: IJivsElement | null)
+        options?: TOptions)
     {
-        super(element, options, jivsElement);
+        super(element, options);    // intentionally omits jivsElement because element always is jivsElement
         assertNotNull(messageFrame, 'messageFrame');
         this._messageFrame = messageFrame;
     }
