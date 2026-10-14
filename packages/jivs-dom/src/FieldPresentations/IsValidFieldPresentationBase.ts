@@ -149,27 +149,27 @@ export abstract class IsValidFieldPresentationBase<
     protected applyToElement(element: HTMLElement, valueHost: IFieldValueHost, state: ValueHostValidationState): void
     {
 
-        this.removeClasses(this.invalidClass);
-        this.removeClasses(this.validatedClass);
-        this.removeClasses(this.correctedClass);
+        this.removeClasses(element, this.invalidClass);
+        this.removeClasses(element, this.validatedClass);
+        this.removeClasses(element, this.correctedClass);
 
         // ordering of these 3 is intentional: invalid, corrected, validated
         if (!state.isValid)
         {
-            this.addClasses(this.invalidClass);
+            this.addClasses(element, this.invalidClass);
         }
         else if (state.corrected && this.options.correctedClassEnabled)
         {
-            this.addClasses(this.correctedClass);
+            this.addClasses(element, this.correctedClass);
         }
         else if (state.status === ValidationStatus.Valid)   // fallback for when corrected is setup but without css name
         {
             if (this.options.validatedClassEnabled)
-                this.addClasses(this.validatedClass);
+                this.addClasses(element, this.validatedClass);
         }
 
         if (valueHost.required && this.options.requiredClassEnabled)
-            this.addClasses(this.requiredClass);
+            this.addClasses(element, this.requiredClass);
 
     }    
 }

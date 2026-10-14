@@ -191,7 +191,7 @@ export class PopupErrorMessageDisplayPresentation<
     {
         super.opened();
 
-        this.addClasses([jivsPopupOpenClass]);
+        this.addClasses(this.presentationElement, [jivsPopupOpenClass]);
         let editor = this._elementRegistry?.getElementsByRole(ElementRole.editor, this.triggerContext?.valueHost.getElementIdentifier() ?? null);
         if (editor && editor.length > 0)
             editor[0].classList.add(jivsPopupOpenClass);
@@ -230,7 +230,7 @@ export class PopupErrorMessageDisplayPresentation<
     }    
     protected override closedCore(): void
     {
-        this.removeClasses([jivsPopupOpenClass]);
+        this.removeClasses(this.presentationElement, [jivsPopupOpenClass]);
         let editor = this._elementRegistry?.getElementsByRole(ElementRole.editor, this.triggerContext?.valueHost.getElementIdentifier() ?? null);
         if (editor && editor.length > 0)
             editor[0].classList.remove(jivsPopupOpenClass);

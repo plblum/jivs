@@ -92,22 +92,22 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
      * Utility method to add a list of CSS classes to the presentation element.
      * @param list The list of CSS classes to add to the presentation element.
      */
-    protected addClasses(list: string[]): void
+    protected addClasses(element: HTMLElement, list: string[]): void
     {
         for (let cls of list)
         {
-            this.presentationElement.classList.add(cls);
+            element.classList.add(cls);
         }
     }
     /**
      * Utility method to remove a list of CSS classes from the presentation element.
      * @param list The list of CSS classes to remove from the presentation element.
      */
-    protected removeClasses(list: string[]): void
+    protected removeClasses(element: HTMLElement, list: string[]): void
     {
         for (let cls of list)
         {
-            this.presentationElement.classList.remove(cls);
+            element.classList.remove(cls);
         }
     }
     /**
@@ -147,7 +147,7 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
         {
             persistentClasses.push(...variationClasses);
         }        
-        this.addClasses(persistentClasses);          
+        this.addClasses(this.presentationElement, persistentClasses);          
     }
 
     /**

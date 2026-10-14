@@ -99,14 +99,14 @@ export abstract class ErrorMessageDisplayPresentationBase
      */
     protected applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
     {
-        this.addClasses(this.hasIssuesClass);
+        this.addClasses(this.presentationElement, this.hasIssuesClass);
     }
     /**
      * Removes the issues found from the presentation, typically by clearing the visual state.
      */
     protected removeIssuesFound(): void
     {
-        this.removeClasses(this.hasIssuesClass);
+        this.removeClasses(this.presentationElement, this.hasIssuesClass);
     }
 
     /**

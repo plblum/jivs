@@ -36,6 +36,7 @@ export abstract class FormPresentationBase<
     protected override getOptionDefaults(): Partial<TOptions>
     {
         return {
+            ...super.getOptionDefaults(),
             respondToWildcardGroup: false
         } as Partial<TOptions>;
     }

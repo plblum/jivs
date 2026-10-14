@@ -44,7 +44,10 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
     {
         super(element, messageFrame, options);
         // if the default for triggers was null, don't let that cause an exception!
-        this.options.triggers = this.options.triggers ?? [];
+        if (this.options.triggers)
+            this.options.triggers = [...this.options.triggers];
+        else
+            this.options.triggers = [];
     }
 
     protected override getOptionDefaults(): Partial<TOptions>
@@ -55,17 +58,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
             triggers: []
         };
     }
-
-    // /**
-    //  * Gets the list of triggers associated with this presentation.
-    //  * Can be an empty array so long as another mechanism is responsible for calling open().
-    //  */
-    // protected get triggers(): IErrorMessageDisplayTrigger[]
-    // {
-    //     return this._triggers;
-    // }
-    // private _triggers: IErrorMessageDisplayTrigger[];
-
+    
     protected get openClass(): string[]
     {
         return ['jivs-open'];
@@ -246,7 +239,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
      */
     public opened(): void
     {
-        this.addClasses(this.openClass);
+        this.addClasses(this.presentationElement, this.openClass);
         // in case it was called without using open()
         this.cancelScheduledTransition();
         this.triggerState = TriggerState.open;
@@ -345,7 +338,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
 
     protected closedCore(): void
     {
-        this.removeClasses(this.openClass);
+        this.removeClasses(this.presentationElement,this.openClass);
         // in case it was called without using close()
         this.cancelScheduledTransition();        
     }
