@@ -94,14 +94,14 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     implements IFieldPresentation
 {
     /**
-     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement wrapper.
+     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement structure.
      * @param element The DOM element that this adapter is associated with.
-     * @param anchor The element containing the IJivsElement wrapper.
+     * @param jivsElement The element containing the IJivsElement structure.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, options?: FieldPresentationBaseOptions, anchor?: IJivsElement | null)
+    public constructor(element: TElement, options?: FieldPresentationBaseOptions, jivsElement?: IJivsElement | null)
     {
-        super(element, anchor ?? null);
+        super(element, jivsElement ?? null);
         this._variationClasses = FieldPresentationBase.toStyleClassNameArray(options?.variationClasses);
     }
 

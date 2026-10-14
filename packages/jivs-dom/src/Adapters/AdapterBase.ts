@@ -16,16 +16,16 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
 {
 
     /**
-     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement wrapper.
+     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement structure.
      * @param element The DOM element that this adapter is associated with.
-     * @param anchor The element containing the IJivsElement wrapper.
+     * @param jivsElement The element containing the IJivsElement structure.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, anchor: IJivsElement | null)
+    public constructor(element: TElement, jivsElement: IJivsElement | null)
     {
         assertNotNull(element, 'element');
         this._element = element;
-        this._anchor = anchor ?? (element as IJivsElement);
+        this._jivsElement = jivsElement ?? (element as IJivsElement);
     }
 
     /**
@@ -39,14 +39,14 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     private _element: TElement;
 
     /**
-     * The element containing the IJivsElement wrapper.
+     * The element containing the IJivsElement structure.
      * It is often the same as the element itself.
      */
-    protected get anchor(): IJivsElement
+    protected get jivsElement(): IJivsElement
     {
-        return this._anchor;
+        return this._jivsElement;
     }
-    private _anchor: IJivsElement;
+    private _jivsElement: IJivsElement;
 
     /**
      * Allows for release of resources and nulling properties to facilitate garbage collection.
@@ -58,6 +58,6 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     public dispose(): void
     {
         this._element = undefined as any;
-        this._anchor = undefined as any;
+        this._jivsElement = undefined as any;
     }    
 }

@@ -59,10 +59,10 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>,
-        anchor?: IJivsElement
+        jivsElement?: IJivsElement
     )
     {
-        super(element, messageFrame, triggers, options, anchor);
+        super(element, messageFrame, triggers, options, jivsElement);
         assertNotNull(errorIndicator, 'errorIndicator');
         if (!options) options = {} as PopupErrorMessageDisplayPresentationOptions<TPopupOptions>;
         this._popupOptions = options.popupOptions ?? {} as TPopupOptions;

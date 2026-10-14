@@ -75,12 +75,12 @@ export class WrappedRadioButtonsAdapterDefinition extends WrappedInputAdapterDef
      * This corresponds to expectations from RadioButtonsAdapterDefinition which 
      * is the child adapter that manages the group of radio buttons as an array of siblings.
      * @param valueHost - the host object that contains the value for the editor.
-     * @param anchor The Anchor element from which we can resolve the editor element.
+     * @param jivsElement The Anchor element from which we can resolve the editor element.
      * @returns the HTMLElement corresponding to the first radio button in the wrapper's children.
      */
-    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
+    public override identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
     {
-        let editor = anchor.querySelector('input[type="radio"]');
+        let editor = jivsElement.querySelector('input[type="radio"]');
         assertNotNull(editor, 'No radio button found in the wrapper.');
         return editor as HTMLElement;
     }

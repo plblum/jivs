@@ -37,11 +37,11 @@ export class CheckboxAdapterDefinition extends InputAdapterDefinition
     }
 
     public override createTextValueAdapter(valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter
+        editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter
     {
         return new CheckboxTextValueAdapter(
             this.requireInputElement(editor),   // may throw
-            anchor
+            jivsElement
         );
     }
 }

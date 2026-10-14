@@ -26,10 +26,10 @@ export class WrappedTextAreaPresentation extends WrappedEditorFieldPresentationB
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
 

@@ -12,7 +12,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Presentation for HTML input type="radio" element contained within a specific wrapper.
  * 
  * ## CSS Classes
- * CSS classes are applied to the wrapper (the anchor).
+ * CSS classes are applied to the wrapper (the jivsElement).
  * - persistent classes: `jivs-wrapped-editor-radiobuttons`, `jivs-wrapped-editor`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
@@ -26,10 +26,10 @@ export class WrappedRadioButtonsPresentation extends WrappedEditorFieldPresentat
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
     protected override gatherPersistentClasses(list: string[]): void

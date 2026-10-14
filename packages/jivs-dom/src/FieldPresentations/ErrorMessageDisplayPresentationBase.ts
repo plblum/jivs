@@ -30,7 +30,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     /**
      * Initializes a new instance of the error message display presentation.
      * @param element The DOM element that this presentation is associated with.
-     * @param anchor The element containing the IJivsElement wrapper.
+     * @param jivsElement The element containing the IJivsElement structure.
      * It is often the same as the element itself.
      * @param messageFrame The display component for issues found.
      * @param variationClass The CSS class for the presentation element.
@@ -39,9 +39,9 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     constructor(element: HTMLElement, 
         messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsElement | null)
+        jivsElement?: IJivsElement | null)
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
         assertNotNull(messageFrame, 'messageFrame');
         this._messageFrame = messageFrame;
     }

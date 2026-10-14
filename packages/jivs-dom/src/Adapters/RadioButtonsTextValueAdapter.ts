@@ -33,12 +33,12 @@ export class RadioButtonsTextValueAdapter extends RadioButtonsTextValueAdapterBa
     /**
      * Constructor
      * @param radiobutton - one of the radio buttons from the group.
-     * @param anchor - the element that retains the IJivsElement structure.
+     * @param jivsElement - the element that retains the IJivsElement structure.
      * It is usually the same as radiobutton. Pass null to declare radiobutton as its value.
      */
-    public constructor(radiobutton: HTMLInputElement, anchor: IJivsElement | null = null)
+    public constructor(radiobutton: HTMLInputElement, jivsElement: IJivsElement | null = null)
     {
-        super(radiobutton, anchor);
+        super(radiobutton, jivsElement);
     }
 
     protected getRadios(): HTMLInputElement[]

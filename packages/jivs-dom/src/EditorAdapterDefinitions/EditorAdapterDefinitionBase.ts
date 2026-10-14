@@ -173,11 +173,11 @@ export abstract class EditorAdapterDefinitionBase
      * This class returns the element passed to it as the editor, assuming it is the actual editor element.
      * 
      * @param valueHost The field value host associated with the editor.
-     * @param anchor The Anchor element from which we can resolve the editor element.
+     * @param jivsElement The Anchor element from which we can resolve the editor element.
      */
-    public identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
+    public identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
     {
-        return anchor;
+        return jivsElement;
     }
 
     /**
@@ -187,16 +187,16 @@ export abstract class EditorAdapterDefinitionBase
      * to avoid multiple attachments of the same editor to the send values mechanism.
      * @param valueHost The field value host associated with the editor.
      * @param editor The DOM element representing the editor hosting the actual value.
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param options The options for installing the editor.
      */
-    public attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    public attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options?: EditorInstallOptions): void
     {
         if (!options)
             options = {};
-        this.attachToSendValuesCore(valueHost, editor, anchor, options);
+        this.attachToSendValuesCore(valueHost, editor, jivsElement, options);
 
         this.log(LoggingLevel.Debug,
             `Attaching editor to send values for element '{element}' and value host '{valuehost}'.`,
@@ -208,26 +208,26 @@ export abstract class EditorAdapterDefinitionBase
      * 
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
-     * @param anchor - the DOM element that contains the IJivsElement structure.
+     * @param jivsElement - the DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param options - additional options for editor installation.
      */
     protected abstract attachToSendValuesCore(valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsElement, options: EditorInstallOptions): void;
+        editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void;
 
     /**
      * Attaches the handler to the widget specific event listener system.
      * Our base class implements the DOM addEventListener mechanism for 
      * attaching event handlers.
      * 
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * @param eventName The name of the event to attach the handler to. Do not include
      * the 'on' prefix (e.g., use 'click' instead of 'onclick').
      * @param handler The event listener function to handle the specified event.
      */
-    public attachEventHandler(anchor: IJivsElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void
+    public attachEventHandler(jivsElement: IJivsElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void
     {
-        let editor = this.identifyEditor(valueHost, anchor);
+        let editor = this.identifyEditor(valueHost, jivsElement);
         editor.addEventListener(eventName, handler);
 
     }
@@ -238,22 +238,22 @@ export abstract class EditorAdapterDefinitionBase
      * Leave null if the editor does not support it.
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
-     * @param anchor - the DOM element that contains the IJivsElement structure.
+     * @param jivsElement - the DOM element that contains the IJivsElement structure.
      * It can be null if its the same value as element.
      * @returns a new instance of the TextValueAdapter or null if not supported.
      */
-    public abstract createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): ITextValueAdapter | null;       
+    public abstract createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement | null): ITextValueAdapter | null;       
     /**
      * Provides a new instance of the ValueAdapter to assign to 
      * IJivsElement.jivsValueAdapter.
      * Leave null if the editor does not support it.
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
-     * @param anchor - the DOM element that contains the IJivsElement structure.
+     * @param jivsElement - the DOM element that contains the IJivsElement structure.
      * It can be null if its the same value as element.
      * @returns a new instance of the ValueAdapter or null if not supported.
      */
-    public abstract createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): IValueAdapter | null;
+    public abstract createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement | null): IValueAdapter | null;
 
     /**
      * The Aria system uses a default Aria Static Updater that may not
@@ -291,20 +291,20 @@ export abstract class EditorAdapterDefinitionBase
      * ```ts
      * let self = this;
      * element.addEventListener('change', () => {
-     *     self.sendTextValue(valueHost, anchor, domServices, false);
+     *     self.sendTextValue(valueHost, jivsElement, domServices, false);
      * });
      * ```
      * 
      * @param valueHost - The value host to which the text value will be sent.
      * @param editor - The DOM element representing the editor hosting the actual value.
-     * @param anchor - The DOM element that contains the IJivsElement structure.
+     * @param jivsElement - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param duringEdit - An optional boolean indicating if the value is being sent during an edit operation.
      */
-    protected sendTextValue(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    protected sendTextValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         duringEdit?: boolean): void
     {
-        if (!anchor.jivsTextValueAdapter)
+        if (!jivsElement.jivsTextValueAdapter)
         {
             this.log(LoggingLevel.Warn,
                 `No text value adapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
@@ -313,7 +313,7 @@ export abstract class EditorAdapterDefinitionBase
             return;
         }
 
-        const textValue = anchor.jivsTextValueAdapter.readTextValue();
+        const textValue = jivsElement.jivsTextValueAdapter.readTextValue();
         valueHost.setTextValue(textValue, {
             validate: true,
             duringEdit: duringEdit
@@ -334,17 +334,17 @@ export abstract class EditorAdapterDefinitionBase
      * ```ts
      * let self = this;
      * element.addEventListener('change', () => {
-     *     self.sendNativeValue(valueHost, editor, anchor, domServices);
+     *     self.sendNativeValue(valueHost, editor, jivsElement, domServices);
      * });
      * ```
      * @param valueHost - The value host to which the native value will be sent.
      * @param editor - The DOM element representing the editor hosting the actual value.
-     * @param anchor - The DOM element that contains the IJivsElement structure.
+     * @param jivsElement - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      */
-    protected sendNativeValue(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): void
+    protected sendNativeValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): void
     {
-        if (!anchor.jivsValueAdapter)
+        if (!jivsElement.jivsValueAdapter)
         {
             this.log(LoggingLevel.Warn,
                 `No native value adapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
@@ -354,7 +354,7 @@ export abstract class EditorAdapterDefinitionBase
             return;
         }
 
-        const nativeValue = anchor.jivsValueAdapter.readValue();
+        const nativeValue = jivsElement.jivsValueAdapter.readValue();
         valueHost.setValue(nativeValue, {
             validate: true
         });

@@ -39,9 +39,9 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: TriggeredErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsElement)
+        jivsElement?: IJivsElement)
     {
-        super(element, messageFrame, options, anchor);
+        super(element, messageFrame, options, jivsElement);
         this._triggers = triggers ?? [];
     }
 
@@ -98,7 +98,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
     protected createTriggerContext(valueHost: IFieldValueHost): IErrorMessageDisplayTriggerContext
     {
         return new ErrorMessageDisplayTriggerContext(
-            this.anchor,
+            this.jivsElement,
             valueHost.valueHostsManager.services.domServices,
             valueHost,
             this

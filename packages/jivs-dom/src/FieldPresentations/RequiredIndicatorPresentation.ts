@@ -31,16 +31,16 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
      * Constructor for the RequiredIndicatorPresentation class.
      * @param element The HTML element used for the required indicator.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
         if (options)
             options.requiredClassEnabled = true;
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
     protected override get requiredClassEnabled(): boolean

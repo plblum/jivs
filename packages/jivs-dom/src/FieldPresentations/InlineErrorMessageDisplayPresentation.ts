@@ -33,9 +33,9 @@ export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPr
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsElement | null)
+        jivsElement?: IJivsElement | null)
     {
-        super(element, messageFrame, options, anchor);
+        super(element, messageFrame, options, jivsElement);
     }
 
     protected override gatherPersistentClasses(list: string[]): void

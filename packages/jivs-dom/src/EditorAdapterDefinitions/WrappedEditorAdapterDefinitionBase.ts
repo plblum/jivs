@@ -161,16 +161,16 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Resolves the editor as an element within the wrapper using findEditorElement().
      * Throws if the editor element cannot be found within the wrapped.
      * @param valueHost The host object that provides the field value.
-     * @param anchor The element that retains the IJivsElement structure..
+     * @param jivsElement The element that retains the IJivsElement structure..
      * @returns The editor element within the wrapper.
      */
-    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
+    public override identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
     {
-        let editor = this.findEditorElement(anchor);
+        let editor = this.findEditorElement(jivsElement);
         if (!editor)
         {
             let msg = `Editor element not found within the wrapped.`;
-            this.log(LoggingLevel.Error, msg, anchor, valueHost);
+            this.log(LoggingLevel.Error, msg, jivsElement, valueHost);
             throw new Error(msg);
         }
         return editor;
@@ -195,40 +195,40 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Redirects the creation of a text value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The element that retains the IJivsElement structure..
+     * @param jivsElement The element that retains the IJivsElement structure..
      * @returns The text value adapter for the editor element, or null if none is created.
      */
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
         // Create and return a text value adapter for the editor element here.
-        return this.childEditorDefinitionAdapter.createTextValueAdapter(valueHost, editor, anchor);
+        return this.childEditorDefinitionAdapter.createTextValueAdapter(valueHost, editor, jivsElement);
     }
 
     /**
      * Redirects the creation of a value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The element that retains the IJivsElement structure..
+     * @param jivsElement The element that retains the IJivsElement structure..
      * @returns The value adapter for the editor element, or null if none is created.
      */
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement | null): IValueAdapter | null
     {
-        return this.childEditorDefinitionAdapter.createValueAdapter(valueHost, editor, anchor);
+        return this.childEditorDefinitionAdapter.createValueAdapter(valueHost, editor, jivsElement);
     }
 
     /**
      * Redirects the attachment of send values to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The element that retains the IJivsElement structure..
+     * @param jivsElement The element that retains the IJivsElement structure..
      * @param options Optional installation options for the editor.
      */
-    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement, options?: EditorInstallOptions): void
+    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: EditorInstallOptions): void
     {
         // Attach event listeners or perform other setup for the editor element here.
-        this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, anchor, options ?? {});
+        this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, jivsElement, options ?? {});
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement, options: EditorInstallOptions): void
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
         // Not used
     }

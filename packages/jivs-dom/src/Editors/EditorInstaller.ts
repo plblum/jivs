@@ -44,19 +44,19 @@ export class EditorInstaller extends DomServiceBase
             options = {};
         }
         let definition = this.resolveDefinition(valueHost, element, options);   // may throw
-        const anchor = definition.identifyJivsElement(valueHost, element);   // may throw
-        const editor = definition.identifyEditor(valueHost, anchor);   // may throw
+        const jivsElement = definition.identifyJivsElement(valueHost, element);   // may throw
+        const editor = definition.identifyEditor(valueHost, jivsElement);   // may throw
 
         // already installed? Done!
-        if (anchor.jivsEditorAdapterDefinition !== undefined)
+        if (jivsElement.jivsEditorAdapterDefinition !== undefined)
         {
-            return anchor;
+            return jivsElement;
         }
-        anchor.jivsElementRole = ElementRole.editor;
-        anchor.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, editor, anchor);
-        anchor.jivsValueAdapter = definition.createValueAdapter(valueHost, editor, anchor);
+        jivsElement.jivsElementRole = ElementRole.editor;
+        jivsElement.jivsTextValueAdapter = definition.createTextValueAdapter(valueHost, editor, jivsElement);
+        jivsElement.jivsValueAdapter = definition.createValueAdapter(valueHost, editor, jivsElement);
 
-        definition.attachToSendValues(valueHost, editor, anchor, options);
+        definition.attachToSendValues(valueHost, editor, jivsElement, options);
 
         // Presentations offloaded. 
         // They will use a role-specific default if no presentation name is provided
@@ -65,15 +65,15 @@ export class EditorInstaller extends DomServiceBase
                 ? options.presentationName  // can be null
                 : definition.recommendedFieldPresentationName;
 
-        this.domServices.fieldPresentationInstaller.install(valueHost, anchor, ElementRole.editor,
+        this.domServices.fieldPresentationInstaller.install(valueHost, jivsElement, ElementRole.editor,
             {
                 presentationName   // if null, the role specific default will be used
             }
         );  // may throw
 
         // declare it as installed to prevent multiple installations
-        anchor.jivsEditorAdapterDefinition = definition;
-        return anchor;
+        jivsElement.jivsEditorAdapterDefinition = definition;
+        return jivsElement;
     }
 
     /**

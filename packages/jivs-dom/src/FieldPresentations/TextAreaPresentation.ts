@@ -26,14 +26,14 @@ export class TextAreaPresentation extends EditorFieldPresentationBase
      * Constructor for the TextAreaPresentation class.
      * @param element The HTML textarea element associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
     protected override gatherPersistentClasses(list: string[]): void

@@ -103,10 +103,10 @@ export interface IEditorAdapterDefinition
      * even if the supplied element is a container or related element.
      * 
      * @param valueHost The field value host associated with the editor.
-     * @param anchor The Anchor element from which we can resolve the editor element.
+     * @param jivsElement The Anchor element from which we can resolve the editor element.
      * They may be the same.
      */
-    identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement;
+    identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement;
 
     /**
      * The EditorInstaller uses this method to attach the editor to the send values mechanism
@@ -115,11 +115,11 @@ export interface IEditorAdapterDefinition
      * to avoid multiple attachments of the same editor to the send values mechanism.
      * @param valueHost The field value host associated with the editor.
      * @param editor The DOM element representing the editor hosting the actual value.
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param options The options for installing the editor.
      */
-    attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options: EditorInstallOptions): void;    
     
     /**
@@ -127,33 +127,33 @@ export interface IEditorAdapterDefinition
      * Our base class implements the DOM addEventListener mechanism for 
      * attaching event handlers.
      * 
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * @param valueHost The field value host associated with the editor.
      * @param eventName The name of the event to attach the handler to.
      * @param handler The event listener function to handle the specified event.
      */
-    attachEventHandler(anchor: IJivsElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void;
+    attachEventHandler(jivsElement: IJivsElement, valueHost: IFieldValueHost, eventName: string, handler: EventListener): void;
 
     /**
      * Creates a suitable ITextValueAdapter for the given value host together with both its Editor and JivsElement.
      * @param valueHost The FieldValueHost that will get and set values with the editor.
      * @param editor The DOM element representing the editor hosting the actual value.
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * It can be null if its the same value as editor.
      * @returns A suitable ITextValueAdapter instance, or null if none can be created.
      * This method may return null if no suitable adapter can be created for the given value host and JivsElement.
      */
-    createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): ITextValueAdapter | null;
+    createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement | null): ITextValueAdapter | null;
 
     /**
      * Creates a suitable IValueAdapter for the given value host together with both its Editor and JivsElement.
      * @param valueHost The FieldValueHost that will get and set values with the editor.
      * @param editor The DOM element representing the editor hosting the actual value.
-     * @param anchor The DOM element that contains the IJivsElement structure.
+     * @param jivsElement The DOM element that contains the IJivsElement structure.
      * It can be null if its the same value as editor.
      * @returns A suitable IValueAdapter instance, or null if none can be created.
      */
-    createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): IValueAdapter | null;
+    createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement | null): IValueAdapter | null;
 
     /**
      * Gets the static ARIA element updater associated with this adapter definition, if any.

@@ -19,9 +19,9 @@ export abstract class TextValueAdapterBase<TElement extends HTMLElement = HTMLEl
     extends AdapterBase<TElement>
 {
 
-    public constructor(element: TElement, anchor: IJivsElement | null)
+    public constructor(element: TElement, jivsElement: IJivsElement | null)
     {
-        super(element, anchor);
+        super(element, jivsElement);
     }
 
     /**

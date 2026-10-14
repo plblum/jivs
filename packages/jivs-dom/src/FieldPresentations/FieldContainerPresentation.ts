@@ -31,14 +31,14 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
      * @param options Configuration options for the field presentation, including CSS classes.
      * Passing null explicitly disables the corresponding class - except InvalidClass, while omitting the option uses the 
      * default supplied by this class or a derived class.
-     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
     override gatherPersistentClasses(list: string[]): void

@@ -42,11 +42,11 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase
      * Creates an instance of the RadioButtonsPresentation class.
      * @param radioButton The HTML input element of type radio associated with this presentation.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(radioButton: HTMLElement,
         options?: RadioButtonsFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
         super(
@@ -59,7 +59,7 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase
                 requiredClassEnabled: false,
                 validatedClassEnabled: false
             },
-            anchor
+            jivsElement
         );
 
     }

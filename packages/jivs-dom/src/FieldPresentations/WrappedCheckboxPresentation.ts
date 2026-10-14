@@ -28,10 +28,10 @@ export class WrappedCheckboxPresentation extends WrappedEditorFieldPresentationB
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
 
     protected override gatherPersistentClasses(list: string[]): void

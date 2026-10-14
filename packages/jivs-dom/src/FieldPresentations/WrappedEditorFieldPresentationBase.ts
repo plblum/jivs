@@ -69,16 +69,16 @@ export abstract class WrappedEditorFieldPresentationBase<TElement extends HTMLEl
      *
      * @param element The wrapper that receives all presentation classes.
      * @param options Configuration options for the field presentation, including CSS classes.
-     * @param anchor The Jivs DOM element associated with this field presentation, if any.
+     * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     public constructor(
         element: TElement,
         options?: WrappedEditorFieldPresentationBaseOptions,
         // intentionally placed last because its usually used internally
-        anchor?: IJivsElement | null
+        jivsElement?: IJivsElement | null
     )
     {
-        super(element, options, anchor);
+        super(element, options, jivsElement);
     }
     protected override gatherPersistentClasses(list: string[]): void
     {

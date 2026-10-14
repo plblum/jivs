@@ -43,12 +43,12 @@ export class FileInputAdapterDefinition extends InputAdapterDefinition
     }
 
     public override createTextValueAdapter(
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement) : ITextValueAdapter | null
+        valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement) : ITextValueAdapter | null
     {
-        return new FileInputTextValueAdapter(this.requireInputElement(editor), anchor);
+        return new FileInputTextValueAdapter(this.requireInputElement(editor), jivsElement);
     }
     public override createValueAdapter(
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
+        valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): IValueAdapter | null
     {
         return null;
     }

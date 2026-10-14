@@ -44,26 +44,26 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return candidateElement instanceof HTMLTextAreaElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options: EditorInstallOptions): void
     {
         let textAreaElement = editor as HTMLTextAreaElement;
         let self = this;
         textAreaElement.addEventListener('change', () => {
-            self.sendTextValue(valueHost, editor, anchor, false);
+            self.sendTextValue(valueHost, editor, jivsElement, false);
         });
         if (options.duringEdit)
         {
             textAreaElement.addEventListener('input', () => {
-                self.sendTextValue(valueHost, editor, anchor, true);
+                self.sendTextValue(valueHost, editor, jivsElement, true);
             });
         }
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
-        return new TextAreaTextValueAdapter(editor as HTMLTextAreaElement, anchor);
+        return new TextAreaTextValueAdapter(editor as HTMLTextAreaElement, jivsElement);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): IValueAdapter | null
     {
         return null;
     }

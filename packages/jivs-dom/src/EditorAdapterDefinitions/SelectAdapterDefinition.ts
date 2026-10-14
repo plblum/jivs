@@ -42,20 +42,20 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return candidateElement instanceof HTMLSelectElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options: EditorInstallOptions): void
     {
         let selectElement = editor as HTMLSelectElement;
         let self = this;
         selectElement.addEventListener('change', () => {
-            self.sendTextValue(valueHost, editor, anchor, false);
+            self.sendTextValue(valueHost, editor, jivsElement, false);
         });
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
-        return new SelectTextValueAdapter(editor as HTMLSelectElement, anchor);
+        return new SelectTextValueAdapter(editor as HTMLSelectElement, jivsElement);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): IValueAdapter | null
     {
         return null;
     }

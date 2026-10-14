@@ -19,12 +19,12 @@ export abstract class RadioButtonsTextValueAdapterBase extends TextValueAdapterB
     /**
      * Constructor
      * @param element - the element where the value is found
-     * @param anchor - the element that retains the IJivsElement structure.
+     * @param jivsElement - the element that retains the IJivsElement structure.
      * It is usually the same as element. Pass null to declare element as its value.
      */
-    public constructor(element: HTMLElement, anchor: IJivsElement | null = null)
+    public constructor(element: HTMLElement, jivsElement: IJivsElement | null = null)
     {
-        super(element, anchor);
+        super(element, jivsElement);
     }
 
     public readTextValue(): string | undefined

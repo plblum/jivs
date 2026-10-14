@@ -70,14 +70,14 @@ export class InputAdapterDefinition
             && candidateElement.type === this.inputType;
     }
 
-    public createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
+    public createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
         return new InputTextValueAdapter(
             this.requireInputElement(editor),   // may throw
-            anchor
+            jivsElement
         );
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): IValueAdapter | null
     {
         return null;
     }
@@ -86,24 +86,24 @@ export class InputAdapterDefinition
      * Wires up the onchange event and optionally oninput event for the input element.
      * @param valueHost - The host object that provides the field value.
      * @param editor - The HTML element to attach the event listeners to.
-     * @param anchor - The DOM element that contains the IJivsElement structure.
+     * @param jivsElement - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * 
      * @param options - The editor installation options that determine event wiring.
      */
-    protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
+    protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options: EditorInstallOptions): void
     {
         const input = this.requireInputElement(editor); // may throw
         let self = this;
         input.addEventListener('change',
-            () => self.sendTextValue(valueHost, editor, anchor, false)
+            () => self.sendTextValue(valueHost, editor, jivsElement, false)
         );
 
         if (options.duringEdit)
         {
             input.addEventListener('input',
-                () => self.sendTextValue(valueHost, editor, anchor, true)
+                () => self.sendTextValue(valueHost, editor, jivsElement, true)
             );
         }
     }

@@ -27,7 +27,7 @@ import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 * ```ts
 * let self = this;
 * element.addEventListener('change', () => {
-*     self.sendParsedTextValue(valueHost, anchor, false);
+*     self.sendParsedTextValue(valueHost, jivsElement, false);
 * });
 * ```
  */
@@ -43,12 +43,12 @@ export abstract class ParsedTextEditorAdapterDefinition
      * which provides more guidance to Jivs than just an error message.
      * @param textValue - The text value to be parsed.
      * @param valueHost - The value host that will receive the parsed native value.
-     * @param anchor - The DOM element associated with the value host.
+     * @param jivsElement - The DOM element associated with the value host.
      * @returns An object containing the parsed native value or an injected error if parsing failed.
      * Assign one of the properties to undefined depending on the outcome of the parsing.
      */
     protected abstract parseTextValue(textValue: string | undefined,
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement):
+        valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement):
             {
                 nativeValue: unknown | undefined;
                 injectedError?: InjectedError;
@@ -60,19 +60,19 @@ export abstract class ParsedTextEditorAdapterDefinition
      * ```ts
      * let self = this;
      * element.addEventListener('change', () => {
-     *     self.sendParsedTextValue(valueHost, anchor, false);
+     *     self.sendParsedTextValue(valueHost, jivsElement, false);
      * });
      * ```
      * @param valueHost - The value host that will receive the parsed native value.
      * @param editor - The HTML element associated with the value host.
-     * @param anchor - The DOM element associated with the value host.
+     * @param jivsElement - The DOM element associated with the value host.
      * @param duringEdit - Indicates if the value is being sent during an edit operation.
      * @returns void
      */
     protected sendParsedTextValue(valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsElement, duringEdit?: boolean): void
+        editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean): void
     {
-        if (!anchor.jivsTextValueAdapter)
+        if (!jivsElement.jivsTextValueAdapter)
         {
             this.log(
                 LoggingLevel.Warn,
@@ -82,8 +82,8 @@ export abstract class ParsedTextEditorAdapterDefinition
             );
             return;
         }
-        let textValue = anchor.jivsTextValueAdapter.readTextValue();
-        let result = this.parseTextValue(textValue, valueHost, editor, anchor);
+        let textValue = jivsElement.jivsTextValueAdapter.readTextValue();
+        let result = this.parseTextValue(textValue, valueHost, editor, jivsElement);
 
         valueHost.setValues(result.nativeValue, textValue, { 
             validate: true,
