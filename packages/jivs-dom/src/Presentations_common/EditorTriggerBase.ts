@@ -1,5 +1,5 @@
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 
 /**
@@ -70,7 +70,7 @@ export abstract class EditorTriggerBase implements IErrorMessageDisplayTrigger
      * @param editorAnchor The editor element to attach event handlers to.
      * @param context The context of the error message display trigger.
      */
-    protected abstract attachEventHandlers(editorAnchor: IJivsDomElement, context: IErrorMessageDisplayTriggerContext): void;
+    protected abstract attachEventHandlers(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void;
 
     /**
      * Utility method to attach an event handler to the editor element.
@@ -79,7 +79,7 @@ export abstract class EditorTriggerBase implements IErrorMessageDisplayTrigger
      * @param eventType The type of the event to listen for.
      * @param handler The function to be called when the event is triggered.
      */
-    protected attachEventHandler(editorAnchor: IJivsDomElement, context: IErrorMessageDisplayTriggerContext,
+    protected attachEventHandler(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext,
         eventType: string, handler: () => void): void
     {
         editorAnchor.jivsEditorAdapterDefinition?.attachEventHandler(

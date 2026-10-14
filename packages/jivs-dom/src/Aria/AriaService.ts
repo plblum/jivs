@@ -20,7 +20,7 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
 import { IAriaService } from '../Interfaces/AriaService';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IEditorElementRegistryRecord, IElementRegistry, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { ElementRole } from '../Interfaces/Types';
 import { DomServiceBase } from '../Services/DomServiceBase';
@@ -117,7 +117,7 @@ export class AriaService extends DomServiceBase
     
     /**
      * Call during initialization phase to apply all static updaters,
-     * assign IJivsDomElement.jivsAriaValidationStateUpdater if possible,
+     * assign IJivsElement.jivsAriaValidationStateUpdater if possible,
      * and apply initial validation state to validation state updaters.
      * @param registry 
      */
@@ -161,7 +161,7 @@ export class AriaService extends DomServiceBase
             }
             // at this point, all the ARIA updaters for the field have been applied,
             // we expect the errormessageeelement to have is id setup.
-            // We'll assign that id to the editor's IJivsDomElement.jivsErrorMessageId property.
+            // We'll assign that id to the editor's IJivsElement.jivsErrorMessageId property.
             // The Validation State updater on editor will use that to setup
             // the aria-errormessage attribute correctly.
             if (ariaElementAnchors.editorAnchor)
@@ -208,7 +208,7 @@ export class AriaService extends DomServiceBase
      * Supports all roles.
      * 
      * It resolves the appropriate static ARIA attribute updater for the element based on the
-     * element's IJivsDomElement properties.
+     * element's IJivsElement properties.
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
@@ -227,7 +227,7 @@ export class AriaService extends DomServiceBase
      * Form level elements will always have null/undefined.
      * @returns The resolved static ARIA element updater, or null if none could be resolved.
      */
-    public applyStaticAttributes(element: IJivsDomElement, valueHost: IFieldValueHost | null | undefined):
+    public applyStaticAttributes(element: IJivsElement, valueHost: IFieldValueHost | null | undefined):
         IAriaStaticUpdater | null
     {
         assertNotNull(element, 'element');
@@ -259,7 +259,7 @@ export class AriaService extends DomServiceBase
      * @param element The DOM element for which to resolve the static ARIA updater.
      * @returns The resolved static ARIA element updater, or null if none could be resolved.
      */
-    protected resolveStaticUpdater(element: IJivsDomElement): IAriaStaticUpdater | null
+    protected resolveStaticUpdater(element: IJivsElement): IAriaStaticUpdater | null
     {
         let staticUpdater: IAriaStaticUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)
@@ -282,7 +282,7 @@ export class AriaService extends DomServiceBase
      * Applies the validation state ARIA attributes to the specified element.
      * 
      * It resolves the appropriate validation state ARIA attribute updater for the element based on the
-     * element's IJivsDomElement properties.
+     * element's IJivsElement properties.
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
@@ -300,7 +300,7 @@ export class AriaService extends DomServiceBase
      * @returns The resolved ValidationState ARIA element updater, or null if none could be resolved.
      * If it ran 
      */
-    public applyValidationState(element: IJivsDomElement, 
+    public applyValidationState(element: IJivsElement, 
         valueHost: IFieldValueHost, state: ValueHostValidationState): IAriaValidationStateUpdater | null
     {
         assertNotNull(element, 'element');
@@ -329,7 +329,7 @@ export class AriaService extends DomServiceBase
      * @param element The DOM element for which to resolve the ValidationState ARIA updater.
      * @returns The resolved ValidationState ARIA element updater, or null if none could be resolved.
      */
-    protected resolveValidationStateUpdater(element: IJivsDomElement): IAriaValidationStateUpdater | null
+    protected resolveValidationStateUpdater(element: IJivsElement): IAriaValidationStateUpdater | null
     {
         let ValidationStateUpdater: IAriaValidationStateUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)

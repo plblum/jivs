@@ -8,7 +8,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
 
 /**
@@ -46,7 +46,7 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase
      */
     constructor(radioButton: HTMLElement,
         options?: RadioButtonsFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(

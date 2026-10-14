@@ -1,13 +1,13 @@
 /**
  * @module jivs-dom/Types/Presentations
  */
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { ElementRole } from './Types';
 
 /**
  * Used by PresentationFactories to create their presentation instances.
  */
-export type PresentationCreator<TResult> = (element: IJivsDomElement) => TResult;
+export type PresentationCreator<TResult> = (element: IJivsElement) => TResult;
 
 /**
  * Factory that registers and creates Presentation instances.
@@ -59,5 +59,5 @@ export interface IPresentationFactory<TResult>
      * @param presentationName The optional presentation name to use for creating the presentation.
      * When supplied, it overrides the default presentation name set for the role.
      */
-    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult;
+    create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult;
 }

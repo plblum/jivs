@@ -1,7 +1,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBase';
 
@@ -33,7 +33,7 @@ export class InlineErrorMessageDisplayPresentation extends ErrorMessageDisplayPr
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsDomElement | null)
+        anchor?: IJivsElement | null)
     {
         super(element, messageFrame, options, anchor);
     }

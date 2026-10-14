@@ -8,7 +8,7 @@ import { FormPresentationInstallOptions, IFormPresentation, IFormPresentationIns
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { DomServiceBase } from '../Services/DomServiceBase';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
@@ -21,7 +21,7 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
  * - Executes IFormPresentation.init()
  * - Executes IFormPresentation.apply() using the current validation state.
  * - Assigns the created IFormPresentation instance to the 
- *   element's IJivsDomElement.jivsFormPresentation property.
+ *   element's IJivsElement.jivsFormPresentation property.
  * 
  * It also knows not to run the process if a form presentation is already installed on the element.
  * This allows it to be called after elements have been replaced, even if 
@@ -49,7 +49,7 @@ export class FormPresentationInstaller extends DomServiceBase
      * @returns The installed form presentation instance, or null if installation does not need
      * a FormPresentation.
      */    
-    public install(valueHostsManager: IValueHostsManager, element: IJivsDomElement,
+    public install(valueHostsManager: IValueHostsManager, element: IJivsElement,
         role: ElementRole | string, options?: FormPresentationInstallOptions): IFormPresentation | null
     {
         assertNotNull(valueHostsManager, 'valueHostsManager');

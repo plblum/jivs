@@ -15,7 +15,7 @@ import { defaultWrappedTextAreaPresentationName } from '../FieldPresentations/Wr
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="wrapped">      <!-- this is the anchor -->
+ * <div class="wrapped">      <!-- maintains JivsElement -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <textarea class="editor"></textarea>     <!-- the editor element -->
  * </div>

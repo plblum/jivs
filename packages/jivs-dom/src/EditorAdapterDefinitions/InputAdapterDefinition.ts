@@ -11,7 +11,7 @@ import { InputTextValueAdapter } from '../Adapters/InputTextValueAdapter';
 import { defaultTextInputPresentationName } from '../FieldPresentations/TextInputPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 
 /**
@@ -70,14 +70,14 @@ export class InputAdapterDefinition
             && candidateElement.type === this.inputType;
     }
 
-    public createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
+    public createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
     {
         return new InputTextValueAdapter(
             this.requireInputElement(editor),   // may throw
             anchor
         );
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
     {
         return null;
     }
@@ -86,12 +86,12 @@ export class InputAdapterDefinition
      * Wires up the onchange event and optionally oninput event for the input element.
      * @param valueHost - The host object that provides the field value.
      * @param editor - The HTML element to attach the event listeners to.
-     * @param anchor - The DOM element that contains the IJivsDomElement structure.
+     * @param anchor - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * 
      * @param options - The editor installation options that determine event wiring.
      */
-    protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement,
+    protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
         options: EditorInstallOptions): void
     {
         const input = this.requireInputElement(editor); // may throw

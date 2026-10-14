@@ -4,7 +4,7 @@ import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
 
 /**
@@ -30,7 +30,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     /**
      * Initializes a new instance of the error message display presentation.
      * @param element The DOM element that this presentation is associated with.
-     * @param anchor The element containing the IJivsDomElement wrapper.
+     * @param anchor The element containing the IJivsElement wrapper.
      * It is often the same as the element itself.
      * @param messageFrame The display component for issues found.
      * @param variationClass The CSS class for the presentation element.
@@ -39,7 +39,7 @@ export abstract class ErrorMessageDisplayPresentationBase extends FieldPresentat
     constructor(element: HTMLElement, 
         messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsDomElement | null)
+        anchor?: IJivsElement | null)
     {
         super(element, options, anchor);
         assertNotNull(messageFrame, 'messageFrame');

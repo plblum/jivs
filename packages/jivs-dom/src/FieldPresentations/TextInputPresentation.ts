@@ -3,7 +3,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/TextInputPresentation
  */
 
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
@@ -32,7 +32,7 @@ export class TextInputPresentation extends EditorFieldPresentationBase
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

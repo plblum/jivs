@@ -45,7 +45,7 @@ flowchart TB
     Dispatcher["FieldValidationDispatcher"]
     Service["IAriaService / AriaServiceBase"]
     Registry["Role updater registries"]
-    Elements["Installed IJivsDomElement instances"]
+    Elements["Installed IJivsElement instances"]
 
     Providers -->|"specialized updaters"| FieldInstaller
     Providers -->|"specialized static updaters"| FormInstaller
@@ -70,7 +70,7 @@ interface IAriaStaticUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         valueHost?: IFieldValueHost
     ): void;
@@ -88,7 +88,7 @@ interface IAriaValidationStateUpdater {
     readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         valueHost: IFieldValueHost,
         state: ValueHostValidationState,
@@ -144,7 +144,7 @@ interface IAriaService {
     ): void;
 
     applyStaticAttributes(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         valueHost: IFieldValueHost | undefined,
         specializedUpdater:
@@ -216,10 +216,10 @@ There are no separate `IAriaEditorDefinition`, `IAriaPresentation`, or `IAriaFie
 
 ## Installed Element State
 
-`IJivsDomElement` stores only the specialized validation-state updater selected during installation.
+`IJivsElement` stores only the specialized validation-state updater selected during installation.
 
 ```ts
-interface IJivsDomElement extends HTMLElement {
+interface IJivsElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
         IAriaValidationStateUpdater | null;
 
@@ -243,7 +243,7 @@ If static application throws, the property remains `undefined`. A later installa
 interface IFieldPresentationInstaller {
     install(
         valueHost: IFieldValueHost,
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         options?: FieldPresentationInstallOptions
     ): IFieldPresentation | null;
@@ -307,10 +307,10 @@ The `aria-error` role identifies the dedicated, visually hidden error-message el
 ```ts
 interface IFieldAriaElementAnchors {
     readonly editorAnchor:
-        IJivsDomElement | null;
+        IJivsElement | null;
 
     readonly errorMessageElement:
-        IJivsDomElement | null;
+        IJivsElement | null;
 
     readonly errorMessageRole:
         ElementRole.error |

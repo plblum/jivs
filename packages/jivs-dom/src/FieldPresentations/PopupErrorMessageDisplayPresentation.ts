@@ -2,7 +2,7 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IPopupContext, IPopupMechanism } from '../Interfaces/PopupErrorMessageDisplays';
@@ -45,8 +45,8 @@ import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation
  * Popups need positioning between two elements:
  * - Anchor - The element to which the popup is aligned.
  * - Popup - The popup element itself.
- * The anchor defaults to the presentation element itself. However, it can be anything else
- * by specifying a different anchor element through the anchorSelector option.
+ * The Anchor defaults to the presentation element itself. However, it can be anything else
+ * by specifying a different Anchor element through the anchorSelector option.
  * 
  */
 export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object = object>
@@ -59,7 +59,7 @@ export class PopupErrorMessageDisplayPresentation<TPopupOptions extends object =
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: PopupErrorMessageDisplayPresentationOptions<TPopupOptions>,
-        anchor?: IJivsDomElement
+        anchor?: IJivsElement
     )
     {
         super(element, messageFrame, triggers, options, anchor);
@@ -258,7 +258,7 @@ export interface PopupErrorMessageDisplayPresentationOptions<TPopupOptions exten
 {
     /**
      * The CSS selector for the element to which the popup should be anchored
-     * if not using the presentation element itself as the anchor.
+     * if not using the presentation element itself as the Anchor element.
      * Optional.
      */
     anchorSelector?: string;

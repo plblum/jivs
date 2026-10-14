@@ -1,7 +1,7 @@
 import { AriaValidationStateUpdaterBase } from './AriaValidationStateUpdaterBase';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 
 /**
@@ -22,7 +22,7 @@ export class EditorAriaValidationStateUpdater extends AriaValidationStateUpdater
         super();
     }
 
-    public applyValidationState(element: IJivsDomElement, valueHost: IFieldValueHost,
+    public applyValidationState(element: IJivsElement, valueHost: IFieldValueHost,
         state: ValueHostValidationState, errorMessageId?: string): void
     {
         if (element.jivsElementRole === ElementRole.editor)

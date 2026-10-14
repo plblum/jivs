@@ -6,7 +6,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { FieldPresentationInstallOptions, IFieldPresentation, IFieldPresentationInstaller } from '../Interfaces/FieldPresentations';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { DomServiceBase } from '../Services/DomServiceBase';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
@@ -20,7 +20,7 @@ import { IJivsDomServices } from '../Interfaces/JivsDomServices';
  * - Executes IFieldPresentation.init()
  * - Executes IFieldPresentation.apply() using the current validation state.
  * - Assigns the created IFieldPresentation instance to the 
- *   element's IJivsDomElement.jivsFieldPresentation property.
+ *   element's IJivsElement.jivsFieldPresentation property.
  * 
  * It also knows not to run the process if a field presentation is already installed on the element.
  * This allows it to be called after elements have been replaced, even if 
@@ -50,7 +50,7 @@ export class FieldPresentationInstaller extends DomServiceBase
      * @returns The installed field presentation instance, or null if installation does not need
      * a FieldPresentation.
      */
-    public install(valueHost: IFieldValueHost, element: IJivsDomElement,
+    public install(valueHost: IFieldValueHost, element: IJivsElement,
         role: ElementRole | string, options?: FieldPresentationInstallOptions): IFieldPresentation | null
     {
         assertNotNull(valueHost, 'valueHost');

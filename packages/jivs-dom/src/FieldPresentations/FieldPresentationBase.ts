@@ -9,7 +9,7 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
 import { AdapterBase } from '../Adapters/AdapterBase';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IFieldPresentation } from '../Interfaces/FieldPresentations';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 /**
  * Base class for field presentations.
  * 
@@ -18,7 +18,7 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
  *   such as the host of the CSS class names.
  * - optionally override getStaticAriaUpdater() and getAriaValidationStateUpdater() 
- *   to provide ARIA updates on another element than the anchor.
+ *   to provide ARIA updates on another element than the presentation element.
  * 
  * ## CSS Class rules
  * ### Persistent classes
@@ -94,12 +94,12 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     implements IFieldPresentation
 {
     /**
-     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsDomElement wrapper.
+     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement wrapper.
      * @param element The DOM element that this adapter is associated with.
-     * @param anchor The element containing the IJivsDomElement wrapper.
+     * @param anchor The element containing the IJivsElement wrapper.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, options?: FieldPresentationBaseOptions, anchor?: IJivsDomElement | null)
+    public constructor(element: TElement, options?: FieldPresentationBaseOptions, anchor?: IJivsElement | null)
     {
         super(element, anchor ?? null);
         this._variationClasses = FieldPresentationBase.toStyleClassNameArray(options?.variationClasses);
@@ -224,7 +224,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
 
     /**
      * Return a static ARIA element updater if your widget's elements need
-     * ARIA attributes placed in a different element than the anchor.
+     * ARIA attributes placed in a different element than the presentation element.
      * @returns The static ARIA element updater, or null to use the default updater.
      */
     public getStaticAriaUpdater(): IAriaStaticUpdater | null
@@ -233,7 +233,7 @@ export abstract class FieldPresentationBase<TElement extends HTMLElement = HTMLE
     }
     /**
      * Return a validation state ARIA element updater if your widget's elements need
-     * ARIA attributes placed in a different element than the anchor.
+     * ARIA attributes placed in a different element than the presentation element.
      * @returns The validation state ARIA element updater, or null to use the default updater.
      */
     public getAriaValidationStateUpdater(): IAriaValidationStateUpdater | null

@@ -3,7 +3,7 @@
  * 
  * @module jivs-dom/FieldPresentations/ConcreteClasses/CheckboxPresentation
  */
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
@@ -31,7 +31,7 @@ export class CheckboxPresentation extends EditorFieldPresentationBase
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

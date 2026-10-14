@@ -5,7 +5,7 @@
 
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import { EditorFieldPresentationBase } from './EditorFieldPresentationBase';
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * Presentation for HTML select tags.
@@ -31,7 +31,7 @@ export class SelectPresentation extends EditorFieldPresentationBase
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

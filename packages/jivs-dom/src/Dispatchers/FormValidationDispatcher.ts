@@ -18,7 +18,7 @@ export class FormValidationDispatcher extends FormDispatcherBase
      * Form.onValidationStateChanged callback invokes this method 
      * when the validation state of the form changes.
      * It targets all elements returned by findElements().
-     * Executes an operation that retrieves IJivsDomElement.jivsFormPresentation 
+     * Executes an operation that retrieves IJivsElement.jivsFormPresentation 
      * and calls its apply function. If none is attached, the operation is skipped.
      * @param valueHostsManager - from onValidationStateChanged callback. findElements must limit 
      * the scope of elements to those relevant for this form.

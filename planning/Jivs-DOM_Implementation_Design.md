@@ -91,7 +91,7 @@ flowchart TB
         REGISTERED -->|"used by"| FACTORY_API
     end
 
-    ELEMENT["IJivsDomElement"]
+    ELEMENT["IJivsElement"]
     TEXT_ADAPTER["ITextValueAdapter"]
     VALUE_ADAPTER["IValueAdapter"]
     PRESENTATION["IFieldPresentation"]
@@ -123,7 +123,7 @@ flowchart LR
 
         TEXT_CALLBACK["onTextValueChanged"]
         TEXT_DISPATCHER["TextValueDispatcher"]
-        TEXT_ELEMENT["IJivsDomElement"]
+        TEXT_ELEMENT["IJivsElement"]
         TEXT_ADAPTER["ITextValueAdapter"]
         TEXT_EDITOR["Editor Text Value"]
 
@@ -138,7 +138,7 @@ flowchart LR
 
         VALUE_CALLBACK["onValueChanged"]
         VALUE_DISPATCHER["ValueDispatcher"]
-        VALUE_ELEMENT["IJivsDomElement"]
+        VALUE_ELEMENT["IJivsElement"]
         VALUE_ADAPTER["IValueAdapter"]
         VALUE_EDITOR["Editor Native Value"]
 
@@ -158,8 +158,8 @@ flowchart LR
 
         FIELD_INSTALLER["IFieldPresentationInstaller"]
         FIELD_PRESENTATION["Selected IFieldPresentation"]
-        FIELD_PRESENTATION_STATE["IJivsDomElement.jivsFieldPresentation"]
-        FIELD_ARIA_STATE["IJivsDomElement.jivsAriaValidationStateUpdater"]
+        FIELD_PRESENTATION_STATE["IJivsElement.jivsFieldPresentation"]
+        FIELD_ARIA_STATE["IJivsElement.jivsAriaValidationStateUpdater"]
 
         FIELD_INSTALLER -->|"selects and creates when requested"| FIELD_PRESENTATION
         FIELD_PRESENTATION -->|"assigned to"| FIELD_PRESENTATION_STATE
@@ -171,8 +171,8 @@ flowchart LR
 
         FORM_INSTALLER["IFormPresentationInstaller"]
         FORM_PRESENTATION["Selected IFormPresentation"]
-        FORM_PRESENTATION_STATE["IJivsDomElement.jivsFormPresentation"]
-        FORM_ARIA_STATE["IJivsDomElement.jivsAriaValidationStateUpdater"]
+        FORM_PRESENTATION_STATE["IJivsElement.jivsFormPresentation"]
+        FORM_ARIA_STATE["IJivsElement.jivsAriaValidationStateUpdater"]
 
         FORM_INSTALLER -->|"selects and creates when requested"| FORM_PRESENTATION
         FORM_PRESENTATION -->|"assigned to"| FORM_PRESENTATION_STATE
@@ -214,7 +214,7 @@ flowchart TB
         direction TB
 
         FIND["Query ElementRegistry"]
-        APPLY["IJivsDomElement.jivsFormPresentation.apply"]
+        APPLY["IJivsElement.jivsFormPresentation.apply"]
         FORM_UI["Updated form UI"]
 
         FIND -->|"for each element"| APPLY
@@ -225,7 +225,7 @@ flowchart TB
 ```
 ## Core Design Principles
 
-* DOM elements own element-specific installation state. Installed adapter definitions, adapters, and presentations are exposed through the `IJivsDomElement` contract.
+* DOM elements own element-specific installation state. Installed adapter definitions, adapters, and presentations are exposed through the `IJivsElement` contract.
 
 * Registered adapter definitions are shared and immutable. They do not retain element-specific, ValueHost-specific, or installation-specific state.
 
@@ -413,12 +413,12 @@ This support allows `jivs-dom` to initialize and update grouped form presentatio
 
 ## The Installed DOM Element
 
-`IJivsDomElement` is the stateful installation surface shared by installers, dispatchers, and the ARIA service. It augments an ordinary `HTMLElement` with the Jivs behavior installed for that element.
+`IJivsElement` is the stateful installation surface shared by installers, dispatchers, and the ARIA service. It augments an ordinary `HTMLElement` with the Jivs behavior installed for that element.
 
 It is a TypeScript contract, not a new runtime element class:
 
 ```ts
-interface IJivsDomElement extends HTMLElement {
+interface IJivsElement extends HTMLElement {
     jivsEditorAdapterDefinition?:
         IEditorAdapterDefinition;
 
@@ -492,7 +492,7 @@ interface FieldPresentationInstallOptions {
 interface IFieldPresentationInstaller {
     install(
         valueHost: IFieldValueHost,
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         options?: FieldPresentationInstallOptions
     ): IFieldPresentation | null;
@@ -506,7 +506,7 @@ interface FormPresentationInstallOptions {
 interface IFormPresentationInstaller {
     install(
         valueHostsManager: IValueHostsManager,
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         options?: FormPresentationInstallOptions
     ): IFormPresentation | null;
@@ -643,7 +643,7 @@ Adapters may retain additional element-specific state as class members. They do 
 An editor adapter definition keeps the behaviors for one widget model together. Without this coordinating type, widget recognition, installation-anchor selection, Jivs-to-DOM value transfer, and DOM-to-Jivs event handling could be implemented independently and disagree about how the editor represents its value.
 
 It operates around two element instances, albeit they may be the same instance.
-- Anchor is the element that retains the IJivsDomElement structure.
+- Anchor is the element that retains the IJivsElement structure.
 - Editor is the element that retains the actual value.
 
 
@@ -674,19 +674,19 @@ interface IEditorAdapterDefinition {
     identifyAnchor(
         valueHost: IFieldValueHost,
         element: HTMLElement
-    ): IJivsDomElement;
+    ): IJivsElement;
 
     identifyEditor(valueHost: IFieldValueHost, 
-        anchor: IJivsDomElement): HTMLElement;
+        anchor: IJivsElement): HTMLElement;
 
     createTextValueAdapter(
         valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsDomElement
+        editor: HTMLElement, anchor: IJivsElement
     ): ITextValueAdapter | null;
 
     createValueAdapter(
         valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsDomElement
+        editor: HTMLElement, anchor: IJivsElement
     ): IValueAdapter | null;
 
     getStaticAriaUpdater():
@@ -697,7 +697,7 @@ interface IEditorAdapterDefinition {
 
     attachToSendValues(
         valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsDomElement,
+        editor: HTMLElement, anchor: IJivsElement,
         options: EditorInstallOptions
     ): void;
 }
@@ -747,8 +747,8 @@ Priorities from `0` through `100` are the documented normal range, with larger v
 
 #### Resolving the Anchor Element
 
-The element passed into these functions may not be the right one to hold IJivsDomElement, the "Anchor".
-The `identifyAnchor()` function allows the adapter definition to determine the most appropriate element to hold the IJivsDomElement structure.
+The element passed into these functions may not be the right one to hold IJivsElement, the "Anchor".
+The `identifyAnchor()` function allows the adapter definition to determine the most appropriate element to hold the IJivsElement structure.
 Most of the time, the supplied element is the correct anchor, but this may not always be the case.
 
 The use case to override is a radio button group. The caller will supply one radio button element,
@@ -767,7 +767,7 @@ Use cases where Editor differs from Anchor:
 
 #### Completed Installation State
 
-`IJivsDomElement.jivsEditorAdapterDefinition` records that editor installation completed successfully on the anchor.
+`IJivsElement.jivsEditorAdapterDefinition` records that editor installation completed successfully on the anchor.
 
 The definition does not assign this property. `IEditorInstaller` assigns it after installing the adapters, event handlers, and presentation.
 
@@ -811,17 +811,17 @@ abstract class EditorAdapterDefinitionBase
     public identifyAnchor(
         valueHost: IFieldValueHost,
         element: HTMLElement
-    ): IJivsDomElement {
+    ): IJivsElement {
         return element;
     }
-    public identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
+    public identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
     {
         return anchor;
     }
 
     public attachToSendValues(
         valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsDomElement,
+        editor: HTMLElement, anchor: IJivsElement,
         options: EditorInstallOptions
     ): void {
         // Log the start of event attachment at Debug level.
@@ -839,7 +839,7 @@ abstract class EditorAdapterDefinitionBase
     protected abstract attachToSendValuesCore(
         valueHost: IFieldValueHost,
         editor: HTMLElement,
-        anchor: IJivsDomElement,
+        anchor: IJivsElement,
         options: EditorInstallOptions
     ): void;
 }
@@ -874,7 +874,7 @@ The base class provides protected methods for the standard event-handler paths. 
 protected sendTextValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement,
-    anchor: IJivsDomElement,
+    anchor: IJivsElement,
     duringEdit: boolean
 ): void;
 ```
@@ -906,7 +906,7 @@ valueHost.setTextValue(
 protected sendNativeValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement, 
-    anchor: IJivsDomElement
+    anchor: IJivsElement
 ): void;
 ```
 
@@ -941,7 +941,7 @@ abstract class ParsedTextEditorAdapterDefinition
         textValue: string | undefined,
         valueHost: IFieldValueHost,
         editor: HTMLElement, 
-        anchor: IJivsDomElement
+        anchor: IJivsElement
     ): {
         nativeValue: unknown | undefined;
         injectedError?: InjectedError;
@@ -950,7 +950,7 @@ abstract class ParsedTextEditorAdapterDefinition
     protected sendParsedTextValue(
         valueHost: IFieldValueHost,
         editor: HTMLElement, 
-        anchor: IJivsDomElement,
+        anchor: IJivsElement,
         duringEdit: boolean
     ): void;
 }
@@ -1037,9 +1037,9 @@ An editor element needs several related behaviors installed consistently:
 interface IEditorInstaller {
     install(
         valueHost: IFieldValueHost,
-        element: IJivsDomElement,
+        element: IJivsElement,
         options?: EditorInstallOptions
-    ): IJivsDomElement;
+    ): IJivsElement;
 }
 
 interface EditorInstallOptions {
@@ -1190,9 +1190,9 @@ Conceptually:
 ```ts
 public install(
     valueHost: IFieldValueHost,
-    element: IJivsDomElement,
+    element: IJivsElement,
     options: EditorInstallOptions = {}
-): IJivsDomElement {
+): IJivsElement {
     const definition = this.selectDefinition(
         valueHost,
         element,
@@ -1398,7 +1398,7 @@ class InputAdapterDefinition
     public createTextValueAdapter(
         _valueHost: IFieldValueHost,
         editor: HTMLElement,
-        anchor: IJivsDomElement
+        anchor: IJivsElement
     ): ITextValueAdapter {
         return new InputTextValueAdapter(
             this.requireInputElement(editor)
@@ -1408,7 +1408,7 @@ class InputAdapterDefinition
     protected attachToSendValuesCore(
         valueHost: IFieldValueHost,
         editor: HTMLElement,
-        anchor: IJivsDomElement,
+        anchor: IJivsElement,
         options: EditorInstallOptions
     ): void {
         const input =
@@ -1436,7 +1436,7 @@ class InputAdapterDefinition
     }
 
     private requireInputElement(
-        element: IJivsDomElement
+        element: IJivsElement
     ): HTMLInputElement {
         if (
             !(element instanceof HTMLInputElement)
@@ -1510,7 +1510,7 @@ class RadioButtonsTextValueAdapter
     implements ITextValueAdapter {
 
     public constructor(
-        private readonly anchor: IJivsDomElement
+        private readonly anchor: IJivsElement
     ) {
     }
 
@@ -1583,7 +1583,7 @@ Example:
 The WrapperEditorAdapterDefinitionBase class supports these use cases.
 
 It defines the anchor and editor elements separately:
-- Anchor: The container element gets the IJivsDomElement structure. This is used for presentation.
+- Anchor: The container element gets the IJivsElement structure. This is used for presentation.
 - Editor: The actual editor element. This is used by TextValueAdapter and ValueAdapter. It is also where the attachToSendValues() code adds its event handlers.
 
 ```ts
@@ -1622,7 +1622,7 @@ export abstract class WrapperEditorAdapterDefinitionBase<TEditor extends HTMLEle
         return editor !== null && this.childEditorDefinitionAdapter.matches(valueHost, editor);
     }
 
-    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
+    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
     {
         let editor = this.findEditorElement(anchor);
         if (!editor)
@@ -1637,16 +1637,16 @@ export abstract class WrapperEditorAdapterDefinitionBase<TEditor extends HTMLEle
         return container.querySelector<TEditor>(this.editorSelector);
     }
 
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
     {
         return this.childEditorDefinitionAdapter.createTextValueAdapter(valueHost, editor, anchor);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement | null): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): IValueAdapter | null
     {
         return this.childEditorDefinitionAdapter.createValueAdapter(valueHost, editor, anchor);
     }
 
-    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement, options?: EditorInstallOptions): void
+    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement, options?: EditorInstallOptions): void
     {
         this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, anchor, options ?? {});
     }
@@ -1729,7 +1729,7 @@ abstract class FieldPresentationBase<
     public constructor(
         element: TElement,
         options?: FieldPresentationBaseOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     ) {
     }
 
@@ -1896,10 +1896,10 @@ export interface IPresentationFactory<TResult>
      * @param presentationName The optional presentation name to use for creating the presentation.
      * When supplied, it overrides the default presentation name set for the role.
      */
-    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult;
+    create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult;
 }
 type PresentationCreator<TResult> = (
-    element: IJivsDomElement
+    element: IJivsElement
 ) => TResult;
 ```
 
@@ -1947,7 +1947,7 @@ Because the factory uses logging, it requires a reference to DomServices which h
 interface IFieldPresentationInstaller {
     install(
         valueHost: IFieldValueHost,
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         options?: FieldPresentationInstallOptions
     ): IFieldPresentation | null;
@@ -1966,7 +1966,7 @@ The three possible `options.presentationName` values have distinct meanings:
 | `undefined` | Use the default presentation name registered for `role`. |
 | `null`      | Explicitly disable field presentation for this element.  |
 
-Presentation installation is idempotent through `IJivsDomElement.jivsFieldPresentation`:
+Presentation installation is idempotent through `IJivsElement.jivsFieldPresentation`:
 
 | Existing property value | Installer behavior                                      |
 | ----------------------- | ------------------------------------------------------- |
@@ -2244,7 +2244,7 @@ No concrete popup presentation is defined at this stage. It will inherit `Trigge
 
 ```mermaid
 flowchart TB
-    ANCHOR("IJivsDomElement")
+    ANCHOR("IJivsElement")
     BASE("ErrorMessageDisplayPresentationBase")
     INLINE("InlineErrorMessageDisplayPresentation")
     TRIGGERED("TriggeredErrorMessageDisplayPresentationBase")
@@ -2282,7 +2282,7 @@ flowchart TB
 `ErrorMessageDisplayPresentationBase` receives:
 
 * the installed presentation element;
-* its `IJivsDomElement` anchor;
+* its `IJivsElement` anchor;
 * a fresh `IMessageFrame`;
 * presentation options.
 
@@ -2325,7 +2325,7 @@ The context provides:
 ```ts
 interface IErrorMessageDisplayTriggerContext
 {
-    readonly anchorElement: IJivsDomElement;
+    readonly anchorElement: IJivsElement;
     readonly domServices: IJivsDomServices;
     readonly valueHost: IFieldValueHost;
     readonly controller: IErrorMessageDisplayController;
@@ -2580,7 +2580,7 @@ and attaches both persistent and stateful style sheet classes.
 ### Form Presentation Contracts
 Form presentations are separate from field presentations because they receive an `IValueHostsManager` and `ValidationState` rather than an individual `IFieldValueHost` and `ValueHostValidationState`.
 
-`FormValidationDispatcher` locates each relevant element, reads its installed `IJivsDomElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
+`FormValidationDispatcher` locates each relevant element, reads its installed `IJivsElement.jivsFormPresentation`, and invokes `apply()` with the callback’s `IValueHostsManager` and complete `ValidationState`.
 
 #### Form Presentation Interface and Base Class
 
@@ -2597,15 +2597,15 @@ interface IFormPresentation {
 }
 
 abstract class FormPresentationBase<
-    TElement extends IJivsDomElement =
-        IJivsDomElement
+    TElement extends IJivsElement =
+        IJivsElement
 > implements IFormPresentation {
 
     public respondToWildcardGroup: boolean =
         false;
 
     public constructor(
-        element: TElement, anchor: IJivsDomElement
+        element: TElement, anchor: IJivsElement
     ) {
     }
     public init(): void {}
@@ -2776,7 +2776,7 @@ interface FormPresentationInstallOptions {
 interface IFormPresentationInstaller {
     install(
         valueHostsManager: IValueHostsManager,
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         options?: FormPresentationInstallOptions
     ): IFormPresentation | null;
@@ -2802,7 +2802,7 @@ The possible `options.presentationName` values have these meanings:
 
 The installer does not normalize the stored value. Group comparison and current-state caching apply the established group semantics when the value is used.
 
-Presentation installation is idempotent through `IJivsDomElement.jivsFormPresentation`:
+Presentation installation is idempotent through `IJivsElement.jivsFormPresentation`:
 
 | Existing property value | Installer behavior                                             |
 | ----------------------- | -------------------------------------------------------------- |
@@ -3301,7 +3301,7 @@ flowchart TB
     AriaService["AriaService"]
     StaticUpdaters["Static Updaters"]
     ValidationUpdaters["Validation State Updaters"]
-    Elements["IJivsDomElement instances"]
+    Elements["IJivsElement instances"]
 
     FormInstaller -->|"install(registry)"| AriaService
     Registry -->|"registered element information"| AriaService
@@ -3313,7 +3313,7 @@ flowchart TB
 
 `FormInstaller` calls `AriaService.install()` after the registered elements and their presentations have been installed. The service uses each applicable field or form registry record to select and execute its Static Updaters.
 
-For applicable field elements, the service also selects the Validation State Updater, retains it in `IJivsDomElement.jivsAriaValidationStateUpdater`, and calls it with the field’s current validation state. Form elements do not receive Validation State Updaters.
+For applicable field elements, the service also selects the Validation State Updater, retains it in `IJivsElement.jivsAriaValidationStateUpdater`, and calls it with the field’s current validation state. Form elements do not receive Validation State Updaters.
 
 Later field validation-state changes enter through `FieldValidationDispatcher`.
 
@@ -3323,7 +3323,7 @@ flowchart TB
     AriaService["AriaService"]
     Registry["IElementRegistry"]
     Updaters["Validation State Updaters"]
-    Elements["IJivsDomElement instances"]
+    Elements["IJivsElement instances"]
 
     Dispatcher -->|"applyValidationState()"| AriaService
     AriaService -->|"getFieldAriaElementAnchors()"| Registry
@@ -3379,10 +3379,10 @@ The returned object identifies the editor anchor, the selected error-message ele
 ```ts
 interface IFieldAriaElementAnchors {
     readonly editorAnchor:
-        IJivsDomElement | null;
+        IJivsElement | null;
 
     readonly errorMessageElement:
-        IJivsDomElement | null;
+        IJivsElement | null;
 
     readonly errorMessageRole:
         ElementRole.error |
@@ -3516,7 +3516,7 @@ attributes on the element passed in. |
 ```ts
 interface IAriaStaticUpdater {
     applyStaticAttributes(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         valueHost?: IFieldValueHost
     ): void;
@@ -3530,7 +3530,7 @@ interface IAriaStaticUpdater {
 ```ts
 interface IAriaValidationStateUpdater {
     applyValidationState(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost,
         state: ValueHostValidationState,
         errorMessageId?: string
@@ -3538,9 +3538,9 @@ interface IAriaValidationStateUpdater {
 }
 ```
 
-`errorMessageId` is the existing ID of the selected, ARIA-installed error-message element. Editor updaters consume it when managing `aria-errormessage`. It is established during installation on IJivsDomElement.jivsErrorMessageId.
+`errorMessageId` is the existing ID of the selected, ARIA-installed error-message element. Editor updaters consume it when managing `aria-errormessage`. It is established during installation on IJivsElement.jivsErrorMessageId.
 
-The element’s role is not passed to `applyValidationState()`. It comes from IJivsDomElement.jivsElementRole. `AriaService` uses the role while selecting and composing the updaters that apply to the element.
+The element’s role is not passed to `applyValidationState()`. It comes from IJivsElement.jivsElementRole. `AriaService` uses the role while selecting and composing the updaters that apply to the element.
 
 #### IAriaService interface
 
@@ -3560,12 +3560,12 @@ interface IAriaService {
     install(registry: IElementRegistry): void;
 
     applyStaticAttributes(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost | undefined
     ): void;
 
     applyValidationState(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost,
     ): void;
 }
@@ -3653,10 +3653,10 @@ Specialized-updater ownership is:
 
 ### Installed Element State
 
-`IJivsDomElement` stores the specialized Validation State Updater selected during ARIA installation:
+`IJivsElement` stores the specialized Validation State Updater selected during ARIA installation:
 
 ```ts
-interface IJivsDomElement extends HTMLElement {
+interface IJivsElement extends HTMLElement {
     jivsAriaValidationStateUpdater?:
         IAriaValidationStateUpdater | null;
     jivsErrorMessageId?: string;
@@ -3680,7 +3680,7 @@ The `jivsErrorMessageId` property is used by Validation State Updaters for edito
 Each editor requires aria-errormessage attribute to specify the id 
 of the container of the error messages. It is used by the editor's validation state updater. The AriaService.install() function resolves the ID prior to executing that updater.
 - Only gets setup when both editor and an error message element are present
-- The ID is stored in IJivsDomElement.jivsErrorMessageId.
+- The ID is stored in IJivsElement.jivsErrorMessageId.
 - The ID is retrieved from the error message element. If that attribute is not present, one will be generated and assigned to it by AriaService.install().
 - The ID is a parameter to AriaValidationStateUpdater.applyValidationState. Editor implementations are expected to consume it.
 
@@ -3736,7 +3736,7 @@ The service does not retain an `IElementRegistry`, `IFieldValueHost`, `ValueHost
 Each editor requires aria-errormessage attribute to specify the id 
 of the container of the error messages. It is used by the editor's validation state updater. The AriaService.install() function resolves the ID prior to executing that updater.
 - Only gets setup when both editor and an error message element are present
-- The ID is stored in IJivsDomElement.jivsErrorMessageId.
+- The ID is stored in IJivsElement.jivsErrorMessageId.
 - The ID is retrieved from the error message element. If that attribute is not present, one will be generated and assigned to it by AriaService.install().
 - The ID is a parameter to AriaValidationStateUpdater.applyValidationState. Editor implementations are expected to consume it.
 
@@ -3878,14 +3878,14 @@ abstract class FieldDispatcherBase {
     protected forEachElement(
         valueHost: IFieldValueHost,
         operation: (
-            element: IJivsDomElement
+            element: IJivsElement
         ) => void
     ): HTMLElement | null;
 
     protected abstract findElements(
         root: HTMLElement,
         valueHost: IFieldValueHost
-    ): Iterable<IJivsDomElement>;
+    ): Iterable<IJivsElement>;
 }
 
 abstract class FormDispatcherBase {
@@ -3898,14 +3898,14 @@ abstract class FormDispatcherBase {
     protected forEachElement(
         valueHostsManager: IValueHostsManager,
         operation: (
-            element: IJivsDomElement
+            element: IJivsElement
         ) => void
     ): HTMLElement | null;
 
     protected abstract findElements(
         root: HTMLElement,
         valueHostsManager: IValueHostsManager
-    ): Iterable<IJivsDomElement>;
+    ): Iterable<IJivsElement>;
 }
 ```
 
@@ -4263,8 +4263,8 @@ interface IEditorElementRegistryRecord {
     readonly role: 'editor';
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
-    readonly element: IJivsDomElement | null;
-    readonly anchorElement: IJivsDomElement;
+    readonly element: IJivsElement | null;
+    readonly anchorElement: IJivsElement;
     readonly editorOptions: EditorInstallOptions | null;
 }
 
@@ -4273,7 +4273,7 @@ interface IFieldElementRegistryRecord {
     readonly role: ElementRole | string;
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
-    readonly element: IJivsDomElement;
+    readonly element: IJivsElement;
     readonly presentationOptions: FieldPresentationInstallOptions | null;
 }
 
@@ -4282,7 +4282,7 @@ interface IFormElementRegistryRecord {
     readonly role: ElementRole | string;
     readonly elementIdentifier: null;
     readonly fieldValueHost: null;
-    readonly element: IJivsDomElement;
+    readonly element: IJivsElement;
     readonly presentationOptions: FormPresentationInstallOptions | null;
 }
 
@@ -4339,11 +4339,11 @@ interface IElementRegistry extends Iterable<ElementRegistryRecord> {
 The Collector populates it through:
 
 ```ts
-addEditor(element: IJivsDomElement, elementIdentifier: string, options?: EditorInstallOptions): void;
+addEditor(element: IJivsElement, elementIdentifier: string, options?: EditorInstallOptions): void;
 
-addField(element: IJivsDomElement, elementIdentifier: string, role: ElementRole | string, options?: FieldPresentationInstallOptions): void;
+addField(element: IJivsElement, elementIdentifier: string, role: ElementRole | string, options?: FieldPresentationInstallOptions): void;
 
-addForm(element: IJivsDomElement, role: ElementRole | string, options?: FormPresentationInstallOptions): void;
+addForm(element: IJivsElement, role: ElementRole | string, options?: FormPresentationInstallOptions): void;
 ```
 
 Only an Element Identifier is accepted for editor and field records. The Registry resolves the FieldValueHost and retains unmatched records with `fieldValueHost: null`. It performs no duplicate detection.
@@ -4353,7 +4353,7 @@ Only an Element Identifier is accepted for editor and field records. The Registr
 `IElementRegistry` exposes:
 
 ```ts
-setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsDomElement): void;
+setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void;
 ```
 
 `FormInstaller` supplies the exact record after calling `EditorInstaller`.
@@ -4363,9 +4363,9 @@ This changes `IEditorInstaller.install()` to return the selected anchor:
 ```ts
 install(
     valueHost: IFieldValueHost,
-    element: IJivsDomElement,
+    element: IJivsElement,
     options?: EditorInstallOptions
-): IJivsDomElement;
+): IJivsElement;
 ```
 
 The standard implementation returns the anchor on every successful path, including an idempotent early return. Custom implementations, mocks, tests, and API documentation must adopt the new return type.
@@ -4373,15 +4373,15 @@ The standard implementation returns the anchor on every successful path, includi
 #### Purpose-Specific Queries
 
 ```ts
-getTextValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+getTextValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
-getValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+getValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
-getFieldPresentationElements(elementIdentifier: string): IJivsDomElement[];
+getFieldPresentationElements(elementIdentifier: string): IJivsElement[];
 
-getFormPresentationElements(): IJivsDomElement[];
+getFormPresentationElements(): IJivsElement[];
 
-getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[];
+getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsElement[];
 ```
 
 Results preserve Registry order. Adapter queries return installed editor anchors. The field-presentation query includes editor anchors with Field Presentations and excludes `aria-error` elements. Dispatchers still check the installed property before invoking it.
@@ -4390,8 +4390,8 @@ ARIA uses:
 
 ```ts
 interface IFieldAriaElementAnchors {
-    editorAnchor: IJivsDomElement | null;
-    errorMessageElement: IJivsDomElement | null;
+    editorAnchor: IJivsElement | null;
+    errorMessageElement: IJivsElement | null;
     errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
 }
 
@@ -5338,7 +5338,7 @@ JSDOM unit tests should verify observable logic, including:
 * Element Registry population, indexing, queries, clearing, and disposal;
 * case-insensitive Element Identifier matching;
 * delayed editor-anchor assignment;
-* installed `IJivsDomElement` properties;
+* installed `IJivsElement` properties;
 * adapter-definition selection and priority;
 * adapter read and write behavior;
 * actual DOM event submission to an `IFieldValueHost`;

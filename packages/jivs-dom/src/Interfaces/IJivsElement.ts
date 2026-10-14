@@ -1,6 +1,6 @@
 /**
- * Provides the interface for Jivs DOM elements, which extend ordinary HTMLElements 
- * with additional properties and behaviors installed by the Jivs framework.
+ * Provides the interface to extend HTMLElements 
+ * with additional properties and behaviors managed by the Jivs framework.
  * 
  * HTMLElement extended with:
  * - jivsEditorAdapterDefinition: Describes the requirements for a specific editor widget upon installation.
@@ -11,7 +11,7 @@
  * - jivsFormPresentation: Handles the presentation of the form containing this element.
  * - jivsFormPresentationGroup: Allows a form element to be dedicated to a specific validation group.
  * 
- * @module jivs-dom/Types/IJivsDomElement
+ * @module jivs-dom/Types/IJivsElement
  */
 
 import { ITextValueAdapter, IValueAdapter } from './Adapters';
@@ -25,7 +25,7 @@ import { ElementRole } from './Types';
  * Augments an ordinary HTMLElement with the Jivs behavior installed for that element.
  * Properties are set by the installation process.
  */
-export interface IJivsDomElement extends HTMLElement
+export interface IJivsElement extends HTMLElement
 {
     /**
      * The role of the element within the Jivs framework. 
@@ -98,7 +98,7 @@ export interface IJivsDomElement extends HTMLElement
     jivsFormPresentationGroup?: string;
 
     /**
-     * Retains the ID of the selected error-message element on an editor anchor.
+     * Retains the ID of the selected error-message element on an editor's JivsElement.
      * AriaService passes this value to the editor's Validation State Updater
      * when synchronizing aria-errormessage.
      *

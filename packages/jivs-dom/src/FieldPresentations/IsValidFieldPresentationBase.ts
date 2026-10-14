@@ -15,7 +15,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * Base class for field presentations that communicate validity and required
@@ -52,7 +52,7 @@ export abstract class IsValidFieldPresentationBase<TElement extends HTMLElement 
     constructor(element: TElement,
         options? : IsValidFieldPresentationOptions,
         // intentionally last as its usually called from internal code
-        anchor: IJivsDomElement | null = null
+        anchor: IJivsElement | null = null
     )
     {
         super(element, options, anchor);

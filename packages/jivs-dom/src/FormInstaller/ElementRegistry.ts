@@ -8,7 +8,7 @@ import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { FieldPresentationInstallOptions } from '../Interfaces/FieldPresentations';
 import { FormPresentationInstallOptions } from '../Interfaces/FormPresentations';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
@@ -57,7 +57,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @param elementIdentifier 
      * @param options 
      */
-    public addEditor(element: IJivsDomElement, elementIdentifier: string,
+    public addEditor(element: IJivsElement, elementIdentifier: string,
         options?: EditorInstallOptions): void
     {
         let elIdeEntry = this.resolveElementIdentifierRegistryEntry(elementIdentifier);
@@ -66,7 +66,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             role: 'editor',
             elementIdentifier: elementIdentifier,
             fieldValueHost: elIdeEntry.fieldValueHost,   // may be null
-            anchorElement: null, // provided later
+            jivsElement: null, // provided later
             element: element,
             editorOptions: options || null,
         };
@@ -104,7 +104,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @param role 
      * @param options 
      */
-    public addField(element: IJivsDomElement, elementIdentifier: string, role: ElementRole | string,
+    public addField(element: IJivsElement, elementIdentifier: string, role: ElementRole | string,
         options?: FieldPresentationInstallOptions): void
     {
         let elIdeEntry = this.resolveElementIdentifierRegistryEntry(elementIdentifier);
@@ -126,7 +126,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @param role 
      * @param options 
      */
-    public addForm(element: IJivsDomElement, role: ElementRole | string,
+    public addForm(element: IJivsElement, role: ElementRole | string,
         options?: FormPresentationInstallOptions): void
     {
         let record: IFormElementRegistryRecord = {
@@ -147,7 +147,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @param record 
      * @param anchorElement 
      */
-    public setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsDomElement): void
+    public setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void
     {
         (record as any).anchorElement = anchorElement;
     }
@@ -159,13 +159,13 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @returns An array of DOM elements corresponding to the text value adapters 
      * for the specified element identifier. It may return an empty list.
      */
-    public getTextValueAdapterElements(elementIdentifier: string): IJivsDomElement[]
+    public getTextValueAdapterElements(elementIdentifier: string): IJivsElement[]
     {
         // optimized query with entriesByElementIdentifier
         let elementIdentifierLC = elementIdentifier.toLowerCase();
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
         if (!entry) return [];
-        let elements: IJivsDomElement[] = [];
+        let elements: IJivsElement[] = [];
         for (let record of entry.records) // already kind='field'
         {
             if (record.element.jivsTextValueAdapter)
@@ -181,13 +181,13 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @returns An array of DOM elements corresponding to the value adapters 
      * for the specified element identifier. It may return an empty list.
      */
-    public getValueAdapterElements(elementIdentifier: string): IJivsDomElement[]
+    public getValueAdapterElements(elementIdentifier: string): IJivsElement[]
     {
         // optimized query with entriesByElementIdentifier
         let elementIdentifierLC = elementIdentifier.toLowerCase();
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
         if (!entry) return [];
-        let elements: IJivsDomElement[] = [];
+        let elements: IJivsElement[] = [];
         for (let record of entry.records) // already kind='field'
         {
             if (record.element.jivsValueAdapter)
@@ -204,13 +204,13 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @returns An array of DOM elements corresponding to the elements 
      * for the specified element identifier. It may return an empty list.
      */
-    public getFieldPresentationElements(elementIdentifier: string): IJivsDomElement[]
+    public getFieldPresentationElements(elementIdentifier: string): IJivsElement[]
     {
         // optimized query with entriesByElementIdentifier
         let elementIdentifierLC = elementIdentifier.toLowerCase();
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
         if (!entry) return [];
-        let elements: IJivsDomElement[] = [];
+        let elements: IJivsElement[] = [];
         for (let record of entry.records) { // already kind='field'
             if (record.role !== ElementRole.ariaError) {
                 elements.push(record.element);
@@ -225,9 +225,9 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @returns An array of DOM elements corresponding to the elements.
      * It may return an empty list.
      */
-    public getFormPresentationElements(): IJivsDomElement[]
+    public getFormPresentationElements(): IJivsElement[]
     {
-        let elements: IJivsDomElement[] = [];
+        let elements: IJivsElement[] = [];
         for (let record of this.records) {
             if (record.kind === 'form') {
                 elements.push(record.element);
@@ -242,9 +242,9 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * @param elementIdentifier The optional element identifier to further filter elements by. If null, all elements with the specified role are returned.
      * @returns An array of DOM elements corresponding to the specified role and optional element identifier. It may return an empty list.
      */
-    public getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[]
+    public getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsElement[]
     {
-        let elements: IJivsDomElement[] = [];
+        let elements: IJivsElement[] = [];
         if (elementIdentifier) {
             let elementIdentifierLC = elementIdentifier.toLowerCase();
             let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
@@ -300,7 +300,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
                     }
                     break;
                 case ElementRole.editor:
-                    result.editorAnchor = (<IEditorElementRegistryRecord>record).anchorElement;
+                    result.editorAnchor = (<IEditorElementRegistryRecord>record).jivsElement;
                     break;
             }
         }

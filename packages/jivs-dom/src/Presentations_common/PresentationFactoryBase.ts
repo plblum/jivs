@@ -1,7 +1,7 @@
 /**
  * @module jivs-dom/Presentations/AbstractClasses/PresentationFactoryBase
  */
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { ElementRole } from '../Interfaces/Types';
 import { DomServiceBase } from '../Services/DomServiceBase';
@@ -85,7 +85,7 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
     }
 
     /**
-     * Creates a IFormPresentation implementation to attach to the supplied anchor element.
+     * Creates a IFormPresentation implementation to attach to the supplied JivsElement.
      * It requires both a role and a presentation name for lookup in our registry.
      * If the presentation name is not provided, the factory will use the default presentation for the role.
      * 
@@ -93,7 +93,7 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
      * @param role The element role for which to create the field presentation.
      * @param presentationName The specific presentation name to use, if any.
      */
-    public create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult
+    public create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult
     {
         this.ensureLazyRegistration();
         if (!presentationName)

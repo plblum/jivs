@@ -4,7 +4,7 @@
  * @module jivs-dom/Aria/ConcreteClasses/RequiredIndicatorAriaStaticUpdater
  */
 import { AriaStaticUpdaterBase } from './AriaStaticUpdaterBase';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';  
 
@@ -17,7 +17,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
  */
 export class RequiredIndicatorAriaStaticUpdater extends AriaStaticUpdaterBase
 {
-    public applyStaticAttributes(element: IJivsDomElement, role: ElementRole | string,
+    public applyStaticAttributes(element: IJivsElement, role: ElementRole | string,
         valueHost?: IFieldValueHost): void
     {
         if (role === ElementRole.required)

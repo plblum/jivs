@@ -9,7 +9,7 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { WrappedInputAdapterDefinition } from './WrappedInputAdapterDefinition';
 import { RadioButtonsAdapterDefinition } from './RadioButtonsAdapterDefinition';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { defaultWrappedRadioButtonsPresentationName } from '../FieldPresentations/WrappedRadioButtonsPresentation';
 import { AriaStaticUpdaterBase } from '../Aria/AriaStaticUpdaterBase';
 import { WrappedRadioButtonsAriaStaticUpdater } from '../Aria/WrappedRadioButtonsAriaStaticUpdater';
@@ -24,13 +24,13 @@ import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
  * This wrapped handles things differently from most others in that it has to deal
  * with a list of input type='radio' elements to describe a single value.
  * 
- * The anchor is still the wrapper.
+ * The wrapper maintains the IJivsElement structure
  * The editor is the first radio button from the group.
  * 
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="wrapped">      <!-- this is the anchor -->
+ * <div class="wrapped">      <!-- maintains JivsElement -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <input type="radio" name="group1" value="1" />     <!-- the editor element -->
  *     <input type="radio" name="group1" value="2" /> 
@@ -78,7 +78,7 @@ export class WrappedRadioButtonsAdapterDefinition extends WrappedInputAdapterDef
      * @param anchor The Anchor element from which we can resolve the editor element.
      * @returns the HTMLElement corresponding to the first radio button in the wrapper's children.
      */
-    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
+    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
     {
         let editor = anchor.querySelector('input[type="radio"]');
         assertNotNull(editor, 'No radio button found in the wrapper.');

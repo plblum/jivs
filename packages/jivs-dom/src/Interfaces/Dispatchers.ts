@@ -1,7 +1,7 @@
 /**
  * Provides interfaces for dispatching changes from ValueHostManager callbacks to associated DOM elements.
  * Each is an intermediary between the ValueHostManager and either an Adapter or Presentation object,
- * already attached to the element in their IJivsDomElement interface properties.
+ * already attached to the element in their IJivsElement interface properties.
  * 
  * - onTextValueChanged -> ITextValueDispatcher -> ITextValueAdapters
  * - onValueChanged -> IValueDispatcher -> IValueAdapters
@@ -25,7 +25,7 @@ import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHo
  * Connected to ValueHostsManager.onTextValueChanged handler to route
  * the change to elements associated with the valueHost.
  * Its destination are ITextValueAdapters. 
- * Each element it finds must have its IJivsDomElement.jivsTextValueAdapter assigned
+ * Each element it finds must have its IJivsElement.jivsTextValueAdapter assigned
  * if it gets dispatched to.
  * 
  * The dispatcher has the job of knowing how to query DOM to find those elements,
@@ -37,7 +37,7 @@ export interface ITextValueDispatcher
     /**
      * Handles the onTextValueChanged callback directly, routing the change to
      * ITextValueAdapters. An element found must also have its 
-     * IJivsDomElement.jivsTextValueAdapter assigned, and that adapter will be run.
+     * IJivsElement.jivsTextValueAdapter assigned, and that adapter will be run.
      * @param valueHost 
      * @param oldTextValue 
      */
@@ -48,7 +48,7 @@ export interface ITextValueDispatcher
  * Connected to ValueHostsManager.onValueChanged handler to route
  * the change to elements associated with the valueHost.
  * Its destination are IValueAdapters. 
- * Each element it finds must have its IJivsDomElement.jivsValueAdapter assigned
+ * Each element it finds must have its IJivsElement.jivsValueAdapter assigned
  * if it gets dispatched to.
  *
  * The dispatcher has the job of knowing how to query DOM to find those elements,
@@ -60,7 +60,7 @@ export interface IValueDispatcher
     /**
      * Handles the onValueChanged callback directly, routing the change to
      * IValueAdapters. An element found must also have its 
-     * IJivsDomElement.jivsValueAdapter assigned, and that adapter will be run.
+     * IJivsElement.jivsValueAdapter assigned, and that adapter will be run.
      * @param valueHost The host object containing the field's value.
      * @param oldValue The previous value of the field.
      */
@@ -71,7 +71,7 @@ export interface IValueDispatcher
  * Connected to ValueHostsManager.onValueHostValidationStateChanged handler to route
  * the validation state change to elements associated with the valueHost.
  * Its destination are IFieldPresentation objects. 
- * Each element it finds must have its IJivsDomElement.jivsFieldPresentation assigned
+ * Each element it finds must have its IJivsElement.jivsFieldPresentation assigned
  * if it gets dispatched to.
  * 
  * The dispatcher has the job of knowing how to query DOM to find those elements,
@@ -83,7 +83,7 @@ export interface IFieldValidationDispatcher
     /**
      * Handles the onValueHostValidationStateChanged callback directly, routing the change to
      * IFieldPresentation objects. An element found must also have its 
-     * IJivsDomElement.jivsFieldPresentation assigned, and that adapter will be run.
+     * IJivsElement.jivsFieldPresentation assigned, and that adapter will be run.
      * 
      * The dispatcher does not interpret validation groups. Group routing belongs 
      * to the installed form presentation.
@@ -101,7 +101,7 @@ export interface IFieldValidationDispatcher
  * Connected to ValueHostsManager.onValidationStateChanged handler to route
  * the validation state change to the form as a whole.
  * Its destination are IFormPresentation objects.
- * Each element it finds must have its IJivsDomElement.jivsFormPresentation assigned
+ * Each element it finds must have its IJivsElement.jivsFormPresentation assigned
  * if it gets dispatched to.
  *
  * The dispatcher has the job of knowing how to query DOM to find the form element,
@@ -113,7 +113,7 @@ export interface IFormValidationDispatcher
     /**
      * Handles the onValidationStateChanged callback directly, routing the change to
      * IFormPresentation objects. An element found must also have its 
-     * IJivsDomElement.jivsFormPresentation assigned, and that adapter will be run.
+     * IJivsElement.jivsFormPresentation assigned, and that adapter will be run.
      * @param valueHostsManager The manager containing the form's validation state.
      * @param state The new validation state of the form.
      */

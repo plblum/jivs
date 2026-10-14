@@ -8,18 +8,18 @@
  */
 
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
-import { IJivsDomElement } from "./IJivsDomElement";
+import { IJivsElement } from "./IJivsElement";
 
 /**
  * The EditorInstaller coordinates the following operations for one supplied element and IFieldValueHost:
  * - one adapter definition must be selected;
- * - one installation anchor must be resolved;
+ * - one JivsElement must be resolved;
  * - the definition’s Text Value and Native Value capabilities must be examined;
  * - its DOM-to-Jivs event handlers must be attached;
  * - its field presentation and ARIA behavior must be installed independently;
  *      - calls FieldPresentationInstaller.install() from within.
  *      - Requires another task to invoke AriaService.install().
- * - the completed installation must be recorded on the anchor element.
+ * - the completed installation must be recorded on the JivsElement.
  * 
  * It should be used both initially and after the form's elements have been replaced.
  * The FormInstaller is a solution that knows how to find the editor elements and call this installer for each of them.
@@ -33,10 +33,10 @@ export interface IEditorInstaller
      * 
      * @param valueHost The field value host associated with the installation.
      * @param element The DOM element known to the caller. It may be the actual editor
-     * or another element. It needs to be recognized by an Editor Adapter Definition.
+     * or another element. It needs to be recognized by an Editor Adapter Definition and will be used to resolve the JivsElement.
      * @param options The options for installing the editor.
      */
-    install(valueHost: IFieldValueHost, element: HTMLElement, options?: EditorInstallOptions): IJivsDomElement;
+    install(valueHost: IFieldValueHost, element: HTMLElement, options?: EditorInstallOptions): IJivsElement;
 }
 
 /**

@@ -22,7 +22,7 @@ export class ValueDispatcher extends FieldDispatcherBase
      * ValueHostsManager.onValueChanged callback invokes this method 
      * when the native value of the field changes.
      * It targets all elements returned by findElements().
-     * Executes an operation that retrieves IJivsDomElement.jivsValueAdapter 
+     * Executes an operation that retrieves IJivsElement.jivsValueAdapter 
      * and calls its apply function. If none is attached, the operation is skipped.
      * @param valueHost - from onValueChanged callback. findElements must limit 
      * the scope of elements to those relevant for this value host.

@@ -13,7 +13,7 @@
 import { IFieldValueHost } from "@plblum/jivs-engine/build/Interfaces/FieldValueHost";
 import { ValueHostValidationState } from "@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase";
 import type { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { IJivsDomElement } from "./IJivsDomElement";
+import { IJivsElement } from "./IJivsElement";
 import { ElementRole } from './Types';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
 
@@ -32,7 +32,7 @@ import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters'
  * needs those attributes other than the element it is bound to.
  * 
  * IFieldPresentationInstaller is responsible for installing field presentations onto elements, 
- * by creating the instance, calling its init(), and assigning it to IJivsDomElement.jivsFieldPresentation.
+ * by creating the instance, calling its init(), and assigning it to IJivsElement.jivsFieldPresentation.
  * 
  * The FieldValidationDispatcher identifies which elements have this installed
  * and calls the apply() method on the installed field presentation to update 
@@ -104,7 +104,7 @@ export interface IFieldPresentationInstaller
      * @param role The role of the field presentation.
      * @param options Optional installation options.
      */
-    install(valueHost: IFieldValueHost, element: IJivsDomElement, role: ElementRole | string,
+    install(valueHost: IFieldValueHost, element: IJivsElement, role: ElementRole | string,
         options?: FieldPresentationInstallOptions): IFieldPresentation | null;
 }
 

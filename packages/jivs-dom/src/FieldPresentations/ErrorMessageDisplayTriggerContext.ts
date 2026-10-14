@@ -1,13 +1,13 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTriggerContext
 {
     constructor(
-        anchorElement: IJivsDomElement,
+        anchorElement: IJivsElement,
         domServices: IJivsDomServices,
         valueHost: IFieldValueHost,
         controller: IErrorMessageDisplayController
@@ -18,7 +18,7 @@ export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTr
         this._valueHost = valueHost;
         this._controller = controller;
     }
-    public get anchorElement(): IJivsDomElement
+    public get anchorElement(): IJivsElement
     {
         return this._anchorElement!;
     }
@@ -34,7 +34,7 @@ export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTr
     {
         return this._controller!;
     }
-    private _anchorElement?: IJivsDomElement;
+    private _anchorElement?: IJivsElement;
     private _domServices?: IJivsDomServices;
     private _valueHost?: IFieldValueHost;
     private _controller?: IErrorMessageDisplayController;

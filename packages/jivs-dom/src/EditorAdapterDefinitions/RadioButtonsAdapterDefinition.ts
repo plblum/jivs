@@ -11,7 +11,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ITextValueAdapter } from '../Interfaces/Adapters';
 import { RadioButtonsTextValueAdapter } from '../Adapters/RadioButtonsTextValueAdapter';
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
 import { defaultRadioButtonsPresentationName } from '../FieldPresentations/RadioButtonsPresentation';
 
@@ -46,7 +46,7 @@ export class RadioButtonsAdapterDefinition extends InputAdapterDefinition
         return defaultRadioButtonsPresentationName;
     }
 
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter
     {
         return new RadioButtonsTextValueAdapter(
             this.requireInputElement(editor),   // may throw

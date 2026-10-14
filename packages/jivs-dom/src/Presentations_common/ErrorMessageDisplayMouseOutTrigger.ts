@@ -2,7 +2,7 @@ import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDi
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 
 /**
- * Attaches the mouseout event listener to the anchor element to trigger the error message display popup.
+ * Attaches the mouseout event listener to the Anchor element to trigger the error message display popup.
  * Always opens without a delay.
  */
 export class ErrorMessageDisplayMouseOutTrigger extends ErrorMessageDisplayTriggerBase
@@ -13,7 +13,7 @@ export class ErrorMessageDisplayMouseOutTrigger extends ErrorMessageDisplayTrigg
     }
 
     /**
-     * Attaches the mouseout event listener to the anchor element.
+     * Attaches the mouseout event listener to the Anchor element.
      * @param context 
      */
     public install(context: IErrorMessageDisplayTriggerContext): void

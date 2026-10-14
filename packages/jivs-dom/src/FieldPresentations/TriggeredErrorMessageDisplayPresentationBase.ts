@@ -3,7 +3,7 @@ import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfa
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
 import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
@@ -39,7 +39,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase extends Error
         messageFrame: IMessageFrame,
         triggers: IErrorMessageDisplayTrigger[],
         options?: TriggeredErrorMessageDisplayPresentationBaseOptions,
-        anchor?: IJivsDomElement)
+        anchor?: IJivsElement)
     {
         super(element, messageFrame, options, anchor);
         this._triggers = triggers ?? [];

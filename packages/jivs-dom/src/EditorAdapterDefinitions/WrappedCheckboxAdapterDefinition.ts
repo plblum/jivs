@@ -16,7 +16,7 @@ import { WrappedInputAdapterDefinition } from './WrappedInputAdapterDefinition';
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="wrapped">      <!-- this is the anchor -->
+ * <div class="wrapped">      <!-- this implements IJivsElement -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <input type="checkbox" class="editor" />     <!-- the editor element -->
  * </div>

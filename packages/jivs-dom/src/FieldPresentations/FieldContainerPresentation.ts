@@ -5,7 +5,7 @@
  * 
  * @module jivs-dom/FieldPresentations/ConcreteClasses/FieldContainerPresentation
  */
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -14,7 +14,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * Specific to ElementRole.container.
  * 
  * ## CSS Classes
- * CSS classes are applied to the wrapper (the anchor).
+ * CSS classes are applied to the container element.
  * - persistent classes: `jivs-fieldcontainer`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
@@ -35,7 +35,7 @@ export class FieldContainerPresentation extends IsValidFieldPresentationBase
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

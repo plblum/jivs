@@ -6,7 +6,7 @@
  */
 
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
@@ -27,7 +27,7 @@ export abstract class AriaStaticUpdaterBase
      * @param role The role of the element, which may influence the ARIA attributes applied.
      * @param valueHost The host object containing the field's value, which may be used to determine ARIA attributes.
      */    
-    public abstract applyStaticAttributes(element: IJivsDomElement, role: ElementRole | string,
+    public abstract applyStaticAttributes(element: IJivsElement, role: ElementRole | string,
         valueHost?: IFieldValueHost): void;
 
 
@@ -38,7 +38,7 @@ export abstract class AriaStaticUpdaterBase
      * @param name The name of the attribute to add.
      * @param value The value of the attribute to add.
      */
-    protected addAttribute(element: IJivsDomElement, name: string, value: string): void
+    protected addAttribute(element: IJivsElement, name: string, value: string): void
     {
         if (!element.hasAttribute(name))
         {
@@ -52,7 +52,7 @@ export abstract class AriaStaticUpdaterBase
      * @param element The original DOM element passed to applyValidationState.
      * @returns The DOM element that should receive the ARIA attributes.
      */
-    protected resolvingAriaHostElement(element: IJivsDomElement): IJivsDomElement
+    protected resolvingAriaHostElement(element: IJivsElement): IJivsElement
     {
         // Default implementation returns the element itself.
         // Subclasses can override this method if the ARIA host element is different.

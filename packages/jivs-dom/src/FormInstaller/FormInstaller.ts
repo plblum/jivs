@@ -30,7 +30,7 @@ import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenR
  * - Allows the AriaService to initialize after all relevant elements have been installed.
  * 
  * The results:
- *    - IJivsDomElement properties are populated
+ *    - IJivsElement properties are populated
  *    - Presentations have been applied to the corresponding elements.
  *    - AriaService has run its static phase and a first application of validation state updaters
  *      using the FieldValueHost's current Validation State.
@@ -86,7 +86,7 @@ export class FormInstaller
      *    - FieldPresentationInstaller - installs and manages field presentation elements.
      *    - FormPresentationInstaller - installs and manages form presentation elements (all form oriented roles).
      *    The results:
-     *    - IJivsDomElement properties are populated, except for Aria specific ones.
+     *    - IJivsElement properties are populated, except for Aria specific ones.
      *    - Presentations have been applied to the corresponding elements.
      * 3. Letting AriaService handle its own installation based on ElementRegistry.
      */

@@ -7,7 +7,7 @@ import { SelectTextValueAdapter } from '../Adapters/SelectTextValueAdapter';
 import { defaultSelectPresentationName as selectPresentationName } from '../FieldPresentations/SelectPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 
 /**
@@ -42,7 +42,7 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return candidateElement instanceof HTMLSelectElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement,
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
         options: EditorInstallOptions): void
     {
         let selectElement = editor as HTMLSelectElement;
@@ -51,11 +51,11 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
             self.sendTextValue(valueHost, editor, anchor, false);
         });
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
     {
         return new SelectTextValueAdapter(editor as HTMLSelectElement, anchor);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
     {
         return null;
     }

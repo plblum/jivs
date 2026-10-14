@@ -5,7 +5,7 @@
  * @module jivs-dom/Adapters/ConcreteClasses/InputTextValueAdapter
  */
 
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { TextValueAdapterBase } from './TextValueAdapterBase';
 
 /**
@@ -19,10 +19,10 @@ export class InputTextValueAdapter
     /**
      * Constructor
      * @param element - the element where the value is found
-     * @param anchor - the element that retains the IJivsDomElement structure.
+     * @param anchor - the element that retains the IJivsElement structure.
      * It is usually the same as element. Pass null to declare element as its value.
      */
-    public constructor(element: HTMLInputElement, anchor: IJivsDomElement | null = null)
+    public constructor(element: HTMLInputElement, anchor: IJivsElement | null = null)
     {
         super(element, anchor);
     }

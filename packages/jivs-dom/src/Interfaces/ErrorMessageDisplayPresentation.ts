@@ -1,6 +1,6 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { IJivsDomServices } from './JivsDomServices';
 
 /**
@@ -73,7 +73,7 @@ export interface IErrorMessageDisplayController
  */
 export interface IErrorMessageDisplayTriggerContext
 {
-    readonly anchorElement: IJivsDomElement;
+    readonly anchorElement: IJivsElement;
     readonly domServices: IJivsDomServices;
     readonly valueHost: IFieldValueHost;
     readonly controller: IErrorMessageDisplayController;

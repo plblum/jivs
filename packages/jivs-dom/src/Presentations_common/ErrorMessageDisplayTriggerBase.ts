@@ -1,7 +1,7 @@
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 
 /**
- * Attaches the mouseover event listener to the anchor element to trigger the error message display popup.
+ * Attaches the mouseover event listener to the Anchor element to trigger the error message display popup.
  * Always opens without a delay.
  */
 export abstract class ErrorMessageDisplayTriggerBase implements IErrorMessageDisplayTrigger
@@ -27,7 +27,7 @@ export abstract class ErrorMessageDisplayTriggerBase implements IErrorMessageDis
     public abstract install(context: IErrorMessageDisplayTriggerContext): void;
     
     /**
-     * Attaches the mouseover event listener to the anchor element.
+     * Attaches the mouseover event listener to the Anchor element.
      * @param context 
      */
     public attachEventToOpen(eventName: string, context: IErrorMessageDisplayTriggerContext): void

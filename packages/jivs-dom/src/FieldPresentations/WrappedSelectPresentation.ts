@@ -4,7 +4,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/WrappedSelectPresentation
  */
 
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
@@ -12,7 +12,7 @@ import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase'
  * Presentation for HTML select element contained within a specific wrapper.
  * 
  * ## CSS Classes
- * CSS classes are applied to the wrapper (the anchor).
+ * CSS classes are applied to the wrapper.
  * - persistent classes: `jivs-wrapped-editor-select`, `jivs-wrapped-editor`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
@@ -26,7 +26,7 @@ export class WrappedSelectPresentation extends WrappedEditorFieldPresentationBas
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

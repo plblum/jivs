@@ -11,7 +11,7 @@
 
 import { ValidationState } from "@plblum/jivs-engine/build/Interfaces/Validation";
 import { IValueHostsManager } from "@plblum/jivs-engine/build/Interfaces/ValueHostsManager";
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { ElementRole } from './Types';
 import { IAriaStaticUpdater } from './AriaUpdaters';
 
@@ -31,7 +31,7 @@ export interface IFormPresentation
 
     /**
      * Supports the validation group feature. When assigned, the validation group supplied
-     * on ValidationState.group must be first checked to see if matches the IJivsDomElement.jivsFormPresentationGroup.
+     * on ValidationState.group must be first checked to see if matches the IJivsElement.jivsFormPresentationGroup.
      * When this is false, only that match should allow updating its presentation.
      * When true, if the jivsFormPresentationGroup indicates a wildcard group, the presentation should respond to it.
      */
@@ -81,7 +81,7 @@ export interface IFormPresentationInstaller
      * @param options Optional installation options.
      * @returns The installed IFormPresentation instance, or null if installation failed.
      */
-    install(valueHostsManager: IValueHostsManager, element: IJivsDomElement, role: ElementRole | string,
+    install(valueHostsManager: IValueHostsManager, element: IJivsElement, role: ElementRole | string,
         options?: FormPresentationInstallOptions): IFormPresentation | null;
 }
 

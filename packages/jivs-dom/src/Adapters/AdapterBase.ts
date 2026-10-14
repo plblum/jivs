@@ -4,7 +4,7 @@
  * @module jivs-dom/Adapters/AbstractClasses/AdapterBase
  */
 
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
 /**
@@ -16,16 +16,16 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
 {
 
     /**
-     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsDomElement wrapper.
+     * Initializes a new instance of the adapter with the specified DOM element and its associated IJivsElement wrapper.
      * @param element The DOM element that this adapter is associated with.
-     * @param anchor The element containing the IJivsDomElement wrapper.
+     * @param anchor The element containing the IJivsElement wrapper.
      * It is often the same as the element itself.
      */
-    public constructor(element: TElement, anchor: IJivsDomElement | null)
+    public constructor(element: TElement, anchor: IJivsElement | null)
     {
         assertNotNull(element, 'element');
         this._element = element;
-        this._anchor = anchor ?? (element as IJivsDomElement);
+        this._anchor = anchor ?? (element as IJivsElement);
     }
 
     /**
@@ -39,19 +39,19 @@ export abstract class AdapterBase<TElement extends HTMLElement = HTMLElement>
     private _element: TElement;
 
     /**
-     * The element containing the IJivsDomElement wrapper.
+     * The element containing the IJivsElement wrapper.
      * It is often the same as the element itself.
      */
-    protected get anchor(): IJivsDomElement
+    protected get anchor(): IJivsElement
     {
         return this._anchor;
     }
-    private _anchor: IJivsDomElement;
+    private _anchor: IJivsElement;
 
     /**
      * Allows for release of resources and nulling properties to facilitate garbage collection.
      * WARNING: Currently (v0.22) nothing calls this.
-     * Each Adapter class is on IJivsDomElement which means its properties are directly on HTMLElement.
+     * Each Adapter class is on IJivsElement which means its properties are directly on HTMLElement.
      * If it was easy to get an event upon detachment of the element from the DOM, this method could be called to release adapters automatically.
      * Fortunately, dispose is mostly to speed up garbage collection.
      */

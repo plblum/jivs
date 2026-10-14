@@ -15,7 +15,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from './AriaUpdaters';
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { ElementRole } from './Types';
 import { IElementRegistry } from './ElementRegistry';
 
@@ -49,7 +49,7 @@ export interface IAriaService
     
     /**
      * Call during initialization phase to apply all static updaters,
-     * assign IJivsDomElement.jivsAriaValidationStateUpdater if possible,
+     * assign IJivsElement.jivsAriaValidationStateUpdater if possible,
      * and apply initial validation state to validation state updaters.
      * @param registry 
      */
@@ -59,7 +59,7 @@ export interface IAriaService
      * Applies the static ARIA attributes to the specified element.
      * 
      * It resolves the appropriate static ARIA attribute updater for the element based on the
-     * element's IJivsDomElement properties.
+     * element's IJivsElement properties.
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
@@ -77,14 +77,14 @@ export interface IAriaService
      * Form level elements will always have null/undefined.
      * @returns The resolved static ARIA element updater, or null if none could be resolved.
      */
-    applyStaticAttributes(element: IJivsDomElement, valueHost: IFieldValueHost | null | undefined):
+    applyStaticAttributes(element: IJivsElement, valueHost: IFieldValueHost | null | undefined):
         IAriaStaticUpdater | null;
 
     /**
      * Applies the validation state ARIA attributes to the specified element.
      * 
      * It resolves the appropriate validation state ARIA attribute updater for the element based on the
-     * element's IJivsDomElement properties.
+     * element's IJivsElement properties.
      * 
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
@@ -100,7 +100,7 @@ export interface IAriaService
      * @param valueHost The value host associated with the element, if any.
      * @param state The validation state to apply.
      */
-    applyValidationState(element: IJivsDomElement, 
+    applyValidationState(element: IJivsElement, 
         valueHost: IFieldValueHost, state: ValueHostValidationState): IAriaValidationStateUpdater | null;
 }
 
@@ -122,16 +122,16 @@ export interface IAriaService
 export interface IFieldAriaElementAnchors
 {
     /**
-     * The anchor element for the field's editor, which is used to determine the ARIA context.
+     * The JivsElement for the field's editor, which is used to determine the ARIA context.
      * May be null if the editor is not available.
      */
-    readonly editorAnchor: IJivsDomElement | null;
+    readonly editorAnchor: IJivsElement | null;
 
     /**
      * The element that displays the field's error message.
      * May be null if no error message element is available.
      */
-    readonly errorMessageElement: IJivsDomElement | null;
+    readonly errorMessageElement: IJivsElement | null;
 
     /**
      * The role of the element that displays the field's error message.

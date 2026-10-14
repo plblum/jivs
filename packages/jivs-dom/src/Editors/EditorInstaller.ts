@@ -1,5 +1,5 @@
 import { EditorInstallOptions, IEditorInstaller } from '../Interfaces/EditorInstaller';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { DomServiceBase } from '../Services/DomServiceBase';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
@@ -10,14 +10,14 @@ import { ElementRole } from '../Interfaces/Types';
 /**
  * The EditorInstaller coordinates the following operations for one supplied element and IFieldValueHost:
  * - one adapter definition must be selected;
- * - one anchor must be resolved;
+ * - one JivsElement must be resolved;
  * - one editor must be resolved
  * - the definition’s Text Value and Native Value capabilities must be examined;
  * - its DOM-to-Jivs event handlers must be attached;
  * - its field presentation and ARIA behavior must be installed independently;
  *      - Calls FieldPresentationInstaller.install() from within.
  *      - Requires another task to invoke AriaService.install().
- * - the completed installation must be recorded on the anchor element.
+ * - the completed installation must be recorded on the JivsElement.
  * 
  * It should be used both initially and after the form's elements have been replaced.
  * The FormInstaller is a solution that knows how to find the editor elements and call this installer for each of them.
@@ -33,16 +33,18 @@ export class EditorInstaller extends DomServiceBase
      * Will throw exceptions if the editor adapter definition cannot be found.
      * 
      * @param valueHost The field value host associated with the installation.
-     * @param element The DOM element serving as the installation anchor.
+     * @param element The DOM element identified as the location to install.
+     * However, it may be changed by identifyJivsElement. The result becomes
+     * the JivsElement.
      * @param options The options for installing the editor.
      */
-    public install(valueHost: IFieldValueHost, element: IJivsDomElement, options?: EditorInstallOptions): IJivsDomElement
+    public install(valueHost: IFieldValueHost, element: IJivsElement, options?: EditorInstallOptions): IJivsElement
     {
         if (!options) {
             options = {};
         }
         let definition = this.resolveDefinition(valueHost, element, options);   // may throw
-        const anchor = definition.identifyAnchor(valueHost, element);   // may throw
+        const anchor = definition.identifyJivsElement(valueHost, element);   // may throw
         const editor = definition.identifyEditor(valueHost, anchor);   // may throw
 
         // already installed? Done!

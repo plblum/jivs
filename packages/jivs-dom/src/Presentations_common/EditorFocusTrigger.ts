@@ -1,5 +1,5 @@
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorTriggerBase } from './EditorTriggerBase';
 
 /**
@@ -8,7 +8,7 @@ import { EditorTriggerBase } from './EditorTriggerBase';
  */
 export class EditorFocusTrigger extends EditorTriggerBase
 {
-    protected override attachEventHandlers(editorAnchor: IJivsDomElement, context: IErrorMessageDisplayTriggerContext): void
+    protected override attachEventHandlers(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void
     {
         this.attachEventHandler(editorAnchor, context, 'focusin',
             () => context.controller.open(context, this.openDelay));

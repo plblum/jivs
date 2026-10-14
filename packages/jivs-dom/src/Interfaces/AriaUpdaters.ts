@@ -9,19 +9,19 @@
  * 
  * The AriaService is responsible for creating these updaters and assigning them to the appropriate elements
  * within its install() function.
- * - Static updaters are executed by AriaService.install alone and not retained on IJivsDomElement instances.
- * - Validation state updaters are assigned to the IJivsDomElement.jivsAriaValidationStateUpdater property 
+ * - Static updaters are executed by AriaService.install alone and not retained on IJivsElement instances.
+ * - Validation state updaters are assigned to the IJivsElement.jivsAriaValidationStateUpdater property 
  *   and are invoked in two use cases:
  *   - During the installation, apply the current validation state from the FieldValueHost.
  *   - Whenever the field's validation state changes, the FieldValidationDispatcher will invoke the updater
- *     when found on IJivsDomElement.jivsAriaValidationStateUpdater.
+ *     when found on IJivsElement.jivsAriaValidationStateUpdater.
  * 
  * @module jivs-dom/Types/AriaService
  */
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { ElementRole } from './Types';
 
 /**
@@ -37,7 +37,7 @@ export interface IAriaStaticUpdater
      * @param role The role of the element, which may influence the ARIA attributes applied.
      * @param valueHost The host object containing the field's value, which may be used to determine ARIA attributes.
      */
-    applyStaticAttributes(element: IJivsDomElement, role: ElementRole | string, valueHost?: IFieldValueHost): void;
+    applyStaticAttributes(element: IJivsElement, role: ElementRole | string, valueHost?: IFieldValueHost): void;
 }
 
 
@@ -66,6 +66,6 @@ export interface IAriaValidationStateUpdater
      * @param state The current validation state of the field.
      * @param errorMessageId The ID of the element displaying the field's error message, if applicable.
      */
-    applyValidationState(element: IJivsDomElement, valueHost: IFieldValueHost,
+    applyValidationState(element: IJivsElement, valueHost: IFieldValueHost,
         state: ValueHostValidationState, errorMessageId?: string): void;
 }

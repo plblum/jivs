@@ -8,7 +8,7 @@ import { groupsMatch } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { AdapterBase } from '../Adapters/AdapterBase';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IFormPresentation } from '../Interfaces/FormPresentations';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * Base class for form presentations that handles validation state application.
@@ -18,9 +18,9 @@ import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
  * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
  *   such as the host of the CSS class names.
  * - optionally override getStaticAriaUpdater()
- *   to provide ARIA updates on another element than the anchor.
+ *   to provide ARIA updates on another element than the presentation element.
  */
-export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJivsDomElement>
+export abstract class FormPresentationBase<TElement extends IJivsElement = IJivsElement>
     extends AdapterBase<TElement>
     implements IFormPresentation
 {
@@ -31,7 +31,7 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
         return this._respondToWildcardGroup;
     }
 
-    public constructor(element: TElement, anchor: IJivsDomElement | null, respondToWildcardGroup: boolean = false)
+    public constructor(element: TElement, anchor: IJivsElement | null, respondToWildcardGroup: boolean = false)
     {
         super(element, anchor);
         this._respondToWildcardGroup = respondToWildcardGroup;
@@ -127,7 +127,7 @@ export abstract class FormPresentationBase<TElement extends IJivsDomElement = IJ
 
     /**
      * Allows the FormPresentation to override the default Aria Static Updater.
-     * Use when the target element for arias is not the anchor element.
+     * Use when the target element for arias is not the presentation element.
      * 
      * NOTE: There is no similar ARIA validation state updater because
      * the ARIA attributes do not have any dynamic validation attributes at the form level.

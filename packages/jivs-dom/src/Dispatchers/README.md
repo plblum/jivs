@@ -1,12 +1,12 @@
 # About Dispatchers
 A Dispatcher is directly connected to the ValueHostManager callbacks, and redirects those messages
 to a list of elements targetted by the callback. Each element it selects must have an Adapter
-already installed on its IJivsDomElement interface properties.
+already installed on its IJivsElement interface properties.
 ```
-ValueHostsManager.onTextValueChanged -> ITextValueDispatcher -> each element's IJivsDomElement.jivsTextValueAdapter
-ValueHostsManager.onValueChanged -> IValueDispatcher -> each element's IJivsDomElement.jivsValueAdapter
-ValueHostsManager.onValueHostValidationStateChanged -> IFieldValidationDispatcher -> each element's IJivsDomElement.jivsFieldPresentation
-ValueHostsManager.onValidationStateChanged -> IFormValidationDispatcher -> each element's IJivsDomElement.jivsFieldPresentation
+ValueHostsManager.onTextValueChanged -> ITextValueDispatcher -> each element's IJivsElement.jivsTextValueAdapter
+ValueHostsManager.onValueChanged -> IValueDispatcher -> each element's IJivsElement.jivsValueAdapter
+ValueHostsManager.onValueHostValidationStateChanged -> IFieldValidationDispatcher -> each element's IJivsElement.jivsFieldPresentation
+ValueHostsManager.onValidationStateChanged -> IFormValidationDispatcher -> each element's IJivsElement.jivsFieldPresentation
 ```
 
 ## Strategies for selecting elements

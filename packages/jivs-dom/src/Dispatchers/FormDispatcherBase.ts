@@ -6,7 +6,7 @@
 
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { DispatcherBase } from './DispatcherBase';
 
@@ -19,7 +19,7 @@ import { DispatcherBase } from './DispatcherBase';
  * In particular, they are associated with roles of 'summary' and 'submit'.
  * 
  * For example, FormPresenters will be attached to the Validation Summary widget.
- * That element's IJivsDomElement.jivsFormPresenter property will hold the attached FormPresenter instance.
+ * That element's IJivsElement.jivsFormPresenter property will hold the attached FormPresenter instance.
  * 
  * Uses the ElementRegistry to locate and manage the relevant DOM elements for each form-level component.
  */
@@ -40,7 +40,7 @@ export abstract class FormDispatcherBase extends DispatcherBase
      * @param operation The operation to perform on each element.
      */
     protected forEachElement(valueHostsManager: IValueHostsManager,
-        operation: (element: IJivsDomElement) => void): HTMLElement | null
+        operation: (element: IJivsElement) => void): HTMLElement | null
     {
         let root = this.domServices.resolveContainerElement(valueHostsManager);
         const elements = this.findElements(root, valueHostsManager);
@@ -67,7 +67,7 @@ export abstract class FormDispatcherBase extends DispatcherBase
      * @param root 
      * @param valueHostsManager 
      */
-    protected findElements(root: HTMLElement, valueHostsManager: IValueHostsManager): Iterable<IJivsDomElement>
+    protected findElements(root: HTMLElement, valueHostsManager: IValueHostsManager): Iterable<IJivsElement>
     {
         throw new Error('Not implemented');
     }

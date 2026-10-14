@@ -7,7 +7,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * Base class for ARIA validation state updaters.
@@ -26,7 +26,7 @@ export abstract class AriaValidationStateUpdaterBase
      * @param state The current validation state of the field.
      * @param errorMessageId The ID of the element displaying the field's error message, if applicable.
      */    
-    public abstract applyValidationState(element: IJivsDomElement, valueHost: IFieldValueHost,
+    public abstract applyValidationState(element: IJivsElement, valueHost: IFieldValueHost,
         state: ValueHostValidationState, errorMessageId?: string): void;
     
     /**
@@ -36,7 +36,7 @@ export abstract class AriaValidationStateUpdaterBase
      * @param element The original DOM element passed to applyValidationState.
      * @returns The DOM element that should receive the ARIA attributes.
      */
-    protected resolvingAriaHostElement(element: IJivsDomElement): IJivsDomElement
+    protected resolvingAriaHostElement(element: IJivsElement): IJivsElement
     {
         // Default implementation returns the element itself.
         // Subclasses can override this method if the ARIA host element is different.

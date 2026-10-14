@@ -9,7 +9,7 @@ import { TextAreaTextValueAdapter } from '../Adapters/TextAreaTextValueAdapter';
 import { defaultTextAreaPresentationName } from '../FieldPresentations/TextAreaPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 
 /**
@@ -44,7 +44,7 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
     {
         return candidateElement instanceof HTMLTextAreaElement;
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement,
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement,
         options: EditorInstallOptions): void
     {
         let textAreaElement = editor as HTMLTextAreaElement;
@@ -59,11 +59,11 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
             });
         }
     }
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
     {
         return new TextAreaTextValueAdapter(editor as HTMLTextAreaElement, anchor);
     }
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
     {
         return null;
     }

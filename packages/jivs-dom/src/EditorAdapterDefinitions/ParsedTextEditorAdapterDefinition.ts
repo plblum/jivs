@@ -9,7 +9,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { InjectedError } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
@@ -48,7 +48,7 @@ export abstract class ParsedTextEditorAdapterDefinition
      * Assign one of the properties to undefined depending on the outcome of the parsing.
      */
     protected abstract parseTextValue(textValue: string | undefined,
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement):
+        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement):
             {
                 nativeValue: unknown | undefined;
                 injectedError?: InjectedError;
@@ -70,7 +70,7 @@ export abstract class ParsedTextEditorAdapterDefinition
      * @returns void
      */
     protected sendParsedTextValue(valueHost: IFieldValueHost,
-        editor: HTMLElement, anchor: IJivsDomElement, duringEdit?: boolean): void
+        editor: HTMLElement, anchor: IJivsElement, duringEdit?: boolean): void
     {
         if (!anchor.jivsTextValueAdapter)
         {

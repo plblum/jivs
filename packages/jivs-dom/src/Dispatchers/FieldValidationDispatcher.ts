@@ -19,7 +19,7 @@ export class FieldValidationDispatcher extends FieldDispatcherBase
      * ValueHostsManager.onValueHostValidationStateChanged callback invokes this method 
      * when the validation state of the field changes.
      * It targets all elements returned by findElements(), which is supplied by subclassing.
-     * Executes an operation that retrieves IJivsDomElement.jivsFieldPresentation 
+     * Executes an operation that retrieves IJivsElement.jivsFieldPresentation 
      * and calls its apply function. If none is attached, the operation is skipped.
      * 
      * Additionally, it updates aria attributes if the ariaService is available.

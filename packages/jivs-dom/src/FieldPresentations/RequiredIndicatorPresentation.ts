@@ -5,7 +5,7 @@
  */
 
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAriaStaticUpdater';
 
@@ -35,7 +35,7 @@ export class RequiredIndicatorPresentation extends IsValidFieldPresentationBase
      */
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         if (options)

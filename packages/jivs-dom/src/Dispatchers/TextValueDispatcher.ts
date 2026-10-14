@@ -18,7 +18,7 @@ export class TextValueDispatcher extends FieldDispatcherBase
      * ValueHostsManager.onTextValueChanged callback invokes this method 
      * when the text value of the field changes.
      * It targets all elements returned by findElements().
-     * Executes an operation that retrieves IJivsDomElement.jivsTextValueAdapter 
+     * Executes an operation that retrieves IJivsElement.jivsTextValueAdapter 
      * and calls its apply function. If none is attached, the operation is skipped.
      * @param valueHost - from onTextValueChanged callback. findElements must limit 
      * the scope of elements to those relevant for this value host.

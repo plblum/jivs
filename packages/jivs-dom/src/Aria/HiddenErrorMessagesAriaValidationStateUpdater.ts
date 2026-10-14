@@ -3,7 +3,7 @@
  * visible to aria.
  */
 
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { AriaValidationStateUpdaterBase } from './AriaValidationStateUpdaterBase';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
@@ -49,7 +49,7 @@ export class HiddenErrorMessagesAriaValidationStateUpdater extends AriaValidatio
     }
     private _limit: number | null = null;
     
-    public override applyValidationState(element: IJivsDomElement, valueHost: IFieldValueHost,
+    public override applyValidationState(element: IJivsElement, valueHost: IFieldValueHost,
         state: ValueHostValidationState, errorMessageId?: string): void
     {
         if (element.jivsElementRole === 'aria-error')

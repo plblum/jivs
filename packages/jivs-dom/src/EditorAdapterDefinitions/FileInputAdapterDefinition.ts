@@ -6,7 +6,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import { FileInputTextValueAdapter } from '../Adapters/FileInputTextValueAdapter';
 import { defaultFileInputPresentationName } from '../FieldPresentations/FileInputPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
 
 /**
@@ -43,12 +43,12 @@ export class FileInputAdapterDefinition extends InputAdapterDefinition
     }
 
     public override createTextValueAdapter(
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement) : ITextValueAdapter | null
+        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement) : ITextValueAdapter | null
     {
         return new FileInputTextValueAdapter(this.requireInputElement(editor), anchor);
     }
     public override createValueAdapter(
-        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): IValueAdapter | null
+        valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): IValueAdapter | null
     {
         return null;
     }

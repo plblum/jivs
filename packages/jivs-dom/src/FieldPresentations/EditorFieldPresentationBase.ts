@@ -1,4 +1,4 @@
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -26,7 +26,7 @@ export abstract class EditorFieldPresentationBase<TElement extends HTMLElement =
     constructor(element: TElement,
         options? : IsValidFieldPresentationOptions,
         // intentionally last as its usually called from internal code
-        anchor: IJivsDomElement | null = null
+        anchor: IJivsElement | null = null
     )
     {
         super(element, options, anchor);

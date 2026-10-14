@@ -9,7 +9,7 @@
  * IEditorAdapterDefinitions coordinate the creation and management of editor adapters for specific widget models.
  * 
  * The host element must have already installed the necessary editor adapters in its 
- * IJivsDomElement interface properties.
+ * IJivsElement interface properties.
  * 
  * - onTextValueChanged -> ITextValueDispatcher -> ITextValueAdapters
  * - onValueChanged -> IValueDispatcher -> IValueAdapters

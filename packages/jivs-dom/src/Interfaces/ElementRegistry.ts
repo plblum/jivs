@@ -6,14 +6,14 @@
 import { EditorInstallOptions } from './EditorInstaller';
 import { FieldPresentationInstallOptions } from './FieldPresentations';
 import { FormPresentationInstallOptions } from './FormPresentations';
-import { IJivsDomElement } from './IJivsDomElement';
+import { IJivsElement } from './IJivsElement';
 import { ElementRole } from './Types';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost'
 
 /**
  * ElementRegistry stores the DOM elements collected for one ValueHostsManager. 
  * It owns normalized records, Element Identifier resolution, a case-insensitive identifier index, 
- * delayed editor-anchor assignment, purpose-specific queries, insertion-order enumeration, 
+ * delayed editor-JivsElement assignment, purpose-specific queries, insertion-order enumeration, 
  * and reference release.
  * 
  * It does not query the DOM, interpret markup, select participating elements, 
@@ -38,7 +38,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @param elementIdentifier 
      * @param options 
      */
-    addEditor(element: IJivsDomElement, elementIdentifier: string,
+    addEditor(element: IJivsElement, elementIdentifier: string,
         options?: EditorInstallOptions): void;
 
     /**
@@ -49,7 +49,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @param role 
      * @param options 
      */
-    addField(element: IJivsDomElement, elementIdentifier: string, role: ElementRole | string,
+    addField(element: IJivsElement, elementIdentifier: string, role: ElementRole | string,
         options?: FieldPresentationInstallOptions): void;
 
     /**
@@ -58,7 +58,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @param role 
      * @param options 
      */
-    addForm(element: IJivsDomElement, role: ElementRole | string,
+    addForm(element: IJivsElement, role: ElementRole | string,
         options?: FormPresentationInstallOptions): void;
     
     /**
@@ -68,7 +68,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @param record 
      * @param anchorElement 
      */
-    setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsDomElement): void;  
+    setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void;  
     
     /**
      * Query designed for ITextValueDispatcher. 
@@ -77,7 +77,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @returns An array of DOM elements corresponding to the text value adapters 
      * for the specified element identifier. It may return an empty list.
      */
-    getTextValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+    getTextValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
     /**
      * Query designed for IValueDispatcher.
@@ -86,7 +86,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @returns An array of DOM elements corresponding to the value adapters 
      * for the specified element identifier. It may return an empty list.
      */
-    getValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+    getValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
     /**
      * Query designed for IFieldValidationDispatcher.
@@ -96,7 +96,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @returns An array of DOM elements corresponding to the elements 
      * for the specified element identifier. It may return an empty list.
      */
-    getFieldPresentationElements(elementIdentifier: string): IJivsDomElement[];
+    getFieldPresentationElements(elementIdentifier: string): IJivsElement[];
 
     /**
      * Query designed for IFormValidationDispatcher.
@@ -104,7 +104,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @returns An array of DOM elements corresponding to the elements.
      * It may return an empty list.
      */
-    getFormPresentationElements(): IJivsDomElement[];
+    getFormPresentationElements(): IJivsElement[];
 
     /**
      * General purpose query applying a required role and optional element identifier filter.
@@ -112,7 +112,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * @param elementIdentifier The optional element identifier to further filter elements by. If null, all elements with the specified role are returned.
      * @returns An array of DOM elements corresponding to the specified role and optional element identifier. It may return an empty list.
      */
-    getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsDomElement[];
+    getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsElement[];
 
     /**
      * Query designed to retrieve these specific roles for a field element
@@ -154,7 +154,7 @@ export interface IEditorElementRegistryRecord
      * The DOM element representing this editor.
      * It is the value supplied by the EditorCollector.
      */
-    readonly element: IJivsDomElement;    
+    readonly element: IJivsElement;    
     /**
      * Key used to align the editor with the FieldValueHost through 
      * the Element Identifier found on the FieldValueHost.
@@ -167,12 +167,12 @@ export interface IEditorElementRegistryRecord
     readonly fieldValueHost: IFieldValueHost | null;
 
     /**
-     * The DOM element serving as the anchor for this editor, or null if none is assigned.
-     * It is often the same as anchorElement.
+     * The DOM element serving as the JivsElement for this editor, or null if none is assigned.
+     * It is often the same as element.
      * It is determined by and assigned using IEditorAdapterDefinition.identifyAnchor().
      * Its value is never supplied by ElementCollector.
      */
-    readonly anchorElement: IJivsDomElement | null;
+    readonly jivsElement: IJivsElement | null;
     readonly editorOptions: EditorInstallOptions | null;
 }
 
@@ -184,7 +184,7 @@ export interface IFieldElementRegistryRecord
      * The DOM element representing this editor.
      * It is the value supplied by the EditorCollector.
      */
-    readonly element: IJivsDomElement;    
+    readonly element: IJivsElement;    
     /**
      * Key used to align the editor with the FieldValueHost through 
      * the Element Identifier found on the FieldValueHost.
@@ -207,7 +207,7 @@ export interface IFormElementRegistryRecord
      * The DOM element representing this editor.
      * It is the value supplied by the EditorCollector.
      */
-    readonly element: IJivsDomElement;    
+    readonly element: IJivsElement;    
     /**
      * Key used to align the editor with the FieldValueHost through 
      * the Element Identifier found on the FieldValueHost.
@@ -233,8 +233,8 @@ export type ElementRegistryRecord =
  */
 export interface IFieldAriaElementAnchors
 {
-    editorAnchor: IJivsDomElement | null;
-    errorMessageElement: IJivsDomElement | null;
+    editorAnchor: IJivsElement | null;
+    errorMessageElement: IJivsElement | null;
     errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
     elementIdentifier: string;
 }

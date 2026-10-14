@@ -89,7 +89,7 @@ interface IDomElementResolver {
     ): HTMLElement | null;
 }
 ```
-The resolver calls `valueHost.getElementIdentifier(elementIdentifierTemplate)` internally. The optional `elementIdentifierTemplate` is the template passed to `getElementIdentifier()`; it is not itself an Element Identifier. The resulting Element Identifier supplies the query syntax used by the resolver to find the appropriate element. The resolver returns the actual `HTMLElement`; the caller applies the optional `IJivsDomElement` contract when installing Jivs behavior.
+The resolver calls `valueHost.getElementIdentifier(elementIdentifierTemplate)` internally. The optional `elementIdentifierTemplate` is the template passed to `getElementIdentifier()`; it is not itself an Element Identifier. The resulting Element Identifier supplies the query syntax used by the resolver to find the appropriate element. The resolver returns the actual `HTMLElement`; the caller applies the optional `IJivsElement` contract when installing Jivs behavior.
 
 The default resolver uses `querySelector()` and the requested role to find the appropriate field element. `jivs-simpledom` supplies the role-specific selector convention. The resolver does not expose a separate `getElementIdentifier()` method because resolving the identifier and using it to find the element are one operation.
 
@@ -128,7 +128,7 @@ This is a SimpleDom implementation detail, not a requirement of `IDomElementReso
 ## D04 Installed Element Contract
 
 ```ts
-interface IJivsDomElement extends HTMLElement {
+interface IJivsElement extends HTMLElement {
     jivsEditorAdapterDefinition?:
         IEditorAdapterDefinition;
 
@@ -146,7 +146,7 @@ interface IJivsDomElement extends HTMLElement {
 }
 ```
 
-`IJivsDomElement` is an optional-property augmentation of an ordinary `HTMLElement`. Element resolution returns `HTMLElement`, and installers or callers apply this contract when they attach Jivs behavior. The editor installer is responsible for editor elements; it does not require a `data-jivs-role` attribute and should not inspect SimpleDom attributes.
+`IJivsElement` is an optional-property augmentation of an ordinary `HTMLElement`. Element resolution returns `HTMLElement`, and installers or callers apply this contract when they attach Jivs behavior. The editor installer is responsible for editor elements; it does not require a `data-jivs-role` attribute and should not inspect SimpleDom attributes.
 
 `jivsEditorAdapterDefinition` has two meaningful states:
 
@@ -220,7 +220,7 @@ Every implementation gets assigned a unique adapterKey and a priority when regis
 with the IJivsDomService's factory to determine its order of consideration among multiple adapter definitions.
 
 During installation by EditorInstaller, the matching instance registered with the IJivsDomService's factory
-is selected and retained with the IJivsDomElement.jivsEditorAdapterDefinition property,
+is selected and retained with the IJivsElement.jivsEditorAdapterDefinition property,
 and its members create the adapters, presentations, and aria updaters for the widget.
 
 ```ts
@@ -234,17 +234,17 @@ interface IEditorAdapterDefinition {
     ): boolean;
 
     createTextValueAdapter?(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost
     ): ITextValueAdapter | null;
 
     createValueAdapter?(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost
     ): IValueAdapter | null;
 
     attachToSendValues(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost,
         options: EditorInstallOptions
     ): void;
@@ -258,7 +258,7 @@ interface IEditorAdapterDefinition {
 > During the design phase, we considered an additional EditorInstallerOption that would let the user specify more info for the matches() function to use. We abandoned that due to immutability. We want users to use EditorInstallerOption.adapterKey or bindAdapterKey() when they want to control which adapterdefinition to use.
 
 ### Editor Adapter Definition Factory
-The factory stores and returns the registered definition instance. A registered definition is shared by every element that selects it and must be treated as immutable after registration. It must not retain or mutate element-specific, value-host-specific, or installation-specific state. Per-element state belongs in the adapters created by the definition or in private state associated with the installation operation. Because the definition instance is exposed through `IJivsDomElement.jivsEditorAdapterDefinition`, this immutability rule applies equally to library and application-defined definitions.
+The factory stores and returns the registered definition instance. A registered definition is shared by every element that selects it and must be treated as immutable after registration. It must not retain or mutate element-specific, value-host-specific, or installation-specific state. Per-element state belongs in the adapters created by the definition or in private state associated with the installation operation. Because the definition instance is exposed through `IJivsElement.jivsEditorAdapterDefinition`, this immutability rule applies equally to library and application-defined definitions.
 
 ```ts
 interface IEditorAdapterDefinitionFactory {
@@ -278,7 +278,7 @@ interface IEditorAdapterDefinitionFactory {
 interface IAriaEditorDefinition {
     findAriaEditors(
         root: HTMLElement,
-        installationElement: IJivsDomElement
+        installationElement: IJivsElement
     ): Iterable<HTMLElement>;
 }
 ```
@@ -326,7 +326,7 @@ NativeValueEditorAdapterDefinition
 protected abstract parseTextValue(
     textValue: string | undefined,
     valueHost: IFieldValueHost,
-    element: IJivsDomElement
+    element: IJivsElement
 ): {
     nativeValue: unknown | undefined;
     injectedError?: InjectedError;
@@ -391,7 +391,7 @@ interface IPresentationFactory<TResult>
      * @param presentationName The optional presentation name to use for creating the presentation.
      * When supplied, it overrides the default presentation name set for the role.
      */
-    create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult;
+    create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult;
 }
 
 abstract class PresentationFactoryBase<TResult> extends DomServiceBase
@@ -402,7 +402,7 @@ abstract class PresentationFactoryBase<TResult> extends DomServiceBase
     protected get defaultPresentations(): Map<ElementRole | string, string>
     public register(presentationName: string, creator: PresentationCreator<TResult>): void
     public setDefaultPresentationName(role: ElementRole | string, presentationName: string): void
-    public create(element: IJivsDomElement, role: ElementRole | string, presentationName?: string | null): TResult
+    public create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult
 }
 class FieldPresentationFactory extends PresentationFactoryBase<IFieldPresentation>
 {
@@ -426,12 +426,12 @@ Editor-related setup is coordinated by one editor installer, while field and for
 ```ts
 interface IEditorInstaller {
     bindAdapterKey(
-        element: IJivsDomElement,
+        element: IJivsElement,
         adapterKey: string
     ): void;
 
     install(
-        element: IJivsDomElement,
+        element: IJivsElement,
         valueHost: IFieldValueHost,
         options?: EditorInstallOptions
     ): void;
@@ -474,7 +474,7 @@ no definition selected
 
 `bindAdapterKey()` obtains the definition through `editorAdapterFactory.getDefinition()` and logs and throws when the key is not registered. Binding the same definition again is a no-op; attempting to bind a different definition to an already-bound element logs and throws. This is a one-time binding step for the element's installation lifecycle. When an element is already bound, a conflicting `options.adapterKey` also logs and throws.
 
-The editor installer may attach `jivsTextValueAdapter` and `jivsValueAdapter` independently. It creates each adapter only when the corresponding property is `undefined`, preserving an existing adapter instance or explicit `null`. A definition that omits one creation method sets the corresponding property to `null`. `attachToSendValues()` must be idempotent so repeated installation of the same definition on the same element does not duplicate the widget's connection. The public contract does not require a separate `jivsSendValuesAttached` flag; the selected adapter definition and installed adapter state are sufficient to detect that the element has already been wired. An implementation may hold a private internal marker, but it is not part of the `IJivsDomElement` public contract. An adapter may be installed even when no corresponding dispatcher has been attached; installation describes the element's capability, while callback attachment determines whether a dispatcher consumes it. The send-values capability is not an adapter and does not have a public property on `IJivsDomElement`.
+The editor installer may attach `jivsTextValueAdapter` and `jivsValueAdapter` independently. It creates each adapter only when the corresponding property is `undefined`, preserving an existing adapter instance or explicit `null`. A definition that omits one creation method sets the corresponding property to `null`. `attachToSendValues()` must be idempotent so repeated installation of the same definition on the same element does not duplicate the widget's connection. The public contract does not require a separate `jivsSendValuesAttached` flag; the selected adapter definition and installed adapter state are sufficient to detect that the element has already been wired. An implementation may hold a private internal marker, but it is not part of the `IJivsElement` public contract. An adapter may be installed even when no corresponding dispatcher has been attached; installation describes the element's capability, while callback attachment determines whether a dispatcher consumes it. The send-values capability is not an adapter and does not have a public property on `IJivsElement`.
 
 > Design note for later app guidance: when deciding between `TextValueAdapter` and `ValueAdapter`, prefer `ValueAdapter` when the widget's primary data is not a string or when it exposes a structured/native value. Prefer `TextValueAdapter` when the widget's user-facing model is textual and validation depends on text input. When both are supported, choose the text-based path when user input must be validated as text. This is implementation guidance for later package and end-user documentation; it is not a separate normative API rule.
 
@@ -504,7 +504,7 @@ Presentation installation uses separate field and form methods because the Jivs 
 ```ts
 interface IFieldPresentationInstaller {
     install(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         presentationName: string | null | undefined,
         valueHost: IFieldValueHost | null | undefined
@@ -513,7 +513,7 @@ interface IFieldPresentationInstaller {
 
 interface IFormPresentationInstaller {
     install(
-        element: IJivsDomElement,
+        element: IJivsElement,
         role: ElementRole | string,
         presentationName: string | null | undefined,
         valueHostsManager:
@@ -553,13 +553,13 @@ The DOM adapter passes Text Values to Jivs. Jivs decides parsing and validation.
 
 ## D08 Radio Groups
 
-A radio installer receives one primary radio element from the caller. That element is the owner of the group adapter installation; it is the element passed into `editorInstaller` and the element that receives the `IJivsDomElement` adapter state. The adapter uses the primary element's `name` attribute to find companion radios:
+A radio installer receives one primary radio element from the caller. That element is the owner of the group adapter installation; it is the element passed into `editorInstaller` and the element that receives the `IJivsElement` adapter state. The adapter uses the primary element's `name` attribute to find companion radios:
 
 ```css
 input[type="radio"][name="..."]
 ```
 
-Group membership is not determined by DOM order. The primary element is the single owner of the adapter installation, and companion radios are found by matching the same `name` and by the presence of compatible element-owned Jivs state on their `IJivsDomElement` contract. In practice, the group can be established when any radio in the set has a bound `jivsEditorAdapterDefinition`, and the implementation queries the matching radios to find the primary or to confirm the group exists. This makes the design independent of whether the selected element is the first, last, or middle radio in the DOM.
+Group membership is not determined by DOM order. The primary element is the single owner of the adapter installation, and companion radios are found by matching the same `name` and by the presence of compatible element-owned Jivs state on their `IJivsElement` contract. In practice, the group can be established when any radio in the set has a bound `jivsEditorAdapterDefinition`, and the implementation queries the matching radios to find the primary or to confirm the group exists. This makes the design independent of whether the selected element is the first, last, or middle radio in the DOM.
 
 Radio support includes three independent capabilities:
 
@@ -674,26 +674,26 @@ abstract class FieldDispatcherBase {
     protected forEachElement(
         root: HtmlElement,
         valueHost: IFieldValueHost,
-        operation: (element: IJivsDomElement) => void
+        operation: (element: IJivsElement) => void
     ): void;
 
     protected abstract findElements(
         root: HtmlElement,        
         valueHost: IFieldValueHost
-    ): Iterable<IJivsDomElement>;
+    ): Iterable<IJivsElement>;
 }
 
 abstract class FormDispatcherBase {
     protected forEachElement(
         root: HtmlElement,
         valueHostsManager: IValueHostsManager,
-        operation: (element: IJivsDomElement) => void
+        operation: (element: IJivsElement) => void
     ): void;
 
     protected abstract findElements(
         root: HtmlElement,
         valueHostsManager: IValueHostsManager
-    ): Iterable<IJivsDomElement>;
+    ): Iterable<IJivsElement>;
 }
 
 abstract class TextValueDispatcher
@@ -741,7 +741,7 @@ abstract class FormValidationDispatcher
 
 `FormValidationDispatcher` resolves the form-level elements associated with the `IValueHostsManager` and calls `jivsFormPresentation.apply(valueHostsManager, state)`.
 
-The concrete dispatcher interfaces do not expose the adapter or presentation properties as callback parameters. The dispatcher reads the installed public property from the resolved `IJivsDomElement`, which keeps installation state on the element and permits applications to replace an installed behavior. An `undefined` property means the capability was not installed and is skipped. A `null` property means the capability was examined and is intentionally unavailable and is also skipped. Dispatching never creates or installs an adapter or presentation.
+The concrete dispatcher interfaces do not expose the adapter or presentation properties as callback parameters. The dispatcher reads the installed public property from the resolved `IJivsElement`, which keeps installation state on the element and permits applications to replace an installed behavior. An `undefined` property means the capability was not installed and is skipped. A `null` property means the capability was examined and is intentionally unavailable and is also skipped. Dispatching never creates or installs an adapter or presentation.
 
 The field and form base classes own the common rules:
 
@@ -781,7 +781,7 @@ abstract class TextValueDispatcher
 
 The subclass still must implement `findElements()`. If it returns no elements, dispatch is a normal no-op. If `findElements()` itself throws, that is a discovery implementation failure rather than an installed-element failure; the base contract does not hide it.
 
-Every dispatcher is detached from the elements it discovers. Element discovery occurs during each dispatch operation, and a dispatcher must not retain a discovered element, an element collection, or a DOM subtree between operations. Element-specific state belongs on the element through the installed `IJivsDomElement` properties or another element-owned mechanism. This allows elements to be removed, replaced, or added after attachment without recreating or reconfiguring the dispatcher. A dispatcher may retain only discovery policy and state that is independent of particular element identities.
+Every dispatcher is detached from the elements it discovers. Element discovery occurs during each dispatch operation, and a dispatcher must not retain a discovered element, an element collection, or a DOM subtree between operations. Element-specific state belongs on the element through the installed `IJivsElement` properties or another element-owned mechanism. This allows elements to be removed, replaced, or added after attachment without recreating or reconfiguring the dispatcher. A dispatcher may retain only discovery policy and state that is independent of particular element identities.
 
 Text and native value dispatchers are optional integrations: applications may omit their attachment methods when they manage Jivs-to-DOM output themselves. Validation dispatchers are the normal presentation connection and are attached when DOM validation presentation is desired.
 
@@ -1041,7 +1041,7 @@ The service is supplied IDomServices upon creation to provide access to relevant
 ```ts
 interface IFieldAriaElementAnchors {
     readonly editorAnchor:
-        IJivsDomElement | null;
+        IJivsElement | null;
 
     readonly errorMessageElement:
         HTMLElement | null;

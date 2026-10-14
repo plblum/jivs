@@ -4,7 +4,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/WrappedRadioButtonsPresentation
  */
 
-import type { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { WrappedEditorFieldPresentationBase } from './WrappedEditorFieldPresentationBase';
 import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
@@ -26,7 +26,7 @@ export class WrappedRadioButtonsPresentation extends WrappedEditorFieldPresentat
 {
     constructor(element: HTMLElement,
         options?: IsValidFieldPresentationOptions,
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

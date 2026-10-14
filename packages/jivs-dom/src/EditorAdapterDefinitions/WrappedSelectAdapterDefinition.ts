@@ -14,7 +14,7 @@ import { defaultWrappedSelectPresentationName } from '../FieldPresentations/Wrap
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="wrapped">      <!-- this is the anchor -->
+ * <div class="wrapped">      <!-- maintains JivsElement -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <select class="editor">  <!-- the editor element -->
  *     </select>    

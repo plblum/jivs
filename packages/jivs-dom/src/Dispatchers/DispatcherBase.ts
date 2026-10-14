@@ -31,20 +31,20 @@ export abstract class DispatcherBase
      * which will be replaced with the source element's identifier 
      * and the target FieldValueHost's name, respectively.
      * @param loggingLevel 
-     * @param message 
-     * @param anchor 
-     * @param valueHost 
+     * @param message The log message, supporting tokens `{element}` and `{valuehost}`.
+     * @param targetElement The element that retains the IJivsElement structure..
+     * @param valueHost The field value host associated with the target element.
      */
     protected log(
         loggingLevel: LoggingLevel,
         message: string,
-        anchor: HTMLElement | null, valueHost: IFieldValueHost | null): void
+        targetElement: HTMLElement | null, valueHost: IFieldValueHost | null): void
     {
         this.domServices.loggingFacade.log(
             loggingLevel,
             (facade) =>
             {
-                return facade.prepareLogDetails(message, anchor, valueHost, this);
+                return facade.prepareLogDetails(message, targetElement, valueHost, this);
             });
     }
    

@@ -5,7 +5,7 @@
  * @module jivs-dom/FieldPresentations/AbstractClasses/WrappedIsValidFieldPresentationBase
  */
 
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
@@ -47,7 +47,7 @@ import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from '.
  * presentation element. 
  * 
  * ## CSS Classes
- * CSS classes are applied to the wrapper (the anchor).
+ * CSS classes are applied to the wrapper.
  * - persistent classes: `jivs-wrapped-editor`, `jivs-isvalidpresentation`
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
@@ -75,7 +75,7 @@ export abstract class WrappedEditorFieldPresentationBase<TElement extends HTMLEl
         element: TElement,
         options?: WrappedEditorFieldPresentationBaseOptions,
         // intentionally placed last because its usually used internally
-        anchor?: IJivsDomElement | null
+        anchor?: IJivsElement | null
     )
     {
         super(element, options, anchor);

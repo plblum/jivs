@@ -127,7 +127,7 @@ export interface IPopupContext
     messageFrameContent: HTMLElement | null;
     /**
      * Element to which the popup should be anchored.
-     * Used for positioning the popup relative to the anchor element.
+     * Used for positioning the popup relative to the Anchor element.
      * It is often the PopupErrorMessageDisplayPresentation element itself.
      * It requires an element.
      */

@@ -101,8 +101,8 @@ interface IEditorElementRegistryRecord {
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
 
-    readonly element: IJivsDomElement | null;
-    readonly anchorElement: IJivsDomElement | null;
+    readonly element: IJivsElement | null;
+    readonly anchorElement: IJivsElement | null;
 
     readonly editorOptions: EditorInstallOptions | null;
 }
@@ -124,7 +124,7 @@ interface IFieldElementRegistryRecord {
     readonly elementIdentifier: string;
     readonly fieldValueHost: IFieldValueHost | null;
 
-    readonly element: IJivsDomElement | null;
+    readonly element: IJivsElement | null;
 
     readonly presentationOptions: FieldPresentationInstallOptions | null;
 }
@@ -146,7 +146,7 @@ interface IFormElementRegistryRecord {
     readonly elementIdentifier: null;
     readonly fieldValueHost: null;
 
-    readonly element: IJivsDomElement | null;
+    readonly element: IJivsElement | null;
 
     readonly presentationOptions: FormPresentationInstallOptions | null;
 }
@@ -249,11 +249,11 @@ Runtime dispatchers use purpose-specific query methods rather than direct enumer
 The Collector populates the Registry through three commands:
 
 ```ts
-addEditor(element: IJivsDomElement, elementIdentifier: string, options?: EditorInstallOptions): void;
+addEditor(element: IJivsElement, elementIdentifier: string, options?: EditorInstallOptions): void;
 
-addField(element: IJivsDomElement, elementIdentifier: string, role: ElementRole | string, options?: FieldPresentationInstallOptions): void;
+addField(element: IJivsElement, elementIdentifier: string, role: ElementRole | string, options?: FieldPresentationInstallOptions): void;
 
-addForm(element: IJivsDomElement, role: ElementRole | string, options?: FormPresentationInstallOptions): void;
+addForm(element: IJivsElement, role: ElementRole | string, options?: FormPresentationInstallOptions): void;
 ```
 
 Only an Element Identifier is accepted for editor and field records. The Collector does not supply an `IFieldValueHost`.
@@ -327,7 +327,7 @@ The Registry and `ValueHostsManager` must use the same case-insensitive semantic
 `IElementRegistry` exposes:
 
 ```ts
-setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsDomElement): void;
+setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void;
 ```
 
 `FormInstaller` uses it after editor installation:
@@ -353,9 +353,9 @@ Consumers continue to see `anchorElement` as read-only.
 ```ts
 install(
     valueHost: IFieldValueHost,
-    element: IJivsDomElement,
+    element: IJivsElement,
     options?: EditorInstallOptions
-): IJivsDomElement;
+): IJivsElement;
 ```
 
 The concrete `EditorInstaller` must return the anchor on every successful path, including an idempotent path where the anchor was already installed.
@@ -376,13 +376,13 @@ Queries return elements rather than complete Registry records unless a consumer 
 Multi-result queries return arrays. This matches the existing dispatcher `findElements()` pattern and avoids propagating `Iterable` through unrelated contracts.
 
 ```ts
-getTextValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+getTextValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
-getValueAdapterElements(elementIdentifier: string): IJivsDomElement[];
+getValueAdapterElements(elementIdentifier: string): IJivsElement[];
 
-getFieldPresentationElements(elementIdentifier: string): IJivsDomElement[];
+getFieldPresentationElements(elementIdentifier: string): IJivsElement[];
 
-getFormPresentationElements(): IJivsDomElement[];
+getFormPresentationElements(): IJivsElement[];
 ```
 
 Results preserve Registry insertion order.
@@ -395,7 +395,7 @@ Dedicated `aria-error` elements are excluded because they never have a field pre
 
 The form-presentation query returns form-role elements in insertion order.
 
-Dispatchers remain responsible for checking the applicable installed `IJivsDomElement` property before invoking it. A missing, `undefined`, or `null` capability remains a normal skip.
+Dispatchers remain responsible for checking the applicable installed `IJivsElement` property before invoking it. A missing, `undefined`, or `null` capability remains a normal skip.
 
 Each query is named for its consumer use case. The Registry does not expose one general filtering API that requires consumers to reproduce its selection rules.
 
@@ -405,8 +405,8 @@ The existing ARIA result contract remains in use:
 
 ```ts
 interface IFieldAriaElementAnchors {
-    readonly editorAnchor: IJivsDomElement | null;
-    readonly errorMessageElement: IJivsDomElement | null;
+    readonly editorAnchor: IJivsElement | null;
+    readonly errorMessageElement: IJivsElement | null;
     readonly errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
 }
 ```
@@ -792,7 +792,7 @@ For each applicable element, ARIA installation:
 1. Selects the applicable `IAriaStaticUpdater`.
 2. Immediately executes that static updater.
 3. Selects the applicable `IAriaValidationStateUpdater`.
-4. Assigns the selected updater, or `null`, to `IJivsDomElement.jivsAriaValidationStateUpdater`.
+4. Assigns the selected updater, or `null`, to `IJivsElement.jivsAriaValidationStateUpdater`.
 
 ARIA installation uses an editor’s resolved `anchorElement`, not necessarily its original element.
 
@@ -839,7 +839,7 @@ This runs once per represented field after:
 - presentations have been installed;
 - editor anchors have been recorded;
 - static ARIA updaters have run;
-- validation-state ARIA updaters have been attached to the applicable `IJivsDomElement` instances.
+- validation-state ARIA updaters have been attached to the applicable `IJivsElement` instances.
 
 It also runs during repeated `install()` calls even when individual installers determine that their work was previously completed.
 
@@ -856,7 +856,7 @@ For a field validation-state callback, the dispatcher:
 
 `FieldPresentation` does not invoke ARIA updaters.
 
-The dispatcher initiates ARIA validation-state processing, while `AriaService` selects and executes the updater attached to each applicable `IJivsDomElement`.
+The dispatcher initiates ARIA validation-state processing, while `AriaService` selects and executes the updater attached to each applicable `IJivsElement`.
 
 ## Failure Behavior
 

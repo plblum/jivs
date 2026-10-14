@@ -17,7 +17,7 @@ import { InputAdapterDefinition } from './InputAdapterDefinition';
  * Expects the following HTML structure:
  * 
  * ```html
- * <div class="wrapped">      <!-- this is the anchor -->
+ * <div class="wrapped">      <!-- maintains JivsElement -->
  *     <!-- there can be multiple containing elements around the input -->
  *     <input type="text" class="editor" />     <!-- the editor element -->
  * </div>

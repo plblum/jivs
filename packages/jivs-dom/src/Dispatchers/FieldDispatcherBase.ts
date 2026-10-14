@@ -6,7 +6,7 @@
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { DispatcherBase } from './DispatcherBase';
 
@@ -21,7 +21,7 @@ import { DispatcherBase } from './DispatcherBase';
  * 
  * For example, TextValueAdapters will be attached to the editor element associated 
  * with the field value host.
- * That element's IJivsDomElement.jivsTextValueAdapter property will hold 
+ * That element's IJivsElement.jivsTextValueAdapter property will hold 
  * the attached TextValueAdapter instance.
  * 
  * Uses the ElementRegistry to locate and manage the relevant DOM elements for each field value host.
@@ -43,7 +43,7 @@ export abstract class FieldDispatcherBase extends DispatcherBase
      * @param operation The operation to perform on each element.
      */
     protected forEachElement(valueHost: IFieldValueHost,
-        operation: (element: IJivsDomElement) => void): HTMLElement | null
+        operation: (element: IJivsElement) => void): HTMLElement | null
     {
         let root = this.domServices.resolveContainerElement(valueHost.valueHostsManager);
         const elements = this.findElements(root, valueHost);
@@ -70,7 +70,7 @@ export abstract class FieldDispatcherBase extends DispatcherBase
      * @param root 
      * @param valueHost 
      */
-    protected findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsDomElement>
+    protected findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsElement>
     {
         throw new Error('Not implemented');
     }

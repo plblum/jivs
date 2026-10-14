@@ -7,7 +7,7 @@
 
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
@@ -20,8 +20,8 @@ import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
  * It is treated as part of the editor itself, even though it is a separate DOM element.
  * 
  * 
- * It defines the anchor and editor elements separately:
- * - Anchor: The wrapper gets the IJivsDomElement structure.
+ * It defines the jivsElement and editor elements separately:
+ * - Wrapper: Maintains the IJivsElement structure.
  * - Editor: The actual editor element.
  * 
  * The matches() function defaults to using wrappedElement.querySelector(editorSelector) 
@@ -40,7 +40,7 @@ import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
  * The wrapperSelector could be "div.wrapped" and the editorSelector could be "input[type="text"].editor".
  *
  * The adapters remain assigned to the wrapper's
- * IJivsDomElement properties even though they read from and write to the
+ * IJivsElement properties even though they read from and write to the
  * descendant editor.
  * 
  * This design uses the Editor Adapter Definition explicitly designed for the editor itself,
@@ -161,10 +161,10 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Resolves the editor as an element within the wrapper using findEditorElement().
      * Throws if the editor element cannot be found within the wrapped.
      * @param valueHost The host object that provides the field value.
-     * @param anchor The anchor element associated with the editor.
+     * @param anchor The element that retains the IJivsElement structure..
      * @returns The editor element within the wrapper.
      */
-    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsDomElement): HTMLElement
+    public override identifyEditor(valueHost: IFieldValueHost, anchor: IJivsElement): HTMLElement
     {
         let editor = this.findEditorElement(anchor);
         if (!editor)
@@ -195,10 +195,10 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Redirects the creation of a text value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The anchor element associated with the editor.
+     * @param anchor The element that retains the IJivsElement structure..
      * @returns The text value adapter for the editor element, or null if none is created.
      */
-    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement): ITextValueAdapter | null
+    public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement): ITextValueAdapter | null
     {
         // Create and return a text value adapter for the editor element here.
         return this.childEditorDefinitionAdapter.createTextValueAdapter(valueHost, editor, anchor);
@@ -208,10 +208,10 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Redirects the creation of a value adapter to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The anchor element associated with the editor.
+     * @param anchor The element that retains the IJivsElement structure..
      * @returns The value adapter for the editor element, or null if none is created.
      */
-    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement | null): IValueAdapter | null
+    public override createValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement | null): IValueAdapter | null
     {
         return this.childEditorDefinitionAdapter.createValueAdapter(valueHost, editor, anchor);
     }
@@ -220,15 +220,15 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
      * Redirects the attachment of send values to the child editor definition adapter.
      * @param valueHost The host object that provides the field value.
      * @param editor The editor element within the wrapper.
-     * @param anchor The anchor element associated with the editor.
+     * @param anchor The element that retains the IJivsElement structure..
      * @param options Optional installation options for the editor.
      */
-    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement, options?: EditorInstallOptions): void
+    public override attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement, options?: EditorInstallOptions): void
     {
         // Attach event listeners or perform other setup for the editor element here.
         this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, anchor, options ?? {});
     }
-    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsDomElement, options: EditorInstallOptions): void
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, anchor: IJivsElement, options: EditorInstallOptions): void
     {
         // Not used
     }

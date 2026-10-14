@@ -350,7 +350,7 @@ interface IFormPresentation {
     ): void;
 }
 
-interface IJivsDomElement extends HTMLElement {
+interface IJivsElement extends HTMLElement {
     jivsTextValueAdapter?: ITextValueAdapter | null;
     jivsValueAdapter?: IValueAdapter | null;
     jivsFieldPresentation?: IFieldPresentation | null;
@@ -378,7 +378,7 @@ Field and form presentation installation use separate functions with different f
 
 ```ts
 installFieldPresentation(
-    element: IJivsDomElement,
+    element: IJivsElement,
     role: ElementRole | string,
     presentationName: string | null | undefined,
     valueHost: IFieldValueHost | null | undefined
@@ -387,7 +387,7 @@ installFieldPresentation(
 
 ```ts
 installFormPresentation(
-    element: IJivsDomElement,
+    element: IJivsElement,
     role: ElementRole | string,
     presentationName: string | null | undefined,
     valueHostsManager: IValueHostsManager | null | undefined

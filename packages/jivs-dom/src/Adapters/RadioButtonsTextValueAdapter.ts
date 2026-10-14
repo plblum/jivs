@@ -9,7 +9,7 @@
 
 
 import { ITextValueAdapter } from '../Interfaces/Adapters';
-import { IJivsDomElement } from '../Interfaces/IJivsDomElement';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 import { RadioButtonsTextValueAdapterBase } from './RadioButtonsTextValueAdapterBase';
 
 /**
@@ -33,10 +33,10 @@ export class RadioButtonsTextValueAdapter extends RadioButtonsTextValueAdapterBa
     /**
      * Constructor
      * @param radiobutton - one of the radio buttons from the group.
-     * @param anchor - the element that retains the IJivsDomElement structure.
+     * @param anchor - the element that retains the IJivsElement structure.
      * It is usually the same as radiobutton. Pass null to declare radiobutton as its value.
      */
-    public constructor(radiobutton: HTMLInputElement, anchor: IJivsDomElement | null = null)
+    public constructor(radiobutton: HTMLInputElement, anchor: IJivsElement | null = null)
     {
         super(radiobutton, anchor);
     }
