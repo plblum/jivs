@@ -142,14 +142,14 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
     
     /**
      * The consumer (FormInstaller) determines the value of 
-     * IEditorElementRegistryRecord.anchorElement. 
+     * IEditorElementRegistryRecord.jivsElement. 
      * This is used to assign that property.
      * @param record 
-     * @param anchorElement 
+     * @param jivsElement 
      */
-    public setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void
+    public setEditorJivsElement(record: IEditorElementRegistryRecord, jivsElement: IJivsElement): void
     {
-        (record as any).anchorElement = anchorElement;
+        (record as any).jivsElement = jivsElement;
     }
     
     /**
@@ -277,7 +277,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         let elementIdentifierLC = elementIdentifier.toLowerCase();
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
         let result: IFieldAriaElementAnchors = {
-            editorAnchor: null,
+            editorJivsElement: null,
             errorMessageElement: null,
             errorMessageRole: null,
             elementIdentifier: elementIdentifier,
@@ -300,7 +300,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
                     }
                     break;
                 case ElementRole.editor:
-                    result.editorAnchor = (<IEditorElementRegistryRecord>record).jivsElement;
+                    result.editorJivsElement = (<IEditorElementRegistryRecord>record).jivsElement;
                     break;
             }
         }
@@ -339,7 +339,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             {
                 (record as any).element = null;
                 (record as any).fieldValueHost = null;
-                (record as any).anchorElement = null;
+                (record as any).jivsElement = null;
             }
 */            
         }
@@ -349,7 +349,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         {
             (entry as any).element = null;
             (entry as any).fieldValueHost = null;
-            (entry as any).anchorElement = null;
+            (entry as any).jivsElement = null;
         }
         this._records = [];
     }

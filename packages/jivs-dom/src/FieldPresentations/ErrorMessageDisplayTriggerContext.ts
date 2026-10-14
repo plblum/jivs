@@ -7,20 +7,20 @@ import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTriggerContext
 {
     constructor(
-        anchorElement: IJivsElement,
+        jivsElement: IJivsElement,
         domServices: IJivsDomServices,
         valueHost: IFieldValueHost,
         controller: IErrorMessageDisplayController
     ) 
     {
-        this._anchorElement = anchorElement;
+        this._jivsElement = jivsElement;
         this._domServices = domServices;
         this._valueHost = valueHost;
         this._controller = controller;
     }
-    public get anchorElement(): IJivsElement
+    public get jivsElement(): IJivsElement
     {
-        return this._anchorElement!;
+        return this._jivsElement!;
     }
     public get domServices(): IJivsDomServices
     {
@@ -34,7 +34,7 @@ export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTr
     {
         return this._controller!;
     }
-    private _anchorElement?: IJivsElement;
+    private _jivsElement?: IJivsElement;
     private _domServices?: IJivsDomServices;
     private _valueHost?: IFieldValueHost;
     private _controller?: IErrorMessageDisplayController;
@@ -52,7 +52,7 @@ export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTr
     public dispose(): void
     {
         this._valueHost = undefined;
-        this._anchorElement = undefined;
+        this._jivsElement = undefined;
         this._domServices = undefined;
         this._controller = undefined;
         this._issuesFound = null;

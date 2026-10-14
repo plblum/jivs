@@ -1,7 +1,7 @@
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 
 /**
- * Attaches the mouseover event listener to the Anchor element to trigger the error message display popup.
+ * Attaches the mouseover event listener to the ErrorMessageDisplay element to trigger the error message display popup.
  * Always opens without a delay.
  */
 export abstract class ErrorMessageDisplayTriggerBase implements IErrorMessageDisplayTrigger
@@ -27,15 +27,15 @@ export abstract class ErrorMessageDisplayTriggerBase implements IErrorMessageDis
     public abstract install(context: IErrorMessageDisplayTriggerContext): void;
     
     /**
-     * Attaches the mouseover event listener to the Anchor element.
+     * Attaches the mouseover event listener to the ErrorMessageDisplay element.
      * @param context 
      */
     public attachEventToOpen(eventName: string, context: IErrorMessageDisplayTriggerContext): void
     {
-        context.anchorElement?.addEventListener(eventName, () => context.controller.open(context, this.delay));
+        context.jivsElement?.addEventListener(eventName, () => context.controller.open(context, this.delay));
     }
     public attachEventToClose(eventName: string, context: IErrorMessageDisplayTriggerContext): void
     {
-        context.anchorElement?.addEventListener(eventName, () => context.controller.close(context, this.delay));
+        context.jivsElement?.addEventListener(eventName, () => context.controller.close(context, this.delay));
     }
 }

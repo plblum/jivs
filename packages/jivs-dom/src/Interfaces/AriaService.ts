@@ -125,7 +125,7 @@ export interface IFieldAriaElementAnchors
      * The JivsElement for the field's editor, which is used to determine the ARIA context.
      * May be null if the editor is not available.
      */
-    readonly editorAnchor: IJivsElement | null;
+    readonly editorJivsElement: IJivsElement | null;
 
     /**
      * The element that displays the field's error message.

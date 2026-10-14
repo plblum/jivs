@@ -59,7 +59,7 @@ export interface IPopupService
  * 
  * It operates without any more knowledge of the PopupErrorMessageDisplayPresentation 
  * than whats on the Controller itself. It does not care about properties of the Context
- * managed by the presentation, like anchorElement.
+ * managed by the presentation.
  * 
  * IJivsDomServices.popupMechanism provides access to the currently configured popup mechanism.
  * It is a singleton that must be fully setup during app initialization.

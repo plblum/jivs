@@ -2,7 +2,7 @@ import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDi
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 
 /**
- * Attaches the click event listener to the Anchor element.
+ * Attaches the click event listener to the ErrorMessageDisplay element.
  * Always opens without a delay.
  */
 export class ErrorMessageDisplayClickTrigger extends ErrorMessageDisplayTriggerBase

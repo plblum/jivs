@@ -63,12 +63,12 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
     
     /**
      * The consumer (FormInstaller) determines the value of 
-     * IEditorElementRegistryRecord.anchorElement. 
+     * IEditorElementRegistryRecord.jivsElement. 
      * This is used to assign that property.
      * @param record 
-     * @param anchorElement 
+     * @param jivsElement 
      */
-    setEditorAnchorElement(record: IEditorElementRegistryRecord, anchorElement: IJivsElement): void;  
+    setEditorJivsElement(record: IEditorElementRegistryRecord, jivsElement: IJivsElement): void;  
     
     /**
      * Query designed for ITextValueDispatcher. 
@@ -169,7 +169,7 @@ export interface IEditorElementRegistryRecord
     /**
      * The DOM element serving as the JivsElement for this editor, or null if none is assigned.
      * It is often the same as element.
-     * It is determined by and assigned using IEditorAdapterDefinition.identifyAnchor().
+     * It is determined by and assigned using IEditorAdapterDefinition.identifyJivsElement().
      * Its value is never supplied by ElementCollector.
      */
     readonly jivsElement: IJivsElement | null;
@@ -233,7 +233,7 @@ export type ElementRegistryRecord =
  */
 export interface IFieldAriaElementAnchors
 {
-    editorAnchor: IJivsElement | null;
+    editorJivsElement: IJivsElement | null;
     errorMessageElement: IJivsElement | null;
     errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
     elementIdentifier: string;

@@ -145,7 +145,7 @@ export class AriaService extends DomServiceBase
             let ariaElementAnchors = registry.getFieldAriaElementAnchors(resolvedEI.fieldValueHost!.getElementIdentifier());
             for (const record of resolvedEI.records)
             {
-                if (record.element === ariaElementAnchors.editorAnchor ||
+                if (record.element === ariaElementAnchors.editorJivsElement ||
                     record.element === ariaElementAnchors.errorMessageElement)
                 {
                     if (record.element.jivsAriaValidationStateUpdater === undefined) // has yet to have installation attempted
@@ -164,9 +164,9 @@ export class AriaService extends DomServiceBase
             // We'll assign that id to the editor's IJivsElement.jivsErrorMessageId property.
             // The Validation State updater on editor will use that to setup
             // the aria-errormessage attribute correctly.
-            if (ariaElementAnchors.editorAnchor)
+            if (ariaElementAnchors.editorJivsElement)
             {
-                ariaElementAnchors.editorAnchor.jivsErrorMessageId = undefined;
+                ariaElementAnchors.editorJivsElement.jivsErrorMessageId = undefined;
                 if (ariaElementAnchors.errorMessageElement)
                 {
                     let errorMessageId = ariaElementAnchors.errorMessageElement.id;
@@ -175,7 +175,7 @@ export class AriaService extends DomServiceBase
                         errorMessageId = `error-${encodeHtml(ariaElementAnchors.elementIdentifier)}-${Math.random().toString(36).substring(2, 9) }`;
                         ariaElementAnchors.errorMessageElement.id = errorMessageId;
                     }
-                    ariaElementAnchors.editorAnchor.jivsErrorMessageId = errorMessageId;
+                    ariaElementAnchors.editorJivsElement.jivsErrorMessageId = errorMessageId;
                 }
             }
         }

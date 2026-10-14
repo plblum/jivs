@@ -119,11 +119,11 @@ export class FormInstaller
             {
                 if (entry.fieldValueHost)
                 {
-                    let anchorElement = domServices.editorInstaller.install(
+                    let jivsElement = domServices.editorInstaller.install(
                         entry.fieldValueHost,
                         entry.element,
                         (<IEditorElementRegistryRecord> entry).editorOptions ?? {});
-                    registry.setEditorAnchorElement((<IEditorElementRegistryRecord> entry), anchorElement);
+                    registry.setEditorJivsElement((<IEditorElementRegistryRecord> entry), jivsElement);
                 }
                 else
                     domServices.loggingFacade.log(LoggingLevel.Warn,

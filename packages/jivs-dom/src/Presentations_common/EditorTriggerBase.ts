@@ -56,10 +56,10 @@ export abstract class EditorTriggerBase implements IErrorMessageDisplayTrigger
 
     public install(context: IErrorMessageDisplayTriggerContext): void
     {
-        let editorAnchors = context.domServices.resolveFieldElement(context.valueHost, ElementRole.editor);
-        for (let editorAnchor of editorAnchors)
+        let editors = context.domServices.resolveFieldElement(context.valueHost, ElementRole.editor);
+        for (let editor of editors)
         {
-            this.attachEventHandlers(editorAnchor, context);
+            this.attachEventHandlers(editor, context);
         }
     }
     /**
@@ -67,23 +67,23 @@ export abstract class EditorTriggerBase implements IErrorMessageDisplayTrigger
      * This method should be implemented by subclasses to define specific event handling behavior for the editor element.
      * Consider using the `attachEventHandler` utility method to simplify attaching event handlers.
      * 
-     * @param editorAnchor The editor element to attach event handlers to.
+     * @param editor The editor element to attach event handlers to.
      * @param context The context of the error message display trigger.
      */
-    protected abstract attachEventHandlers(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void;
+    protected abstract attachEventHandlers(editor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void;
 
     /**
      * Utility method to attach an event handler to the editor element.
-     * @param editorAnchor The editor element to attach the event handler to.
+     * @param editor The editor element to attach the event handler to.
      * @param context The context of the error message display trigger.
      * @param eventType The type of the event to listen for.
      * @param handler The function to be called when the event is triggered.
      */
-    protected attachEventHandler(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext,
+    protected attachEventHandler(editor: IJivsElement, context: IErrorMessageDisplayTriggerContext,
         eventType: string, handler: () => void): void
     {
-        editorAnchor.jivsEditorAdapterDefinition?.attachEventHandler(
-            editorAnchor, context.valueHost, eventType, handler
+        editor.jivsEditorAdapterDefinition?.attachEventHandler(
+            editor, context.valueHost, eventType, handler
         );
     }
 }

@@ -8,12 +8,12 @@ import { EditorTriggerBase } from './EditorTriggerBase';
  */
 export class EditorFocusTrigger extends EditorTriggerBase
 {
-    protected override attachEventHandlers(editorAnchor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void
+    protected override attachEventHandlers(editor: IJivsElement, context: IErrorMessageDisplayTriggerContext): void
     {
-        this.attachEventHandler(editorAnchor, context, 'focusin',
+        this.attachEventHandler(editor, context, 'focusin',
             () => context.controller.open(context, this.openDelay));
 
-        this.attachEventHandler(editorAnchor, context, 'focusout',
+        this.attachEventHandler(editor, context, 'focusout',
             () => context.controller.close(context, this.closeDelay));
         
     }

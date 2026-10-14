@@ -173,7 +173,7 @@ export abstract class EditorAdapterDefinitionBase
      * This class returns the element passed to it as the editor, assuming it is the actual editor element.
      * 
      * @param valueHost The field value host associated with the editor.
-     * @param jivsElement The Anchor element from which we can resolve the editor element.
+     * @param jivsElement The JivsElement from which we can resolve the editor element.
      */
     public identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
     {

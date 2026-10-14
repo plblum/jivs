@@ -103,7 +103,7 @@ export interface IEditorAdapterDefinition
      * even if the supplied element is a container or related element.
      * 
      * @param valueHost The field value host associated with the editor.
-     * @param jivsElement The Anchor element from which we can resolve the editor element.
+     * @param jivsElement The JivsElement from which we can resolve the editor element.
      * They may be the same.
      */
     identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement;

@@ -73,7 +73,7 @@ export interface IErrorMessageDisplayController
  */
 export interface IErrorMessageDisplayTriggerContext
 {
-    readonly anchorElement: IJivsElement;
+    readonly jivsElement: IJivsElement;
     readonly domServices: IJivsDomServices;
     readonly valueHost: IFieldValueHost;
     readonly controller: IErrorMessageDisplayController;
@@ -88,7 +88,7 @@ export interface IErrorMessageDisplayTriggerContext
  * Their install method is expected to run once per instance, on the first call to FieldPresentation.apply().
  * 
  * A trigger may establish event listeners on:
- * - The editor widget itself. Uses context.anchorElement.jivsEditorAdapterDefinition.attachEventHandler() to attach event listeners.
+ * - The editor widget itself. Uses context.jivsElement.jivsEditorAdapterDefinition.attachEventHandler() to attach event listeners.
  *   Likely listeners: focus and blur.
  * - The container element that holds the error message display. Uses DOM addEventListener to attach event listeners.
  *   Likely listeners: click, mouseover, focus. These may have to setup event delegation or additional logic to properly handle interactions.
@@ -97,8 +97,8 @@ export interface IErrorMessageDisplayTrigger
 {
     /**
      * Attach an event listener or other mechanism to respond to user interactions and invoke actions on the error message display.
-     * For editors, use context.anchorElement to access the EditorAdapterDefinition and call its attachEventHandler().
-     * For other roles, use context.anchorElement to attach event listeners directly using the DOM addEventListener mechanism.
+     * For editors, use context.jivsElement to access the EditorAdapterDefinition and call its attachEventHandler().
+     * For other roles, use context.jivsElement to attach event listeners directly using the DOM addEventListener mechanism.
      * @param context The context for the error message display trigger, 
      * providing access to the container element, content element, DOM services, value host, and controller.
      */
