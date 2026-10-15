@@ -13,6 +13,11 @@ import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMe
 import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
 import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
+import { ErrorMessageDisplayFocusInTrigger } from '../Presentations_common/ErrorMessageDisplayFocusInTrigger';
+import { ErrorMessageDisplayFocusOutTrigger } from '../Presentations_common/ErrorMessageDisplayFocusOutTrigger';
+import { ErrorMessageDisplayKeyAsClickTrigger } from '../Presentations_common/ErrorMessageDisplayKeyAsClickTrigger';
+import { defaultAriaPopupShowsValidationErrors, PopupErrorMessageDisplayStaticUpdater } from '../Aria/PopupErrorMessageDisplayStaticUpdater';
+import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -106,9 +111,14 @@ export class PopupErrorMessageDisplayPresentation<
         let superDefaults = super.getOptionDefaults();
         return {
             ...superDefaults,
-            mouseoverEnabled: false,
+            popupOnMouseOver: false,
             mouseoverDelay: defaultMouseoverDelay,
-            mouseoutDelay: defaultMouseoutDelay
+            mouseoutDelay: defaultMouseoutDelay,
+            popupOnFocus: false,
+            focusInDelay: defaultFocusInDelay,
+            focusOutDelay: defaultFocusOutDelay,
+            keyboardPopupEnabled: true,
+            ariaPopupMessage: defaultAriaPopupShowsValidationErrors
         };
     }
     protected override getGlobalOptions(): object | undefined
@@ -157,10 +167,19 @@ export class PopupErrorMessageDisplayPresentation<
     {
         // Implementation for revising triggers based on the provided options.
         triggers.push(new ErrorMessageDisplayClickTrigger());
-        if (this.options.mouseoverEnabled)
+        if (this.options.popupOnMouseOver)
         {
             triggers.push(new ErrorMessageDisplayMouseOverTrigger(this.options.mouseoverDelay ?? defaultMouseoverDelay));
             triggers.push(new ErrorMessageDisplayMouseOutTrigger(this.options.mouseoutDelay ?? defaultMouseoutDelay));
+        }
+        if (this.options.popupOnFocus)
+        {
+            triggers.push(new ErrorMessageDisplayFocusInTrigger(this.options.focusInDelay ?? defaultFocusInDelay));
+            triggers.push(new ErrorMessageDisplayFocusOutTrigger(this.options.focusOutDelay ?? defaultFocusOutDelay));
+        }
+        if (this.options.keyboardPopupEnabled)
+        {
+            triggers.push(new ErrorMessageDisplayKeyAsClickTrigger());
         }
     }
 
@@ -180,6 +199,24 @@ export class PopupErrorMessageDisplayPresentation<
     {
         super.resolveOptions();
         this.reviseTriggers(this.options.triggers!);
+    }
+
+    public override init(valueHostsManager: IValueHostsManager): void
+    {
+        super.init(valueHostsManager);
+
+        if (this.options.popupOnFocus || this.options.keyboardPopupEnabled)
+        { // making this element act like a button (it may already be one, and so we are careful not to override existing attributes)
+            if (!this.presentationElement.hasAttribute('tabindex'))
+            {
+                const tabIndex = this.options.tabIndex ?? 0;
+                this.presentationElement.setAttribute('tabindex', tabIndex.toString());
+            }
+/*     This is found in our Aria system via PopupErrorMessageDisplayStaticUpdater.       
+            if (!this.presentationElement.hasAttribute('role'))
+                this.presentationElement.setAttribute('role', 'button');
+*/
+        }   
     }
 
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
@@ -288,6 +325,13 @@ export class PopupErrorMessageDisplayPresentation<
         this._popupContext = undefined;
         super.closedCore();
     }
+
+    public override getStaticAriaUpdater(): IAriaStaticUpdater | null
+    {
+        return new PopupErrorMessageDisplayStaticUpdater(
+            this.options.ariaPopupMessage, this.options.ariaPopupMessagel10n);
+    }
+
     public override dispose(): void
     {
         // does not try to close first. That operation could fail, and its too late to worry about
@@ -314,9 +358,10 @@ export interface PopupErrorMessageDisplayPresentationGlobalOptions
 {
     /**
      * Whether the popup should be shown on mouseover.
+     * If enabled, it mouseout is also setup. Both use delays specified by mouseoverDelay and mouseoutDelay.
      * Optional. Defaults to false.
      */
-    mouseoverEnabled?: boolean;
+    popupOnMouseOver?: boolean;
     /**
      * The delay in milliseconds before showing the popup on mouseover.
      * When 0, there is no delay before showing the popup.
@@ -329,6 +374,46 @@ export interface PopupErrorMessageDisplayPresentationGlobalOptions
      * Optional. Defaults to 750ms.
      */
     mouseoutDelay?: number;
+
+    /**
+     * Whether the popup should be shown on focus-in.
+     * If enabled, it focus-out is also setup. Both use delays specified by focusInDelay and focusOutDelay.
+     * Optional. Defaults to false.
+     */
+    popupOnFocus?: boolean;
+    /**
+     * The delay in milliseconds before showing the popup on focus.
+     * When 0, there is no delay before showing the popup.
+     * Optional. Defaults to 250ms.
+     */
+    focusInDelay?: number;
+    /**
+     * The delay in milliseconds before hiding the popup on blur.
+     * When 0, there is no delay before hiding the popup.
+     * Optional. Defaults to 750ms.
+     */
+    focusOutDelay?: number;
+
+    /**
+     * Whether the popup can be activated using the keyboard.
+     * When enabled, the keypress event will trigger the popup on ENTER and SPACE keys.
+     * Optional. Defaults to true.
+     */
+    keyboardPopupEnabled?: boolean;
+
+    /**
+     * Used when AriaService is active to supply the value for the aria-label of the popup error message "button".
+     * Its intent is to speak the purpose of the popup error message "button" through assistive technologies.
+     * In this case, the purpose is something like "Show validation errors"
+     * and that is the default if not supplied.
+     * Use ariaPopupMessagel10n to provide a localized version of the aria-label if needed.
+     */
+    ariaPopupMessage?: string;
+    /**
+     * The localized version of the aria-label for the popup error message "button".
+     * Optional. If not supplied, ariaPopupMessage will be used as the default.
+     */
+    ariaPopupMessagel10n?: string;
 }
 
 /**
@@ -347,7 +432,15 @@ export interface PopupErrorMessageDisplayPresentationOptions
      */
     anchorSelector?: string;
 
+    /**
+     * The tab index for the popup element.
+     * Optional. The tabIndex attribute is only setup if popupOnFocus=true
+     * or keyboardPopupEnabled=true. In that case, if this is undefined, a default tabIndex of 0 will be used.
+     */
+    tabIndex?: number;
 }
 
 export const defaultMouseoverDelay = 250;
 export const defaultMouseoutDelay = 750;
+export const defaultFocusInDelay = 250;
+export const defaultFocusOutDelay = 750;
