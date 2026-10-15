@@ -6,6 +6,8 @@
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { AdapterBase } from '../Adapters/AdapterBase';
 import { IJivsElement } from '../Interfaces/IJivsElement';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 /**
  * Base class for both field and form presentations.
  * 
@@ -130,6 +132,20 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
         return [];
     }
 
+    protected get domServices(): IJivsDomServices
+    {
+        if (!this._domServices)
+            throw new Error('DOM services not initialized.');
+        return this._domServices;
+    }
+    private _domServices?: IJivsDomServices;
+
+    protected setDomServices(valueHostsManager: IValueHostsManager): void
+    {
+        assertNotNull(valueHostsManager.services.domServices, 'domServices');
+        this._domServices = valueHostsManager.services.domServices;
+    }
+    
 
     /**
      * Initializes the field presentation. 
@@ -138,6 +154,8 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
      */
     public init(valueHostsManager: IValueHostsManager): void
     {
+        this.setDomServices(valueHostsManager);
+        
         let persistentClasses: string[] = [];
         this.gatherPersistentClasses(persistentClasses);
         // placed outside of gatherPersistentClasses to ensure it is always added last
@@ -164,6 +182,7 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     {
         super.dispose();
         this._options = undefined as any;
+        this._domServices = undefined as any;        
     }
 
 }

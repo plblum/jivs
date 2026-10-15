@@ -115,12 +115,6 @@ export class PopupErrorMessageDisplayPresentation<
     }
 
 
-    protected get domServices(): IJivsDomServices | undefined
-    {
-        return this._domServices;
-    }
-    private _domServices?: IJivsDomServices;
-    
     protected get popupMechanism(): IPopupMechanism | undefined
     {
         return this._popupMechanism;
@@ -169,16 +163,16 @@ export class PopupErrorMessageDisplayPresentation<
         }
     }
 
-    public override init(valueHostsManager: IValueHostsManager): void
+    protected override setDomServices(valueHostsManager: IValueHostsManager): void
     {
-        super.init(valueHostsManager);
-        this._domServices = valueHostsManager.services.domServices;
-        if (!this.domServices?.popupMechanism)
+        super.setDomServices(valueHostsManager);
+        if (!this.domServices.popupMechanism)
             throw new Error('Popup mechanism not available in DOM services.');
+
+        this.indicatorContent.setDomServices(this.domServices);
+        this.popupContent.setDomServices(this.domServices);        
         this._popupMechanism = this.domServices.popupMechanism;
-        this._elementRegistry = this.domServices.getElementRegistry(valueHostsManager);
-        this.indicatorContent.setDomServices(this.domServices!);
-        this.popupContent.setDomServices(this.domServices!);
+        this._elementRegistry = this.domServices.getElementRegistry(valueHostsManager);     
     }
 
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
@@ -295,7 +289,6 @@ export class PopupErrorMessageDisplayPresentation<
         
         super.dispose();
 
-        this._domServices = undefined as any;
         this._popupMechanism = undefined as any;
         this._elementRegistry = undefined as any;
         this._indicatorContent = undefined as any;

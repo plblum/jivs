@@ -50,15 +50,11 @@ export class InlineErrorMessageDisplayPresentation
     }
     private _messageFrame: IMessageFrame;
 
-    /**
-     * Gathers all presentation classes and adds them to the presentation element.
-     * Override gatherPresentationClasses() to add more.
-     */
-    public override init(valueHostsManager: IValueHostsManager): void
+    override setDomServices(valueHostsManager: IValueHostsManager): void
     {
-        super.init(valueHostsManager);
-        this.messageFrame.setDomServices(valueHostsManager.services.domServices);
-    }    
+        super.setDomServices(valueHostsManager);
+        this.messageFrame.setDomServices(this.domServices);
+    }
 
     protected override gatherPersistentClasses(list: string[]): void
     {
