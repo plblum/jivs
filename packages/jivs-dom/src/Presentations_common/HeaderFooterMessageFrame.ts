@@ -18,7 +18,8 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  * This class will always inject 'jivs-headerfootermessageframe' into the outer container's CSS classes.
  * You can add more CSS classes through the outerClasses parameter.
  */
-export class HeaderFooterMessageFrame extends LayoutMessageFrameBase
+export class HeaderFooterMessageFrame<TOptions extends HeaderFooterMessageFrameOptions = HeaderFooterMessageFrameOptions>
+    extends LayoutMessageFrameBase<TOptions>
 {
     /**
      * Creates a header and footer Message Frame.
@@ -37,7 +38,7 @@ export class HeaderFooterMessageFrame extends LayoutMessageFrameBase
      * - messagesLimit 
      * @param options The options for configuring the header and footer Message Frame.
      */
-    constructor(options?: HeaderFooterMessageFrameOptions)
+    constructor(options?: TOptions)
     {
         super(options);    
     }

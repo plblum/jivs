@@ -68,7 +68,8 @@ import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutM
  *     </div>
  * ```
  */
-export class IconMessageFrame extends LayoutMessageFrameBase
+export class IconMessageFrame<TOptions extends IconMessageFrameOptions = IconMessageFrameOptions>
+    extends LayoutMessageFrameBase<TOptions>
 {
     /**
      * Creates a Message Frame with two columns: icon and content.
@@ -88,22 +89,21 @@ export class IconMessageFrame extends LayoutMessageFrameBase
      * 
      * @param options - The options for configuring the icon Message Frame.
      */
-    constructor(options?: IconMessageFrameOptions)
+    constructor(options?: TOptions)
     {
         super(options);
-        this._iconContent = options?.iconContent;
-        this._imageSrc = options?.iconContent ? undefined : options?.imageSrc;
+
+        if (this.options?.iconContent)  // precedence to iconContent over imageSrc
+            this.options.imageSrc = undefined;
     }
-    protected get iconContent(): string | undefined
+
+    public override getOptionDefaults(): Partial<TOptions>
     {
-        return this._iconContent;
+        return {
+            ...super.getOptionDefaults()
+        };
     }
-    protected get imageSrc(): string | undefined
-    {
-        return this._imageSrc;
-    }
-    private _iconContent?: string;
-    private _imageSrc?: string;
+
 
     protected override gatherOuterClasses(list: string[]): void
     {
@@ -126,13 +126,13 @@ export class IconMessageFrame extends LayoutMessageFrameBase
 
     private generateIconTag(): string
     {
-        if (this.iconContent)
+        if (this.options.iconContent)
         {
-            return `<span class="jivs-icon" aria-hidden="true">${ this.iconContent }</span>`;
+            return `<span class="jivs-icon" aria-hidden="true">${ this.options.iconContent }</span>`;
         }
-        else if (this.imageSrc)
+        else if (this.options.imageSrc)
         {
-            return `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(this.imageSrc) }" />`;
+            return `<img class="jivs-icon" alt="" aria-hidden="true" src="${ encodeHtml(this.options.imageSrc) }" />`;
         }
         else
         {

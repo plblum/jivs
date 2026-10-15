@@ -9,9 +9,10 @@ import { MessageFrameBase, MessageFrameBaseOptions } from './MessageFrameBase';
  * 
  * It applies the 'jivs-messageframe' class to the container element.
  */
-export class MessageFrame extends MessageFrameBase
+export class MessageFrame<TOptions extends MessageFrameOptions = MessageFrameOptions> 
+    extends MessageFrameBase<TOptions>
 {
-    constructor(options?: MessageFrameOptions)
+    constructor(options?: TOptions)
     {
         super(options);
     }

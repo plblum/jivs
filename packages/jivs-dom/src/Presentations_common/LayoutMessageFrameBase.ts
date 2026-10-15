@@ -16,15 +16,16 @@ import { TemplatedMessageFrame, TemplatedMessageFrameOptions } from './Templated
  * 
  * In this case, its fixed outer CSS class is 'jivs-layoutmessageframe'.
  */
-export abstract class LayoutMessageFrameBase extends TemplatedMessageFrame
+export abstract class LayoutMessageFrameBase<TOptions extends LayoutMessageFrameBaseOptions>
+    extends TemplatedMessageFrame<TOptions>
 {
     /**
      * Constructor for the generated templated Message Frame.
      * @param options The options for configuring the generated templated Message Frame.
      */
-    constructor(options?: LayoutMessageFrameBaseOptions)
+    constructor(options?: TOptions)
     {
-        super('', options);
+        super('', options ?? {} as TOptions);
         let outerClasses = FieldPresentationBase.toStyleClassNameArray(options?.outerClasses)
         this.gatherOuterClasses(outerClasses);
         this._outerClasses = outerClasses;

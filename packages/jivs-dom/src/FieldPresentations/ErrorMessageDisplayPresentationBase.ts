@@ -32,28 +32,13 @@ export abstract class ErrorMessageDisplayPresentationBase
     /**
      * Initializes a new instance of the error message display presentation.
      * @param element The DOM element that this presentation is associated with.
-     * @param messageFrame The display component for issues found.
-     * @param variationClass The CSS class for the presentation element.
-     * @param hasIssuesClass The CSS class applied when issues are found.
+     * @param options The options for configuring the presentation.
      */
-    constructor(element: HTMLElement, 
-        messageFrame: IMessageFrame,
-        options?: TOptions)
+    constructor(element: HTMLElement, options?: TOptions)
     {
         super(element, options);    // intentionally omits jivsElement because element always is jivsElement
-        assertNotNull(messageFrame, 'messageFrame');
-        this._messageFrame = messageFrame;
-    }
 
-    /**
-     * Presentation specific for displaying the Issues Found.
-     * Required parameter of the constructor.
-     */
-    protected get messageFrame(): IMessageFrame
-    {
-        return this._messageFrame;
     }
-    private _messageFrame: IMessageFrame;
     
     /**
      * A CSS class that is applied when issues are found.
@@ -68,16 +53,6 @@ export abstract class ErrorMessageDisplayPresentationBase
     protected override get presentationElement(): HTMLElement
     {
         return this.element;
-    }
-
-    /**
-     * Gathers all presentation classes and adds them to the presentation element.
-     * Override gatherPresentationClasses() to add more.
-     */
-    public override init(valueHostsManager: IValueHostsManager): void
-    {
-        super.init(valueHostsManager);
-        this.messageFrame.setDomServices(valueHostsManager.services.domServices);        
     }
 
     /**
@@ -147,11 +122,6 @@ export abstract class ErrorMessageDisplayPresentationBase
      */
     protected ensureValueHostInitializedWorker(valueHost: IFieldValueHost): void
     {
-    }
-    public override dispose(): void
-    {
-        super.dispose();
-        this._messageFrame = undefined as any;
     }
 }
 

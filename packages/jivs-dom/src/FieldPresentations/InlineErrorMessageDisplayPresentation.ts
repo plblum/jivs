@@ -1,9 +1,10 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsElement } from '../Interfaces/IJivsElement';
-import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBase';
+import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 
 /**
  * A Field Presentation class for displaying inline error messages, which means
@@ -35,8 +36,29 @@ export class InlineErrorMessageDisplayPresentation
         messageFrame: IMessageFrame,
         options?: ErrorMessageDisplayPresentationBaseOptions)
     {
-        super(element, messageFrame, options);
+        super(element, options);
+        assertNotNull(messageFrame, 'messageFrame');
+        this._messageFrame = messageFrame;        
     }
+    /**
+     * Presentation specific for displaying the Issues Found.
+     * Required parameter of the constructor.
+     */
+    protected get messageFrame(): IMessageFrame
+    {
+        return this._messageFrame;
+    }
+    private _messageFrame: IMessageFrame;
+
+    /**
+     * Gathers all presentation classes and adds them to the presentation element.
+     * Override gatherPresentationClasses() to add more.
+     */
+    public override init(valueHostsManager: IValueHostsManager): void
+    {
+        super.init(valueHostsManager);
+        this.messageFrame.setDomServices(valueHostsManager.services.domServices);
+    }    
 
     protected override gatherPersistentClasses(list: string[]): void
     {
@@ -63,4 +85,9 @@ export class InlineErrorMessageDisplayPresentation
         super.removeIssuesFound();
         this.presentationElement.textContent = '';
     }
+    public override dispose(): void
+    {
+        super.dispose();
+        this._messageFrame = undefined as any;
+    }    
 }

@@ -1,8 +1,11 @@
+import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IJivsElement } from '../Interfaces/IJivsElement';
+import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IPopupContext, IPopupMechanism } from '../Interfaces/PopupErrorMessageDisplays';
@@ -11,61 +14,92 @@ import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMe
 import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
 import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
-import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 /**
  * A presentation class for displaying error messages in a popup.
  * Its presentation element is mostly just a button to trigger a popup.
  * The popup is entirely separate from the presentation element itself
  * and managed by a popup mechanism that is assigned to IJivsDomService.popupMechanism.
- * This split places responsibilities in two places:
- * 1. The presentation element handles user interactions to trigger the popup
- *    and visuals of the button.
- * 2. The popup mechanism handles the display and positioning of the popup itself.
- * Thus, they have separate options for configuration.
- * PopupErrorMessageDisplayPresentationOptions defines the configuration options for the presentation.
- * PopupErrorMessageDisplayPresentationOptions.popupOptions defines the configuration for the popup mechanism itself.
+ * 
+ * ## Configuring the Presentation and Popup
+ * - Presentation Element is just the element the user uses to anchor the button for triggering the popup.
+ *   - These CSS classes get installed: 
+ *      - 'jivs-popuperrormessagedisplay'
+ *      - 'jivs-triggerederrormessagedisplay'
+ *      - 'jivs-errormessagedisplay'
+ *      - options.variationClasses
+ *   - It establishes these event handlers for triggering the popup:
+ *      - click - triggers the popup immediately.
+ *      - options.mouseoverEnabled - mouseover and mouseout events for triggering the popup with delays also
+ *          specified from options.mouseoverDelay and options.mouseoutDelay.
+ * - Presentation Element content uses an implementation of IErrorIndicatorContent, supplied through the constructor.
+ *   - The ErrorIndicatorContent class provides up to 3 columns for content like icons and text. Its own options
+ *     determine those contents.
+ *     new ErrorIndicatorContent({ column1Html: 'icon' });
+ * - Popups get their containing element from the Popup Mechanism. It establishes its event handlers and CSS on that element.
+ *   - Configuration is specific to the needs of the PopupMechanism being used and is provided through the popupOptions parameter of the constructor. 
+ *      That configuration may supply positioning rules and styling information.
+ * - Popups content uses an implementation of IMessageFrame, supplied through the popupContent parameter of the constructor.
+ *   It is the same IMessageFrame as used in InlinePopupErrorMessageDisplayPresentation, meaning the structure and styling
+ *   is consistent with that usage. Each MessageFrame has its own options for configuration.
+ *   - MessageFrame class - just wraps the Message Content directly
+ *      new MessageFrame({ messagesLimit: 2 });
+ *   - HeaderFooterMessageFrame class - provides a structure with a header and footer around the Message Content.
+ *      new HeaderFooterMessageFrame({ headerHtml: 'Header', footerHtml: 'Footer' });
+ *   - IconMessageFrame class - provides a structure with an icon alongside the Message Content.
+ *      new IconMessageFrame({ imageSrc: 'url to the image' });
  * 
  * The popupOptions has a structure defined specifically by the popup mechanism being used.
- * It contains positioning and styling properties that are specific to the popup mechanism being used.
- * So the user works with the known requirements of the popup mechanism when configuring the popupOptions.
+ * Its type is associated with the TPopupOptions generic parameter of the PopupErrorMessageDisplayPresentation class.
  * 
  * To popup, the presentation.open() function will invoke the popup mechanism to display the popup according to the configured popupOptions.
+ * - Triggers installed on the button (click and optional mouseover)
+ * - Triggers installed on other elements supplied by options.triggers.
  * To pop down, there are several cases:
- * - Events such as mouseout or focusout that trigger the popup to hide. They use presentation.close() internally.
+ * - Triggers installed on the button (optional mouseout) and on other elements supplied by options.triggers.
+ *   They use presentation.close() internally.
  * - The popup mechanism itself may trigger hiding the popup, for example when clicking outside the popup.
- *   It must call context.controller.closed() to notify that the popup has been closed.
- *   "Controller" is PopupErrorMessageDisplayPresentation itself through the IErrorMessageDisplayController interface.
+ *   Its PopupMechanism must call context.controller.closed() to notify that the popup has been closed.
  * - Programmatic calls to presentation.close() to hide the popup.
- * - PopupService.closePopups() using presentation.close().
+ * - domServices.popupService.closePopups()
  * 
  * Popups need positioning between two elements:
  * - Anchor - The element to which the popup is aligned.
  * - Popup - The popup element itself.
  * The Anchor defaults to the presentation element itself. However, it can be anything else
  * by specifying a different Anchor element through the anchorSelector option.
- * 
  */
 export class PopupErrorMessageDisplayPresentation<
     TPopupOptions extends object = object,
-    TOptions extends PopupErrorMessageDisplayPresentationOptions<TPopupOptions> = PopupErrorMessageDisplayPresentationOptions<TPopupOptions>>
+    TOptions extends PopupErrorMessageDisplayPresentationOptions = PopupErrorMessageDisplayPresentationOptions>
     extends TriggeredErrorMessageDisplayPresentationBase<TOptions>
 {
 
+    /**
+     * Initializes a new instance of the PopupErrorMessageDisplayPresentation class.
+     * @param element - The presentation element
+     * @param indicatorContent - Generates the content for the presentation element.
+     * @param popupContent - Generates the content for the popup element. It is IMessageFrame,
+     * so it always includes the Message Content itself plus wraps it based on the MessageFrame
+     * class selected.
+     * @param popupOptions - The options that configure the popup from the perspective of the popup mechanism.
+     * It usually has positioning and styling information to use on the outer element of the popup.
+     * @param options - The options that configure the presentation itself, such as triggers and delays.
+     */
     constructor(
         element: HTMLElement,
-        errorIndicator: IErrorIndicatorContent,
-        messageFrame: IMessageFrame,
+        indicatorContent: IErrorIndicatorContent,
+        popupContent: IMessageFrame,
+        popupOptions?: TPopupOptions,
         options?: TOptions
     )
     {
-        super(element, messageFrame, options);
-        assertNotNull(errorIndicator, 'errorIndicator');
-        this._popupOptions = this.options.popupOptions ?? {} as TPopupOptions;
-        this._errorIndicator = errorIndicator;
+        super(element, options);
+        assertNotNull(indicatorContent, 'errorIndicator');
+        assertNotNull(popupContent, 'popupContent');
+        this._indicatorContent = indicatorContent;
+        this._popupContent = popupContent;
+        this._popupOptions = popupOptions ?? {} as TPopupOptions;
         this.reviseTriggers(this.options.triggers!);
     }
 
@@ -79,23 +113,35 @@ export class PopupErrorMessageDisplayPresentation<
             mouseoutDelay: defaultMouseoutDelay
         };
     }
-    protected get errorIndicator(): IErrorIndicatorContent
-    {
-        return this._errorIndicator;
-    }
-    private _errorIndicator: IErrorIndicatorContent;
+
 
     protected get domServices(): IJivsDomServices | undefined
     {
         return this._domServices;
     }
     private _domServices?: IJivsDomServices;
-
+    
     protected get popupMechanism(): IPopupMechanism | undefined
     {
         return this._popupMechanism;
     }
     private _popupMechanism?: IPopupMechanism;
+    
+    /**
+     * Gets the indicator content for the presentation element.
+     */
+    protected get indicatorContent(): IErrorIndicatorContent
+    {
+        return this._indicatorContent;
+    }
+    private _indicatorContent: IErrorIndicatorContent;
+
+    protected get popupContent(): IMessageFrame
+    {
+        return this._popupContent;
+    }
+    private _popupContent: IMessageFrame;
+
 
     protected get popupOptions(): TPopupOptions | undefined
     {
@@ -131,13 +177,14 @@ export class PopupErrorMessageDisplayPresentation<
             throw new Error('Popup mechanism not available in DOM services.');
         this._popupMechanism = this.domServices.popupMechanism;
         this._elementRegistry = this.domServices.getElementRegistry(valueHostsManager);
-        this.errorIndicator.setDomServices(this.domServices!);
+        this.indicatorContent.setDomServices(this.domServices!);
+        this.popupContent.setDomServices(this.domServices!);
     }
 
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
     {
         // change content before making it visible in ancestors
-        this.errorIndicator.apply(this.presentationElement,
+        this.indicatorContent.apply(this.presentationElement,
             issuesFound, valueHost.valueHostsManager, valueHost);
 
         super.applyIssuesFound(valueHost, issuesFound);
@@ -173,7 +220,7 @@ export class PopupErrorMessageDisplayPresentation<
 
         // create the content that will be injected by PopupMechanism into its own frame.
         popupContext.messageFrameContent = document.createElement('div');
-        this.messageFrame.apply(popupContext.messageFrameContent,
+        this.popupContent.apply(popupContext.messageFrameContent,
             this.triggerContext.issuesFound, this.triggerContext.valueHost.valueHostsManager, this.triggerContext.valueHost);
         
         this._popupContext = popupContext;
@@ -251,13 +298,14 @@ export class PopupErrorMessageDisplayPresentation<
         this._domServices = undefined as any;
         this._popupMechanism = undefined as any;
         this._elementRegistry = undefined as any;
-        this._errorIndicator = undefined as any;
+        this._indicatorContent = undefined as any;
+        this._popupContent = undefined as any;
     }
 }
 
 const jivsPopupOpenClass = 'jivs-popup-open';
 
-export interface PopupErrorMessageDisplayPresentationOptions<TPopupOptions extends object = object>
+export interface PopupErrorMessageDisplayPresentationOptions
     extends TriggeredErrorMessageDisplayPresentationBaseOptions
 {
     /**
@@ -283,15 +331,6 @@ export interface PopupErrorMessageDisplayPresentationOptions<TPopupOptions exten
      * Optional. Defaults to 750ms.
      */
     mouseoutDelay?: number;
-    /**
-     * The options that configure the popup. This object is defined by
-     * the specific popup mechanism implementation being used.
-     * Expected to have positioning and styling information.
-     * Yet if not supplied or properties on it are undefined,
-     * the popup mechanism should fall back to default positioning and styling behavior.
-     * Optional.
-     */
-    popupOptions?: TPopupOptions;
 }
 
 export const defaultMouseoverDelay = 250;

@@ -1,9 +1,8 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
 import type { IMessageFrame } from '../Interfaces/IMessageFrame';
-import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { PresentationContentBase } from './PresentationContentBase';
 
 /**
  * Implements the IMessageFrame interface and provides a common structure for derived classes.
@@ -42,76 +41,28 @@ import type { IJivsDomServices } from '../Interfaces/JivsDomServices';
  * - useSummaryMessages - Whether to use summary messages instead of detailed messages.
  * - messagesLimit - The maximum number of messages to display, if any.
  */
-export abstract class MessageFrameBase implements IMessageFrame
+export abstract class MessageFrameBase<TOptions extends MessageFrameBaseOptions>
+    extends PresentationContentBase<TOptions>
+    implements IMessageFrame
 {
-    constructor(options?: MessageFrameBaseOptions)
+    constructor(options?: TOptions)
     {
-        this._useSummaryMessages = options?.useSummaryMessages ?? false;
-        this._messagesLimit = options?.messagesLimit;
+        super(options);
     }
-    protected get useSummaryMessages(): boolean
-    {
-        return this._useSummaryMessages;
-    }
-    private _useSummaryMessages: boolean = false;
-    
-    protected get messagesLimit(): number | undefined
-    {
-        return this._messagesLimit;
-    }
-    private _messagesLimit: number | undefined = undefined;
 
-    /**
-     * Sets the DOM services instance to be used for rendering and formatting issues.
-     * Expected to be established before using apply().
-     */
-    setDomServices(domServices: IJivsDomServices): void
-    {
-        this._domServices = domServices;
+    override getOptionDefaults(): Partial<TOptions> {
+        return {
+            ...super.getOptionDefaults(),
+            useSummaryMessages: false,
+            messagesLimit: 0
+        } as Partial<TOptions>;
     }
-    /**
-     * Gets the DOM services instance that was previously set.
-     * This is used internally by derived classes to access rendering and formatting utilities.
-     */
-    protected get domServices(): IJivsDomServices
-    {
-        return this._domServices;
-    }
-    private _domServices!: IJivsDomServices;
 
     /**
      * When true, the Field Presentation needs to update its container element to
      * include class 'jivs-messagecontent'.
      */
     public abstract needsContainerUpdate(): boolean;    
-
-    /**
-     * Utility to resolve the appropriate text for a given key, falling back to the default text if no specific text is found.
-     * It uses the jivsServices.errorMessagesService to localize based on the key, if available, or falls back to the default text.
-     * It supports token replacement as follows:
-     * - {Count} - replaced by the number of issues found.
-     * - {Label} - replaced by the label of the field associated with the issue. Requires the fieldValueHost to be provided.
-     * @param key - The key used to look up the localized text.
-     * @param defaultText - The default text to use if no specific text is resolved for the given key.
-     * @param issuesFound - The list of issues found.
-     * @param valueHostsManager - The manager for value hosts, used for resolving dynamic values in the text.
-     * @param fieldValueHost The host object for the field value, if applicable.
-     */
-    protected resolveText(key: string, defaultText: string, 
-        issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
-    {
-        const cultureId = valueHostsManager.behaviors.activeCultureId!;
-        let resolvedText = this.domServices.services.errorMessagesService.localize(cultureId, key, defaultText);
-        if (resolvedText)
-        {
-            resolvedText = resolvedText.replace('{Count}', issuesFound.length.toString());
-            if (fieldValueHost)
-            {
-                resolvedText = resolvedText.replace('{Label}', encodeHtml(fieldValueHost.getLabel()));
-            }
-        }
-        return resolvedText ?? '';
-    }
 
     /**
      * Retrieves the formatted error message content as HTML for the given issues found.
@@ -126,7 +77,7 @@ export abstract class MessageFrameBase implements IMessageFrame
         valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
         return this.domServices.issuesFoundFormatterService.buildAsHtml(
-            valueHostsManager, issuesFound, this.useSummaryMessages, this.messagesLimit);
+            valueHostsManager, issuesFound, this.options.useSummaryMessages, this.options.messagesLimit);
     }
 
     public abstract apply(containerElement: HTMLElement, issuesFound: IssueFound[],

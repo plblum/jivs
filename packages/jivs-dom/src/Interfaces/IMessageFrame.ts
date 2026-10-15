@@ -1,7 +1,7 @@
-import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { IJivsDomServices } from './JivsDomServices';
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { IPresentationContent } from './IPresentationContent';
 
 /**
  * Both FieldPresentation and FormPresentation classes need a common approach to 
@@ -17,13 +17,8 @@ import { IJivsDomServices } from './JivsDomServices';
  * Implementations may provide ways to include headers, footers, tokens in text,
  * and text localization (through jivs-engine's ErrorMessageService)
  */
-export interface IMessageFrame
+export interface IMessageFrame extends IPresentationContent
 {
-    /**
-     * Sets the DOM services instance to be used for rendering and formatting issues.
-     * Expected to be established before using apply().
-     */
-    setDomServices(domServices: IJivsDomServices): void;
 
     /**
      * When true, the Field Presentation needs to update its container element to

@@ -1,7 +1,7 @@
-import { IJivsDomServices } from './JivsDomServices';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import type { IPresentationContent } from './IPresentationContent';
 
 /**
  * PopupErrorMessageDisplayPresentation uses this interface to define the content within its outer element.
@@ -19,15 +19,9 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
  *     </div>
  * </div>
  * ```
- * 
  */
-export interface IErrorIndicatorContent
+export interface IErrorIndicatorContent extends IPresentationContent
 {
-    /**
-     * Sets the DOM services instance to be used for rendering and formatting issues.
-     * Expected to be established before using apply().
-     */    
-    setDomServices(domServices: IJivsDomServices): void;
     /**
      * Builds and replaces the content within the specified element.
      * Does not modify the CSS classes on element itself. Its own

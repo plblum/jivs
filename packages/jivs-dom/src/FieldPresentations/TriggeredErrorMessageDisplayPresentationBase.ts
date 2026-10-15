@@ -2,11 +2,9 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsElement } from '../Interfaces/IJivsElement';
+import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
-import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 
 /**
  * A base class for error message display presentations that are triggered by specific events or conditions,
@@ -38,11 +36,9 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
     extends ErrorMessageDisplayPresentationBase<TOptions>
     implements IErrorMessageDisplayController
 {
-    constructor(element: HTMLElement,
-        messageFrame: IMessageFrame,
-        options?: TOptions)
+    constructor(element: HTMLElement, options?: TOptions)
     {
-        super(element, messageFrame, options);
+        super(element, options);
         // if the default for triggers was null, don't let that cause an exception!
         if (this.options.triggers)
             this.options.triggers = [...this.options.triggers];

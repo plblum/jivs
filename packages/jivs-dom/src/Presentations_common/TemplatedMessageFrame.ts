@@ -18,12 +18,13 @@ import { MessageFrameBase } from './MessageFrameBase';
  * adapted from the getErrorMessageContent method of the MessageFrameBase class.
  * 
  * Header and footer tokens are optional but if you supply them in the template, 
- * you should provide the corresponding text and localization properties.
+ * you should provide the corresponding text and localization options.
  * 
  * You can use static text instead of tokens if you prefer in header and footer, but you will not
  * get the benefits of localization or support of dynamic values like issue count or field labels.
  */
-export class TemplatedMessageFrame extends MessageFrameBase
+export class TemplatedMessageFrame<TOptions extends TemplatedMessageFrameOptions = TemplatedMessageFrameOptions>
+    extends MessageFrameBase<TOptions>
 {
 
     /**
@@ -43,16 +44,21 @@ export class TemplatedMessageFrame extends MessageFrameBase
      * Subclasses that generate their own templates should pass the empty string.
      * @param options - The options for configuring the templated Message Frame.
      */
-    constructor(template: string, options?: TemplatedMessageFrameOptions) //yes, required where most options are optional
+    constructor(template: string, options: TOptions) //yes, required where most options are optional
     {
         super(options);
         this.template = template;   // will update properties dependent on the template, like header and footer tokens
         // if template= '', a subclass must provide the template.
-        this._headerHtml = options?.headerHtml ?? '';
-        this._headerHtmll10n = options?.headerHtmll10n ?? '';
-        this._footerHtml = options?.footerHtml ?? '';
-        this._footerHtmll10n = options?.footerHtmll10n ?? '';
-
+    }
+    override getOptionDefaults(): Partial<TOptions>
+    {
+        return {
+            ...super.getOptionDefaults(),
+            headerHtml: '',
+            headerHtmll10n: '',
+            footerHtml: '',
+            footerHtmll10n: ''
+        };
     }
     /**
      * Gets the current template string.
@@ -74,47 +80,14 @@ export class TemplatedMessageFrame extends MessageFrameBase
     }
     private _template: string = '';
 
-    protected get headerHtml(): string
-    {
-        return this._headerHtml;
-    }
-    protected set headerHtml(value: string)
-    {
-        this._headerHtml = value ?? '';
-    }
-    protected get headerHtmll10n(): string
-    {
-        return this._headerHtmll10n;
-    }
-    protected set headerHtmll10n(value: string)
-    {
-        this._headerHtmll10n = value ?? '';
-    }
-    protected get footerHtml(): string
-    {
-        return this._footerHtml;
-    }
-    protected set footerHtml(value: string)
-    {
-        this._footerHtml = value ?? '';
-    }
-    protected get footerHtmll10n(): string
-    {
-        return this._footerHtmll10n;
-    }
-    protected set footerHtmll10n(value: string)
-    {
-        this._footerHtmll10n = value ?? '';
-    }
-
     protected get hasHeaderText(): boolean
     {
-        return this._headerHtml || this._headerHtmll10n ? true : false;
+        return this.options.headerHtml || this.options.headerHtmll10n ? true : false;
     }
 
     protected get hasFooterText(): boolean
     {
-        return this._footerHtml || this._footerHtmll10n ? true : false;
+        return this.options.footerHtml || this.options.footerHtmll10n ? true : false;
     }
 
     private _hasHeaderToken: boolean = false;
@@ -140,10 +113,10 @@ export class TemplatedMessageFrame extends MessageFrameBase
      */
     protected getHeaderContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
-        return this.resolveText(this._headerHtmll10n, this._headerHtml, issuesFound, valueHostsManager, fieldValueHost);
+        return this.resolveText(this.options.headerHtmll10n!, this.options.headerHtml!, issuesFound, valueHostsManager, fieldValueHost);
     }
-    private _headerHtml: string = '';
-    private _headerHtmll10n: string = '';
+    // private _headerHtml: string = '';
+    // private _headerHtmll10n: string = '';
     
     /**
      * The footer text to be displayed. It can contain HTML and expects the source Footer text 
@@ -155,10 +128,10 @@ export class TemplatedMessageFrame extends MessageFrameBase
      */
     protected getFooterContent(issuesFound: IssueFound[], valueHostsManager: IValueHostsManager, fieldValueHost: IFieldValueHost | null): string
     {
-        return this.resolveText(this._footerHtmll10n, this._footerHtml, issuesFound, valueHostsManager, fieldValueHost);
+        return this.resolveText(this.options.footerHtmll10n!, this.options.footerHtml!, issuesFound, valueHostsManager, fieldValueHost);
     }
-    private _footerHtml: string = '';
-    private _footerHtmll10n: string = '';
+    // private _footerHtml: string = '';
+    // private _footerHtmll10n: string = '';
 
     /**
      * Applies the template to the specified container element, replacing tokens with the appropriate content.
