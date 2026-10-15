@@ -1,4 +1,4 @@
-import { ErrorIndicatorContentBase, ErrorIndicatorContentBaseOptions } from './ErrorIndicatorContentBase';
+import { ErrorIndicatorContentBase, ErrorIndicatorContentBaseGlobalOptions, ErrorIndicatorContentBaseOptions } from './ErrorIndicatorContentBase';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
@@ -25,11 +25,16 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
  * </div>
  * ```
  */
-export class ErrorIndicatorContent<TOptions extends ColumnarErrorIndicatorContentOptions = ColumnarErrorIndicatorContentOptions>
+export class ColumnarErrorIndicatorContent<TOptions extends ColumnarErrorIndicatorContentOptions = ColumnarErrorIndicatorContentOptions>
     extends ErrorIndicatorContentBase<TOptions>
 {
     constructor(options?: TOptions) {
         super(options);
+    }
+
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.columnarErrorIndicatorContent;
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -79,7 +84,11 @@ export class ErrorIndicatorContent<TOptions extends ColumnarErrorIndicatorConten
     }
 }
 
-export interface ColumnarErrorIndicatorContentOptions extends ErrorIndicatorContentBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface ColumnarErrorIndicatorContentGlobalOptions extends ErrorIndicatorContentBaseGlobalOptions
 {
     /**
      * HTML content for column 1. 
@@ -116,5 +125,14 @@ export interface ColumnarErrorIndicatorContentOptions extends ErrorIndicatorCont
      * Localization key for column 3 HTML content.
      * If both `column3Html` and `column3HtmlL10n` are unassigned, the column will not be rendered.
      */
-    column3HtmlL10n?: string;    
+    column3HtmlL10n?: string;
+}
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface ColumnarErrorIndicatorContentOptions extends ErrorIndicatorContentBaseOptions,
+    ColumnarErrorIndicatorContentGlobalOptions
+{
+
 }

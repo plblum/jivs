@@ -30,6 +30,16 @@ import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling
  *   }
  *   ```
  * - Add your own custom classes through the `variationClasses` option when constructing the field presentation.
+ * 
+ * ## About Options
+ * There are three levels of options:
+ * 1. Option defaults provided by the presentation content class itself.
+ *    Override getOptionDefaults to provide the default options for this presentation content.
+ * 2. Global options obtained from IJivsDomServices.options.
+ *    Override getGlobalOptions to provide the specific global options for this presentation content.
+ * 3. Instance-specific options passed to the constructor.
+ * The options are a shallow copy from the combination of option defaults, global options, and instance-specific options.
+ * The options property is not ready for consumption until after setDomServices has been called.
  */
 export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     TElement extends HTMLElement = HTMLElement>
@@ -48,10 +58,15 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
         super(element, jivsElement ?? null);
         if (!options)
             options = {} as TOptions;
-        options = { ...this.getOptionDefaults(), ...options };
-        this._options = options;
+        this._options = { ...options }; // shallow copy since the object will be modified later
     }
 
+    /**
+     * Gets the combined options for this presentation, including defaults, global options, and instance-specific options.
+     * Not ready for consumption until after setDomServices has been called.
+     * setDomServices fills in undefined properties from jivsDomServices.options
+     * and this classes' option defaults to populate the combined options.
+     */
     protected get options(): TOptions
     {
         return this._options;
@@ -67,6 +82,16 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     {
         return {} as TOptions;
     }
+
+    /**
+     * Subclasses should implement this method to provide the global options for the presentation.
+     * These options typically come from the Jivs DOM services and provide default configurations.
+     * ```ts
+     * return this.domServices.options.<area>;
+     * ```
+     * @returns The global options object or undefined if not available.
+     */
+    protected abstract getGlobalOptions(): object | undefined;
 
     /**
      * The element property may not always represent the actual presentation element.
@@ -140,10 +165,25 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     }
     private _domServices?: IJivsDomServices;
 
+    /**
+     * Ensures domServices property is established, along with other options depending on it.
+     * Ensures the options property has been fully initialized with default values
+     * from globals, this instance, and this objects's own defaults where none were provided.
+     * @param valueHostsManager The value hosts manager from which to obtain the DOM services.
+     */
     protected setDomServices(valueHostsManager: IValueHostsManager): void
     {
         assertNotNull(valueHostsManager.services.domServices, 'domServices');
         this._domServices = valueHostsManager.services.domServices;
+    }
+
+    protected resolveOptions(): void
+    {
+        const globalOptions = this.getGlobalOptions() ?? {};
+        const optionDefaults = this.getOptionDefaults();
+
+        // instance defaults -> overridden by global options -> overridden by instance-specific options
+        this._options = { ...optionDefaults, ...globalOptions, ...this._options };        
     }
     
 
@@ -155,6 +195,7 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
     public init(valueHostsManager: IValueHostsManager): void
     {
         this.setDomServices(valueHostsManager);
+        this.resolveOptions();
         
         let persistentClasses: string[] = [];
         this.gatherPersistentClasses(persistentClasses);
@@ -189,8 +230,19 @@ export abstract class PresentationBase<TOptions extends PresentationBaseOptions,
 
 /**
  * Options for configuring the base field and form presentations.
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
  */
-export interface PresentationBaseOptions
+export interface PresentationBaseGlobalOptions
+{
+
+}
+
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface PresentationBaseOptions extends PresentationBaseGlobalOptions
 {
     /**
      * Style sheet class names to add to the presentation element that will always be present.

@@ -2,7 +2,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { PresentationContentBase } from './PresentationContentBase';
+import { PresentationContentBase, PresentationContentBaseGlobalOptions, PresentationContentBaseOptions } from './PresentationContentBase';
 
 /**
  * Implements the IMessageFrame interface and provides a common structure for derived classes.
@@ -91,18 +91,31 @@ export abstract class MessageFrameBase<TOptions extends MessageFrameBaseOptions>
  */
 export const jivsMessageContentClass = 'jivs-messagecontent';
 
-export interface MessageFrameBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface MessageFrameBaseGlobalOptions extends PresentationContentBaseGlobalOptions
+{
+    /**
+     * The limit for the number of messages to display.
+     * When not defined or 0, there is no limit.
+     */
+    messagesLimit?: number;
+}
+
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface MessageFrameBaseOptions extends PresentationContentBaseOptions,
+    MessageFrameBaseGlobalOptions
 {
     /**
      * Whether to use summary messages for the issues found.
      * When not defined, it defaults to false.
      */
     useSummaryMessages?: boolean;
-    
-    /**
-     * The limit for the number of messages to display.
-     * When not defined or 0, there is no limit.
-     */
-    messagesLimit?: number;
+
 
 }

@@ -3,7 +3,7 @@ import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfa
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
-import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
+import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseGlobalOptions, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
 
 /**
@@ -393,10 +393,27 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
 
 }
 
-export interface TriggeredErrorMessageDisplayPresentationBaseOptions extends ErrorMessageDisplayPresentationBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface TriggeredErrorMessageDisplayPresentationBaseGlobalOptions
+    extends ErrorMessageDisplayPresentationBaseGlobalOptions
 {
     /**
      * The list of triggers that determine when the error message display should be shown or hidden.
      */
     triggers?: IErrorMessageDisplayTrigger[];
+}
+
+/**
+ * Options specific to the triggered error message display presentation instance.
+ * Includes both the base options and the global options for triggers.
+ * Only add options here that are used situationally.
+ */
+export interface TriggeredErrorMessageDisplayPresentationBaseOptions
+    extends ErrorMessageDisplayPresentationBaseOptions, 
+    TriggeredErrorMessageDisplayPresentationBaseGlobalOptions
+{
+
 }

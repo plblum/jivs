@@ -5,7 +5,7 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
+import { FieldPresentationBase, FieldPresentationBaseGlobalOptions, FieldPresentationBaseOptions } from './FieldPresentationBase';
 
 /**
  * Base class for error message display Field presentations.
@@ -125,6 +125,20 @@ export abstract class ErrorMessageDisplayPresentationBase
     }
 }
 
-export interface ErrorMessageDisplayPresentationBaseOptions extends FieldPresentationBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface ErrorMessageDisplayPresentationBaseGlobalOptions extends FieldPresentationBaseGlobalOptions
+{
+}
+
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface ErrorMessageDisplayPresentationBaseOptions
+    extends FieldPresentationBaseOptions, 
+    ErrorMessageDisplayPresentationBaseGlobalOptions
 {
 }

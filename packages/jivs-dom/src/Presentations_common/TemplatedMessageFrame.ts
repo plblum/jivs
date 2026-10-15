@@ -1,6 +1,6 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { MessageFrameBaseOptions, jivsMessageContentClass } from './MessageFrameBase';
+import { MessageFrameBaseGlobalOptions, MessageFrameBaseOptions, jivsMessageContentClass } from './MessageFrameBase';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { MessageFrameBase } from './MessageFrameBase';
@@ -59,6 +59,10 @@ export class TemplatedMessageFrame<TOptions extends TemplatedMessageFrameOptions
             footerHtml: '',
             footerHtmll10n: ''
         };
+    }
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.templatedMessageFrame;
     }
     /**
      * Gets the current template string.
@@ -165,7 +169,11 @@ export class TemplatedMessageFrame<TOptions extends TemplatedMessageFrameOptions
     }
 }
 
-export interface TemplatedMessageFrameOptions extends MessageFrameBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface TemplatedMessageFrameGlobalOptions extends MessageFrameBaseGlobalOptions
 {
 
     /**
@@ -192,4 +200,14 @@ export interface TemplatedMessageFrameOptions extends MessageFrameBaseOptions
      * it will fall back to footerHtml.
      */
     footerHtmll10n?: string | null;
+}
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface TemplatedMessageFrameOptions
+    extends MessageFrameBaseOptions,
+    TemplatedMessageFrameGlobalOptions
+{
+
 }

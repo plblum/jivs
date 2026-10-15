@@ -6,7 +6,7 @@
  */
 
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
  * Base class for wrapped-editor presentations where the editor is an
@@ -87,8 +87,27 @@ export abstract class WrappedEditorFieldPresentationBase<
         super.gatherPersistentClasses(list);
         list.push('jivs-wrapped-editor');
     }
+
+    public override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.wrappedEditor;
+    }
 }
 
-export interface WrappedEditorFieldPresentationBaseOptions extends IsValidFieldPresentationOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface WrappedEditorFieldPresentationBaseGlobalOptions extends IsValidFieldPresentationGlobalOptions
+{
+}
+
+/**
+ * Options specific to the wrapped editor field presentation instance.
+ * Includes both the base options and the global options for wrapped editors.
+ * Only add options here that are used situationally.
+ */
+export interface WrappedEditorFieldPresentationBaseOptions
+    extends IsValidFieldPresentationOptions, WrappedEditorFieldPresentationBaseGlobalOptions
 {
 }

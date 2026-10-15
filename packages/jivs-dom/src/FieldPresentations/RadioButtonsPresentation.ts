@@ -7,9 +7,9 @@
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { IsValidFieldPresentationBase } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions } from './IsValidFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseGlobalOptions, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 
 
 /**
@@ -37,7 +37,8 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from 
  * Registered with FieldPresentationFactory as presentation name 'radiobuttonsEditor'.
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
  */
-export class RadioButtonsPresentation extends EditorFieldPresentationBase<RadioButtonsFieldPresentationOptions>
+export class RadioButtonsPresentation<TOptions extends RadioButtonsFieldPresentationOptions = RadioButtonsFieldPresentationOptions>
+    extends EditorFieldPresentationBase<TOptions>
 {
     /**
      * Creates an instance of the RadioButtonsPresentation class.
@@ -46,11 +47,16 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase<RadioB
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
     constructor(radioButton: HTMLElement,
-        options?: RadioButtonsFieldPresentationOptions,
+        options?: TOptions,
         jivsElement?: IJivsElement | null
     )
     {
         super(radioButton, options, jivsElement);
+    }
+
+    public override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.radioButtons;
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -93,7 +99,22 @@ export class RadioButtonsPresentation extends EditorFieldPresentationBase<RadioB
  */
 export const defaultRadioButtonsPresentationName = 'radiobuttonsEditor';
 
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface RadioButtonsFieldPresentationGlobalOptions extends
+    Omit<EditorFieldPresentationBaseGlobalOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>
+{
+}
+
+/**
+ * Options specific to the radio buttons presentation instance.
+ * Includes both the base options and the global options for radio buttons.
+ * Only add options here that are used situationally.
+ */
 export interface RadioButtonsFieldPresentationOptions extends
-    Omit<EditorFieldPresentationBaseOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>
+    Omit<EditorFieldPresentationBaseOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>,
+    RadioButtonsFieldPresentationGlobalOptions
 {
 }

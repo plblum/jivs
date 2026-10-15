@@ -23,7 +23,7 @@ import { IEditorInstaller } from '../Interfaces/EditorInstaller';
 import { IFieldPresentation, IFieldPresentationInstaller } from '../Interfaces/FieldPresentations';
 import { IFormPresentation, IFormPresentationInstaller } from '../Interfaces/FormPresentations';
 import { IIssuesFoundFormatterService } from '../Interfaces/IssuesFoundFormatterService';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { IJivsDomServices, initJivsDomGlobalOptions, JivsDomGlobalOptions } from '../Interfaces/JivsDomServices';
 import { IPresentationFactory } from '../Interfaces/Presentations_common';
 import { ElementRole } from '../Interfaces/Types';
 import { DomLoggingFacade } from '../Utilities/DomLoggingFacade';
@@ -38,6 +38,22 @@ import { PopupService } from './PopupService';
 export class JivsDomServices extends ServiceWithAccessorBase
     implements IJivsDomServices
 { 
+
+    /**
+     * Gets the global options for the Jivs DOM services.
+     * These options provide default configurations for various presentations and components.
+     * Instance-specific values can override these global options.
+     * If a child property is defined, it supplies a default.
+     */
+    public get options(): JivsDomGlobalOptions
+    {
+        if (!this._options)
+        {
+            this._options = initJivsDomGlobalOptions();
+        }
+        return this._options;
+    }
+    private _options: JivsDomGlobalOptions | undefined = undefined;
 
     /**
      * Gets the installer responsible for setting up one Editor widget.

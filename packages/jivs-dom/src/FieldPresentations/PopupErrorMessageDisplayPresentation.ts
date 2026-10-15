@@ -7,13 +7,12 @@ import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IPopupContext, IPopupMechanism } from '../Interfaces/PopupErrorMessageDisplays';
 import { ElementRole } from '../Interfaces/Types';
 import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMessageDisplayClickTrigger';
 import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
-import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
+import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -100,7 +99,6 @@ export class PopupErrorMessageDisplayPresentation<
         this._indicatorContent = indicatorContent;
         this._popupContent = popupContent;
         this._popupOptions = popupOptions ?? {} as TPopupOptions;
-        this.reviseTriggers(this.options.triggers!);
     }
 
     protected override getOptionDefaults(): Partial<TOptions>
@@ -113,7 +111,10 @@ export class PopupErrorMessageDisplayPresentation<
             mouseoutDelay: defaultMouseoutDelay
         };
     }
-
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.popupErrorMessageDisplay;
+    }
 
     protected get popupMechanism(): IPopupMechanism | undefined
     {
@@ -173,6 +174,12 @@ export class PopupErrorMessageDisplayPresentation<
         this.popupContent.setDomServices(this.domServices);        
         this._popupMechanism = this.domServices.popupMechanism;
         this._elementRegistry = this.domServices.getElementRegistry(valueHostsManager);     
+    }
+
+    protected override resolveOptions(): void
+    {
+        super.resolveOptions();
+        this.reviseTriggers(this.options.triggers!);
     }
 
     protected override applyIssuesFound(valueHost: IFieldValueHost, issuesFound: IssueFound[]): void
@@ -298,15 +305,13 @@ export class PopupErrorMessageDisplayPresentation<
 
 const jivsPopupOpenClass = 'jivs-popup-open';
 
-export interface PopupErrorMessageDisplayPresentationOptions
-    extends TriggeredErrorMessageDisplayPresentationBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface PopupErrorMessageDisplayPresentationGlobalOptions
+    extends TriggeredErrorMessageDisplayPresentationBaseGlobalOptions
 {
-    /**
-     * The CSS selector for the element to which the popup should be anchored
-     * if not using the presentation element itself as the Anchor element.
-     * Optional.
-     */
-    anchorSelector?: string;
     /**
      * Whether the popup should be shown on mouseover.
      * Optional. Defaults to false.
@@ -324,6 +329,24 @@ export interface PopupErrorMessageDisplayPresentationOptions
      * Optional. Defaults to 750ms.
      */
     mouseoutDelay?: number;
+}
+
+/**
+ * Options specific to the popup error message display presentation instance.
+ * Includes both the base options and the global options for the popup behavior.
+ * Only add options here that are used situationally.
+ */
+export interface PopupErrorMessageDisplayPresentationOptions
+    extends TriggeredErrorMessageDisplayPresentationBaseOptions,
+    PopupErrorMessageDisplayPresentationGlobalOptions
+{
+    /**
+     * The CSS selector for the element to which the popup should be anchored
+     * if not using the presentation element itself as the Anchor element.
+     * Optional.
+     */
+    anchorSelector?: string;
+
 }
 
 export const defaultMouseoverDelay = 250;

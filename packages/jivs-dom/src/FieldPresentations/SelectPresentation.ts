@@ -3,9 +3,8 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/SelectPresentation
  */
 
-import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
+import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 
 /**
  * Presentation for HTML select tags.

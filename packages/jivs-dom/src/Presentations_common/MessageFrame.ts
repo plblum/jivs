@@ -1,7 +1,7 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { MessageFrameBase, MessageFrameBaseOptions } from './MessageFrameBase';
+import { MessageFrameBase, MessageFrameBaseOptions, MessageFrameBaseGlobalOptions } from './MessageFrameBase';
 
 /**
  * The most basic of Message Frames. It is just the container element with
@@ -16,6 +16,10 @@ export class MessageFrame<TOptions extends MessageFrameOptions = MessageFrameOpt
     {
         super(options);
     }
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.messageFrame;
+    }
     public override needsContainerUpdate(): boolean
     {
         return true;
@@ -27,7 +31,19 @@ export class MessageFrame<TOptions extends MessageFrameOptions = MessageFrameOpt
         containerElement.innerHTML = resolvedText;
     }
 }
-
-export interface MessageFrameOptions extends MessageFrameBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the instance options.
+ */
+export interface MessageFrameGlobalOptions extends MessageFrameBaseGlobalOptions
+{
+}
+/**
+ * Options specific to the instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface MessageFrameOptions
+    extends MessageFrameBaseOptions,
+    MessageFrameGlobalOptions
 {
 }

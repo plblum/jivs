@@ -1,6 +1,7 @@
 import { FieldPresentationBase } from '../FieldPresentations/FieldPresentationBase';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { jivsMessageContentClass } from './MessageFrameBase';
-import { TemplatedMessageFrame, TemplatedMessageFrameOptions } from './TemplatedMessageFrame';
+import { TemplatedMessageFrame, TemplatedMessageFrameGlobalOptions, TemplatedMessageFrameOptions } from './TemplatedMessageFrame';
 
 /**
  * Base class for building fixed-layout Message Frames.
@@ -26,9 +27,6 @@ export abstract class LayoutMessageFrameBase<TOptions extends LayoutMessageFrame
     constructor(options?: TOptions)
     {
         super('', options ?? {} as TOptions);
-        let outerClasses = FieldPresentationBase.toStyleClassNameArray(options?.outerClasses)
-        this.gatherOuterClasses(outerClasses);
-        this._outerClasses = outerClasses;
     }
 
     /**
@@ -46,9 +44,17 @@ export abstract class LayoutMessageFrameBase<TOptions extends LayoutMessageFrame
      */
     protected get outerClasses(): string[]
     {
-        return this._outerClasses;
+        return this._outerClasses!;
     }
-    private _outerClasses: string[];
+    private _outerClasses?: string[];
+
+    protected override resolveOptions(): void
+    {
+        super.resolveOptions();
+        let outerClasses = FieldPresentationBase.toStyleClassNameArray(this.options?.outerClasses);
+        this.gatherOuterClasses(outerClasses);
+        this._outerClasses = outerClasses;
+    }
 
     protected get outerTag(): string
     {
@@ -88,7 +94,21 @@ export abstract class LayoutMessageFrameBase<TOptions extends LayoutMessageFrame
 
 }
 
-export interface LayoutMessageFrameBaseOptions extends Omit<TemplatedMessageFrameOptions, 'template'>
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface LayoutMessageFrameBaseGlobalOptions
+    extends Omit<TemplatedMessageFrameGlobalOptions, 'template'>
+{
+}
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface LayoutMessageFrameBaseOptions
+    extends Omit<TemplatedMessageFrameOptions, 'template'>,
+    LayoutMessageFrameBaseGlobalOptions
 {
     /**
      * The outer CSS classes to be applied to the outer container element. 

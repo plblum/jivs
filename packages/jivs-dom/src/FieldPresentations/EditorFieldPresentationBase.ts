@@ -1,5 +1,5 @@
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
  * Base class for editor field presentations (role='editor')
@@ -40,6 +40,16 @@ export abstract class EditorFieldPresentationBase<
         super.gatherPersistentClasses(list);
         list.push('jivs-editor');
     }
+
+    public override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.editor;
+    }
 }
 
-export interface EditorFieldPresentationBaseOptions extends IsValidFieldPresentationOptions {}
+export interface EditorFieldPresentationBaseGlobalOptions extends IsValidFieldPresentationGlobalOptions {}
+export interface EditorFieldPresentationBaseOptions
+    extends IsValidFieldPresentationOptions, EditorFieldPresentationBaseGlobalOptions
+{
+    
+}

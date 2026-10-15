@@ -1,5 +1,6 @@
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutMessageFrameBase';
+import { LayoutMessageFrameBase, LayoutMessageFrameBaseGlobalOptions, LayoutMessageFrameBaseOptions } from './LayoutMessageFrameBase';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 
 /**
@@ -92,9 +93,6 @@ export class IconMessageFrame<TOptions extends IconMessageFrameOptions = IconMes
     constructor(options?: TOptions)
     {
         super(options);
-
-        if (this.options?.iconContent)  // precedence to iconContent over imageSrc
-            this.options.imageSrc = undefined;
     }
 
     public override getOptionDefaults(): Partial<TOptions>
@@ -103,12 +101,24 @@ export class IconMessageFrame<TOptions extends IconMessageFrameOptions = IconMes
             ...super.getOptionDefaults()
         };
     }
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.iconMessageFrame;
+    }
 
 
     protected override gatherOuterClasses(list: string[]): void
     {
         super.gatherOuterClasses(list);
         list.push('jivs-iconmessageframe');
+    }
+
+    protected override resolveOptions(): void
+    {
+        super.resolveOptions();
+        if (this.options?.iconContent)  // precedence to iconContent over imageSrc
+            this.options.imageSrc = undefined;
+
     }
 
     protected override generateTemplateContent(): string
@@ -141,8 +151,12 @@ export class IconMessageFrame<TOptions extends IconMessageFrameOptions = IconMes
     }
 
 }
-
-export interface IconMessageFrameOptions extends Omit<LayoutMessageFrameBaseOptions, 'footerHtml' | 'footerHtmll10n'>
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface IconMessageFrameGlobalOptions
+    extends Omit<LayoutMessageFrameBaseGlobalOptions, 'footerHtml' | 'footerHtmll10n'>
 {
     /**
      * The content for the icon section. It can contain HTML.
@@ -156,4 +170,15 @@ export interface IconMessageFrameOptions extends Omit<LayoutMessageFrameBaseOpti
      * When supplied, the icon is generated as an image element.
      */
     imageSrc?: string;
+}
+
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface IconMessageFrameOptions
+    extends Omit<LayoutMessageFrameBaseOptions, 'footerHtml' | 'footerHtmll10n'>,
+    IconMessageFrameGlobalOptions
+{
+
 }

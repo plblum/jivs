@@ -22,6 +22,19 @@ import { IEditorAdapterDefinitionFactory } from './EditorAdapterDefinitions';
 import { IPresentationFactory } from './Presentations_common';
 import { IElementRegistry } from './ElementRegistry';
 import { IPopupMechanism, IPopupService } from './PopupErrorMessageDisplays';
+import type { PopupErrorMessageDisplayPresentationGlobalOptions } from '../FieldPresentations/PopupErrorMessageDisplayPresentation';
+import type { InlineErrorMessageDisplayPresentationGlobalOptions } from '../FieldPresentations/InlineErrorMessageDisplayPresentation';
+import { EditorFieldPresentationBaseGlobalOptions } from '../FieldPresentations/EditorFieldPresentationBase';
+import { RequiredIndicatorPresentationGlobalOptions } from '../FieldPresentations/RequiredIndicatorPresentation';
+import { FieldContainerPresentationGlobalOptions } from '../FieldPresentations/FieldContainerPresentation';
+import { LabelPresentationGlobalOptions } from '../FieldPresentations/LabelPresentation';
+import { WrappedEditorFieldPresentationBaseGlobalOptions } from '../FieldPresentations/WrappedEditorFieldPresentationBase';
+import { RadioButtonsFieldPresentationGlobalOptions } from '../FieldPresentations/RadioButtonsPresentation';
+import { MessageFrameGlobalOptions } from '../Presentations_common/MessageFrame';
+import { TemplatedMessageFrameGlobalOptions } from '../Presentations_common/TemplatedMessageFrame';
+import { HeaderFooterMessageFrameGlobalOptions } from '../Presentations_common/HeaderFooterMessageFrame';
+import { IconMessageFrameGlobalOptions } from '../Presentations_common/IconMessageFrame';
+import { ColumnarErrorIndicatorContentGlobalOptions } from '../FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent';
 
 
 /**
@@ -41,6 +54,13 @@ export interface IJivsDomServices
      * Override services: IServices.
      */
     services: IJivsServices;
+
+    /**
+     * Global options for the Jivs DOM services.
+     * These options provide default configurations for presentations, message frames,
+     * and error indicator containers, which can be overridden by instance-specific values.
+     */
+    options: JivsDomGlobalOptions;
 
     /**
      * Gets the installer responsible for setting up one Editor widget.
@@ -198,4 +218,46 @@ declare module "@plblum/jivs-engine/build/Interfaces/JivsServices"
     {
         domServices: IJivsDomServices;
     }
+}
+
+/**
+ * Global options for the Jivs DOM services.
+ * Presentations, MessageFrames, and ErrorIndicatorContainers
+ * support global configuration through these options.
+ * Those will allow instance specific values to override the global options.
+ */
+export interface JivsDomGlobalOptions
+{
+    inlineErrorMessageDisplay: InlineErrorMessageDisplayPresentationGlobalOptions,
+    popupErrorMessageDisplay: PopupErrorMessageDisplayPresentationGlobalOptions,
+    editor: EditorFieldPresentationBaseGlobalOptions,  
+    radioButtons: RadioButtonsFieldPresentationGlobalOptions,
+    wrappedEditor: WrappedEditorFieldPresentationBaseGlobalOptions,
+    label: LabelPresentationGlobalOptions,
+    requiredIndicator: RequiredIndicatorPresentationGlobalOptions
+    fieldContainer: FieldContainerPresentationGlobalOptions
+    messageFrame: MessageFrameGlobalOptions,
+    templatedMessageFrame: TemplatedMessageFrameGlobalOptions,
+    headerFooterMessageFrame: HeaderFooterMessageFrameGlobalOptions,
+    iconMessageFrame: IconMessageFrameGlobalOptions,
+    columnarErrorIndicatorContent: ColumnarErrorIndicatorContentGlobalOptions,
+    // when adding here, also add to initJivsDomGlobalOptions() below
+}
+export function initJivsDomGlobalOptions(): JivsDomGlobalOptions
+{
+    return <JivsDomGlobalOptions>{
+        inlineErrorMessageDisplay: {},
+        popupErrorMessageDisplay: {},
+        editor: {},
+        radioButtons: {},
+        wrappedEditor: {},
+        label: {},
+        requiredIndicator: {},
+        fieldContainer: {},
+        messageFrame: {},
+        templatedMessageFrame: {},
+        headerFooterMessageFrame: {},
+        iconMessageFrame: {},
+        columnarErrorIndicatorContent: {}
+    };
 }

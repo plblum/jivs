@@ -10,7 +10,7 @@ import { AdapterBase } from '../Adapters/AdapterBase';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IFieldPresentation } from '../Interfaces/FieldPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { PresentationBase, PresentationBaseOptions } from '../Presentations_common/PresentationBase';
+import { PresentationBase, PresentationBaseGlobalOptions, PresentationBaseOptions } from '../Presentations_common/PresentationBase';
 /**
  * Base class for field presentations.
  * 
@@ -140,8 +140,18 @@ export abstract class FieldPresentationBase<TOptions extends FieldPresentationBa
 }
 
 /**
- * Options for configuring the base field presentation.
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options. 
  */
-export interface FieldPresentationBaseOptions extends PresentationBaseOptions
+export interface FieldPresentationBaseGlobalOptions extends PresentationBaseGlobalOptions
+{
+}
+/**
+ * Options specific to the field presentation instance.
+ * Includes both the base options and the global options for the field presentation.
+ * Only add here options are are used situationally.
+ */
+export interface FieldPresentationBaseOptions extends PresentationBaseOptions,
+    FieldPresentationBaseGlobalOptions
 {
 }

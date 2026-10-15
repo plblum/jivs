@@ -4,7 +4,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/LabelPresentation
  */
 
-import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
@@ -41,6 +41,10 @@ export class LabelPresentation<TOptions extends LabelPresentationOptions = Label
         super.gatherPersistentClasses(list);
         list.push('jivs-label');
     }
+    public override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.label;
+    }
 }
 /**
  * For registering this presentation with the FieldPresentationFactory
@@ -48,6 +52,19 @@ export class LabelPresentation<TOptions extends LabelPresentationOptions = Label
  */
 export const defaultLabelPresentationName = 'label';
 
-export interface LabelPresentationOptions extends IsValidFieldPresentationOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface LabelPresentationGlobalOptions extends IsValidFieldPresentationGlobalOptions
+{
+}
+/**
+ * Options specific to the label presentation instance.
+ * Includes both the base options and the global options for labels.
+ * Only add options here that are used situationally.
+ */
+export interface LabelPresentationOptions
+    extends IsValidFieldPresentationOptions, LabelPresentationGlobalOptions
 {
 }

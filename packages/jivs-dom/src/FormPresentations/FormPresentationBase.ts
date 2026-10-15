@@ -5,7 +5,7 @@
 import type { ValidationState } from '@plblum/jivs-engine/build/interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/interfaces/ValueHostsManager';
 import { groupsMatch } from '@plblum/jivs-engine/build/Utilities/Utilities';
-import { PresentationBase } from '../Presentations_common/PresentationBase';
+import { PresentationBase, PresentationBaseGlobalOptions } from '../Presentations_common/PresentationBase';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IFormPresentation } from '../Interfaces/FormPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
@@ -119,7 +119,11 @@ export abstract class FormPresentationBase<
     }
 }
 
-export interface FormPresentationBaseOptions extends PresentationBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface FormPresentationBaseGlobalOptions extends PresentationBaseGlobalOptions
 {
     /**
      * Indicates whether the form presentation should respond to wildcard validation groups
@@ -129,4 +133,14 @@ export interface FormPresentationBaseOptions extends PresentationBaseOptions
      * - all validation groups when validation without specifying a group occurs.
      */
     respondToWildcardGroup?: boolean;
+    
+}
+/**
+ * Options specific to the form presentation instance.
+ * Includes both the base options and the global options for the form.
+ * Only add options here that are used situationally.
+ */
+export interface FormPresentationBaseOptions extends PresentationBaseOptions,
+    FormPresentationBaseGlobalOptions
+{
 }

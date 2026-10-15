@@ -14,7 +14,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { FieldPresentationBase, FieldPresentationBaseOptions } from './FieldPresentationBase';
+import { FieldPresentationBase, FieldPresentationBaseGlobalOptions, FieldPresentationBaseOptions } from './FieldPresentationBase';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
@@ -174,9 +174,12 @@ export abstract class IsValidFieldPresentationBase<
     }    
 }
 
-export interface IsValidFieldPresentationOptions extends FieldPresentationBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface IsValidFieldPresentationGlobalOptions extends FieldPresentationBaseGlobalOptions
 {
-    
     /**
      * Indicates whether the validated CSS class should be applied.
      * Validated CSS Class is an optional feature.
@@ -201,4 +204,17 @@ export interface IsValidFieldPresentationOptions extends FieldPresentationBaseOp
      * On RequiredIndicatorPresentation it defaults to true.
      */
     requiredClassEnabled?: boolean;
+
+}
+
+/**
+ * Options specific to the IsValidFieldPresentation instance.
+ * Includes both the base options and the global options for the field presentation.
+ * Only add options here that are used situationally.
+ */
+export interface IsValidFieldPresentationOptions
+    extends FieldPresentationBaseOptions,
+    IsValidFieldPresentationGlobalOptions
+{
+    
 }

@@ -2,7 +2,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IErrorIndicatorContent } from '../../Interfaces/IErrorIndicatorContent';
-import { PresentationContentBase, PresentationContentBaseOptions } from '../../Presentations_common/PresentationContentBase';
+import { PresentationContentBase, PresentationContentBaseGlobalOptions, PresentationContentBaseOptions } from '../../Presentations_common/PresentationContentBase';
 
 /**
  * Base class for the ErrorIndicatorContent implementations.
@@ -68,7 +68,18 @@ export abstract class ErrorIndicatorContentBase<TOptions extends ErrorIndicatorC
 
 
 }
-
-export interface ErrorIndicatorContentBaseOptions extends PresentationContentBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface ErrorIndicatorContentBaseGlobalOptions extends PresentationContentBaseGlobalOptions
+{
+}
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface ErrorIndicatorContentBaseOptions extends PresentationContentBaseOptions,
+    ErrorIndicatorContentBaseGlobalOptions
 {
 }

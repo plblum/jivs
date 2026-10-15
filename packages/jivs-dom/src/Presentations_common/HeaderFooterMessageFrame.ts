@@ -1,4 +1,4 @@
-import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions } from './LayoutMessageFrameBase';
+import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions, LayoutMessageFrameBaseGlobalOptions } from './LayoutMessageFrameBase';
 
 /**
  * Creates a Message Frame with a header and footer, using the provided template structure.
@@ -43,6 +43,11 @@ export class HeaderFooterMessageFrame<TOptions extends HeaderFooterMessageFrameO
         super(options);    
     }
 
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.headerFooterMessageFrame;
+    }
+
     protected override gatherOuterClasses(list: string[]): void
     {
         super.gatherOuterClasses(list);
@@ -67,6 +72,19 @@ export class HeaderFooterMessageFrame<TOptions extends HeaderFooterMessageFrameO
     }
 }
 
-export interface HeaderFooterMessageFrameOptions extends LayoutMessageFrameBaseOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface HeaderFooterMessageFrameGlobalOptions extends LayoutMessageFrameBaseGlobalOptions
+{
+}
+/**
+ * Options specific to the presentation instance which includes globals.
+ * Only add here options are are used situationally.
+ */
+export interface HeaderFooterMessageFrameOptions
+    extends LayoutMessageFrameBaseOptions,
+    HeaderFooterMessageFrameGlobalOptions
 {
 }

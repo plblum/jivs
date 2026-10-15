@@ -4,7 +4,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/RequiredIndicatorPresentation
  */
 
-import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
+import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAriaStaticUpdater';
@@ -46,11 +46,14 @@ export class RequiredIndicatorPresentation<TOptions extends RequiredIndicatorPre
 
     protected override getOptionDefaults(): Partial<TOptions>
     {
-        let superDefaults = super.getOptionDefaults();
         return {
-            ...superDefaults,
+            ...super.getOptionDefaults(),
             requiredClassEnabled: true
         };
+    }
+    public override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.requiredIndicator;
     }
 
     protected override gatherPersistentClasses(list: string[]): void
@@ -69,6 +72,20 @@ export class RequiredIndicatorPresentation<TOptions extends RequiredIndicatorPre
  */
 export const defaultRequiredIndicatorPresentationName = 'requiredIndicator';
 
-export interface RequiredIndicatorPresentationOptions extends IsValidFieldPresentationOptions
+/**
+ * "Global Options" are for options that can be setup in 
+ * globally and supply a default when not overridden in the Presentations options.
+ */
+export interface RequiredIndicatorPresentationGlobalOptions extends IsValidFieldPresentationGlobalOptions
+{
+}
+
+/**
+ * Options specific to the required indicator presentation instance.
+ * Includes both the base options and the global options for required indicators.
+ * Only add options here that are used situationally.
+ */
+export interface RequiredIndicatorPresentationOptions extends IsValidFieldPresentationOptions,
+    RequiredIndicatorPresentationGlobalOptions
 {
 }

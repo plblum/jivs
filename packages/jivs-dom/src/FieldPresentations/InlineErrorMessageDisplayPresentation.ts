@@ -4,7 +4,7 @@ import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/Va
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBase';
-import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
+import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseGlobalOptions, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 
 /**
  * A Field Presentation class for displaying inline error messages, which means
@@ -29,12 +29,12 @@ import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBas
  * </div>
  * ```
  */
-export class InlineErrorMessageDisplayPresentation
-    extends ErrorMessageDisplayPresentationBase<ErrorMessageDisplayPresentationBaseOptions>
+export class InlineErrorMessageDisplayPresentation<TOptions extends InlineErrorMessageDisplayPresentationOptions = InlineErrorMessageDisplayPresentationOptions>
+    extends ErrorMessageDisplayPresentationBase<TOptions>
 {
     constructor(element: HTMLElement,
         messageFrame: IMessageFrame,
-        options?: ErrorMessageDisplayPresentationBaseOptions)
+        options?: TOptions)
     {
         super(element, options);
         assertNotNull(messageFrame, 'messageFrame');
@@ -49,6 +49,11 @@ export class InlineErrorMessageDisplayPresentation
         return this._messageFrame;
     }
     private _messageFrame: IMessageFrame;
+
+    protected override getGlobalOptions(): object | undefined
+    {
+        return this.domServices.options.inlineErrorMessageDisplay;
+    }
 
     override setDomServices(valueHostsManager: IValueHostsManager): void
     {
@@ -86,4 +91,24 @@ export class InlineErrorMessageDisplayPresentation
         super.dispose();
         this._messageFrame = undefined as any;
     }    
+}
+
+/**
+ * Global options for the inline error message display presentation.
+ * These options can be set globally and provide default values for all instances of this presentation.
+ */
+export interface InlineErrorMessageDisplayPresentationGlobalOptions
+    extends ErrorMessageDisplayPresentationBaseGlobalOptions
+{
+}
+
+/**
+ * Options for configuring the inline error message display presentation on a per-instance basis.
+ * These options override the global options for this specific instance of the presentation.
+ * Only add here options that are used situationally.
+ */
+export interface InlineErrorMessageDisplayPresentationOptions
+    extends ErrorMessageDisplayPresentationBaseOptions,
+    InlineErrorMessageDisplayPresentationGlobalOptions
+{
 }
