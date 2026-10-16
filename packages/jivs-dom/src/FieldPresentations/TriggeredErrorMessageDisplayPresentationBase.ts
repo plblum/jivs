@@ -1,3 +1,10 @@
+/**
+ * TriggeredErrorMessageDisplayPresentationBase provides a base class for error message display 
+ * presentations that are triggered by specific events or conditions.
+ * It provides common functionality for managing triggers, handling open and close actions, 
+ * and applying CSS classes based on the trigger state.
+ * @module jivs-dom/FieldPresentations/AbstractClasses/TriggeredErrorMessageDisplayPresentationBase
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';

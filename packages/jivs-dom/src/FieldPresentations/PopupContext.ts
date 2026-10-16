@@ -1,3 +1,10 @@
+/**
+ * PopupContext provides a basic implementation of the IPopupContext interface 
+ * for managing popup error message displays.
+ * It does not include any popup mechanism specific logic.
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/PopupContext
+ */
+
 import { IErrorMessageDisplayController } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IPopupContext } from '../Interfaces/PopupErrorMessageDisplays';

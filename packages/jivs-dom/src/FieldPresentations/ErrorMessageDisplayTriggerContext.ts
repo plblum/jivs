@@ -1,8 +1,13 @@
+/**
+ * ErrorMessageDisplayTriggerContext provides the context for triggering error message display updates.
+ * 
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/ErrorMessageDisplayTriggerContext
+ */
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
-import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 
 export class ErrorMessageDisplayTriggerContext implements IErrorMessageDisplayTriggerContext
 {

@@ -1,3 +1,9 @@
+/**
+ * EditorTriggerBase provides a base class for triggers that open the error message display 
+ * based on events on editor elements.
+ * @module jivs-dom/Presentations_common/AbstractClasses/EditorTriggerBase
+ */
+
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';

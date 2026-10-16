@@ -26,6 +26,8 @@ import { defaultLabelPresentationName, LabelPresentation } from './LabelPresenta
 import { ElementRole } from '../Interfaces/Types';
 import { defaultRequiredIndicatorPresentationName, RequiredIndicatorPresentation } from './RequiredIndicatorPresentation';
 import { defaultFieldContainerPresentationName, FieldContainerPresentation } from './FieldContainerPresentation';
+import { defaultInlineErrorMessageDisplayPresentationName, InlineErrorMessageDisplayPresentation, InlineErrorMessageDisplayPresentationOptions } from './InlineErrorMessageDisplayPresentation';
+import { MessageFrame } from '../Presentations_common/MessageFrame';
 
 /**
  * Factory class for creating field presentations (implementations of IFieldPresentation)
@@ -76,6 +78,9 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         factory.register(defaultLabelPresentationName, (element) => new LabelPresentation(element));
         factory.register(defaultRequiredIndicatorPresentationName, (element) => new RequiredIndicatorPresentation(element));
         factory.register(defaultFieldContainerPresentationName, (element) => new FieldContainerPresentation(element));
+
+        // due to complexity of setup, error message display presentations are not registered here.
+        // Find them in prepareJivsDomServices().
 
         // fallbacks for when no specific presentation is registered for an element role
         factory.setDefaultPresentationName(ElementRole.editor, defaultTextInputPresentationName);

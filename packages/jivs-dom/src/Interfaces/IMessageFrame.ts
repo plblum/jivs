@@ -1,3 +1,9 @@
+/**
+ * IMessageFrame defines the contract for a message frame that wraps around the message content 
+ * in field and form presentations.
+ * It provides methods to determine if the container needs updating and to apply the display of issues found.
+ * @module jivs-dom/Types/IMessageFrame
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';

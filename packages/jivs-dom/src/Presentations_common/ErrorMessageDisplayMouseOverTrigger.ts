@@ -1,3 +1,8 @@
+/**
+ * ErrorMessageDisplayMouseOverTrigger installs a trigger that opens the error message display 
+ * when the display element receives a mouseover event.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/ErrorMessageDisplayMouseOverTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 

@@ -1,9 +1,14 @@
-import { IPresentationContent } from '../Interfaces/IPresentationContent';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+/**
+ * PresentationContentBase provides a base class for presentation content implementations, 
+ * handling common option resolution and DOM service management.
+ * @module jivs-dom/Presentations_common/AbstractClasses/PresentationContentBase
+ */
+import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
+import { IPresentationContent } from '../Interfaces/IPresentationContent';
+import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 /**
  * Presentations offload content generation to implementations of this class.

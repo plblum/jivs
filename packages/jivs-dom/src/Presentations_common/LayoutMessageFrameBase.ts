@@ -1,5 +1,9 @@
+/**
+ * LayoutMessageFrameBase provides a base class for building fixed-layout message frames.
+ * It defines the outer container and delegates the inner content generation to subclasses.
+ * @module jivs-dom/Presentations_common/AbstractClasses/LayoutMessageFrameBase
+ */
 import { FieldPresentationBase } from '../FieldPresentations/FieldPresentationBase';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { jivsMessageContentClass } from './MessageFrameBase';
 import { TemplatedMessageFrame, TemplatedMessageFrameGlobalOptions, TemplatedMessageFrameOptions } from './TemplatedMessageFrame';
 

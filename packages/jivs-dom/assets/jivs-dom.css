@@ -525,7 +525,7 @@
  * Introduction
  * An error message is built using several separate components, each of which have its
  * own HTML and CSS structure. 
- * The three components are:
+ * The components are:
  * 1. The Presentation Container, which is the outermost tag, and the same tag you add to your page 
  *    to anchor the error messages.
  *    - InlineErrorMessageDisplayPresentation is the typical Error Message Display, where the errors are shown inline.

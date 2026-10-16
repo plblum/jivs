@@ -1,3 +1,8 @@
+/**
+ * HeaderFooterMessageFrame provides a message frame with a header and footer.
+ * It extends the LayoutMessageFrameBase and adds specific handling for header and footer sections.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/HeaderFooterMessageFrame
+ */
 import { LayoutMessageFrameBase, LayoutMessageFrameBaseOptions, LayoutMessageFrameBaseGlobalOptions } from './LayoutMessageFrameBase';
 
 /**

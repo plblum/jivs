@@ -1,3 +1,8 @@
+/**
+ * ErrorIndicatorContentBase provides the foundational functionality for error indicator content presentations.
+ * 
+ * @module jivs-dom/FieldPresentations/ErrorIndicatorContent/AbstractClasses/ErrorIndicatorContentBase
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';

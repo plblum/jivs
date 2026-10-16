@@ -1,9 +1,12 @@
+/**
+ * TemplatedMessageFrame provides a message frame that uses an HTML template with tokens for dynamic content.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/TemplatedMessageFrame
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { MessageFrameBaseGlobalOptions, MessageFrameBaseOptions, jivsMessageContentClass } from './MessageFrameBase';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { MessageFrameBase } from './MessageFrameBase';
+import { MessageFrameBase, MessageFrameBaseGlobalOptions, MessageFrameBaseOptions, jivsMessageContentClass } from './MessageFrameBase';
 
 /**
  * A templated approach to building the content of the Message Frame, 

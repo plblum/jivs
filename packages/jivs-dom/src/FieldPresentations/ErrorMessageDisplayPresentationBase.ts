@@ -1,10 +1,13 @@
+/**
+ * ErrorMessageDisplayPresentationBase provides the foundational functionality for 
+ * error message display field presentations.
+ * 
+ * @module jivs-dom/FieldPresentations/AbstractClasses/ErrorMessageDisplayPresentationBase
+ */
+
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IJivsElement } from '../Interfaces/IJivsElement';
 import { FieldPresentationBase, FieldPresentationBaseGlobalOptions, FieldPresentationBaseOptions } from './FieldPresentationBase';
 
 /**

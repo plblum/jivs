@@ -1,8 +1,15 @@
+/**
+ * PopupErrorMessageDisplayPresentation provides a presentation for displaying error messages in a popup.
+ * It manages the interaction between the presentation element, the popup mechanism, and the error message content.
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/PopupErrorMessageDisplayPresentation
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { defaultAriaPopupShowsValidationErrors, PopupErrorMessageDisplayStaticUpdater } from '../Aria/PopupErrorMessageDisplayStaticUpdater';
+import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
@@ -10,14 +17,12 @@ import { IMessageFrame } from '../Interfaces/IMessageFrame';
 import { IPopupContext, IPopupMechanism } from '../Interfaces/PopupErrorMessageDisplays';
 import { ElementRole } from '../Interfaces/Types';
 import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMessageDisplayClickTrigger';
-import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
-import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
-import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayFocusInTrigger } from '../Presentations_common/ErrorMessageDisplayFocusInTrigger';
 import { ErrorMessageDisplayFocusOutTrigger } from '../Presentations_common/ErrorMessageDisplayFocusOutTrigger';
 import { ErrorMessageDisplayKeyAsClickTrigger } from '../Presentations_common/ErrorMessageDisplayKeyAsClickTrigger';
-import { defaultAriaPopupShowsValidationErrors, PopupErrorMessageDisplayStaticUpdater } from '../Aria/PopupErrorMessageDisplayStaticUpdater';
-import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
+import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
+import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
+import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -74,7 +79,7 @@ import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
  * by specifying a different Anchor element through the anchorSelector option.
  */
 export class PopupErrorMessageDisplayPresentation<
-    TPopupOptions extends object = object,
+    TPopupMechanismOptions extends object = object,
     TOptions extends PopupErrorMessageDisplayPresentationOptions = PopupErrorMessageDisplayPresentationOptions>
     extends TriggeredErrorMessageDisplayPresentationBase<TOptions>
 {
@@ -86,7 +91,7 @@ export class PopupErrorMessageDisplayPresentation<
      * @param popupContent - Generates the content for the popup element. It is IMessageFrame,
      * so it always includes the Message Content itself plus wraps it based on the MessageFrame
      * class selected.
-     * @param popupOptions - The options that configure the popup from the perspective of the popup mechanism.
+     * @param popupMechanismOptions - The options that instruct the popup mechanism on how to display the popup.
      * It usually has positioning and styling information to use on the outer element of the popup.
      * @param options - The options that configure the presentation itself, such as triggers and delays.
      */
@@ -94,7 +99,7 @@ export class PopupErrorMessageDisplayPresentation<
         element: HTMLElement,
         indicatorContent: IErrorIndicatorContent,
         popupContent: IMessageFrame,
-        popupOptions?: TPopupOptions,
+        popupMechanismOptions?: TPopupMechanismOptions,
         options?: TOptions
     )
     {
@@ -103,7 +108,7 @@ export class PopupErrorMessageDisplayPresentation<
         assertNotNull(popupContent, 'popupContent');
         this._indicatorContent = indicatorContent;
         this._popupContent = popupContent;
-        this._popupOptions = popupOptions ?? {} as TPopupOptions;
+        this._popupOptions = popupMechanismOptions ?? {} as TPopupMechanismOptions;
     }
 
     protected override getOptionDefaults(): Partial<TOptions>
@@ -148,11 +153,11 @@ export class PopupErrorMessageDisplayPresentation<
     private _popupContent: IMessageFrame;
 
 
-    protected get popupOptions(): TPopupOptions | undefined
+    protected get popupOptions(): TPopupMechanismOptions | undefined
     {
         return this._popupOptions;
     }
-    private _popupOptions?: TPopupOptions;
+    private _popupOptions?: TPopupMechanismOptions;
 
 
     private _elementRegistry?: IElementRegistry;

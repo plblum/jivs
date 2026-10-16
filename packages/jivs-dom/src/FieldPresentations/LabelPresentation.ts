@@ -1,6 +1,5 @@
 /**
- * Provides a field presentation for labels, where the jivs-dom ElementRole is
- * 'label'.
+ * Provides a field presentation for labels, where the jivs-dom ElementRole is 'label'.
  * @module jivs-dom/FieldPresentations/ConcreteClasses/LabelPresentation
  */
 

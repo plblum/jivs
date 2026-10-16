@@ -1,3 +1,8 @@
+/**
+ * ErrorMessageDisplayMouseOutTrigger installs a trigger that closes the error message display 
+ * when the display element receives a mouseout event.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/ErrorMessageDisplayMouseOutTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 

@@ -1,3 +1,7 @@
+/**
+ * MessageFrameBase provides a base class for message frames, handling common structure and utilities.
+ * @module jivs-dom/Presentations_common/AbstractClasses/MessageFrameBase
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';

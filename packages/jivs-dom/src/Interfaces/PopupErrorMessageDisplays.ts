@@ -1,3 +1,9 @@
+/**
+ * Interfaces for managing popup error message displays in jivs-dom.
+ * 
+ * @module jivs-dom/Types/PopupErrorMessageDisplays
+ */
+
 import { IErrorMessageDisplayTriggerContext, IErrorMessageDisplayController } from './ErrorMessageDisplayPresentation';
 import { IJivsDomServices } from './JivsDomServices';
 

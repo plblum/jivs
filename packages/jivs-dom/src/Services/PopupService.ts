@@ -1,3 +1,8 @@
+/**
+ * PopupService manages popup error message displays for FieldPresentations 
+ * implementing IErrorMessageDisplayController.
+ * @module jivs-dom/Services/ConcreteClasses/PopupService
+ */
 import { IErrorMessageDisplayController } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IPopupService, TriggerContextFactory } from '../Interfaces/PopupErrorMessageDisplays';
 

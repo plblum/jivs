@@ -1,7 +1,16 @@
-import { ErrorIndicatorContentBase, ErrorIndicatorContentBaseGlobalOptions, ErrorIndicatorContentBaseOptions } from './ErrorIndicatorContentBase';
+/**
+ * ColumnarErrorIndicatorContent provides a structured layout for error indicators with three columns.
+ * 
+ * @module jivs-dom/FieldPresentations/ErrorIndicatorContent/ConcreteClasses/ColumnarErrorIndicatorContent
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import
+    {
+        ErrorIndicatorContentBase,
+        ErrorIndicatorContentBaseGlobalOptions, ErrorIndicatorContentBaseOptions
+    } from './ErrorIndicatorContentBase';
 
 /**
  * Implements the standard for Error Indicator Content.

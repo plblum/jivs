@@ -1,3 +1,9 @@
+/**
+ * EditorFieldPresentationBase provides the foundational functionality for editor field presentations (role='editor').
+ * 
+ * @module jivs-dom/FieldPresentations/AbstractClasses/EditorFieldPresentationBase
+ */
+
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 

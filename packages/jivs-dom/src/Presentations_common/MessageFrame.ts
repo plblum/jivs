@@ -1,7 +1,11 @@
+/**
+ * MessageFrame provides the most basic message frame with just a container and message content.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/MessageFrame
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { MessageFrameBase, MessageFrameBaseOptions, MessageFrameBaseGlobalOptions } from './MessageFrameBase';
+import { MessageFrameBase, MessageFrameBaseGlobalOptions, MessageFrameBaseOptions } from './MessageFrameBase';
 
 /**
  * The most basic of Message Frames. It is just the container element with

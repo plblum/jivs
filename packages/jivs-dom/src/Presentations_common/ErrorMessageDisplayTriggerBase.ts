@@ -1,3 +1,10 @@
+
+/**
+ * ErrorMessageDisplayTriggerBase provides the base functionality for all error message display triggers.
+ * It manages the delay and provides methods to attach event listeners for opening and 
+ * closing the error message display.
+ * @module jivs-dom/Presentations_common/AbstractClasses/ErrorMessageDisplayTriggerBase
+ */
 import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 
 /**

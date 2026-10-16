@@ -1,3 +1,8 @@
+/**
+ * ErrorMessageDisplayClickTrigger installs a trigger that opens the error message display 
+ * when the display element is clicked.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/ErrorMessageDisplayClickTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 

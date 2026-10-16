@@ -1,3 +1,8 @@
+/**
+ * ErrorMessageDisplayKeyAsClickTrigger installs a trigger that simulates a click on the error message display 
+ * when the display element receives a keypress of ENTER or SPACE.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/ErrorMessageDisplayKeyAsClickTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 

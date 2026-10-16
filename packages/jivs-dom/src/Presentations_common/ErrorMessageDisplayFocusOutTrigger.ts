@@ -1,3 +1,8 @@
+/**
+ * ErrorMessageDisplayFocusOutTrigger installs a trigger that closes the error message display 
+ * when the display element loses focus.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/ErrorMessageDisplayFocusOutTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from './ErrorMessageDisplayTriggerBase';
 

@@ -438,6 +438,10 @@ interface IJivsElement extends HTMLElement {
         IFormPresentation | null;
 
     jivsFormPresentationGroup?: string;
+
+    jivsElementRole?: ElementRole | string;
+
+    jivsErrorMessageId?: string;
 }
 ```
 
@@ -1791,6 +1795,14 @@ The style sheet classes are installed as described [below](#css-class-strategy).
 
 The optional ARIA getters allow a presentation whose generated HTML requires specialized accessibility behavior to supply immutable updater instances. A getter returning `null` means that the presentation supplies no specialized updater of that kind. The presentation itself does not mutate ARIA attributes through these getters.
 
+#### Shared Presentation and Content Options
+
+`PresentationBase.init(valueHostsManager)` obtains `IJivsDomServices` and resolves options before applying the presentation's initial behavior. Options are combined by a **shallow merge**, in this precedence order: component defaults, the component's global options group, and options supplied to the constructor. `getGlobalOptions()` selects the relevant group of `IJivsDomServices.options`. A constructor-supplied value overrides the corresponding global value; nested objects are not recursively merged.
+
+`PresentationContentBase` provides the corresponding configuration mechanism for **both** `IMessageFrame` and `IErrorIndicatorContent` implementations. Their `setDomServices(domServices)` operation initializes access to services and resolves their options using the same precedence. In particular, `ColumnarErrorIndicatorContent` reads `domServices.options.columnarErrorIndicatorContent` and `PopupErrorMessageDisplayPresentation` reads `domServices.options.popupErrorMessageDisplay`. Message Frame implementations use their own component-specific global configuration where provided.
+
+A presentation factory creates a fresh element-bound presentation; content objects are injected through its constructor and configured independently of the presentation. This preserves the distinction between presentation-level `variationClasses`, Message Frame `outerClasses`, and content-specific options.
+
 #### CSS Class Strategy
 ##### Persistent classes
 A persistent class remains applied to the presentation element throughout its installed lifetime, regardless of validation state. `FieldPresentationBase.init()` gathers these classes through `gatherPersistentClasses()` and then applies the classes supplied through `variationClasses`.
@@ -1820,8 +1832,9 @@ Stateful classes are added and removed as presentation state changes.
 | `jivs-required` | `IFieldValueHost.required` is `true`. |
 | `jivs-has-issues` | The current validation state contains one or more issues. |
 | `jivs-open` | A triggered presentation is open. |
+| `jivs-popup-open` | A popup is open. |
 
-The first four belong to presentations derived from `IsValidFieldPresentationBase`. Error Message Display presentations use `jivs-has-issues`; triggered Error Message Displays additionally use `jivs-open`.
+The first four belong to presentations derived from `IsValidFieldPresentationBase`. Error Message Display presentations use `jivs-has-issues`; popup Error Message Displays may additionally use `jivs-popup-open` to indicate open state.
 
 The supplied stylesheet uses stateful classes for essential behavior and persistent variation classes for optional appearance. Its selectors generally use `:where()` so application selectors can override them without escalating specificity.
 
@@ -1834,34 +1847,25 @@ For example, the absence of `jivs-has-issues` hides an Error Message Display:
 ```
 
 #### Field Presentation Classes and their CSS Classes
-|Class name|Inherits|Target|Persistent class|Stateful classes|
-|---|---|---|---|---|
-|`FieldPresentationBase`|`AdapterBase`|Any field presentation|Supplied by subclasses|Supplied by subclasses|
-|`IsValidFieldPresentationBase`|`FieldPresentationBase`|Validity-oriented presentations|`jivs-isvalidpresentation`|`jivs-invalid`, optionally `jivs-validated`, `jivs-corrected`, and `jivs-required`|
-|`EditorFieldPresentationBase`|`IsValidFieldPresentationBase`|Editors|`jivs-editor`|Inherited|
-|`WrappedEditorFieldPresentationBase`|`IsValidFieldPresentationBase`|Editor wrappers|`jivs-wrapped-editor`|Inherited|
-|`ErrorMessageDisplayPresentationBase`|`FieldPresentationBase`|Error Message Displays|`jivs-errormessagedisplay`|`jivs-has-issues`|
-|`InlineErrorMessageDisplayPresentation`|`ErrorMessageDisplayPresentationBase`|Inline Error Message Displays|`jivs-inlineerrormessagedisplay`|Inherited|
-|`TriggeredErrorMessageDisplayPresentationBase`|`ErrorMessageDisplayPresentationBase`|Trigger-controlled Error Message Displays|`jivs-triggered-error-message-display`|`jivs-open`, inherited|
-|`PopupErrorMessageDisplayPresentationBase`|`TriggeredErrorMessageDisplayPresentationBase`|Popup Error Message Displays|`jivs-popup-error-message-display`|Inherited|
 
-Concrete implementations of IsValidFieldPresentationBase:
-FieldContainerPresentation, LabelPresentation, RequiredIndicatorPresentation
+| Class name | Inherits | Persistent CSS classes | Stateful CSS classes |
+|---|---|---|---|
+| `FieldPresentationBase` | `PresentationBase` | Supplied by subclasses | Supplied by subclasses |
+| `IsValidFieldPresentationBase` | `FieldPresentationBase` | `jivs-isvalidpresentation` | `jivs-invalid`; optionally `jivs-validated`, `jivs-corrected`, `jivs-required` |
+| `EditorFieldPresentationBase` | `IsValidFieldPresentationBase` | `jivs-editor` | Inherited |
+| `WrappedEditorFieldPresentationBase` | `IsValidFieldPresentationBase` | `jivs-wrapped-editor` | Inherited |
+| `ErrorMessageDisplayPresentationBase` | `FieldPresentationBase` | `jivs-errormessagedisplay` | `jivs-has-issues` |
+| `InlineErrorMessageDisplayPresentation` | `ErrorMessageDisplayPresentationBase` | `jivs-inlineerrormessagedisplay` | Inherited |
+| `TriggeredErrorMessageDisplayPresentationBase` | `ErrorMessageDisplayPresentationBase` | `jivs-triggerederrormessagedisplay` | `jivs-popup-open`, inherited |
+| `PopupErrorMessageDisplayPresentation` | `TriggeredErrorMessageDisplayPresentationBase` | `jivs-popuperrormessagedisplay` | Inherited |
 
-Concrete implementations of EditorFieldPresentationBase:
-CheckboxPresentation, FileInputPresentation, RadioButtonsPresentation, SelectPresentation, TextAreaPresentation, TextInputPresentation
+Concrete implementations of `IsValidFieldPresentationBase` include `FieldContainerPresentation`, `LabelPresentation`, and `RequiredIndicatorPresentation`.
 
-Concrete implementations of `WrappedEditorFieldPresentationBase`:
-WrapperCheckboxPresentation, WrapperFileInputPresentation, WrapperRadioButtonsPresentation, WrapperSelectPresentation, WrapperTextAreaPresentation, WrapperTextInputPresentation
+Concrete implementations of `EditorFieldPresentationBase` include `CheckboxPresentation`, `FileInputPresentation`, `RadioButtonsPresentation`, `SelectPresentation`, `TextAreaPresentation`, and `TextInputPresentation`.
 
-Concrete implementations of ErrorMessageDisplayPresentationBase:
-InlineErrorMessageDisplayPresentation
+Concrete implementations of `WrappedEditorFieldPresentationBase` include `WrapperCheckboxPresentation`, `WrapperFileInputPresentation`, `WrapperRadioButtonsPresentation`, `WrapperSelectPresentation`, `WrapperTextAreaPresentation`, and `WrapperTextInputPresentation`.
 
-Concrete implementations of TriggeredErrorMessageDisplayPresentationBase:
-PENDING
-
-Concrete implementations of PopupErrorMessageDisplayPresentationBase:
-PENDING
+The concrete error displays are `InlineErrorMessageDisplayPresentation` (directly from `ErrorMessageDisplayPresentationBase`) and `PopupErrorMessageDisplayPresentation` (from `TriggeredErrorMessageDisplayPresentationBase`).
 
 #### Field Presentation Factory
 
@@ -2077,8 +2081,8 @@ flowchart TB
     INLINE_CONTENT["Message Content"]
 
     POPUP_PRESENTATION["Popup Presentation Container"]
-    POPUP_TRIGGER["Popup trigger or anchor"]
-    POPUP["Popup"]
+    POPUP_TRIGGER["IErrorIndicatorContent: visible indicator"]
+    POPUP["Popup container (IPopupMechanism)"]
     POPUP_FRAME["Message Frame"]
     POPUP_CONTENT["Message Content"]
 
@@ -2112,7 +2116,7 @@ interface IMessageFrame
 }
 ```
 
-`setDomServices()` supplies the services used to format issues and resolve localized presentation text. `needsContainerUpdate()` reports whether the presentation must apply `jivs-messagecontent` to the target element. `apply()` builds the frame and assigns it to that target.
+`setDomServices()` follows the shared `PresentationContentBase` initialization and options-resolution pattern and supplies the services used to format issues and resolve localized presentation text. `needsContainerUpdate()` reports whether the presentation must apply `jivs-messagecontent` to the target element. `apply()` builds the frame and assigns it to that target.
 
 | Type | Responsibility |
 |---|---|
@@ -2214,6 +2218,14 @@ The value for <span class="token label">Password</span> must contain at least
 
 The common `token` class supports shared styling. The additional `label`, `parameter`, `value`, or `message` class identifies the token purpose. Detailed message-token resolution remains the responsibility of `jivs-engine` and `IssuesFoundFormatterService`.
 
+##### Error Indicator Content
+
+Popup error displays use two independently configurable content components. `IErrorIndicatorContent` generates the **visible, interactive trigger** within the installed Field Error Display element. `IMessageFrame` generates the actual validation messages within the popup mechanism's separate container. An indicator is not itself a Message Frame, and the popup's content does not become a descendant of the indicator.
+
+`ColumnarErrorIndicatorContent` is the built-in indicator content implementation. It emits the persistent classes `jivs-errorindicatorcontent` and `jivs-columnarerrorindicatorcontent`, with three child elements: `jivs-column1`, `jivs-column2`, and `jivs-column3`. All three elements are always generated, even for empty content. `column1Html` defaults to `&#9888;` (⚠); `column2Html` and `column3Html` may supply additional text, HTML, or symbols. Each column has an independent localization-key option (corresponding `...l10n` property) and can be customized through the global `columnarErrorIndicatorContent` options group or constructor options.
+
+`ColumnarErrorIndicatorContent` derives its shared service and options behavior from `PresentationContentBase`, just as the Message Frame implementations do. Content HTML is generated by TypeScript rather than by indicator CSS pseudo-elements. CSS remains responsible for fonts, spacing, color, and interactive appearance, including each column's independent hover treatment.
+
 ##### Error Display Architecture
 
 The error-display foundation separates five responsibilities:
@@ -2243,8 +2255,12 @@ Inline error displays use the first three responsibilities. Triggered and popup 
 | `TriggeredErrorMessageDisplayPresentationBase` | Implements `IErrorMessageDisplayController`, owns triggers, transition state, and the pending timer, and delegates actual presentation work to `openCore()` and `closeCore()`. |
 | `IPopupService` | Coordinates controllers belonging to one `ValueHostsManager`. It supports controller registration, one-popup-at-a-time opening, forced closure, and disposal. |
 | `PopupService` | Standard manager-owned implementation of `IPopupService`. |
+| `IErrorIndicatorContent` | Generates the popup presentation's visible trigger content. |
+| `ColumnarErrorIndicatorContent` | Standard three-column trigger content, configured independently from its presentation. |
+| `PopupErrorMessageDisplayPresentation` | Concrete triggered presentation that composes indicator content and a Message Frame and delegates popup behavior to `IPopupMechanism`. |
+| `IPopupMechanism` | Abstraction responsible for popup container creation, placement, visibility, and container styling. |
 
-No concrete popup presentation is defined at this stage. It will inherit `TriggeredErrorMessageDisplayPresentationBase`, pass its injected Message Frame to the popup mechanism, and provide the generated popup structure, content target, positioning, and core open/close behavior.
+`PopupErrorMessageDisplayPresentation` is the concrete popup presentation. It inherits `TriggeredErrorMessageDisplayPresentationBase`, writes `IErrorIndicatorContent` into its installation element, and supplies its injected `IMessageFrame` for display in a separate popup managed through `IPopupMechanism`. Popup-container generation, positioning, and styling are the mechanism's responsibility, not Jivs-DOM's.
 
 ##### Type Relationships
 
@@ -2352,6 +2368,21 @@ Triggers associated with other roles may install ordinary DOM event listeners di
 
 `focusin` and `focusout` are used because they bubble and therefore support composite editor widgets more reliably than `focus` and `blur`.
 
+##### Popup Indicator Activation
+
+`PopupErrorMessageDisplayPresentation` provides click activation by default: its click trigger requests `controller.toggle(context, 0, 0)` for immediate toggling. `ErrorMessageDisplayKeyAsClickTrigger` supports keyboard activation by handling Enter and Space on `keydown`, calling `preventDefault()` and then `context.jivsElement.click()`. `keyboardPopupEnabled` defaults to `true`.
+
+Optional event triggers are controlled by presentation options:
+
+| Option or event | Default | Open delay | Close delay |
+|---|---|---|---|
+| Click | Enabled | 0 ms | 0 ms |
+| `keyboardPopupEnabled` (Enter / Space) | `true` | Delegates to click | Delegates to click |
+| `popupOnMouseOver` | `false` | 250 ms | 750 ms |
+| `popupOnFocus` | `false` | 250 ms | 750 ms |
+
+When keyboard or focus interaction is enabled, initialization sets `tabindex` only when the installation element lacks that attribute. The instance-only `tabIndex` option supplies the value; its default is `0`. Existing authored `tabindex` is preserved. No element-tag detection is required for this rule. Trigger installation does not determine `role`, `aria-label`, or other accessibility naming, which are handled separately by ARIA updaters.
+
 ##### Trigger-Owned Delays
 
 Each trigger owns the delays appropriate to the interaction it installs.
@@ -2419,7 +2450,7 @@ These operations are synchronous.
 
 `closeCore()` returns `true` when the presentation was closed successfully. The controller then enters `TriggerState.closed`. A failure returns it to `TriggerState.open`.
 
-The future popup presentation will use these methods to manage generated popup elements, content, positioning, and the `jivs-open` CSS class.
+The concrete popup presentation uses these methods to coordinate the popup mechanism and the `jivs-popup-open` state class. The popup mechanism owns container generation, positioning, visibility, and appearance.
 
 ##### Opening Workflow
 
@@ -2509,12 +2540,14 @@ Presentation Container classes control display state, outer appearance, and posi
 |---|---|
 | `jivs-errormessagedisplay` | Identifies every Error Message Display presentation. |
 | `jivs-inlineerrormessagedisplay` | Identifies an inline Error Message Display. |
-| `jivs-triggered-error-message-display` | Identifies a trigger-controlled Error Message Display. |
-| Presentation-specific class | Identifies a concrete popup or other specialized presentation. |
+| `jivs-triggerederrormessagedisplay` | Identifies a trigger-controlled Error Message Display. |
+| `jivs-popuperrormessagedisplay` | Identifies the concrete popup trigger presentation. |
+| `jivs-errorindicatorcontent` and `jivs-columnarerrorindicatorcontent` | Identify generated indicator content and its columnar layout. |
 | `jivs-has-issues` | Indicates that validation supplied one or more issues. |
 | `jivs-open` | Indicates that a triggered presentation is open. |
+| `jivs-popup-open` | Indicates that a popup open. |
 
-Applications pass outer appearance and positioning classes through `variationClasses`. The supplied stylesheet includes `jivs-inlineerrormessagedisplay-variant-accent`, `jivs-inlineerrormessagedisplay-variant-panel`, `jivs-position-below`, and `jivs-position-beside`.
+Applications pass outer appearance and positioning classes through `variationClasses`. The supplied stylesheet includes `jivs-inlineerrormessagedisplay-variant-accent`, `jivs-inlineerrormessagedisplay-variant-panel`, `jivs-position-below`, and `jivs-position-beside`. Popup indicators offer `jivs-popuperrormessagedisplay-variant-button` and `jivs-popuperrormessagedisplay-variant-pill` as alternative appearances; without either, the indicator remains unadorned.
 
 Message Frame classes identify generated structure:
 
@@ -2540,40 +2573,34 @@ CSS variables follow the same ownership:
 | `--jivs-messageframe-` | Frame layout, headers, footers, and icons. |
 | `--jivs-variant-` | Presentation Container appearance variations. |
 | `--jivs-position-` | Presentation Container positioning variations. |
+| `--jivs-error-indicator-` | Columnar Error Indicator Content colors, typography, spacing, and popup focus styling. |
+| `--jivs-popup-variant-` | Shared Button and Pill backgrounds, border, padding, radius, and hover treatment. |
+
+The three indicator columns may use icons, text, or HTML, with distinct font/color variables and hover colors. Button and Pill share border, tinted background, padding, and hover treatment but have different border-radius defaults. The popup indicator uses `:focus-visible` for keyboard focus feedback. No disabled-state or popup-open-state visual styling is provided.
+
+**Popup-container appearance and positioning are owned by the selected `IPopupMechanism`.** Jivs-DOM supplies indicator and message-content styling, not generic styling for the popup container. The Message Frame styles remain reusable regardless of which popup mechanism owns that container.
 
 `assets/jivs-dom.css` provides the complete selectors, defaults, alternatives, HTML examples, and customization guidance.
 
-##### Remaining Popup Design
+##### Popup Error Message Display Presentation
 
-The remaining design work concerns the concrete popup presentation built on `TriggeredErrorMessageDisplayPresentationBase`.
+`PopupErrorMessageDisplayPresentation` extends `TriggeredErrorMessageDisplayPresentationBase`. The application supplies one installation element (typically carrying `data-jivs-role="error"`); the presentation generates and maintains the visible indicator there. Its constructor accepts the installation element, an `IErrorIndicatorContent` implementation, an `IMessageFrame` implementation, optional popup-mechanism options, and optional presentation options, in that order:
 
-The intended developer experience is that the application supplies a single installation element:
-
-```html
-<span
-    data-jivs-role="error"
-    data-jivs-presentation="...">
-</span>
+```ts
+new PopupErrorMessageDisplayPresentation(
+    element,
+    new ColumnarErrorIndicatorContent(),
+    new MessageFrame(),
+    popupOptions,
+    presentationOptions
+);
 ```
 
-The popup presentation should construct and manage the complete popup widget. The application should not need to create or register its internal parts separately.
+During initialization, the presentation resolves options, establishes its persistent and variation classes, prepares the indicator content, and installs the configured event triggers when their required context is available. `apply()` uses the current `IssueFound` results to update or clear the indicator and the `jivs-has-issues` class. When issues disappear, a pending or open popup is closed immediately through the existing controller state machine; delayed opening is cancelled.
 
-The following aspects remain unresolved:
+The popup mechanism, abstracted by `IPopupMechanism`, owns **the separate popup container**: its creation, placement relative to the trigger, visibility, appearance, and any popup-owned event behavior. The presentation coordinates opening and closing through its controller and `IPopupService`, and the injected `IMessageFrame` produces the validation content shown within the mechanism's target. Jivs-DOM does not prescribe a descendant/sibling structure, a specific positioning library, or popup-container CSS. The popup-mechanism implementation determines those details.
 
-* whether the presentation generates its own icon or other visible popup trigger;
-* the popup’s internal structure, including any header, content container, footer, and presentation-specific elements;
-* which generated element is supplied to `IMessageFrame` as its content target;
-* whether the popup is created as a descendant, sibling, or separately positioned element associated with the installation element;
-* whether popup elements are created during installation or lazily when first opened;
-* which generated elements, identifiers, and other resources the presentation retains;
-* how the popup is positioned relative to its anchor;
-* which pointer and focus event handlers belong to the popup itself;
-* which open and close delays those handlers use;
-* how popup-specific CSS classes, icons, and other visual assets are configured.
-
-These decisions must also establish ownership and lifecycle rules for the generated elements. Once created, the popup structure is expected to remain presentation-owned state until the presentation is disposed, unless the concrete popup design identifies a reason to recreate it.
-
-
+The presentation does not need the caller to author or register internal popup DOM separately. It exposes the trigger's styling through its persistent classes and `variationClasses` (`jivs-popuperrormessagedisplay-variant-button` or `jivs-popuperrormessagedisplay-variant-pill`), while `ColumnarErrorIndicatorContent` controls which icon/text/HTML appears in its three columns. The popup's `IMessageFrame` retains responsibility for headers, icons, and message formatting, independent of indicator appearance.
 
 ## Form Presentation Adapters
 Form Presentation is an Adapter to adjust the presentation of a widget at the form-level.
@@ -3759,8 +3786,15 @@ All built-in updater classes are exported from `jivs-dom`.
 | `EditorAriaStaticUpdater` | Registered for `ElementRole.editor` | Assigns `aria-required` when FieldValueHost.required is true. |
 | `ValidationSummaryAriaStaticUpdater` | Registered for `ElementRole.summary` | Assigns missing `role="status"` and `aria-atomic="true"`. |
 | `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
+| `PopupErrorMessageDisplayStaticUpdater` | Supplied by `PopupErrorMessageDisplayPresentation.getStaticAriaUpdater()` | Supplies the popup trigger's missing button role and accessible name without overriding authored accessibility attributes. |
 | `RadioGroupAriaStaticUpdater` | Returned by `RadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor jivsElement. |
 
+
+#### Popup Error Indicator Static ARIA
+
+`PopupErrorMessageDisplayPresentation.getStaticAriaUpdater()` returns a `PopupErrorMessageDisplayStaticUpdater`, independently of the configured click, focus, mouseover, and keyboard triggers. It assigns `role="button"` only when no role is already present. It assigns `aria-label` only when neither `aria-label` nor `aria-labelledby` is present. Its default accessible name is **"Show validation errors"**; presentation options `ariaPopupMessage` and `ariaPopupMessagel10n` allow a replacement and localization through `valueHost.valueHostsManager.services.errorMessagesService.localize()`.
+
+The updater does not add `aria-haspopup`: ordinary error-message content need not be a dialog, menu, or another ARIA popup widget. The presentation handles keyboard event activation and `tabindex`; the updater handles semantic role and accessible naming.
 
 #### Validation State Updaters
 

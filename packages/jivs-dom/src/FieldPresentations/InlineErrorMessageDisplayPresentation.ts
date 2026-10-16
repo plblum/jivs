@@ -1,3 +1,8 @@
+/**
+ * InlineErrorMessageDisplayPresentation provides a field presentation for displaying inline error messages.
+ * 
+ * @module jivs-dom/FieldPresentations/ConcreteClasses/InlineErrorMessageDisplayPresentation
+ */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
@@ -112,3 +117,5 @@ export interface InlineErrorMessageDisplayPresentationOptions
     InlineErrorMessageDisplayPresentationGlobalOptions
 {
 }
+
+export const defaultInlineErrorMessageDisplayPresentationName = 'inlineErrorMessageDisplay';

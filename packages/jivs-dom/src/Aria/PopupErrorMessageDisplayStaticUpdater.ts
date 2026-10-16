@@ -1,7 +1,12 @@
+/**
+ * PopupErrorMessageDisplayStaticUpdater ensures that elements triggering popup error message content 
+ * have the correct ARIA attributes.
+ * @module jivs-dom/Aria/ConcreteClasses/PopupErrorMessageDisplayStaticUpdater
+ */
+import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
 import { AriaStaticUpdaterBase } from './AriaStaticUpdaterBase';
-import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
 /**
  * Ensures that the element has the appropriate ARIA role for a button that triggers 

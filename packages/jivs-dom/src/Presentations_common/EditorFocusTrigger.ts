@@ -1,3 +1,8 @@
+/**
+ * EditorFocusTrigger installs a trigger that opens the error message display 
+ * when the editor receives or loses focus.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/EditorFocusTrigger
+ */
 import { IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorTriggerBase } from './EditorTriggerBase';

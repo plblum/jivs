@@ -1,6 +1,10 @@
+/**
+ * IconMessageFrame provides a message frame with an icon column and a content column.
+ * It extends the LayoutMessageFrameBase and adds specific handling for the icon and content sections.
+ * @module jivs-dom/Presentations_common/ConcreteClasses/IconMessageFrame
+ */
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
 import { LayoutMessageFrameBase, LayoutMessageFrameBaseGlobalOptions, LayoutMessageFrameBaseOptions } from './LayoutMessageFrameBase';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 
 
 /**
