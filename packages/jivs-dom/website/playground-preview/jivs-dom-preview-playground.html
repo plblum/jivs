@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -344,6 +345,7 @@
         }
     </style>
 </head>
+
 <body>
     <form class="preview-control-panel" aria-label="Preview controls">
         <fieldset>
@@ -420,6 +422,11 @@
                 <a href="#example-header-footer">Header and footer</a>
                 <a href="#example-icon-css">CSS icon</a>
                 <a href="#example-icon-content">Supplied icon content</a>
+                <a href="#example-popup-icon">Popup: icon</a>
+                <a href="#example-popup-text">Popup: icon + text</a>
+                <a href="#example-popup-arrow">Popup: icon + text + arrow</a>
+                <a href="#example-popup-button">Popup: Button variation</a>
+                <a href="#example-popup-pill">Popup: Pill variation</a>
             </nav>
         </section>
 
@@ -479,6 +486,46 @@
                     presentationName: 'previewContentIconErrors',
                     frame: 'iconContent',
                     variations: ['jivs-inlineerrormessagedisplay-variant-panel']
+                },
+                {
+                    id: 'popup-icon',
+                    title: 'Popup indicator: warning icon only',
+                    description: 'Uses ColumnarErrorIndicatorContent defaults. This previews only the indicator, not an opened popup.',
+                    presentationName: 'previewPopupIcon',
+                    popupIndicator: 'icon',
+                    variations: []
+                },
+                {
+                    id: 'popup-text',
+                    title: 'Popup indicator: icon and text',
+                    description: 'Adds descriptive text in column 2. Test typography, alignment, hover, and keyboard focus.',
+                    presentationName: 'previewPopupText',
+                    popupIndicator: 'text',
+                    variations: []
+                },
+                {
+                    id: 'popup-arrow',
+                    title: 'Popup indicator: icon, text, and arrow',
+                    description: 'Populates all three columns, with independent typography and hover styling.',
+                    presentationName: 'previewPopupArrow',
+                    popupIndicator: 'arrow',
+                    variations: []
+                },
+                {
+                    id: 'popup-button',
+                    title: 'Popup indicator: Button variation',
+                    description: 'Rounded-rectangle appearance with border, padding, tinted background, and hover background. Indicator only; no popup.',
+                    presentationName: 'previewPopupButton',
+                    popupIndicator: 'text',
+                    variations: ['jivs-popuperrormessagedisplay-variant-button']
+                },
+                {
+                    id: 'popup-pill',
+                    title: 'Popup indicator: Pill variation',
+                    description: 'Fully rounded appearance with the same shared treatment as Button. Includes a trailing arrow; no popup.',
+                    presentationName: 'previewPopupPill',
+                    popupIndicator: 'arrow',
+                    variations: ['jivs-popuperrormessagedisplay-variant-pill']
                 }
             ];
 
@@ -564,34 +611,34 @@
                 examples.forEach(function (example) {
                     const article =
                         '<article id="example-' + example.id + '" class="preview-example" data-example-id="' + example.id + '">' +
-                            '<div class="preview-example-heading">' +
-                                '<h2>' + escapeHtml(example.title) + '</h2>' +
-                                '<p>' + escapeHtml(example.description) + '</p>' +
-                            '</div>' +
-                            '<div class="preview-specimen" data-preview-specimen></div>' +
-                            '<div class="preview-docs">' +
-                                '<details>' +
-                                    '<summary>Factory registration</summary>' +
-                                    '<div class="preview-code-wrap">' +
-                                        '<p>Register this presentation name before SimpleDOM installs the field.</p>' +
-                                        '<pre><code data-registration-code></code></pre>' +
-                                    '</div>' +
-                                '</details>' +
-                                '<details>' +
-                                    '<summary>Current Jivs-SimpleDOM HTML</summary>' +
-                                    '<div class="preview-code-wrap">' +
-                                        '<p>This source is serialized from the live field above after the current controls are applied.</p>' +
-                                        '<pre><code data-html-code></code></pre>' +
-                                    '</div>' +
-                                '</details>' +
-                                '<details>' +
-                                    '<summary>CSS classes and selectors used</summary>' +
-                                    '<div class="preview-code-wrap">' +
-                                        '<p>Use these names to locate the applicable declarations in the companion <code>jivs-dom.css</code>.</p>' +
-                                        '<ul class="preview-class-list" data-class-list></ul>' +
-                                    '</div>' +
-                                '</details>' +
-                            '</div>' +
+                        '<div class="preview-example-heading">' +
+                        '<h2>' + escapeHtml(example.title) + '</h2>' +
+                        '<p>' + escapeHtml(example.description) + '</p>' +
+                        '</div>' +
+                        '<div class="preview-specimen" data-preview-specimen></div>' +
+                        '<div class="preview-docs">' +
+                        '<details>' +
+                        '<summary>Factory registration</summary>' +
+                        '<div class="preview-code-wrap">' +
+                        '<p>Register this presentation name before SimpleDOM installs the field.</p>' +
+                        '<pre><code data-registration-code></code></pre>' +
+                        '</div>' +
+                        '</details>' +
+                        '<details>' +
+                        '<summary>Current Jivs-SimpleDOM HTML</summary>' +
+                        '<div class="preview-code-wrap">' +
+                        '<p>This source is serialized from the live field above after the current controls are applied.</p>' +
+                        '<pre><code data-html-code></code></pre>' +
+                        '</div>' +
+                        '</details>' +
+                        '<details>' +
+                        '<summary>CSS classes and selectors used</summary>' +
+                        '<div class="preview-code-wrap">' +
+                        '<p>Use these names to locate the applicable declarations in the companion <code>jivs-dom.css</code>.</p>' +
+                        '<ul class="preview-class-list" data-class-list></ul>' +
+                        '</div>' +
+                        '</details>' +
+                        '</div>' +
                         '</article>';
 
                     $gallery.append(article);
@@ -669,20 +716,20 @@
 
                 return '<div class="' + fieldClass + '" data-field="' + fieldName + '" data-jivs-role="container">' +
                     '<div class="preview-label-zone">' +
-                        '<label class="' + labelClass + '" for="' + labelFor + '" data-field="' + fieldName + '" data-jivs-role="label">' +
-                            escapeHtml(editor.label) +
-                        '</label>' +
-                        '<span class="' + indicatorClass + '" aria-hidden="true" data-field="' + fieldName + '" data-jivs-role="required"></span>' +
+                    '<label class="' + labelClass + '" for="' + labelFor + '" data-field="' + fieldName + '" data-jivs-role="label">' +
+                    escapeHtml(editor.label) +
+                    '</label>' +
+                    '<span class="' + indicatorClass + '" aria-hidden="true" data-field="' + fieldName + '" data-jivs-role="required"></span>' +
                     '</div>' +
                     '<div class="preview-control-zone">' +
-                        '<div class="preview-editor-slot">' +
-                            buildEditor(editor, context, fieldName, currentInvalidClass, settings) +
-                        '</div>' +
-                        '<div class="preview-error-slot">' +
-                            buildErrorDisplay(example, settings, editor, fieldName, positionClass) +
-                        '</div>' +
+                    '<div class="preview-editor-slot">' +
+                    buildEditor(editor, context, fieldName, currentInvalidClass, settings) +
                     '</div>' +
-                '</div>';
+                    '<div class="preview-error-slot">' +
+                    buildErrorDisplay(example, settings, editor, fieldName, positionClass) +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
             }
 
             function buildEditor(editor, context, fieldName, currentInvalidClass, settings) {
@@ -697,7 +744,7 @@
                         indicatorClasses(settings, 'wrapped-editor')
                     ) + '" data-field="' + fieldName + '" data-jivs-role="editor">' +
                         controlHtml +
-                    '</div>';
+                        '</div>';
                 }
 
                 if (editor.classSuffix === 'radiobuttons') {
@@ -736,6 +783,9 @@
             }
 
             function buildErrorDisplay(example, settings, editor, fieldName, positionClass) {
+                if (example.popupIndicator) {
+                    return buildPopupIndicator(example, settings, fieldName);
+                }
                 const hasIssues = settings.state === 'invalid';
                 const presentationClasses = joinClasses(
                     'jivs-errormessagedisplay',
@@ -758,7 +808,38 @@
                     ' data-jivs-role="error"' +
                     ' data-jivs-presentation="' + example.presentationName + '">' +
                     content +
-                '</div>';
+                    '</div>';
+            }
+
+            /* PopupErrorMessageDisplayPresentation preview: indicator only.
+               The popup mechanism and its popup HTML are deliberately not simulated. */
+            function buildPopupIndicator(example, settings, fieldName) {
+                const hasIssues = settings.state === 'invalid';
+                const classes = joinClasses(
+                    'jivs-errormessagedisplay',
+                    'jivs-triggerederrormessagedisplay',
+                    'jivs-popuperrormessagedisplay',
+                    example.variations,
+                    hasIssues ? 'jivs-has-issues' : ''
+                );
+                const column1 = '&#9888;'; // ColumnarErrorIndicatorContent default
+                const column2 = example.popupIndicator === 'icon' ? '' : 'Errors found';
+                const column3 = example.popupIndicator === 'arrow' ? '&#8250;' : '';
+                const content = !hasIssues ? '' :
+                    '<div class="jivs-errorindicatorcontent jivs-columnarerrorindicatorcontent">' +
+                    '<div class="jivs-column1">' + column1 + '</div>' +
+                    '<div class="jivs-column2">' + column2 + '</div>' +
+                    '<div class="jivs-column3">' + column3 + '</div>' +
+                    '</div>';
+
+                // The span is intentionally made keyboard-focusable as Jivs does.
+                // No click or keydown handlers are attached in this CSS playground.
+                return '<span class="' + classes + '"' +
+                    ' tabindex="0" role="button" aria-label="Show validation errors"' +
+                    ' data-field="' + fieldName + '"' +
+                    ' data-jivs-role="error"' +
+                    ' data-jivs-presentation="' + example.presentationName + '">' +
+                    content + '</span>';
             }
 
             function buildMessageFrame(frame, messageContent, messageCount) {
@@ -771,25 +852,25 @@
                         '<div class="jivs-header">Please correct this field.</div>' +
                         '<div class="jivs-messagecontent">' + messageContent + '</div>' +
                         '<div class="jivs-footer">Resolve ' + (messageCount === 'one' ? 'this message' : 'these messages') + ' before continuing.</div>' +
-                    '</div>';
+                        '</div>';
                 }
 
                 if (frame === 'iconCss') {
                     return '<div class="jivs-iconmessageframe">' +
                         '<div class="jivs-column1"><span class="jivs-icon" aria-hidden="true"></span></div>' +
                         '<div class="jivs-column2">' +
-                            '<div class="jivs-messagecontent">' + messageContent + '</div>' +
+                        '<div class="jivs-messagecontent">' + messageContent + '</div>' +
                         '</div>' +
-                    '</div>';
+                        '</div>';
                 }
 
                 return '<div class="jivs-iconmessageframe">' +
                     '<div class="jivs-column1"><span class="jivs-icon" aria-hidden="true">&#x2716;</span></div>' +
                     '<div class="jivs-column2">' +
-                        '<div class="jivs-header">This field needs attention.</div>' +
-                        '<div class="jivs-messagecontent">' + messageContent + '</div>' +
+                    '<div class="jivs-header">This field needs attention.</div>' +
+                    '<div class="jivs-messagecontent">' + messageContent + '</div>' +
                     '</div>' +
-                '</div>';
+                    '</div>';
             }
 
             function buildMessageContent(editor, fieldName, count) {
@@ -803,13 +884,29 @@
 
                 return '<ul>' +
                     '<li data-errorcode="Required" data-identifier="' + fieldName + '" data-severity="error">' +
-                        labelHtml + ' is required.</li>' +
+                    labelHtml + ' is required.</li>' +
                     '<li data-errorcode="' + editor.secondCode + '" data-identifier="' + fieldName + '" data-severity="error">' +
-                        editor.secondMessage(labelHtml) + '</li>' +
-                '</ul>';
+                    editor.secondMessage(labelHtml) + '</li>' +
+                    '</ul>';
             }
 
             function registrationFor(example, settings) {
+                if (example.popupIndicator) {
+                    const contentOptions = example.popupIndicator === 'icon' ? '' :
+                        example.popupIndicator === 'text' ? "{ column2Html: 'Errors found' }" :
+                            "{ column2Html: 'Errors found', column3Html: '&#8250;' }";
+                    return [
+                        'domServices.fieldPresentationFactory.register(',
+                        "    '" + example.presentationName + "',",
+                        '    element => new PopupErrorMessageDisplayPresentation(',
+                        '        element,',
+                        '        new ColumnarErrorIndicatorContent(' + contentOptions + '),',
+                        '        new MessageFrame(), // Required popup content; not shown in this preview',
+                        '        { variationClasses: ' + JSON.stringify(example.variations).replace(/"/g, "'") + ' }',
+                        '    )',
+                        ');'
+                    ].join('\n');
+                }
                 const positionClass = settings.sideBySide ? 'jivs-position-beside' : 'jivs-position-below';
                 const variations = example.variations.concat(positionClass);
                 let frameCode = 'new MessageFrame()';
@@ -878,7 +975,7 @@
                     });
                 });
 
-                if (settings.state === 'invalid' && settings.messages === 'multiple') {
+                if (!example.popupIndicator && settings.state === 'invalid' && settings.messages === 'multiple') {
                     names.add('.jivs-messagecontent > ul > li::marker');
                 }
                 if (settings.state === 'invalid' && example.frame === 'iconCss') {
@@ -948,4 +1045,5 @@
         });
     </script>
 </body>
+
 </html>
