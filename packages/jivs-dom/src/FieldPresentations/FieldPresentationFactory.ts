@@ -61,6 +61,12 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
      */
     public defaultFactoryRegistrations(factory: IPresentationFactory<IFieldPresentation>): void
     {
+        //!!WARNING: These values are not used in production.
+        // The user needed to see the adapter keys to understand how to consume FieldPresentations.
+        // So they are fully displayed in the configureJivsDom.ts file.
+
+        // We keep this here for testing purposes, but may later remove it.
+
         // Register default field presentations here
         factory.register(defaultTextInputPresentationName, (element) => new TextInputPresentation(element));
         factory.register(defaultCheckboxPresentationName, (element) => new CheckboxPresentation(element));

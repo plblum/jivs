@@ -75,20 +75,20 @@ export class ColumnarErrorIndicatorContent<TOptions extends ColumnarErrorIndicat
         // to let CSS add styling like :empty::after { content: 'value' }
         let html = '';
         let column1 = this.resolveText(
-            this.options?.column1HtmlL10n ?? '',
+            this.options?.column1Htmll10n ?? '',
             this.options?.column1Html ?? '',
             issuesFound, valueHostsManager, fieldValueHost);
 
         html += `<div class='jivs-column1'>${column1 ?? ''}</div>`;
         
         let column2 = this.resolveText(
-            this.options?.column2HtmlL10n ?? '',
+            this.options?.column2Htmll10n ?? '',
             this.options?.column2Html ?? '',
             issuesFound, valueHostsManager, fieldValueHost);
 
         html += `<div class='jivs-column2'>${column2 ?? ''}</div>`;
         let column3 = this.resolveText(
-            this.options?.column3HtmlL10n ?? '',
+            this.options?.column3Htmll10n ?? '',
             this.options?.column3Html ?? '',
             issuesFound, valueHostsManager, fieldValueHost);
         html += `<div class='jivs-column3'>${column3 ?? ''}</div>`;
@@ -111,7 +111,7 @@ export interface ColumnarErrorIndicatorContentGlobalOptions extends ErrorIndicat
     /**
      * Localization key for column 1 HTML content.
      */
-    column1HtmlL10n?: string;
+    column1Htmll10n?: string;
     /**
      * HTML content for column 2. 
      * Any text must be HTML encoded.
@@ -121,17 +121,17 @@ export interface ColumnarErrorIndicatorContentGlobalOptions extends ErrorIndicat
     /**
      * Localization key for column 2 HTML content.
      */
-    column2HtmlL10n?: string;
+    column2Htmll10n?: string;
     /**
      * HTML content for column 3. 
      * Any text must be HTML encoded.
-     * If localization is needed, use the corresponding `column3HtmlL10n` property.
+     * If localization is needed, use the corresponding `column3Htmll10n` property.
      */
     column3Html?: string;
     /**
      * Localization key for column 3 HTML content.
      */
-    column3HtmlL10n?: string;
+    column3Htmll10n?: string;
 }
 /**
  * Options specific to the presentation instance which includes globals.

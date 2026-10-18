@@ -121,6 +121,14 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
      */
     public defaultFactoryRegistrations(factory: IEditorAdapterDefinitionFactory): void
     {
+        //!!WARNING: These values are not used in production.
+        // The user needed to see the adapter keys to understand how to consume AdapterDefinitions.
+        // So they are fully displayed in the configureJivsDom.ts file.
+
+        // We keep this here for testing purposes, but may later remove it.
+
+
+
         // Register default field presentations here
         // Default adapter keys look like this: 'input:type'
         factory.register(new InputAdapterDefinition('text', getInputAdapterKey('text'), 80));

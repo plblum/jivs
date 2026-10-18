@@ -41,7 +41,7 @@ import { MessageFrame } from '@plblum/jivs-dom/build/Presentations_common/Messag
 import { IconMessageFrame } from '@plblum/jivs-dom/build/Presentations_common/IconMessageFrame';
 import { HeaderFooterMessageFrame } from '@plblum/jivs-dom/build/Presentations_common/HeaderFooterMessageFrame';
 import { InlineErrorMessageDisplayPresentation, InlineErrorMessageDisplayPresentationOptions } from '@plblum/jivs-dom/build/FieldPresentations/InlineErrorMessageDisplayPresentation';
-import { ColumnarErrorIndicatorContent } from '@plblum/jivs-dom/build/FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent';
+import { ColumnarErrorIndicatorContent, ColumnarErrorIndicatorContentOptions } from '@plblum/jivs-dom/build/FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent';
 import { IconMessageFrameOptions } from '@plblum/jivs-dom/build/Presentations_common/IconMessageFrame';
 import { HeaderFooterMessageFrameOptions } from '@plblum/jivs-dom/build/Presentations_common/HeaderFooterMessageFrame';
 import { InputAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/InputAdapterDefinition';
@@ -59,6 +59,11 @@ import { WrappedSelectAdapterDefinition } from '@plblum/jivs-dom/build/EditorAda
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 
+/** Your preferences in one place */
+const iconInErrorMessages = '&#9888;'; // ⚠ = '&#9888;'
+//   const iconInErrorMessages = '&#x2716;'; // ✖ = '&#x2716;'
+const toggleIconInErrorMessages = '&#8250;'; // › = '&#8250;'
+
 /**
  * Call from createJivsServices() or wherever you set up your JivsServices instance.
  * The object itself is already attached to the JivsServices instance as the domServices property
@@ -70,20 +75,13 @@ export function configureJivsDom(jivsServices: IJivsServices):void {
     // Implementation for creating and configuring JivsDomServices goes here
     const domServices = jivsServices.domServices;
 
-    // configuration options
-    // These provide global defaults for many options available on Presentations.
-    let options = domServices.options;  // already exists with no default values.
-    const iconInErrorMessages = '&#9888;'; // ⚠ = '&#9888;'
-    //   const iconInErrorMessages = '&#x2716;'; // ✖ = '&#x2716;'
-    options.iconMessageFrame.iconContent = iconInErrorMessages;
-    options.columnarErrorIndicatorContent.column1Html = iconInErrorMessages;
-    options.columnarErrorIndicatorContent.column3Html = '&#8250;'; // › = '&#8250;'
 
     // ARIA Service
     // The service is optional. It is enabled here. Just comment out the following line if you don't want it.
     domServices.ariaService = new AriaService(domServices);
 
-    domServices.fieldPresentationFactory.lazyRegistration(registerFieldPresentations);    
+    domServices.fieldPresentationFactory.lazyRegistration(
+        (factory) => registerFieldPresentations(factory, domServices));    
 
     // Popup Mechanism
     // Supports popup error messages. Set up in order to use PopupErrorMessageDisplayPresentation.
@@ -125,12 +123,20 @@ export function configureJivsDom(jivsServices: IJivsServices):void {
  * factory.setDefaultPresentationName(ElementRole.label, 'labelAbove');
  * @param domServices 
  */
-function registerFieldPresentations(factory: IPresentationFactory<IFieldPresentation>) : void {
+function registerFieldPresentations(factory: IPresentationFactory<IFieldPresentation>,
+    domServices: IJivsDomServices): void
+{
+    let options = domServices.options;  // setup globals for many options. Shown in use later in this section.
+    
     // FYI: this function is lazy loaded.
+    factory.setDefaultPresentationName(ElementRole.editor, 'TextInput');
+    factory.setDefaultPresentationName(ElementRole.label, 'Label');
+    factory.setDefaultPresentationName(ElementRole.required, 'RequiredIndicator');
+    factory.setDefaultPresentationName(ElementRole.container, 'FieldContainer');
+    factory.setDefaultPresentationName(ElementRole.error, 'InlineError');
 
     // EDITORS
     factory.register('TextInput', (element) => new TextInputPresentation(element));
-    factory.setDefaultPresentationName(ElementRole.editor, 'TextInput');
     factory.register('Checkbox', (element) => new CheckboxPresentation(element));
     factory.register('RadioButtons', (element) => new RadioButtonsPresentation(element));
     factory.register('Select', (element) => new SelectPresentation(element));
@@ -145,11 +151,8 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
 
     // LABELS, REQUIRED INDICATORS, AND CONTAINERS
     factory.register('Label', (element) => new LabelPresentation(element));
-    factory.setDefaultPresentationName(ElementRole.label, 'Label');
     factory.register('RequiredIndicator', (element) => new RequiredIndicatorPresentation(element));
-    factory.setDefaultPresentationName(ElementRole.required, 'RequiredIndicator');
     factory.register('FieldContainer', (element) => new FieldContainerPresentation(element));
-    factory.setDefaultPresentationName(ElementRole.container, 'FieldContainer');
 
     // ERROR MESSAGE DISPLAYS
     /*  Error Message Displays are more complex, as they have several components,
@@ -235,40 +238,67 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
 
     */
     
-    const messageFrame = new MessageFrame({});
+    /**
+     * We provide examples of all 3 Message Frames and suitable options.
+     * Please create their instance within the register() command because each Message Frame instance
+     * is specific to the created Presentation.
+     */
 
+    // IconMessageFrame options assigned globally
+    options.iconMessageFrame.iconContent = iconInErrorMessages; // The "Warning" symbol: ⚠; Alternative suggestion: ✖ = '&#x2716;'
+    // options.headerHtml = 'Please fix the errors';
+    // options.headerHtmll10n = 'ErrorMessageHeader'; // suggested localization key. Set it up with the ErrorMessagesService
+
+    // IconMessageFrame options assigned locally, overrides global options if needed
     const iconMFOptions: IconMessageFrameOptions = {
-        iconContent: '&#9888;',  // The "Warning" symbol: ⚠; Alternative suggestion: ✖ = '&#x2716;'
-        // headerHtml: 'Please fix the errors',
-        // headerHtmll10n: 'ErrorMessageHeader' // suggested localization key. Set it up with the ErrorMessagesService
+        // same properties as on options.iconMessageFrame
     };
-    const iconMessageFrame = new IconMessageFrame(iconMFOptions);
 
+    // HeaderFooterMessageFrame options assigned globally
+    options.headerFooterMessageFrame.headerHtml = 'Please fix the errors';
+    // options.headerFooterMessageFrame.headerHtmll10n = 'ErrorMessageHeader'; // suggested localization key. Set it up with the ErrorMessagesService
+    // options.headerFooterMessageFrame.footerHtml = 'Footer content in HTML';
+    // options.headerFooterMessageFrame.footerHtmll10n = 'ErrorMessageFooter'; // suggested localization key. Set it up with the ErrorMessagesService
+    
+    // HeaderFooterMessageFrame options assigned locally, overrides global options if needed
     const headerFooterMFOptions: HeaderFooterMessageFrameOptions = {
-        headerHtml: 'Please fix the errors',
-        // headerHtmll10n: 'ErrorMessageHeader' // suggested localization key. Set it up with the ErrorMessagesService
-        // footerHtml: 'Footer content in HTML'
-        // footerHtmll10n: 'ErrorMessageFooter' // suggested localization key. Set it up with the ErrorMessagesService
+        // same properties as on options.headerFooterMessageFrame
     };
-    const headerFooterMessageFrame = new HeaderFooterMessageFrame(headerFooterMFOptions);
 
-    const inlineErrorMessageDisplayPresentationOptions: InlineErrorMessageDisplayPresentationOptions = {
+
+    const inlineEMDOptions: InlineErrorMessageDisplayPresentationOptions = {
         variationClasses: [], // additional CSS classes for <div class="jivs-inlineerrormessagedisplay">
     };
+    const inlineEMDOptionsBeside: InlineErrorMessageDisplayPresentationOptions = {
+        variationClasses: ['jivs-position-beside'], 
+    };    
+    const inlineEMDOptionsBelow: InlineErrorMessageDisplayPresentationOptions = {
+        variationClasses: ['jivs-position-below'] 
+    };    
+
 
     factory.register('InlineError',
         (element) => new InlineErrorMessageDisplayPresentation(
-            element, messageFrame, inlineErrorMessageDisplayPresentationOptions));
-    factory.register('InlineErrorBeside', // provides a gap at the start of the error message display
+            element,
+            new MessageFrame(), // alt: new IconMessageFrame(iconMFOptions) and new HeaderFooterMessageFrame(headerFooterMFOptions)
+            inlineEMDOptions));
+    
+    // InlineErrorBeside provides a gap at the start of the error message display
+    factory.register('InlineErrorBeside',
         (element) => new InlineErrorMessageDisplayPresentation(
-            element, messageFrame, {
-                variationClasses: ['jivs-position-beside'] 
-        }));
-    factory.register('InlineErrorBelow', // provides a gap below the error message display
+            element,
+            new MessageFrame(),
+            inlineEMDOptionsBeside
+        ));
+    
+    // InlineErrorBelow provides a gap below the error message display
+    factory.register('InlineErrorBelow',
         (element) => new InlineErrorMessageDisplayPresentation(
-            element, messageFrame, {
-                variationClasses: ['jivs-position-below'] 
-        }));
+            element,
+            new MessageFrame(),
+            inlineEMDOptionsBelow
+        ));
+
     
     /*
        Popup Error Message Display Presentation Options
@@ -296,38 +326,77 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
             column3Htmll10n: // localization key for the third column's HTML content. Can set globally
         });
     */
-/* UNCOMMENT when you have added a PopupMechanism    
-    const popupContent = new MessageFrame({});
-    const errorIndicatorContent = new ColumnarErrorIndicatorContent({});
-        
-    const popupMechanismOptions = {
-        // each PopupMechanism defines options for how the popup should behave, such as positioning, triggers, and animations.
-        // This object is where you set it up.
-        // You should have an interface defining the shape of this object, such as TippyPopupMechanismOptions.
-        // and can strongly type it: const popupOptions: TippyPopupMechanismOptions = { } 
-    };
 
-    const popupErrorMessageDisplayPresentationOptions: PopupErrorMessageDisplayPresentationOptions = {
-        variationClasses: [], // additional CSS classes for <div class="jivs-popuperrormessagedisplay">
-    };
+    if (domServices.popupMechanism)
+    {
+
+        // ColumnarErrorIndicatorContent options setup globally
+        // Locally, we'll use the empty string to block any global content for that column
+        options.columnarErrorIndicatorContent.column1Html = iconInErrorMessages;
+        options.columnarErrorIndicatorContent.column2Html = 'Error';
+        options.columnarErrorIndicatorContent.column3Html = toggleIconInErrorMessages;
+        options.columnarErrorIndicatorContent.column1Htmll10n = 'Column1EIC'; // suggested localization key. Set it up with the ErrorMessagesService
+        options.columnarErrorIndicatorContent.column2Htmll10n = 'Column2EIC'; // suggested localization key. Set it up with the ErrorMessagesService
+        options.columnarErrorIndicatorContent.column3Htmll10n = 'Column3EIC'; // suggested localization key. Set it up with the ErrorMessagesService
     
-    factory.register('PopupError',
-        (element) => new PopupErrorMessageDisplayPresentation(
-            element, errorIndicatorContent, popupContent, popupMechanismOptions,
-            popupErrorMessageDisplayPresentationOptions));
-    factory.register('PopupErrorBeside', // provides a gap at the start of the error message display
-        (element) => new PopupErrorMessageDisplayPresentation(
-            element, errorIndicatorContent, popupContent, popupMechanismOptions,
-            {
-                variationClasses: ['jivs-position-beside']
-            }));
-    factory.register('PopupErrorBelow', // provides a gap below the error message display
-        (element) => new PopupErrorMessageDisplayPresentation(
-            element, errorIndicatorContent, popupContent, popupMechanismOptions,
-            {
-                variationClasses: ['jivs-position-below']
-            }));
-*/            
+        // ColumnarErrorIndicatorContent options set locally
+        // Here we start with the globals, and turn them off by using the empty string.
+
+        // Just show an icon - this can also be set globally in domServices.options.columnarErrorIndicatorContent
+        const columnarEICIconOnly: ColumnarErrorIndicatorContentOptions = {
+            column2Html: '',   // just disables any global
+            column3Html: '',    // just disables any global
+            column2Htmll10n: '',   // just disables any global
+            column3Htmll10n: ''    // just disables any global
+        };
+        const columnarEICIconAndMessage: ColumnarErrorIndicatorContentOptions = {
+            column3Html: '',    // just disables any global
+            column3Htmll10n: ''    // just disables any global
+        };
+        const columnarEICIconMessageAndToggle: ColumnarErrorIndicatorContentOptions = {
+        };
+
+        const popupMechanismOptions = {
+            // each PopupMechanism defines options for how the popup should behave, such as positioning, triggers, and animations.
+            // This object is where you set it up.
+            // You should have an interface defining the shape of this object, such as TippyPopupMechanismOptions.
+            // and can strongly type it: const popupOptions: TippyPopupMechanismOptions = { } 
+        };
+
+        const popupEMDOptions: PopupErrorMessageDisplayPresentationOptions = {
+            variationClasses: [], // additional CSS classes for <div class="jivs-popuperrormessagedisplay">
+        };
+        const popupEMDOptionsBeside: PopupErrorMessageDisplayPresentationOptions = {
+            variationClasses: ['jivs-position-beside']
+        };
+        const popupEMDOptionsBelow: PopupErrorMessageDisplayPresentationOptions = {
+            variationClasses: ['jivs-position-below']
+        };
+    
+        factory.register('PopupError',
+            (element) => new PopupErrorMessageDisplayPresentation(
+                element,
+                new ColumnarErrorIndicatorContent(columnarEICIconOnly),
+                new MessageFrame(), // popup's content. alt: new IconMessageFrame(iconMFOptions) and new HeaderFooterMessageFrame(headerFooterMFOptions)
+                popupMechanismOptions,
+                popupEMDOptions));
+        factory.register('PopupErrorBeside', // provides a gap at the start of the error message display
+            (element) => new PopupErrorMessageDisplayPresentation(
+                element,
+                new ColumnarErrorIndicatorContent(columnarEICIconOnly),
+                new MessageFrame(),
+                popupMechanismOptions,
+                popupEMDOptionsBeside
+            ));
+        factory.register('PopupErrorBelow', // provides a gap below the error message display
+            (element) => new PopupErrorMessageDisplayPresentation(
+                element,
+                new ColumnarErrorIndicatorContent(columnarEICIconOnly),
+                new MessageFrame(),
+                popupMechanismOptions,
+                popupEMDOptionsBelow
+            ));
+    }          
 }
 
 /**
