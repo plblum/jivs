@@ -117,16 +117,16 @@ Source: `packages/jivs-dom/src/{Adapters, Aria, Dispatchers, EditorAdapterDefini
 Owner-approved. Work strictly one class at a time, in this order; within a phase, bases come before subclasses. Exception chosen by the owner: `DomLoggingFacade` was first. When a class is finished and reviewed, tick its box and add its test file path. Paths are relative to `packages/jivs-dom/src/` (tests mirror them under `tests/`). Interfaces and `index.ts` are type-only/exports and have no tests of their own.
 
 ### Phase 1: Adapters (no dependencies)
-- [ ] Adapters/AdapterBase
-- [ ] Adapters/ValueAdapterBase
-- [ ] Adapters/TextValueAdapterBase
-- [ ] Adapters/InputTextValueAdapter
-- [ ] Adapters/TextAreaTextValueAdapter
-- [ ] Adapters/SelectTextValueAdapter
-- [ ] Adapters/CheckboxTextValueAdapter
-- [ ] Adapters/FileInputTextValueAdapter
-- [ ] Adapters/RadioButtonsTextValueAdapterBase
-- [ ] Adapters/RadioButtonsTextValueAdapter
+- [x] Adapters/AdapterBase (`tests/Adapters/AdapterBase.test.ts`)
+- [x] Adapters/ValueAdapterBase (`tests/Adapters/ValueAdapterBase.test.ts`)
+- [x] Adapters/TextValueAdapterBase (`tests/Adapters/TextValueAdapterBase.test.ts`)
+- [x] Adapters/InputTextValueAdapter (`tests/Adapters/InputTextValueAdapter.test.ts`)
+- [x] Adapters/TextAreaTextValueAdapter (`tests/Adapters/TextAreaTextValueAdapter.test.ts`)
+- [x] Adapters/SelectTextValueAdapter (`tests/Adapters/SelectTextValueAdapter.test.ts`)
+- [x] Adapters/CheckboxTextValueAdapter (`tests/Adapters/CheckboxTextValueAdapter.test.ts`)
+- [x] Adapters/FileInputTextValueAdapter (`tests/Adapters/FileInputTextValueAdapter.test.ts`)
+- [x] Adapters/RadioButtonsTextValueAdapterBase (`tests/Adapters/RadioButtonsTextValueAdapterBase.test.ts`)
+- [x] Adapters/RadioButtonsTextValueAdapter (`tests/Adapters/RadioButtonsTextValueAdapter.test.ts`)
 
 ### Phase 2: Aria updaters
 - [ ] Aria/AriaStaticUpdaterBase

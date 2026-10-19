@@ -10,4 +10,9 @@ Parking lot of ideas gathered while writing jivs-dom unit tests. Nothing here is
 When testing a class, append an idea only if it surfaces a user-visible behavior. Mark `[ ]` until built.
 
 ## User-facing features
+- [ ] Text editor synchronization: type into an input or enter multiline text in a textarea, then update the field value through Jivs and observe each editor reflect it (InputTextValueAdapter, TextAreaTextValueAdapter).
+- [ ] Single-select synchronization: choose an option and observe its configured value flow through Jivs; update the field value and observe the corresponding option become selected (SelectTextValueAdapter).
+- [ ] Checkbox text synchronization: check/uncheck a checkbox and observe its configured string value or empty text flow through Jivs; write the configured value through Jivs and observe the checkbox become checked (CheckboxTextValueAdapter).
+- [ ] Radio-group text synchronization: select a radio option and observe its value flow through Jivs; update the field value and observe the matching sibling radio become selected, whether the anchor or its container holds Jivs state (RadioButtonsTextValueAdapter).
+- [ ] File-name validation: select one or more files and observe their names, joined by `|`, become the field's text value for required or pattern validation; the adapter never writes file selections (FileInputTextValueAdapter).
 - [ ] (add as behavior surfaces, for example: field validation on blur, form validation summary, inline vs popup error messages, required indicator, ARIA attributes for assistive technology, and the radio/checkbox/select/file editors)
