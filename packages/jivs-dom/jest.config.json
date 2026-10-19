@@ -33,5 +33,6 @@
         "temp",    
         "TestSupport",
         "examples"
-    ]
+    ],
+    "testEnvironment": "jsdom"
 }
