@@ -37,6 +37,8 @@ export class EditorAriaValidationStateUpdater extends AriaValidationStateUpdater
                 {
                     ariaHostElement.setAttribute('aria-errormessage', errorMessageId);
                 }
+                else
+                    ariaHostElement.removeAttribute('aria-errormessage');
             }
             else
             {

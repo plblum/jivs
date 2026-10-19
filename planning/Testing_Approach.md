@@ -12,10 +12,10 @@ Reference for any chat/agent writing unit tests in this repo. It was derived fro
 6. **Commenting (explicit exception to "comment sparingly").** Put a brief comment above each `describe` saying what is verified and why it matters. Comment non-obvious jsdom/event techniques where first used (e.g. why focus needs the element attached, why an event is dispatched with `bubbles: true`).
 7. **The owner is new to jsdom testing.** When a DOM/event challenge appears, explain the technique briefly in chat, then show it in the test. See section 10.
 8. **Leaf-first order.** Unless told otherwise, suggest classes that depend on few others first (Utilities, Services bases, Adapters, then Dispatchers, Aria, Presentations, Installers), so shared TestSupport grows incrementally.
-9. **Test support is shared.** Before creating a helper, check `packages/jivs-dom/tests/TestSupport/` and reuse or extend it. Tell the owner when you add one. Current files: `utilities.ts` (DOM helpers such as `createElement(attributes, tagName)`), `mocks.ts` (fakes such as `RecordingLoggingService`, `createStubFieldValueHost`).
+9. **Test support is shared.** Before creating a helper, check `packages/jivs-dom/tests/TestSupport/` and reuse or extend it. Tell the owner when you add one. Current files: `utilities.ts` (DOM helpers such as `createElement(attributes, tagName)`), `mocks.ts` (fakes such as `RecordingLoggingService`, `createStubFieldValueHost`), and `FieldValueHostTestFunctions.ts` (real engine services, manager, and FieldValueHost setup).
 10. **Tests express the intended behavior, not just the current code.** Derive expectations from the source doc comments, interface docs, and `planning/Jivs-DOM_Implementation_Design.md` (and other planning docs). Do not write a test merely because the code does it: that would bless bugs. When the code's behavior contradicts or goes beyond the documented intent, or the intent is unclear (for example, what an empty-string attribute should do), **do not write a test that locks it in**. List it for the owner as a question or suspected bug.
 11. **Stay in scope.** Test only the class under test. Behavior owned by a collaborator (a logging service filtering by level, a FieldValueHost computing its identifier) belongs in that collaborator's tests (often in jivs-engine). Isolate with a fake and assert what the class asked the collaborator to do.
-12. **Fakes first, then integration.** Unit tests use hand-written fakes for collaborators. After the real collaborator has its own tests, add a clearly labeled integration `describe` at the end of the file proving the class works with the real one. As classes in the checklist get tested, revisit earlier tests that used a fake and add the integration test where the real class is now covered.
+12. **Use fakes for isolation and real collaborators for meaningful integration.** Keep focused unit tests with hand-written fakes when they make the class's request or edge case explicit. Prefer real collaborators when their behavior is directly relevant and they are lightweight to construct; add clearly labeled integration tests alongside the isolated tests rather than replacing all fakes. As classes in the checklist get tested, revisit earlier suites where a real collaborator adds useful coverage.
 13. **Website demonstrations.** `packages/jivs-dom/website/` (currently only `playground-preview/`, which does not use jivs-dom) will host user demos and testing demos, rebuilt on jivs-dom after the unit tests are in place. These are integration oriented and meaningful to a UI observer (an end user exercising the page). Only note a candidate in `planning/Testing_Demonstrations.md` when a class surfaces user-visible behavior; internals like `DomLoggingFacade` get no entry. Append; do not build them.
 
 ## 1. Tooling and layout
@@ -129,15 +129,15 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] Adapters/RadioButtonsTextValueAdapter (`tests/Adapters/RadioButtonsTextValueAdapter.test.ts`)
 
 ### Phase 2: Aria updaters
-- [ ] Aria/AriaStaticUpdaterBase
-- [ ] Aria/AriaValidationStateUpdaterBase
-- [ ] Aria/EditorAriaStaticUpdater
-- [ ] Aria/WrappedRadioButtonsAriaStaticUpdater
-- [ ] Aria/RequiredIndicatorAriaStaticUpdater
-- [ ] Aria/PopupErrorMessageDisplayStaticUpdater
-- [ ] Aria/ValidationSummaryAriaStaticUpdater
-- [ ] Aria/EditorAriaValidationStateUpdater
-- [ ] Aria/HiddenErrorMessagesAriaValidationStateUpdater
+- [x] Aria/AriaStaticUpdaterBase (`tests/Aria/AriaStaticUpdaterBase.test.ts`)
+- [x] Aria/AriaValidationStateUpdaterBase (`tests/Aria/AriaValidationStateUpdaterBase.test.ts`)
+- [x] Aria/EditorAriaStaticUpdater (`tests/Aria/EditorAriaStaticUpdater.test.ts`)
+- [x] Aria/WrappedRadioButtonsAriaStaticUpdater (`tests/Aria/WrappedRadioButtonsAriaStaticUpdater.test.ts`)
+- [x] Aria/RequiredIndicatorAriaStaticUpdater (`tests/Aria/RequiredIndicatorAriaStaticUpdater.test.ts`)
+- [x] Aria/PopupErrorMessageDisplayStaticUpdater (`tests/Aria/PopupErrorMessageDisplayStaticUpdater.test.ts`)
+- [x] Aria/ValidationSummaryAriaStaticUpdater (`tests/Aria/ValidationSummaryAriaStaticUpdater.test.ts`)
+- [x] Aria/EditorAriaValidationStateUpdater (`tests/Aria/EditorAriaValidationStateUpdater.test.ts`)
+- [x] Aria/HiddenErrorMessagesAriaValidationStateUpdater (`tests/Aria/HiddenErrorMessagesAriaValidationStateUpdater.test.ts`)
 
 ### Phase 3: Logging and dispatch (needs a small `IJivsDomServices` fake in TestSupport)
 - [x] Utilities/DomLoggingFacade (`tests/Utilities/DomLoggingFacade.test.ts`; revised after owner review: scoped to the facade with fakes, plus an integration describe; awaiting final review)
