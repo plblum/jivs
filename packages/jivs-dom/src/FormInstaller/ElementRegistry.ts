@@ -362,7 +362,8 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
     public dispose(): void
     {
         this.clear();
-        (this.entriesByElementIdentifier as any) = null;
-        (this.records as any) = null;
+
+        (this._entriesByElementIdentifier as any) = null;
+        (this._records as any) = null;
     }
 }

@@ -141,13 +141,13 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 
 ### Phase 3: Logging and dispatch (needs a small `IJivsDomServices` fake in TestSupport)
 - [x] Utilities/DomLoggingFacade (`tests/Utilities/DomLoggingFacade.test.ts`; revised after owner review: scoped to the facade with fakes, plus an integration describe; awaiting final review)
-- [ ] Dispatchers/DispatcherBase
-- [ ] Dispatchers/FieldDispatcherBase
-- [ ] Dispatchers/FormDispatcherBase
-- [ ] Dispatchers/FieldValidationDispatcher
-- [ ] Dispatchers/FormValidationDispatcher
-- [ ] Dispatchers/TextValueDispatcher
-- [ ] Dispatchers/ValueDispatcher
+- [x] Dispatchers/DispatcherBase (`tests/Dispatchers/DispatcherBase.test.ts`)
+- [x] Dispatchers/FieldDispatcherBase (`tests/Dispatchers/FieldDispatcherBase.test.ts`)
+- [x] Dispatchers/FormDispatcherBase (`tests/Dispatchers/FormDispatcherBase.test.ts`)
+- [x] Dispatchers/FieldValidationDispatcher (`tests/Dispatchers/FieldValidationDispatcher.test.ts`)
+- [x] Dispatchers/FormValidationDispatcher (`tests/Dispatchers/FormValidationDispatcher.test.ts`)
+- [x] Dispatchers/TextValueDispatcher (`tests/Dispatchers/TextValueDispatcher.test.ts`; the defensive adapter-absent branch is excluded by ElementRegistry's adapter-only query)
+- [x] Dispatchers/ValueDispatcher (`tests/Dispatchers/ValueDispatcher.test.ts`; the defensive adapter-absent branch is excluded by ElementRegistry's adapter-only query)
 
 ### Phase 4: Services
 - [ ] Services/DomServiceBase

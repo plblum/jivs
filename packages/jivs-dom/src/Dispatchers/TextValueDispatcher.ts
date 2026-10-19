@@ -6,6 +6,7 @@
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ITextValueDispatcher } from '../Interfaces/Dispatchers';
 import { FieldDispatcherBase } from './FieldDispatcherBase';
+import { IJivsElement } from '../Interfaces/IJivsElement';
     
 
 /**
@@ -33,5 +34,11 @@ export class TextValueDispatcher extends FieldDispatcherBase
                 adapter.writeTextValue(newValue);
             }
         });
+    }
+
+    protected override findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsElement>
+    {
+        return this.domServices.getElementRegistry(valueHost.valueHostsManager)
+            .getTextValueAdapterElements(valueHost.getElementIdentifier());
     }
 }

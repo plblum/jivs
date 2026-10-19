@@ -7,6 +7,7 @@ import type { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Valid
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IFormValidationDispatcher } from '../Interfaces/Dispatchers';
 import { FormDispatcherBase } from './FormDispatcherBase';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * @inheritdoc jivs-dom/Types/Dispatchers!IFormValidationDispatcher
@@ -33,5 +34,11 @@ export class FormValidationDispatcher extends FormDispatcherBase
                 adapter.apply(valueHostsManager, state);
             }
         });
+    }
+
+    protected override findElements(root: HTMLElement, valueHostsManager: IValueHostsManager): Iterable<IJivsElement>
+    {
+        return this.domServices.getElementRegistry(valueHostsManager)
+            .getFormPresentationElements();
     }
 }

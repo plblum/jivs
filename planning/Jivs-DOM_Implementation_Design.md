@@ -4440,17 +4440,17 @@ interface IFieldAriaElementAnchors {
 getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;
 ```
 
-The query selects the first editor jivsElement. It prefers the first `aria-error` record and otherwise selects the first `error` record. It returns the selected role for updater selection.
+The query selects the last editor jivsElement and last `aria-error` record. If no `aria-error` record exists, it selects the first `error` record. It returns the selected role for updater selection.
 
-The index also supplies distinct resolved fields in first-Identifier order:
+The index also supplies distinct resolved identifier entries, including their associated FieldValueHost and field records, in first-Identifier order:
 
 ```ts
-getResolvedElementIdentifiers(): IFieldValueHost[];
+getResolvedElementIdentifiers(): ElementIdentifierRegistryEntry[];
 ```
 
 #### Clear and Dispose
 
-`clear()` nulls retained element, jivsElement, FieldValueHost, and options references, then clears the master array and identifier index. It retains the manager and remains reusable.
+`clear()` nulls retained element, jivsElement, and FieldValueHost references, then clears the master array and identifier index. Installation options are retained on any record references held by callers. It retains the manager and remains reusable.
 
 `dispose()` performs the same release and then releases the manager and other owned references. The Registry is unusable afterward.
 

@@ -7,6 +7,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { IValueDispatcher } from '../Interfaces/Dispatchers';
 import { FieldDispatcherBase } from './FieldDispatcherBase';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { IJivsElement } from '../Interfaces/IJivsElement';
 
 /**
  * @inheritdoc jivs-dom/Types/Dispatchers!IValueDispatcher
@@ -37,5 +38,11 @@ export class ValueDispatcher extends FieldDispatcherBase
                 adapter.writeValue(newValue);
             }
         });
+    }
+
+    protected override findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsElement>
+    {
+        return this.domServices.getElementRegistry(valueHost.valueHostsManager)
+            .getValueAdapterElements(valueHost.getElementIdentifier());
     }
 }

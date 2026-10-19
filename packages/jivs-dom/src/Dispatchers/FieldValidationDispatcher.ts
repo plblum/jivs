@@ -1,11 +1,12 @@
 /**
- * Text value dispatcher implementation for handling field validation in the DOM.
+ * Field validation dispatcher implementation for handling field validation updates in the DOM.
  * 
  * @module jivs-dom/Dispatchers/ConcreteClasses/FieldValidationDispatcher
  */
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IFieldValidationDispatcher } from '../Interfaces/Dispatchers';
+import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { FieldDispatcherBase } from './FieldDispatcherBase';
 
 
@@ -18,7 +19,7 @@ export class FieldValidationDispatcher extends FieldDispatcherBase
     /**
      * ValueHostsManager.onValueHostValidationStateChanged callback invokes this method 
      * when the validation state of the field changes.
-     * It targets all elements returned by findElements(), which is supplied by subclassing.
+     * It targets all field elements returned by the associated ElementRegistry.
      * Executes an operation that retrieves IJivsElement.jivsFieldPresentation 
      * and calls its apply function. If none is attached, the operation is skipped.
      * 
@@ -37,5 +38,11 @@ export class FieldValidationDispatcher extends FieldDispatcherBase
             this.domServices.ariaService?.applyValidationState(
                 element, valueHost, state);
         });
+    }
+
+    protected override findElements(root: HTMLElement, valueHost: IFieldValueHost): Iterable<IJivsElement>
+    {
+        return this.domServices.getElementRegistry(valueHost.valueHostsManager)
+            .getFieldPresentationElements(valueHost.getElementIdentifier());
     }
 }
