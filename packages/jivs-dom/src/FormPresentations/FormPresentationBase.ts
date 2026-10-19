@@ -16,6 +16,8 @@ import { PresentationBaseOptions } from '../Presentations_common/PresentationBas
  * 
  * - implement init() when you need to perform initialization logic for the form presentation.
  * - implement apply() to update the form presentation based on the validation state.
+ * - override getOptionsDefaults() to provide default option values for the form presentation.
+ * - override getGlobalOptions() to provide default global option values for the form presentation.
  * - optionally override resolvePresentationElement() to customize the element that is the target of the presentation,
  *   such as the host of the CSS class names.
  * - optionally override getStaticAriaUpdater()

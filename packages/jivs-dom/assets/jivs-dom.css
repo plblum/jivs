@@ -1007,3 +1007,43 @@
 :where(.jivs-popuperrormessagedisplay:hover .jivs-columnarerrorindicatorcontent > .jivs-column3) {
     color: var(--jivs-error-indicator-column3-hover-color);
 }
+
+/* --- VALIDATION SUMMARY ROLE --- */
+/* The Validation Summary shows all validation errors for a form in a single location.
+ * It is very similar structurally to Error Message Displays, although its more likely
+ * you will include a header on it using HeaderFooterMessageFrame.
+ * 
+ * The ValidationSummaryPresentation class is used to render the validation summary.
+ * It has these fixed CSS classes:
+ * - .jivs-validationsummary: The outer container for the validation summary.
+ * - .jivs-has-issues - It is hidden when not present
+
+ *  The HTML for ValidationSummaryPresentation always contains the Message Frame,
+ *  which contains Message Content.
+ *
+ *  <div class="jivs-validationsummary jivs-has-issues">
+ *      <div class="jivs-messageframe">
+ *          <div class="jivs-messagecontent">
+ *              <!-- Error messages go here -->
+ *          </div>
+ *      </div>
+ *  </div>
+ * See the Error Message Display comments for guidance around Message Frame and Message Content components.
+ * 
+ * ValidationSummaryPresentation also supports raising the IssueClicked event when issues are clicked, 
+ * allowing you to focus on the associated form fields.
+ * The 'jivs-issueclicked' variation class can be used to style the summary when issues are clicked.
+ */
+
+:where(.jivs-validationsummary):where(:not(.jivs-has-issues)) {
+    display: none;
+}
+
+/* Assign to the variationClasses for the issue clicked state */
+.jivs-validationsummary.jivs-issueclicked [data-identifier] {
+    cursor: pointer;
+}
+
+.jivs-validationsummary.jivs-issueclicked [data-identifier]:hover {
+    text-decoration: underline;
+}

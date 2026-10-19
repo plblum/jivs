@@ -19,6 +19,7 @@ import { AriaService } from '@plblum/jivs-dom/build/Aria/AriaService';
 import { IJivsDomServices } from '@plblum/jivs-dom/build/Interfaces/JivsDomServices';
 import { IPresentationFactory } from '@plblum/jivs-dom/build/Interfaces/Presentations_common';
 import { IFieldPresentation } from '@plblum/jivs-dom/build/Interfaces/FieldPresentations';
+import { IFormPresentation } from '@plblum/jivs-dom/build/Interfaces/FormPresentations';
 import { IEditorAdapterDefinitionFactory } from '@plblum/jivs-dom/build/Interfaces/EditorAdapterDefinitions';
 import { TextInputPresentation } from '@plblum/jivs-dom/build/FieldPresentations/TextInputPresentation';
 import { CheckboxPresentation } from '@plblum/jivs-dom/build/FieldPresentations/CheckboxPresentation';
@@ -56,6 +57,9 @@ import { WrappedRadioButtonsAdapterDefinition } from '@plblum/jivs-dom/build/Edi
 import { WrappedFileInputAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedFileInputAdapterDefinition';
 import { WrappedTextAreaAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedTextAreaAdapterDefinition';
 import { WrappedSelectAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedSelectAdapterDefinition';
+import { ValidationSummaryPresentation, ValidationSummaryPresentationOptions }
+    from '@plblum/jivs-dom/build/FormPresentations/ValidationSummaryPresentation';
+
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 
@@ -80,13 +84,18 @@ export function configureJivsDom(jivsServices: IJivsServices):void {
     // The service is optional. It is enabled here. Just comment out the following line if you don't want it.
     domServices.ariaService = new AriaService(domServices);
 
-    domServices.fieldPresentationFactory.lazyRegistration(
-        (factory) => registerFieldPresentations(factory, domServices));    
 
     // Popup Mechanism
     // Supports popup error messages. Set up in order to use PopupErrorMessageDisplayPresentation.
     // The Popup Mechanism is available in a separate library, such as jivs-dom-tippy for Tippy.js integration.
+    // NOTE: Must execute before registerFieldPresentations
     // domServices.popupMechanism = new TippyPopupMechanism(domServices);
+
+    domServices.fieldPresentationFactory.lazyRegistration(
+        (factory) => registerFieldPresentations(factory, domServices));    
+    
+    domServices.formPresentationFactory.lazyRegistration(
+        (factory) => registerFormPresentations(factory, domServices));
 
 
     domServices.editorAdapterDefinitionFactory.lazyRegistration(registerEditorAdapterDefinitions);
@@ -397,6 +406,117 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
                 popupEMDOptionsBelow
             ));
     }          
+}
+
+/**
+ * Form Presentations adjust CSS styles based on the validation state of the entire form.
+ * They support validation summary and submit widgets.
+ * Validation Summaries use the form presentation to generate HTML content that 
+ * displays the error messages.
+ * 
+ * The FormPresentation classes are highly customizable and we expect you to
+ * adjust existing registrations or create variations of them.
+ * 
+ * Form Presentations are each given a unique key when registered with the factory.
+ * Use that same key to specify them.
+ * For example, here are two variations of the ValidationSummaryPresentation:
+ * factory.register('ValidationSummary', (element) => 
+ *      new ValidationSummaryPresentation(element, new MessageFrame(), {})); // our default
+ * factory.register('ValidationSummary+Custom', 
+ *    (element) => new ValidationSummaryPresentation(element, new MessageFrame(), {
+ *        variationClasses: 'customValidationSummary' // CSS class you created
+ *      })); // our default
+ * 
+ * Our factory already has default form presentations registered
+ * for validation summary, submit widgets, and other form-related components,
+ * with their default options. It also supports the all editors within a wrapper (a containing tag)
+ * where the CSS style is applied to the wrapper element rather than the individual editors.
+ * 
+ * Finally, the factory retains a default for each role (validation summary, submit, etc.)
+ * which you can replace.
+ * factory.setDefaultPresentationName(ElementRole.summary, 'ValidationSummary');
+ * @param domServices 
+ */
+function registerFormPresentations(factory: IPresentationFactory<IFormPresentation>,
+    domServices: IJivsDomServices): void
+{
+    let options = domServices.options;  // setup globals for many options. Shown in use later in this section.
+
+    // FYI: this function is lazy loaded.
+    factory.setDefaultPresentationName(ElementRole.summary, 'ValidationSummary');
+
+    // VALIDATION SUMMARY
+    /* Validation Summaries have several components,
+     * each supported by other HTML generating classes, and numerous options.
+     * The components are:
+     * 1. The tag you add to the page to anchor the error messages.
+     *    ValidationSummaryPresentation
+     * 
+     * 2. The Message Frame, which provides the content around the Message Content component.
+     *    Here you typically find headers, icons, and other decorative elements.
+     *    These are the same as found with Error Message Displays, and can use the same styles 
+     *    and options if you like.
+     *    - MessageFrame is just a single tag wrapped around the Message Content.
+     *    - IconMessageFrame places an icon to the side of the Message Content.
+     *    - HeaderFooterMessageFrame includes an optional localized header and footer 
+     *      around the Message Content.
+     * 
+     * 3. The Message Content, which contains the actual error message HTML.
+     *    IssuesFoundFormatterService generates just the Message Content, either as a single
+     *    span for a single issue or a ul containing li elements for multiple issues.
+     *
+     * How to click on the validation summary to focus on the associated form fields.
+     * 1. A click on a specific error message will trigger the IssueClicked event.
+     *    Setup a listener on or above the Presentation outer tag for 'IssueClicked' events.
+     *    The event object contains the identity of the associated field in its elementIdentifier property.
+     *    Use that to route focus to the associated form field.
+     * 2. Setup CSS to entice the user to click on the error messages, 
+     *    such as using hover effects or highlighting the messages.
+     *    .jivs-validationsummary.jivs-issueclicked [data-identifier]
+     *    {
+     *      cursor: pointer;     
+     *    }
+     *    .jivs-validationsummary.jivs-issueclicked [data-identifier]:hover
+     *    {
+     *      text-decoration: underline; 
+     *    }
+     * 3. In the ValidationSummaryPresentationOptions, add 'jivs-issueclicked' 
+     *    to the variationClasses array.
+     * 
+     *      factory.register('ValidationSummary', (element) => 
+     *          new ValidationSummaryPresentation(element, new MessageFrame(), 
+     *          {
+     *              variationClasses: ['jivs-issueclicked']
+     *          }));
+     */
+
+
+    /**
+     * We provide examples of all 3 Message Frames and suitable options.
+     * Please create their instance within the register() command because each Message Frame instance
+     * is specific to the created Presentation.
+     */
+
+    // IconMessageFrame options assigned globally
+    options.iconMessageFrame.iconContent = iconInErrorMessages; // The "Warning" symbol: ⚠; Alternative suggestion: ✖ = '&#x2716;'
+    // options.headerHtml = 'Please fix the errors';
+    // options.headerHtmll10n = 'ErrorMessageHeader'; // suggested localization key. Set it up with the ErrorMessagesService
+
+    // IconMessageFrame options assigned locally, overrides global options if needed
+    const iconMFOptions: IconMessageFrameOptions = {
+        // same properties as on options.iconMessageFrame
+    };
+
+    const validationSummaryOptions: ValidationSummaryPresentationOptions = { };
+    const validationSummaryOptionsIssuesClicked: ValidationSummaryPresentationOptions = {
+        variationClasses: ['jivs-issueclicked']
+    };
+
+    // Validation Summary Presentation
+    factory.register('ValidationSummary', (element) => 
+        new ValidationSummaryPresentation(element,
+            new MessageFrame(),
+            validationSummaryOptions)); 
 }
 
 /**
