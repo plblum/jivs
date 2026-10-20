@@ -213,10 +213,10 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] FieldPresentations/FieldPresentationInstaller (`tests/FieldPresentations/FieldPresentationInstaller.test.ts`)
 
 ### Phase 5c: FormPresentations
-- [ ] FormPresentations/FormPresentationBase
-- [ ] FormPresentations/ValidationSummaryPresentation
-- [ ] FormPresentations/FormPresentationFactory
-- [ ] FormPresentations/FormPresentationInstaller
+- [x] FormPresentations/FormPresentationBase (`tests/FormPresentations/FormPresentationBase.test.ts`)
+- [x] FormPresentations/ValidationSummaryPresentation (`tests/FormPresentations/ValidationSummaryPresentation.test.ts`)
+- [x] FormPresentations/FormPresentationFactory (`tests/FormPresentations/FormPresentationFactory.test.ts`)
+- [x] FormPresentations/FormPresentationInstaller (`tests/FormPresentations/FormPresentationInstaller.test.ts`)
 
 ### Phase 6: Editor adapter definitions, installers, registry
 - [ ] EditorAdapterDefinitions/EditorAdapterDefinitionBase
