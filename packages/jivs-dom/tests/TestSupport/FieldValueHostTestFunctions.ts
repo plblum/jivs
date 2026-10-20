@@ -8,9 +8,7 @@ import {
 } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 
-import { IJivsDomServices } from '@plblum/jivs-dom/build/Interfaces/JivsDomServices';
-import { JivsDomServices } from '@plblum/jivs-dom/build/Services/JivsDomServices';
-import { JivsDomServicesInstaller } from '@plblum/jivs-dom/build/Services/JivsDomServicesInstaller';
+import { JivsDomServicesInstaller } from '../../src/Services/JivsDomServicesInstaller';
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 /**
  * Creates a FieldValueHostConfig with defaults used by jivs-dom tests.
