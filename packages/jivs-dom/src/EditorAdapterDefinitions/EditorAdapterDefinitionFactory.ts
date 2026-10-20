@@ -99,11 +99,20 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
 
     protected ensureLazyRegistration(): void
     {
-        if (this._lazyRegistrationFunction) {
-            this._lazyRegistrationFunction(this);
-            this._lazyRegistrationFunction = undefined;
+        if (this._inEnsureLazyRegistration) {
+            return;
+        }
+        this._inEnsureLazyRegistration = true;
+        try {
+            if (this._lazyRegistrationFunction) {
+                this._lazyRegistrationFunction(this);
+                this._lazyRegistrationFunction = undefined;
+            }
+        } finally {
+            this._inEnsureLazyRegistration = false;
         }
     }
+    private _inEnsureLazyRegistration: boolean = false;
 
     /**
      * The default factory registrations for editor adapter definitions.

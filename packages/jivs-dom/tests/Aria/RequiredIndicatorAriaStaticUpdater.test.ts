@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { RequiredIndicatorAriaStaticUpdater } from '../../src/Aria/RequiredIndicatorAriaStaticUpdater';
 import { ElementRole } from '../../src/Interfaces/Types';

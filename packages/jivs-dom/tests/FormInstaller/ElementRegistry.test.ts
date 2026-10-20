@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { EditorInstallOptions } from '../../src/Interfaces/EditorInstaller';

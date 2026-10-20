@@ -61,11 +61,20 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
 
     protected ensureLazyRegistration(): void
     {
-        if (this._lazyRegistrationFunction) {
-            this._lazyRegistrationFunction(this);
-            this._lazyRegistrationFunction = undefined;
+        if (this._inEnsureLazyRegistration) {
+            return;
+        }
+        this._inEnsureLazyRegistration = true;
+        try {
+            if (this._lazyRegistrationFunction) {
+                this._lazyRegistrationFunction(this);
+                this._lazyRegistrationFunction = undefined;
+            }
+        } finally {
+            this._inEnsureLazyRegistration = false;
         }
     }    
+    private _inEnsureLazyRegistration: boolean = false;
     /**
      * Adds or replaces a mapping between role and presentation name.
      * These are the default presentations for different element roles, only 

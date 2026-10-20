@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IFieldValueHost, TextValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IValidatableValueHost, ValueHostValidationState, ValueHostValidationStateChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IValueHost, ValueChangedHandler } from '@plblum/jivs-engine/build/Interfaces/ValueHost';

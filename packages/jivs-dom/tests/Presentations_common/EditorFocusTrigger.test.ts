@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { EditorFocusTrigger } from '../../src/Presentations_common/EditorFocusTrigger';
 import { createErrorMessageDisplayTriggerTestContext } from '../TestSupport/ErrorMessageDisplayTriggerTestFunctions';
 

@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { RadioButtonsTextValueAdapter } from '../../src/Adapters/RadioButtonsTextValueAdapter';
 

@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { JivsServices } from '@plblum/jivs-engine/build/Services/JivsServices';
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import { JivsDomServices } from '../../src/Services/JivsDomServices';

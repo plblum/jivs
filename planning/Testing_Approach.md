@@ -12,7 +12,7 @@ Reference for any chat/agent writing unit tests in this repo. It was derived fro
 6. **Commenting (explicit exception to "comment sparingly").** Put a brief comment above each `describe` saying what is verified and why it matters. Comment non-obvious jsdom/event techniques where first used (e.g. why focus needs the element attached, why an event is dispatched with `bubbles: true`).
 7. **The owner is new to jsdom testing.** When a DOM/event challenge appears, explain the technique briefly in chat, then show it in the test. See section 10.
 8. **Leaf-first order.** Unless told otherwise, suggest classes that depend on few others first (Utilities, Services bases, Adapters, then Dispatchers, Aria, Presentations, Installers), so shared TestSupport grows incrementally.
-9. **Test support is shared.** Before creating a helper, check `packages/jivs-dom/tests/TestSupport/` and reuse or extend it. Tell the owner when you add one. Current files: `utilities.ts` (DOM helpers such as `createElement(attributes, tagName)`), `mocks.ts` (fakes such as `RecordingLoggingService`, `createStubFieldValueHost`), and `FieldValueHostTestFunctions.ts` (real engine services, manager, and FieldValueHost setup).
+9. **Test support is shared.** Before creating a helper, check `packages/jivs-dom/tests/TestSupport/` and reuse or extend it. Tell the owner when you add one. Current files include `utilities.ts` (DOM helpers such as `createElement(attributes, tagName)`), `mocks.ts` (fakes such as `RecordingLoggingService`, `createStubFieldValueHost`), `FieldValueHostTestFunctions.ts` (real engine services, manager, and FieldValueHost setup), and presentation fakes such as `RecordingMessageFrame`, `RecordingErrorMessageDisplayTrigger`, and `RecordingPopupService`.
 10. **Tests express the intended behavior, not just the current code.** Derive expectations from the source doc comments, interface docs, and `planning/Jivs-DOM_Implementation_Design.md` (and other planning docs). Do not write a test merely because the code does it: that would bless bugs. When the code's behavior contradicts or goes beyond the documented intent, or the intent is unclear (for example, what an empty-string attribute should do), **do not write a test that locks it in**. List it for the owner as a question or suspected bug.
 11. **Stay in scope.** Test only the class under test. Behavior owned by a collaborator (a logging service filtering by level, a FieldValueHost computing its identifier) belongs in that collaborator's tests (often in jivs-engine). Isolate with a fake and assert what the class asked the collaborator to do.
 12. **Use fakes for isolation and real collaborators for meaningful integration.** Keep focused unit tests with hand-written fakes when they make the class's request or edge case explicit. Prefer real collaborators when their behavior is directly relevant and they are lightweight to construct; add clearly labeled integration tests alongside the isolated tests rather than replacing all fakes. As classes in the checklist get tested, revisit earlier suites where a real collaborator adds useful coverage.
@@ -28,10 +28,11 @@ Reference for any chat/agent writing unit tests in this repo. It was derived fro
 - Configs: root `jest.config.json` (runs all packages, coverage on) and per-package `jest.config.json` (jivs-dom's uses `tsconfig_with_tests.json`, coverage off, verbose).
 - Commands: package dir `npm test` (`jest --silent`), `npm run consoletest` (shows console, no stack traces); root `npm test`.
 - **Cross-package imports**: tests/src in other packages import the engine through its compiled output: `@plblum/jivs-engine/build/...`. The engine must be compiled (`npm run compile` / `lerna run compile`) before jivs-dom tests can run. Within the package under test, import from `../../src/...` (relative).
-- jivs-dom (and later react/angular) needs a DOM. `jest-environment-jsdom` is installed at the root and `packages/jivs-dom/jest.config.json` sets `"testEnvironment": "jsdom"`. The whole repo has been compiled, so `@plblum/jivs-engine/build/*` resolves. jivs-dom has no `tests` folder yet; create it as needed.
-- The root `jest.config.json` has no jsdom environment, and its `"build"` ignore pattern also matches the folder name `jivs-builder`. Run jivs-dom tests from `packages/jivs-dom` so the package config applies.
+- jivs-dom needs a DOM. `jest-environment-jsdom` is installed at the root and `packages/jivs-dom/jest.config.json` sets `"testEnvironment": "jsdom"`. 
+- Each jivs-dom test file must declare `/** @jest-environment jsdom */` so DOM tests receive the correct environment when discovered by root-level Jest commands that load the shared config.
+- The root `jest.config.json` intentionally keeps its default environment for non-DOM packages. Its `"build"` ignore pattern also matches the folder name `jivs-builder`. Running jivs-dom tests from `packages/jivs-dom` still uses the package config; the per-file environment directive keeps root-level test runs consistent.
 - **ESM requirement (jivs-dom and any package importing `@plblum/jivs-engine/build/...`)**: the engine build is ESM, so Jest must run with Node's VM modules flag or it fails with `Unexpected token 'export'`. `Jivs.code-workspace` already sets `NODE_OPTIONS=--experimental-vm-modules ...` for the VS Code integrated terminal and the Jest extension, so no package script change is wanted. An agent shell does not inherit it, so run: `$env:NODE_OPTIONS='--experimental-vm-modules --no-warnings'; npx jest <file> --silent` from `packages/jivs-dom`.
-- The workspace's `jestrunner.configPath` points at the **root** `jest.config.json`, which has no jsdom environment. DOM tests run by the VS Code runner against that config would lack `document`; see the owner's decision recorded here once made: (undecided; candidates are a per-file `@jest-environment jsdom` docblock or pointing the runner at the package config).
+- The workspace's `jestrunner.configPath` points at the **root** `jest.config.json`. The per-file environment directive ensures jivs-dom tests also run with jsdom through the VS Code runner.
 - Under ESM mode the **`jest` global does not exist** (`jest.fn`, `jest.useFakeTimers` throw `ReferenceError`). If it is ever needed, `import { jest } from '@jest/globals'`. The house style avoids `jest.fn` anyway: use small counters or fake classes.
 - `createJivsServicesForTesting()` chains a `ConsoleLoggingService` behind the `TestingLoggingService`, so a `gatherFn` is invoked once per logger in the chain, and entries are echoed to the console (hidden by `--silent`). To count `gatherFn` calls, assign an unchained `new TestingLoggingService(level)` to `services.loggingService`.
 
@@ -162,8 +163,8 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 
 ### Phase 5a: Presentations_common
 - [x] Presentations_common/PresentationContentBase (`tests/Presentations_common/PresentationContentBase.test.ts`)
-- [ ] Presentations_common/PresentationBase
-- [ ] Presentations_common/PresentationFactoryBase
+- [x] Presentations_common/PresentationBase (`tests/Presentations_common/PresentationBase.test.ts`)
+- [x] Presentations_common/PresentationFactoryBase (`tests/Presentations_common/PresentationFactoryBase.test.ts`)
 - [x] Presentations_common/MessageFrameBase (`tests/Presentations_common/MessageFrameBase.test.ts`)
 - [x] Presentations_common/MessageFrame (`tests/Presentations_common/MessageFrame.test.ts`)
 - [x] Presentations_common/TemplatedMessageFrame (`tests/Presentations_common/TemplatedMessageFrame.test.ts`)
@@ -181,35 +182,35 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] Presentations_common/ErrorMessageDisplayMouseOverTrigger (`tests/Presentations_common/ErrorMessageDisplayMouseOverTrigger.test.ts`)
 
 ### Phase 5b: FieldPresentations
-- [ ] FieldPresentations/PopupContext
-- [ ] FieldPresentations/ErrorMessageDisplayTriggerContext
-- [ ] FieldPresentations/ErrorIndicatorContent/ErrorIndicatorContentBase
-- [ ] FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent
-- [ ] FieldPresentations/FieldPresentationBase
-- [ ] FieldPresentations/IsValidFieldPresentationBase
-- [ ] FieldPresentations/EditorFieldPresentationBase
-- [ ] FieldPresentations/WrappedEditorFieldPresentationBase
-- [ ] FieldPresentations/FieldContainerPresentation
-- [ ] FieldPresentations/LabelPresentation
-- [ ] FieldPresentations/RequiredIndicatorPresentation
-- [ ] FieldPresentations/TextInputPresentation
-- [ ] FieldPresentations/TextAreaPresentation
-- [ ] FieldPresentations/SelectPresentation
-- [ ] FieldPresentations/CheckboxPresentation
-- [ ] FieldPresentations/FileInputPresentation
-- [ ] FieldPresentations/RadioButtonsPresentation
-- [ ] FieldPresentations/WrappedTextInputPresentation
-- [ ] FieldPresentations/WrappedTextAreaPresentation
-- [ ] FieldPresentations/WrappedSelectPresentation
-- [ ] FieldPresentations/WrappedCheckboxPresentation
-- [ ] FieldPresentations/WrappedFileInputPresentation
-- [ ] FieldPresentations/WrappedRadioButtonsPresentation
-- [ ] FieldPresentations/ErrorMessageDisplayPresentationBase
-- [ ] FieldPresentations/TriggeredErrorMessageDisplayPresentationBase
-- [ ] FieldPresentations/InlineErrorMessageDisplayPresentation
-- [ ] FieldPresentations/PopupErrorMessageDisplayPresentation
-- [ ] FieldPresentations/FieldPresentationFactory
-- [ ] FieldPresentations/FieldPresentationInstaller
+- [x] FieldPresentations/PopupContext (`tests/FieldPresentations/PopupContext.test.ts`)
+- [x] FieldPresentations/ErrorMessageDisplayTriggerContext (`tests/FieldPresentations/ErrorMessageDisplayTriggerContext.test.ts`)
+- [x] FieldPresentations/ErrorIndicatorContent/ErrorIndicatorContentBase (`tests/FieldPresentations/ErrorIndicatorContent/ErrorIndicatorContentBase.test.ts`)
+- [x] FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent (`tests/FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent.test.ts`)
+- [x] FieldPresentations/FieldPresentationBase (`tests/FieldPresentations/FieldPresentationBase.test.ts`)
+- [x] FieldPresentations/IsValidFieldPresentationBase (`tests/FieldPresentations/IsValidFieldPresentationBase.test.ts`)
+- [x] FieldPresentations/EditorFieldPresentationBase (`tests/FieldPresentations/EditorFieldPresentationBase.test.ts`)
+- [x] FieldPresentations/WrappedEditorFieldPresentationBase (`tests/FieldPresentations/WrappedEditorFieldPresentationBase.test.ts`)
+- [x] FieldPresentations/FieldContainerPresentation (`tests/FieldPresentations/FieldContainerPresentation.test.ts`)
+- [x] FieldPresentations/LabelPresentation (`tests/FieldPresentations/LabelPresentation.test.ts`)
+- [x] FieldPresentations/RequiredIndicatorPresentation (`tests/FieldPresentations/RequiredIndicatorPresentation.test.ts`; persistent classes follow confirmed intent: no `jivs-editor`)
+- [x] FieldPresentations/TextInputPresentation (`tests/FieldPresentations/TextInputPresentation.test.ts`)
+- [x] FieldPresentations/TextAreaPresentation (`tests/FieldPresentations/TextAreaPresentation.test.ts`)
+- [x] FieldPresentations/SelectPresentation (`tests/FieldPresentations/SelectPresentation.test.ts`)
+- [x] FieldPresentations/CheckboxPresentation (`tests/FieldPresentations/CheckboxPresentation.test.ts`)
+- [x] FieldPresentations/FileInputPresentation (`tests/FieldPresentations/FileInputPresentation.test.ts`)
+- [x] FieldPresentations/RadioButtonsPresentation (`tests/FieldPresentations/RadioButtonsPresentation.test.ts`)
+- [x] FieldPresentations/WrappedTextInputPresentation (`tests/FieldPresentations/WrappedTextInputPresentation.test.ts`)
+- [x] FieldPresentations/WrappedTextAreaPresentation (`tests/FieldPresentations/WrappedTextAreaPresentation.test.ts`)
+- [x] FieldPresentations/WrappedSelectPresentation (`tests/FieldPresentations/WrappedSelectPresentation.test.ts`)
+- [x] FieldPresentations/WrappedCheckboxPresentation (`tests/FieldPresentations/WrappedCheckboxPresentation.test.ts`)
+- [x] FieldPresentations/WrappedFileInputPresentation (`tests/FieldPresentations/WrappedFileInputPresentation.test.ts`)
+- [x] FieldPresentations/WrappedRadioButtonsPresentation (`tests/FieldPresentations/WrappedRadioButtonsPresentation.test.ts`)
+- [x] FieldPresentations/ErrorMessageDisplayPresentationBase (`tests/FieldPresentations/ErrorMessageDisplayPresentationBase.test.ts`)
+- [x] FieldPresentations/TriggeredErrorMessageDisplayPresentationBase (`tests/FieldPresentations/TriggeredErrorMessageDisplayPresentationBase.test.ts`)
+- [x] FieldPresentations/InlineErrorMessageDisplayPresentation (`tests/FieldPresentations/InlineErrorMessageDisplayPresentation.test.ts`)
+- [x] FieldPresentations/PopupErrorMessageDisplayPresentation (`tests/FieldPresentations/PopupErrorMessageDisplayPresentation.test.ts`)
+- [x] FieldPresentations/FieldPresentationFactory (`tests/FieldPresentations/FieldPresentationFactory.test.ts`)
+- [x] FieldPresentations/FieldPresentationInstaller (`tests/FieldPresentations/FieldPresentationInstaller.test.ts`)
 
 ### Phase 5c: FormPresentations
 - [ ] FormPresentations/FormPresentationBase

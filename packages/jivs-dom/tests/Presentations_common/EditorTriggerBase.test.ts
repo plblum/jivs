@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IErrorMessageDisplayTriggerContext } from '../../src/Interfaces/ErrorMessageDisplayPresentation';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { EditorTriggerBase } from '../../src/Presentations_common/EditorTriggerBase';

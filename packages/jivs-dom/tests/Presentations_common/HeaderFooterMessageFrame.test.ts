@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';

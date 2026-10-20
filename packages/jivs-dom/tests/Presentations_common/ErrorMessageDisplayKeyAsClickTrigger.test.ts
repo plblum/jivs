@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { ErrorMessageDisplayKeyAsClickTrigger } from '../../src/Presentations_common/ErrorMessageDisplayKeyAsClickTrigger';
 import { createErrorMessageDisplayTriggerTestContext } from '../TestSupport/ErrorMessageDisplayTriggerTestFunctions';
 

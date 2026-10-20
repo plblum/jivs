@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import {

@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { ValidationSummaryAriaStaticUpdater } from '../../src/Aria/ValidationSummaryAriaStaticUpdater';
 import { ElementRole } from '../../src/Interfaces/Types';

@@ -46,11 +46,8 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
     constructor(element: HTMLElement, options?: TOptions)
     {
         super(element, options);
-        // if the default for triggers was null, don't let that cause an exception!
         if (this.options.triggers)
             this.options.triggers = [...this.options.triggers];
-        else
-            this.options.triggers = [];
     }
 
     protected override getOptionDefaults(): Partial<TOptions>
@@ -60,6 +57,12 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
             ...superDefaults,
             triggers: []
         };
+    }
+
+    protected override resolveOptions(): void
+    {
+        super.resolveOptions();
+        this.options.triggers = [...(this.options.triggers ?? [])];
     }
     
     protected get openClass(): string[]

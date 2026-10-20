@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { ErrorMessageDisplayFocusOutTrigger } from '../../src/Presentations_common/ErrorMessageDisplayFocusOutTrigger';
 import { createErrorMessageDisplayTriggerTestContext } from '../TestSupport/ErrorMessageDisplayTriggerTestFunctions';
 

@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { createMinimalJivsServices } from '@plblum/jivs-engine/build/Support/createMinimalJivsServices';
 import { FieldValueHostConfig, IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';

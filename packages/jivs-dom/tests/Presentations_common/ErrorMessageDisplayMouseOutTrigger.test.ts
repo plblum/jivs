@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { ErrorMessageDisplayMouseOutTrigger } from '../../src/Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { createErrorMessageDisplayTriggerTestContext } from '../TestSupport/ErrorMessageDisplayTriggerTestFunctions';
 

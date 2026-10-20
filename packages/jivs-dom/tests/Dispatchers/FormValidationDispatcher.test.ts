@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';

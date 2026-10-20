@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { SelectTextValueAdapter } from '../../src/Adapters/SelectTextValueAdapter';
 

@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IErrorMessageDisplayTriggerContext } from '../../src/Interfaces/ErrorMessageDisplayPresentation';
 import { ErrorMessageDisplayTriggerBase } from '../../src/Presentations_common/ErrorMessageDisplayTriggerBase';
 import { createErrorMessageDisplayTriggerTestContext } from '../TestSupport/ErrorMessageDisplayTriggerTestFunctions';

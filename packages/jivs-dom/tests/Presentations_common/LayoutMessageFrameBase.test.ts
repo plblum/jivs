@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';

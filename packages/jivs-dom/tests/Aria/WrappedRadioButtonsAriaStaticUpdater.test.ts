@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { WrappedRadioButtonsAriaStaticUpdater } from '../../src/Aria/WrappedRadioButtonsAriaStaticUpdater';
 import { ElementRole } from '../../src/Interfaces/Types';

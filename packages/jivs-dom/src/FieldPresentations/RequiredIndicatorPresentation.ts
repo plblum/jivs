@@ -17,7 +17,7 @@ import { RequiredIndicatorAriaStaticUpdater } from '../Aria/RequiredIndicatorAri
  * This implementation can work either way, although our default CSS class expects an empty span tag with the appropriate CSS class.
  * 
  * ## CSS Classes
- * - persistent classes: 'jivs-indicator', 'jivs-editor', 'jivs-isvalidpresentation'
+ * - persistent classes: 'jivs-indicator', 'jivs-isvalidpresentation'
  *   Add your own permanent classes within the options.variationClasses property.
  *   See {@see jivs-dom/FieldPresentations/AbstractClasses/FieldPresentationBase} for more guidance.
  * - supports these stateful classes: 'jivs-invalid', 'jivs-validated', 'jivs-corrected', 'jivs-required'

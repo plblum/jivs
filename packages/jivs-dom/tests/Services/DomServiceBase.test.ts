@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
