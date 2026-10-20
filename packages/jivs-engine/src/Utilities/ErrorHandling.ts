@@ -60,7 +60,7 @@ export function assertNotEmptyString(valueToCheck: any, memberName: string = 'pa
     assertNotNull(valueToCheck, memberName);
 
     if (typeof valueToCheck === 'string')   // includes undefined
-        if (valueToCheck.length === 0)    // ignore trimming
+        if (valueToCheck.trim().length === 0)    // ignore trimming
             throw new CodingError(`${memberName} not empty string`);          
         else
             return;

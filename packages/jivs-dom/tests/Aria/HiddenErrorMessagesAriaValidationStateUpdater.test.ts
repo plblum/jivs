@@ -3,13 +3,13 @@ import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import type { IIssuesFoundFormatterService } from '../../src/Interfaces/IssuesFoundFormatterService';
 import { HiddenErrorMessagesAriaValidationStateUpdater } from '../../src/Aria/HiddenErrorMessagesAriaValidationStateUpdater';
 import { ElementRole } from '../../src/Interfaces/Types';
 import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Creates a complete validation-state fixture containing the supplied issues.
@@ -63,9 +63,9 @@ function createValueHost(formattedText: string = 'Formatted issues'): {
             return formattedText;
         }
     };
-    let domServices = {
+    let domServices = createMockJivsDomServices({
         issuesFoundFormatterService: formatter
-    } as unknown as IJivsDomServices;
+    });
     let valueHostsManager = {
         services: {
             domServices: domServices

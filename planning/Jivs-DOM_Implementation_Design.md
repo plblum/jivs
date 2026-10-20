@@ -525,7 +525,7 @@ interface IFormPresentationInstaller {
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `undefined`      | ARIA installation did not complete. Validation-state processing skips the element.                                              |
 | `null`           | ARIA installation completed without a specialized validation-state updater. The registered role updater remains eligible.       |
-| Updater instance | ARIA installation completed with a specialized validation-state updater. Its `alsoRunRoleUpdater` value controls composition.    |
+| Updater instance | ARIA installation completed with a specialized validation-state updater.     |
 
 Static updaters run during installation and are not retained. The property is assigned only after static ARIA work succeeds. A failure therefore leaves it `undefined` so a later installation attempt can retry.
 
@@ -3314,8 +3314,6 @@ An element may receive behavior from two sources:
 - An Editor Adapter Definition or presentation may supply one specialized updater for its widget or generated markup.
 
 Field presentations may supply both updater kinds. Form presentations supply only Static Updaters.
-
-A specialized updater uses `alsoRunRoleUpdater` to determine whether the updater registered for the role runs first. `AriaService` coordinates this composition but delegates all role-specific and widget-specific mutation to the updater objects.
 
 #### Updater Interactions
 

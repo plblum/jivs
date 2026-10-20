@@ -32,7 +32,6 @@ An element may be affected by two updater sources:
 - The ARIA service registry supplies at most one updater for the element's role. This is the reusable default behavior for that role.
 - An Editor Adapter Definition or presentation may supply a specialized updater for its widget or markup.
 
-The specialized updater decides through `alsoRunRoleUpdater` whether the role updater runs first. `AriaServiceBase` coordinates this composition but delegates the element-specific work.
 
 ## Architecture
 
@@ -67,7 +66,6 @@ Applies fixed accessibility behavior during installation.
 
 ```ts
 interface IAriaStaticUpdater {
-    readonly alsoRunRoleUpdater: boolean;
 
     applyStaticAttributes(
         element: IJivsElement,
@@ -85,7 +83,6 @@ Synchronizes one installed field element with the current field state.
 
 ```ts
 interface IAriaValidationStateUpdater {
-    readonly alsoRunRoleUpdater: boolean;
 
     applyValidationState(
         element: IJivsElement,
@@ -106,9 +103,6 @@ interface IAriaValidationStateUpdater {
 - There are no unregister operations.
 - A specialized updater is supplied by an Adapter Definition or presentation.
 - When no specialized updater is supplied, the registered role updater runs when available.
-- When a specialized updater is supplied and `alsoRunRoleUpdater` is `true`, the registered role updater runs first and the specialized updater runs second.
-- When `alsoRunRoleUpdater` is `false`, only the specialized updater runs.
-- `alsoRunRoleUpdater` is ignored when an updater itself was obtained from the role registry.
 - If the role updater throws, the specialized updater is not invoked.
 
 ### Role Normalization
@@ -231,7 +225,7 @@ interface IJivsElement extends HTMLElement {
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
 | `undefined`      | ARIA installation did not complete. Validation-state processing skips the element.                           |
 | `null`           | ARIA installation completed without a specialized updater. The registered role updater remains eligible.     |
-| Updater instance | ARIA installation completed with a specialized updater. Its `alsoRunRoleUpdater` value controls composition. |
+| Updater instance | ARIA installation completed with a specialized updater.  |
 
 The property is also the completion guard for the element's entire ARIA installation. Static updaters are applied immediately and are not stored.
 
@@ -448,14 +442,13 @@ Jivs-DOM also exports a reusable validation-state updater that synchronizes:
 - `aria-invalid`;
 - `aria-errormessage`.
 
-It is not registered as the default updater for `ElementRole.editor`. Adapter Definitions for editors without equivalent native required semantics may return it with `alsoRunRoleUpdater: false`.
+It is not registered as the default updater for `ElementRole.editor`. 
 
 ### `InputRadioButtonAdapterDefinition`
 
 The built-in radio-group definition supplies:
 
 - a specialized static updater that assigns `role="radiogroup"` to the containing installation anchor only when `role` is absent;
-- the exported ARIA-required validation-state updater with `alsoRunRoleUpdater: false`.
 
 The containing anchor receives group-level required, invalid, and error-message relationship state. Descendant radio inputs do not receive duplicate group-level ARIA state.
 

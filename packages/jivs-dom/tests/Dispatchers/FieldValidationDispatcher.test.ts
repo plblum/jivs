@@ -5,15 +5,14 @@ import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfa
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import type { IAriaService } from '../../src/Interfaces/AriaService';
 import type { IElementRegistry } from '../../src/Interfaces/ElementRegistry';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import type { IFieldPresentation } from '../../src/Interfaces/FieldPresentations';
 import { ElementRole } from '../../src/Interfaces/Types';
 import { FieldValidationDispatcher } from '../../src/Dispatchers/FieldValidationDispatcher';
 import { ElementRegistry } from '../../src/FormInstaller/ElementRegistry';
-import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { RecordingLoggingService } from '../TestSupport/mocks';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Creates a minimal valid validation snapshot for dispatch tests.
@@ -48,14 +47,13 @@ function setup(includeAriaService: boolean = true): {
     let registry = new ElementRegistry(valueHost.valueHostsManager);
     let root = document.createElement('form');
     let logger = new RecordingLoggingService();
-    let jivsServices = { loggingService: logger } as unknown as IJivsServices;
     let registryManagers: Array<object> = [];
     let resolvedManagers: Array<object> = [];
     let ariaService = includeAriaService ? {
         applyValidationState: () => null
     } as unknown as IAriaService : null;
-    let domServices = {
-        loggingFacade: new DomLoggingFacade(jivsServices),
+    let domServices = createMockJivsDomServices({
+        services: { loggingService: logger } as unknown as IJivsServices,
         ariaService: ariaService,
         resolveContainerElement: (manager: object): HTMLElement => {
             resolvedManagers.push(manager);
@@ -65,7 +63,7 @@ function setup(includeAriaService: boolean = true): {
             registryManagers.push(manager);
             return registry;
         }
-    } as unknown as IJivsDomServices;
+    });
 
     return {
         dispatcher: new FieldValidationDispatcher(domServices),

@@ -119,6 +119,7 @@ export abstract class IssuesFoundFormatterServiceBase extends DomServiceBase
     /**
      * Builds the HTML attribute for the error code of the given issue from IssueFound.errorCode.
      * Returns a complete HTML attribute without leading whitespace. 
+     * If there is no error code, expect data-errorcode="" in the HTML attribute.
      * Its default attribute name is `data-errorcode`.
      * @param issue 
      * @param attributeName - the name of the HTML attribute to use for the error code. 
@@ -127,9 +128,7 @@ export abstract class IssuesFoundFormatterServiceBase extends DomServiceBase
     protected buildErrorCodeAttribute(valueHostsManager: IValueHostsManager,
         issue: IssueFound, attributeName: string = 'data-errorcode'): string
     {
-        if (!issue.errorCode)
-            return '';
-        let errorCode = encodeHtml(issue.errorCode);
+        let errorCode = issue.errorCode ? encodeHtml(issue.errorCode) : '';
         return `${attributeName}="${errorCode}"`; 
     }
 
@@ -145,12 +144,8 @@ export abstract class IssuesFoundFormatterServiceBase extends DomServiceBase
     protected buildSeverityAttribute(valueHostsManager: IValueHostsManager,
         issue: IssueFound, attributeName: string = 'data-severity'): string
     {
-        if (!issue.severity)
-            return '';
-        let serverity = this.retrieveSeverityName(issue.severity);
-        if (!serverity)
-            return '';
-        return `${attributeName}="${serverity}"`;   // no html encoding needed
+        let severity = issue.severity != null ? issue.severity : ValidationSeverity.Error;
+        return `${ attributeName }="${ this.retrieveSeverityName(severity) }"`;   // no html encoding needed
     }
 
     /**

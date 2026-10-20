@@ -163,7 +163,7 @@ export class JivsDomServices extends ServiceWithAccessorBase
      */
     public get ariaService(): IAriaService | null
     {
-        if (!this._ariaService) {
+        if (this._ariaService === undefined) {
             this._ariaService = this.createDefaultAriaService();
         }
         return this._ariaService;
@@ -174,10 +174,9 @@ export class JivsDomServices extends ServiceWithAccessorBase
     }
     protected createDefaultAriaService(): IAriaService | null
     {
-        // return new AriaService(this);
-        throw new Error('ARIA service is not implemented.');
+        return null;    // user has to opt-in
     }
-    private _ariaService: IAriaService | null = null;
+    private _ariaService?: IAriaService | null;
 
     /**
      * Gets the service responsible for creating either HTML or textual content

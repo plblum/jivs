@@ -19,12 +19,13 @@ describe("Utilities.assertNotEmptyString tests", () => {
         expect(() => assertNotEmptyString(null, 'parm')).toThrow('parm required');
         expect(() => assertNotEmptyString(undefined, 'parm')).toThrow('parm required');
         expect(() => assertNotEmptyString('', 'parm')).toThrow('parm not empty string');
+        expect(() => assertNotEmptyString('  ', 'parm')).toThrow('parm not empty string');
         expect(() => assertNotEmptyString(0, 'parm')).toThrow('parm must be string');
         
     });
     test("values that do not throw an exception", () => {
         expect(() => assertNotEmptyString('abc', 'parm')).not.toThrow();
-        expect(() => assertNotEmptyString('  ', 'parm')).not.toThrow();
+
    }); 
 });
 describe('assertFunction', () => {

@@ -17,6 +17,7 @@ Reference for any chat/agent writing unit tests in this repo. It was derived fro
 11. **Stay in scope.** Test only the class under test. Behavior owned by a collaborator (a logging service filtering by level, a FieldValueHost computing its identifier) belongs in that collaborator's tests (often in jivs-engine). Isolate with a fake and assert what the class asked the collaborator to do.
 12. **Use fakes for isolation and real collaborators for meaningful integration.** Keep focused unit tests with hand-written fakes when they make the class's request or edge case explicit. Prefer real collaborators when their behavior is directly relevant and they are lightweight to construct; add clearly labeled integration tests alongside the isolated tests rather than replacing all fakes. As classes in the checklist get tested, revisit earlier suites where a real collaborator adds useful coverage.
 13. **Website demonstrations.** `packages/jivs-dom/website/` (currently only `playground-preview/`, which does not use jivs-dom) will host user demos and testing demos, rebuilt on jivs-dom after the unit tests are in place. These are integration oriented and meaningful to a UI observer (an end user exercising the page). Only note a candidate in `planning/Testing_Demonstrations.md` when a class surfaces user-visible behavior; internals like `DomLoggingFacade` get no entry. Append; do not build them.
+14. Run npm run compile in packages/jivs-engine after any engine change. jivs-dom imports from build/.
 
 ## 1. Tooling and layout
 
@@ -150,34 +151,34 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] Dispatchers/ValueDispatcher (`tests/Dispatchers/ValueDispatcher.test.ts`; the defensive adapter-absent branch is excluded by ElementRegistry's adapter-only query)
 
 ### Phase 4: Services
-- [ ] Services/DomServiceBase
-- [ ] Aria/AriaService
-- [ ] Services/PopupService
-- [ ] Services/IssuesFoundFormatterServiceBase
-- [ ] Services/IssuesFoundFormatterService
-- [ ] Dispatchers/DispatcherService
-- [ ] Services/JivsDomServices
-- [ ] Services/JivsDomServicesInstaller
+- [x] Services/DomServiceBase (`tests/Services/DomServiceBase.test.ts`)
+- [x] Aria/AriaService (`tests/Aria/AriaService.test.ts`)
+- [x] Services/PopupService (`tests/Services/PopupService.test.ts`)
+- [x] Services/IssuesFoundFormatterServiceBase (`tests/Services/IssuesFoundFormatterServiceBase.test.ts`)
+- [x] Services/IssuesFoundFormatterService (`tests/Services/IssuesFoundFormatterService.test.ts`)
+- [x] Dispatchers/DispatcherService (`tests/Dispatchers/DispatcherService.test.ts`)
+- [x] Services/JivsDomServices (`tests/Services/JivsDomServices.test.ts`; concrete default factory constructors are isolated behind fakes because their collaborators have separate checklist tests)
+- [x] Services/JivsDomServicesInstaller (`tests/Services/JivsDomServicesInstaller.test.ts`)
 
 ### Phase 5a: Presentations_common
-- [ ] Presentations_common/PresentationContentBase
+- [x] Presentations_common/PresentationContentBase (`tests/Presentations_common/PresentationContentBase.test.ts`)
 - [ ] Presentations_common/PresentationBase
 - [ ] Presentations_common/PresentationFactoryBase
-- [ ] Presentations_common/MessageFrameBase
-- [ ] Presentations_common/MessageFrame
-- [ ] Presentations_common/TemplatedMessageFrame
-- [ ] Presentations_common/LayoutMessageFrameBase
-- [ ] Presentations_common/HeaderFooterMessageFrame
-- [ ] Presentations_common/IconMessageFrame
-- [ ] Presentations_common/EditorTriggerBase
-- [ ] Presentations_common/EditorFocusTrigger
-- [ ] Presentations_common/ErrorMessageDisplayTriggerBase
-- [ ] Presentations_common/ErrorMessageDisplayClickTrigger
-- [ ] Presentations_common/ErrorMessageDisplayFocusInTrigger
-- [ ] Presentations_common/ErrorMessageDisplayFocusOutTrigger
-- [ ] Presentations_common/ErrorMessageDisplayKeyAsClickTrigger
-- [ ] Presentations_common/ErrorMessageDisplayMouseOutTrigger
-- [ ] Presentations_common/ErrorMessageDisplayMouseOverTrigger
+- [x] Presentations_common/MessageFrameBase (`tests/Presentations_common/MessageFrameBase.test.ts`)
+- [x] Presentations_common/MessageFrame (`tests/Presentations_common/MessageFrame.test.ts`)
+- [x] Presentations_common/TemplatedMessageFrame (`tests/Presentations_common/TemplatedMessageFrame.test.ts`)
+- [x] Presentations_common/LayoutMessageFrameBase (`tests/Presentations_common/LayoutMessageFrameBase.test.ts`)
+- [x] Presentations_common/HeaderFooterMessageFrame (`tests/Presentations_common/HeaderFooterMessageFrame.test.ts`)
+- [x] Presentations_common/IconMessageFrame (`tests/Presentations_common/IconMessageFrame.test.ts`)
+- [x] Presentations_common/EditorTriggerBase (`tests/Presentations_common/EditorTriggerBase.test.ts`)
+- [x] Presentations_common/EditorFocusTrigger (`tests/Presentations_common/EditorFocusTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayTriggerBase (`tests/Presentations_common/ErrorMessageDisplayTriggerBase.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayClickTrigger (`tests/Presentations_common/ErrorMessageDisplayClickTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayFocusInTrigger (`tests/Presentations_common/ErrorMessageDisplayFocusInTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayFocusOutTrigger (`tests/Presentations_common/ErrorMessageDisplayFocusOutTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayKeyAsClickTrigger (`tests/Presentations_common/ErrorMessageDisplayKeyAsClickTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayMouseOutTrigger (`tests/Presentations_common/ErrorMessageDisplayMouseOutTrigger.test.ts`)
+- [x] Presentations_common/ErrorMessageDisplayMouseOverTrigger (`tests/Presentations_common/ErrorMessageDisplayMouseOverTrigger.test.ts`)
 
 ### Phase 5b: FieldPresentations
 - [ ] FieldPresentations/PopupContext

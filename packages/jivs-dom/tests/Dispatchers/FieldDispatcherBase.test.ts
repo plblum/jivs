@@ -2,11 +2,11 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { FieldDispatcherBase } from '../../src/Dispatchers/FieldDispatcherBase';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Makes FieldDispatcherBase's protected enumeration helper available to tests and controls
@@ -57,16 +57,15 @@ function setup(): {
 }
 {
     let logger = new RecordingLoggingService();
-    let jivsServices = { loggingService: logger } as unknown as IJivsServices;
     let root = document.createElement('form');
     let resolvedManagers: Array<IValueHostsManager> = [];
-    let domServices = {
-        loggingFacade: new DomLoggingFacade(jivsServices),
+    let domServices = createMockJivsDomServices({
+        services: { loggingService: logger } as unknown as IJivsServices,
         resolveContainerElement: (valueHostsManager: IValueHostsManager): HTMLElement => {
             resolvedManagers.push(valueHostsManager);
             return root;
         }
-    } as unknown as IJivsDomServices;
+    });
     let dispatcher = new TestFieldDispatcher(domServices);
     let manager = {} as IValueHostsManager;
     let valueHost = {

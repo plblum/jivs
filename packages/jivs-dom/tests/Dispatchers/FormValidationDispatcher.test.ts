@@ -3,14 +3,13 @@ import type { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Valid
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import type { IFormPresentation } from '../../src/Interfaces/FormPresentations';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { ElementRegistry } from '../../src/FormInstaller/ElementRegistry';
 import { FormValidationDispatcher } from '../../src/Dispatchers/FormValidationDispatcher';
-import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { ElementRole } from '../../src/Interfaces/Types';
 import { RecordingLoggingService } from '../TestSupport/mocks';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Creates a valid form validation snapshot suitable for forwarding assertions.
@@ -43,11 +42,10 @@ function setup(): {
     let registry = new ElementRegistry(manager);
     let root = document.createElement('form');
     let logger = new RecordingLoggingService();
-    let jivsServices = { loggingService: logger } as unknown as IJivsServices;
     let registryManagers: Array<IValueHostsManager> = [];
     let resolvedManagers: Array<IValueHostsManager> = [];
-    let domServices = {
-        loggingFacade: new DomLoggingFacade(jivsServices),
+    let domServices = createMockJivsDomServices({
+        services: { loggingService: logger } as unknown as IJivsServices,
         resolveContainerElement: (resolvedManager: IValueHostsManager): HTMLElement => {
             resolvedManagers.push(resolvedManager);
             return root;
@@ -56,7 +54,7 @@ function setup(): {
             registryManagers.push(resolvedManager);
             return registry;
         }
-    } as unknown as IJivsDomServices;
+    });
 
     return {
         dispatcher: new FormValidationDispatcher(domServices),

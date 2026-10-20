@@ -15,7 +15,6 @@
 
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { JivsDomServicesInstaller } from '@plblum/jivs-dom/build/Services/JivsDomServicesInstaller';
-import { AriaService } from '@plblum/jivs-dom/build/Aria/AriaService';
 import { IJivsDomServices } from '@plblum/jivs-dom/build/Interfaces/JivsDomServices';
 import { IPresentationFactory } from '@plblum/jivs-dom/build/Interfaces/Presentations_common';
 import { IFieldPresentation } from '@plblum/jivs-dom/build/Interfaces/FieldPresentations';
@@ -59,6 +58,14 @@ import { WrappedTextAreaAdapterDefinition } from '@plblum/jivs-dom/build/EditorA
 import { WrappedSelectAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedSelectAdapterDefinition';
 import { ValidationSummaryPresentation, ValidationSummaryPresentationOptions }
     from '@plblum/jivs-dom/build/FormPresentations/ValidationSummaryPresentation';
+import { AriaService } from '@plblum/jivs-dom/build/Aria/AriaService';
+import { EditorAriaStaticUpdater } from '@plblum/jivs-dom/build/Aria/EditorAriaStaticUpdater';
+import { PopupErrorMessageDisplayStaticUpdater } from '@plblum/jivs-dom/build/Aria/PopupErrorMessageDisplayStaticUpdater';
+import { RequiredIndicatorAriaStaticUpdater } from '@plblum/jivs-dom/build/Aria/RequiredIndicatorAriaStaticUpdater';
+import { ValidationSummaryAriaStaticUpdater } from '@plblum/jivs-dom/build/Aria/ValidationSummaryAriaStaticUpdater';
+import { WrappedRadioButtonsAriaStaticUpdater } from '@plblum/jivs-dom/build/Aria/WrappedRadioButtonsAriaStaticUpdater';
+import { HiddenErrorMessagesAriaValidationStateUpdater } from '@plblum/jivs-dom/build/Aria/HiddenErrorMessagesAriaValidationStateUpdater';
+import { EditorAriaValidationStateUpdater } from '@plblum/jivs-dom/build/Aria/EditorAriaValidationStateUpdater';
 
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
@@ -82,7 +89,7 @@ export function configureJivsDom(jivsServices: IJivsServices):void {
 
     // ARIA Service
     // The service is optional. It is enabled here. Just comment out the following line if you don't want it.
-    domServices.ariaService = new AriaService(domServices);
+    registerAriaService(domServices);
 
 
     // Popup Mechanism
@@ -91,16 +98,19 @@ export function configureJivsDom(jivsServices: IJivsServices):void {
     // NOTE: Must execute before registerFieldPresentations
     // domServices.popupMechanism = new TippyPopupMechanism(domServices);
 
+    // Use registerFieldPresentations to configure the appearance of errors, editors, labels, and more.
     domServices.fieldPresentationFactory.lazyRegistration(
         (factory) => registerFieldPresentations(factory, domServices));    
     
+    // Use registerFormPresentations to configure the appearance of validation summaries.
     domServices.formPresentationFactory.lazyRegistration(
         (factory) => registerFormPresentations(factory, domServices));
 
 
+    // "editors" are anything that the user interacts with to supply a value to your model.
+    // If you are using a great library of editors, you'll need to wire up EditorAdapterDefinitions for them.
+    // We've already wired up the standard HTML form controls: input, select, and textarea.
     domServices.editorAdapterDefinitionFactory.lazyRegistration(registerEditorAdapterDefinitions);
-
-
 }
 
 /**
@@ -581,4 +591,25 @@ function registerEditorAdapterDefinitions(factory: IEditorAdapterDefinitionFacto
     factory.register(new WrappedTextAreaAdapterDefinition('wrapped:textarea', 80));
     factory.register(new WrappedSelectAdapterDefinition('wrapped:select', 80));
 
+}
+
+/**
+ * Call to add the ARIA service to the DOM services.
+ * It installs StaticUpdaters and ValidationStateUpdaters for ARIA support.
+ * @param domServices The DOM services instance used to register the ARIA service.
+ */
+function registerAriaService(domServices: IJivsDomServices): void
+{
+    const as = domServices.ariaService = new AriaService(domServices);
+    as.lazyRegistration((factory) => {
+        // Registration logic for ARIA service can be added here if needed.
+        factory.registerStaticUpdater(ElementRole.editor, new EditorAriaStaticUpdater());
+        factory.registerStaticUpdater(ElementRole.editor, new WrappedRadioButtonsAriaStaticUpdater());
+        factory.registerStaticUpdater(ElementRole.error, new PopupErrorMessageDisplayStaticUpdater());
+        factory.registerStaticUpdater(ElementRole.required, new RequiredIndicatorAriaStaticUpdater());
+        factory.registerStaticUpdater(ElementRole.summary, new ValidationSummaryAriaStaticUpdater());
+
+        factory.registerValidationStateUpdater(ElementRole.ariaError, new HiddenErrorMessagesAriaValidationStateUpdater());
+        factory.registerValidationStateUpdater(ElementRole.editor, new EditorAriaValidationStateUpdater());
+    });
 }

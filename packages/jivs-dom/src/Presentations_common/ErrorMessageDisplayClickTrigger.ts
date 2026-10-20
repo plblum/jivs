@@ -19,7 +19,6 @@ export class ErrorMessageDisplayClickTrigger extends ErrorMessageDisplayTriggerB
 
     public install(context: IErrorMessageDisplayTriggerContext): void
     {
-        this.attachEventToOpen('click', context);
         context.jivsElement.addEventListener('click', (event) =>
         {
             context.controller.toggle(context, 0, 0);

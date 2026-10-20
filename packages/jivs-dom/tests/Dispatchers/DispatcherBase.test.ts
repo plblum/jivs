@@ -2,10 +2,10 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import { DispatcherBase } from '../../src/Dispatchers/DispatcherBase';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Exposes the protected service accessor and logging wrapper for focused DispatcherBase tests.
@@ -35,10 +35,9 @@ function setup(callGatherFn: boolean = true): {
 }
 {
     let logger = new RecordingLoggingService(callGatherFn);
-    let jivsServices = { loggingService: logger } as unknown as IJivsServices;
-    let domServices = {
-        loggingFacade: new DomLoggingFacade(jivsServices)
-    } as unknown as IJivsDomServices;
+    let domServices = createMockJivsDomServices({
+        services: { loggingService: logger } as unknown as IJivsServices
+    });
     return {
         domServices: domServices,
         logger: logger,

@@ -3,14 +3,13 @@ import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsSer
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import type { IValueAdapter } from '../../src/Interfaces/Adapters';
 import type { IElementRegistry } from '../../src/Interfaces/ElementRegistry';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { ElementRegistry } from '../../src/FormInstaller/ElementRegistry';
 import { ValueDispatcher } from '../../src/Dispatchers/ValueDispatcher';
-import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { ElementRole } from '../../src/Interfaces/Types';
 import { RecordingLoggingService } from '../TestSupport/mocks';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 
 /**
  * Creates a dispatcher and real ElementRegistry associated with a real FieldValueHost manager.
@@ -27,11 +26,10 @@ function setup(): {
     let { valueHost } = setupFieldValueHostForTesting();
     let registry = new ElementRegistry(valueHost.valueHostsManager);
     let logger = new RecordingLoggingService();
-    let jivsServices = { loggingService: logger } as unknown as IJivsServices;
     let registryManagers: Array<object> = [];
     let resolvedManagers: Array<object> = [];
-    let domServices = {
-        loggingFacade: new DomLoggingFacade(jivsServices),
+    let domServices = createMockJivsDomServices({
+        services: { loggingService: logger } as unknown as IJivsServices,
         resolveContainerElement: (manager: object): HTMLElement => {
             resolvedManagers.push(manager);
             return document.createElement('form');
@@ -40,7 +38,7 @@ function setup(): {
             registryManagers.push(manager);
             return registry;
         }
-    } as unknown as IJivsDomServices;
+    });
 
     return {
         dispatcher: new ValueDispatcher(domServices),

@@ -7,6 +7,7 @@ import { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { IssuesFoundFormatterServiceBase } from './IssuesFoundFormatterServiceBase';
+import { htmlToText } from '../Utilities/Helpers';
 
 /**
  * Supplied concrete implementation of the IssuesFoundFormatterServiceBase
@@ -80,6 +81,8 @@ export class IssuesFoundFormatterService extends IssuesFoundFormatterServiceBase
         if (!issues || issues.length === 0) {
             return '';
         }
+        
+        issues = this.orderIssuesFound(issues);
 
         if (limit === 1 || issues.length === 1) {
             return this.buildIssueAsHtml(valueHostsManager, 'span', issues[0], useSummaryMessage ?? false);    
@@ -112,10 +115,11 @@ export class IssuesFoundFormatterService extends IssuesFoundFormatterServiceBase
         if (!issues || issues.length === 0) {
             return '';
         }
+        issues = this.orderIssuesFound(issues);
 
         const limitedIssues = limit && limit > 0 ? issues.slice(0, limit) : issues;
         const issueTexts = limitedIssues.map(issue => {
-            return this.retrieveMessage(issue, useSummaryMessage);
+            return htmlToText(this.retrieveMessage(issue, useSummaryMessage));
         });
         return issueTexts.join(separator);
     }

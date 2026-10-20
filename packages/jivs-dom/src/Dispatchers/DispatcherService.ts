@@ -158,7 +158,7 @@ export class DispatcherService extends DomServiceBase
 
         let savedOnTextValueChanged = valueHostsManager.onTextValueChanged;
         dispatcher = this.textValueDispatcherRegistry();
-        valueHostsManager.onTextValueChanged = (valueHost: IValidatableValueHost, oldValue?: string | null) =>
+        valueHostsManager.onTextValueChanged = function (valueHost: IValidatableValueHost, oldValue?: string | null) // use function, not lambda intentional to ensure 'this' context is correct
         {
             savedOnTextValueChanged?.apply(this, [valueHost, oldValue]);
             dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
@@ -188,10 +188,10 @@ export class DispatcherService extends DomServiceBase
 
         let savedOnValueChanged = valueHostsManager.onValueChanged;
         dispatcher = this.valueDispatcherRegistry();
-        valueHostsManager.onValueChanged = (valueHost: IValueHost, oldValue?: any) =>
+        valueHostsManager.onValueChanged = function (valueHost: IValueHost, oldValue?: any) // use function, not lambda intentional to ensure 'this' context is correct
         {
             savedOnValueChanged?.apply(this, [valueHost, oldValue]);
-            dispatcher.dispatch(valueHost as IFieldValueHost, oldValue ?? undefined);
+            dispatcher.dispatch(valueHost as IFieldValueHost, oldValue);
         };
 
         valueHostsManager.setMetadata('onValueChanged', dispatcher);
@@ -217,7 +217,7 @@ export class DispatcherService extends DomServiceBase
 
         let savedOnValueHostValidationStateChanged = valueHostsManager.onValueHostValidationStateChanged;
         dispatcher = this.fieldValidationDispatcherRegistry();
-        valueHostsManager.onValueHostValidationStateChanged = (valueHost: IValidatableValueHost, state: ValueHostValidationState) =>
+        valueHostsManager.onValueHostValidationStateChanged = function (valueHost: IValidatableValueHost, state: ValueHostValidationState) // use function, not lambda intentional to ensure 'this' context is correct
         {
             savedOnValueHostValidationStateChanged?.apply(this, [valueHost, state]);
             dispatcher.dispatch(valueHost as IFieldValueHost, state);
@@ -245,7 +245,7 @@ export class DispatcherService extends DomServiceBase
 
         let savedOnValidationStateChanged = valueHostsManager.onValidationStateChanged;
         dispatcher = this.formValidationDispatcherRegistry();
-        valueHostsManager.onValidationStateChanged = (valueHostsManager: IValueHostsManager, state: ValidationState) =>
+        valueHostsManager.onValidationStateChanged = function (valueHostsManager: IValueHostsManager, state: ValidationState) // use function, not lambda intentional to ensure 'this' context is correct
         {
             savedOnValidationStateChanged?.apply(this, [valueHostsManager, state]);
             dispatcher.dispatch(valueHostsManager, state);

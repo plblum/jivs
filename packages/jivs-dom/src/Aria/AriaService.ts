@@ -16,7 +16,7 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { assertNotNull, assertNotEmptyString } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IAriaService } from '../Interfaces/AriaService';
 import { IAriaStaticUpdater, IAriaValidationStateUpdater } from '../Interfaces/AriaUpdaters';
 import { IEditorElementRegistryRecord, IElementRegistry, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
@@ -76,11 +76,20 @@ export class AriaService extends DomServiceBase
 
     protected ensureLazyRegistration(): void
     {
-        if (this._lazyRegistrationFunction) {
-            this._lazyRegistrationFunction(this);
-            this._lazyRegistrationFunction = undefined;
+        if (this._inEnsureLazyRegistration) {
+            return;
+        }
+        this._inEnsureLazyRegistration = true;
+        try {
+            if (this._lazyRegistrationFunction) {
+                this._lazyRegistrationFunction(this);
+                this._lazyRegistrationFunction = undefined;
+            }
+        } finally {
+            this._inEnsureLazyRegistration = false;
         }
     }
+    private _inEnsureLazyRegistration: boolean = false;
 
     /**
      * Registers a static ARIA attribute updater for the specified role.
@@ -91,7 +100,7 @@ export class AriaService extends DomServiceBase
      */
     public registerStaticUpdater(role: ElementRole | string, updater: IAriaStaticUpdater): void
     {
-        assertNotNull(role, 'role');
+        assertNotEmptyString(role, 'role');
         assertNotNull(updater, 'updater');
         this.ensureLazyRegistration();
         const key = this.normalizeRole(role.toString());
@@ -108,7 +117,7 @@ export class AriaService extends DomServiceBase
     public registerValidationStateUpdater(role: ElementRole | string,
         updater: IAriaValidationStateUpdater): void
     {
-        assertNotNull(role, 'role');
+        assertNotEmptyString(role, 'role');
         assertNotNull(updater, 'updater');
         this.ensureLazyRegistration();
         const key = this.normalizeRole(role);
@@ -138,25 +147,32 @@ export class AriaService extends DomServiceBase
      * 6. Iterate over form elements and apply static ARIA updaters.
      */
 
-        let delayedValidationStateUpdaters: Array<IEditorElementRegistryRecord | IFieldElementRegistryRecord> = [];
+        let delayedValidationStateUpdaters: Array<{
+            element: IJivsElement,
+            record: IEditorElementRegistryRecord | IFieldElementRegistryRecord
+        }> = [];
         for (const resolvedEI of registry.getResolvedElementIdentifiers()) // only returns field elements
         {
 
             let ariaElementAnchors = registry.getFieldAriaElementAnchors(resolvedEI.fieldValueHost!.getElementIdentifier());
             for (const record of resolvedEI.records)
             {
-                if (record.element === ariaElementAnchors.editorJivsElement ||
-                    record.element === ariaElementAnchors.errorMessageElement)
+                // Editor records carry the adapter-resolved jivsElement, which may differ from record.element.
+                const target = record.role === ElementRole.editor
+                    ? (record as IEditorElementRegistryRecord).jivsElement
+                    : record.element;
+                if (target && (target === ariaElementAnchors.editorJivsElement ||
+                    target === ariaElementAnchors.errorMessageElement))
                 {
-                    if (record.element.jivsAriaValidationStateUpdater === undefined) // has yet to have installation attempted
+                    if (target.jivsAriaValidationStateUpdater === undefined) // has yet to have installation attempted
                     {
-                        this.applyStaticAttributes(record.element, resolvedEI.fieldValueHost ?? undefined);
+                        this.applyStaticAttributes(target, resolvedEI.fieldValueHost ?? undefined);
 
                         // validationStateUpdater is either assigned or null to indicate that installation has been attempted.
-                        record.element.jivsAriaValidationStateUpdater = this.resolveValidationStateUpdater(record.element);
+                        target.jivsAriaValidationStateUpdater = this.resolveValidationStateUpdater(target);
                     }
 
-                    delayedValidationStateUpdaters.push(record);
+                    delayedValidationStateUpdaters.push({ element: target, record });
                 }
             }
             // at this point, all the ARIA updaters for the field have been applied,
@@ -188,8 +204,8 @@ export class AriaService extends DomServiceBase
         {
             this.applyValidationState(
                 updater.element,
-                updater.fieldValueHost!,
-                updater.fieldValueHost!.currentValidationState
+                updater.record.fieldValueHost!,
+                updater.record.fieldValueHost!.currentValidationState
             );
         }
 
@@ -213,7 +229,7 @@ export class AriaService extends DomServiceBase
      * The first to assign them in this order is used:
      * 1. Editor adapter definition (not available on non-editor roles): 
      *      jivsEditorAdapterDefinition.getStaticAriaUpdater()
-     * 2. Field presentation: 
+     * 2. Field presentation (not available on editor roles): 
      *      jivsFieldPresentation.getStaticAriaUpdater()
      * 3. AriaServices' default updaters based on role:
      *      jivsElementRole
@@ -254,7 +270,7 @@ export class AriaService extends DomServiceBase
      * Resolves the appropriate static ARIA element updater for the specified DOM element.
      * The rules are:
      * 1. Editor adapter definition (not available on non-editor roles)
-     * 2. Field presentation or form presentation
+     * 2. Field presentation or form presentation (not available on editor roles)
      * 3. AriaServices' default updaters based on role
      * @param element The DOM element for which to resolve the static ARIA updater.
      * @returns The resolved static ARIA element updater, or null if none could be resolved.
@@ -267,13 +283,13 @@ export class AriaService extends DomServiceBase
             staticUpdater = element.jivsEditorAdapterDefinition.getStaticAriaUpdater() ?? null;
         }
         // NOTE: Element may have either a field presentation or a form presentation, but not both.
-        if (!staticUpdater && element.jivsFieldPresentation)
+        if (!staticUpdater && element.jivsFieldPresentation && element.jivsElementRole !== ElementRole.editor)
             staticUpdater = element.jivsFieldPresentation.getStaticAriaUpdater() ?? null;
         if (!staticUpdater && element.jivsFormPresentation)
             staticUpdater = element.jivsFormPresentation.getStaticAriaUpdater() ?? null;
         if (!staticUpdater && element.jivsElementRole)
         {
-            staticUpdater = this.staticUpdatersByRole.get(element.jivsElementRole) ?? null;
+            staticUpdater = this.staticUpdatersByRole.get(this.normalizeRole(element.jivsElementRole)) ?? null;
         }
         return staticUpdater;
     }
@@ -305,7 +321,7 @@ export class AriaService extends DomServiceBase
     {
         assertNotNull(element, 'element');
         this.ensureLazyRegistration();
-        const validationStateUpdater = this.resolveValidationStateUpdater(element);
+        const validationStateUpdater = element.jivsAriaValidationStateUpdater; // this.resolveValidationStateUpdater(element);
         if (validationStateUpdater)
         {
             validationStateUpdater.applyValidationState(element, valueHost, state);
@@ -331,19 +347,19 @@ export class AriaService extends DomServiceBase
      */
     protected resolveValidationStateUpdater(element: IJivsElement): IAriaValidationStateUpdater | null
     {
-        let ValidationStateUpdater: IAriaValidationStateUpdater | null = null;
+        let updater: IAriaValidationStateUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)
         {
-            ValidationStateUpdater = element.jivsEditorAdapterDefinition.getAriaValidationStateUpdater() ?? null;
+            updater = element.jivsEditorAdapterDefinition.getAriaValidationStateUpdater() ?? null;
         }
 
-        if (!ValidationStateUpdater && element.jivsFieldPresentation)
-            ValidationStateUpdater = element.jivsFieldPresentation.getAriaValidationStateUpdater() ?? null;
-        if (!ValidationStateUpdater && element.jivsElementRole)
+        if (!updater && element.jivsFieldPresentation && element.jivsElementRole !== ElementRole.editor)
+            updater = element.jivsFieldPresentation.getAriaValidationStateUpdater() ?? null;
+        if (!updater && element.jivsElementRole)
         {
-            ValidationStateUpdater = this.validationStateUpdatersByRole.get(element.jivsElementRole) ?? null;
+            updater = this.validationStateUpdatersByRole.get(this.normalizeRole(element.jivsElementRole)) ?? null;
         }
-        return ValidationStateUpdater;
+        return updater;
     }
 
     protected normalizeRole(role: string): string
