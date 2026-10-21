@@ -3,7 +3,7 @@
  * 
  * This class is intended to be subclassed by concrete implementations that define specific parsing logic.
  * 
- * @module jivs-dom/EditorAdapterDefinitions/AbstractClasses/ParsedTextEditorAdapterDefinition
+ * @module jivs-dom/EditorAdapterDefinitions/AbstractClasses/ParsedTextEditorAdapterDefinitionBase
  */
 
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
@@ -31,7 +31,7 @@ import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 * });
 * ```
  */
-export abstract class ParsedTextEditorAdapterDefinition
+export abstract class ParsedTextEditorAdapterDefinitionBase
     extends EditorAdapterDefinitionBase
 {
 
@@ -76,7 +76,7 @@ export abstract class ParsedTextEditorAdapterDefinition
         {
             this.log(
                 LoggingLevel.Warn,
-                `No TextValueAdapter found on the element '${editor}' associated with ValueHost '${valueHost}'.`,
+                `No TextValueAdapter found on the element '{element}' associated with ValueHost '{valuehost}'.`,
                 editor,
                 valueHost
             );

@@ -935,10 +935,10 @@ valueHost.setValue(
 
 ##### Send an Externally Parsed Text Value
 
-Applications may need to parse editor text outside Jivs while still preserving both the Native Value and Text Value in the `IFieldValueHost`. `ParsedTextEditorAdapterDefinition` adds this submission path.
+Applications may need to parse editor text outside Jivs while still preserving both the Native Value and Text Value in the `IFieldValueHost`. `ParsedTextEditorAdapterDefinitionBase` adds this submission path.
 
 ```ts
-abstract class ParsedTextEditorAdapterDefinition
+abstract class ParsedTextEditorAdapterDefinitionBase
     extends EditorAdapterDefinitionBase {
 
     protected abstract parseTextValue(
@@ -1020,7 +1020,7 @@ It resolves all siblings as a group;
 * `WrappedSelectAdapterDefinition` for select elements with `adapterKey="wrapper:select"`;
 * `WrappedFileInputAdapterDefinition` for file inputs with `adapterKey="wrapper:input:file"`.
 
-`ParsedTextEditorAdapterDefinition` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
+`ParsedTextEditorAdapterDefinitionBase` is an abstract extension point for applications that parse editor text outside Jivs. It is not one of the built-in native HTML definitions.
 
 A registered definition instance is shared by every element that selects it. It remains immutable after registration and does not retain element-specific, ValueHost-specific, or installation-specific state.
 

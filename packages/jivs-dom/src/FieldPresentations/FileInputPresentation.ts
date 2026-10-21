@@ -2,7 +2,6 @@
  * Provides a field presentation for HTML file input elements.
  * @module jivs-dom/FieldPresentations/ConcreteClasses/FileInputPresentation
  */
-import { IsValidFieldPresentationBase, IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
 

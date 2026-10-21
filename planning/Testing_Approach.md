@@ -219,14 +219,14 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] FormPresentations/FormPresentationInstaller (`tests/FormPresentations/FormPresentationInstaller.test.ts`)
 
 ### Phase 6: Editor adapter definitions, installers, registry
-- [ ] EditorAdapterDefinitions/EditorAdapterDefinitionBase
-- [ ] EditorAdapterDefinitions/ParsedTextEditorAdapterDefinition
-- [ ] EditorAdapterDefinitions/InputAdapterDefinition
-- [ ] EditorAdapterDefinitions/TextAreaAdapterDefinition
-- [ ] EditorAdapterDefinitions/SelectAdapterDefinition
-- [ ] EditorAdapterDefinitions/CheckboxAdapterDefinition
-- [ ] EditorAdapterDefinitions/FileInputAdapterDefinition
-- [ ] EditorAdapterDefinitions/RadioButtonsAdapterDefinition
+- [x] EditorAdapterDefinitions/EditorAdapterDefinitionBase (`tests/EditorAdapterDefinitions/EditorAdapterDefinitionBase.test.ts`)
+- [x] EditorAdapterDefinitions/ParsedTextEditorAdapterDefinitionBase (`tests/EditorAdapterDefinitions/ParsedTextEditorAdapterDefinitionBase.test.ts`)
+- [x] EditorAdapterDefinitions/InputAdapterDefinition (`tests/EditorAdapterDefinitions/InputAdapterDefinition.test.ts`)
+- [x] EditorAdapterDefinitions/TextAreaAdapterDefinition (`tests/EditorAdapterDefinitions/TextAreaAdapterDefinition.test.ts`)
+- [x] EditorAdapterDefinitions/SelectAdapterDefinition (`tests/EditorAdapterDefinitions/SelectAdapterDefinition.test.ts`)
+- [x] EditorAdapterDefinitions/CheckboxAdapterDefinition (`tests/EditorAdapterDefinitions/CheckboxAdapterDefinition.test.ts`)
+- [x] EditorAdapterDefinitions/FileInputAdapterDefinition (`tests/EditorAdapterDefinitions/FileInputAdapterDefinition.test.ts`)
+- [x] EditorAdapterDefinitions/RadioButtonsAdapterDefinition (`tests/EditorAdapterDefinitions/RadioButtonsAdapterDefinition.test.ts`)
 - [ ] EditorAdapterDefinitions/WrappedEditorAdapterDefinitionBase
 - [ ] EditorAdapterDefinitions/WrappedInputAdapterDefinition
 - [ ] EditorAdapterDefinitions/WrappedTextAreaAdapterDefinition

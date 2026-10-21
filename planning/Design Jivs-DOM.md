@@ -307,7 +307,7 @@ TextEditorAdapterDefinition
     -> readTextValue()
     -> FieldValueHost.setTextValue(textValue, { validate: true })
 
-ParsedTextEditorAdapterDefinition
+ParsedTextEditorAdapterDefinitionBase
     -> readTextValue()
     -> parseTextValue(textValue, valueHost, element)
     -> FieldValueHost.setValues(nativeValue, textValue, {
@@ -320,7 +320,7 @@ NativeValueEditorAdapterDefinition
     -> FieldValueHost.setValue(nativeValue, { validate: true })
 ```
 
-`ParsedTextEditorAdapterDefinition` supports applications that parse editor text outside Jivs. Its subclass implements the following operation; `nativeValue` may be `undefined` when parsing cannot resolve a native value:
+`ParsedTextEditorAdapterDefinitionBase` supports applications that parse editor text outside Jivs. Its subclass implements the following operation; `nativeValue` may be `undefined` when parsing cannot resolve a native value:
 
 ```ts
 protected abstract parseTextValue(
@@ -337,11 +337,11 @@ Passing the `IFieldValueHost` and element lets application code select parser be
 
 The intended extension model is:
 
-- `ParsedTextEditorAdapterDefinition` is the abstract customization point for application-defined text parsing behavior;
+- `ParsedTextEditorAdapterDefinitionBase` is the abstract customization point for application-defined text parsing behavior;
 - native widget implementations such as `InputAdapterDefinition`, `TextAreaAdapterDefinition`, `SelectAdapterDefinition`, and related built-ins inherit from the concrete text/native base classes in `jivs-dom`;
-- applications should subclass `ParsedTextEditorAdapterDefinition` when they need custom parse logic, not subclass a concrete native HTML adapter definition for that purpose.
+- applications should subclass `ParsedTextEditorAdapterDefinitionBase` when they need custom parse logic, not subclass a concrete native HTML adapter definition for that purpose.
 
-This guidance belongs in end-user documentation, not in the core API contract itself. The public API contract is simply that `ParsedTextEditorAdapterDefinition` is the parser-aware abstract extension point and concrete HTML adapters remain the native widget definitions.
+This guidance belongs in end-user documentation, not in the core API contract itself. The public API contract is simply that `ParsedTextEditorAdapterDefinitionBase` is the parser-aware abstract extension point and concrete HTML adapters remain the native widget definitions.
 
 Field and form presentations are separate:
 
