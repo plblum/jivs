@@ -14,6 +14,10 @@ import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+// This ensures that references to JivsServices include the domServices property
+// for the VSCode environment. Not needed for compiling or runtime
+import { JivsDomServicesInstaller } from './../../src/Services/JivsDomServicesInstaller';
+new JivsDomServicesInstaller();
 
 function createFileInput(): HTMLInputElement
 {

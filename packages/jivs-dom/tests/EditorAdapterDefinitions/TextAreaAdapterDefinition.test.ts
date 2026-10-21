@@ -20,7 +20,8 @@ import { createStubFieldValueHost, RecordingLoggingService } from '../TestSuppor
 
 // This ensures that references to JivsServices include the domServices property
 // for the VSCode environment. Not needed for compiling or runtime
-import { JivsDomServicesInstaller } from './../../src/Services/JivsDomServicesInstaller';
+import { JivsDomServicesInstaller } from '../../src/Services/JivsDomServicesInstaller';
+new JivsDomServicesInstaller();
 
 /**
  * Exposes the protected attachToSendValuesCore.

@@ -81,7 +81,8 @@ export class WrappedRadioButtonsAdapterDefinition extends WrappedInputAdapterDef
     public override identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
     {
         let editor = jivsElement.querySelector('input[type="radio"]');
-        assertNotNull(editor, 'No radio button found in the wrapper.');
+        if (!editor)
+            throw new Error('No radio button found in the wrapper.');
         return editor as HTMLElement;
     }
 
