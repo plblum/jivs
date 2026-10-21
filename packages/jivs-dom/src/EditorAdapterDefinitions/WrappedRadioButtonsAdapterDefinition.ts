@@ -5,7 +5,7 @@
  */
 
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { WrappedInputAdapterDefinition } from './WrappedInputAdapterDefinition';
 import { RadioButtonsAdapterDefinition } from './RadioButtonsAdapterDefinition';
@@ -82,7 +82,7 @@ export class WrappedRadioButtonsAdapterDefinition extends WrappedInputAdapterDef
     {
         let editor = jivsElement.querySelector('input[type="radio"]');
         if (!editor)
-            throw new Error('No radio button found in the wrapper.');
+            throw new CodingError('No radio button found in the wrapper.');
         return editor as HTMLElement;
     }
 

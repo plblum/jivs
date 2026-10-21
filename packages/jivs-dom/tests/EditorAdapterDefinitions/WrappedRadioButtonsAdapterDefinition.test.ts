@@ -12,7 +12,10 @@ import { WrappedRadioButtonsAdapterDefinition } from '../../src/EditorAdapterDef
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost } from '../TestSupport/mocks';
-
+// This ensures that references to JivsServices include the domServices property
+// for the VSCode environment. Not needed for compiling or runtime
+import { JivsDomServicesInstaller } from '../../src/Services/JivsDomServicesInstaller';
+new JivsDomServicesInstaller();
 /**
  * Exposes protected members of the definition under test.
  */
@@ -185,7 +188,7 @@ describe('WrappedRadioButtonsAdapterDefinition.identifyEditor', () => {
         expect(() => testItem.identifyEditor(valueHost, wrapper as unknown as IJivsElement))
             .toThrow(CodingError);
         expect(() => testItem.identifyEditor(valueHost, wrapper as unknown as IJivsElement))
-            .toThrow('No radio button found in the wrapper. required');
+            .toThrow('No radio button found in the wrapper.');
     });
 
     test('Does not require domServices, since no logging is performed', () => {
