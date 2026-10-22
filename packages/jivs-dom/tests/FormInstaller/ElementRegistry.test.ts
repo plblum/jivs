@@ -449,6 +449,118 @@ describe('ElementRegistry.clear', () => {
     });
 });
 
+// Each DOM element instance may be registered once; a second attempt would install it twice, so it must fail fast.
+describe('ElementRegistry duplicate element detection', () => {
+    test('Rejects the same element added again by the same method and names its id', () => {
+        let { registry } = setup();
+        let editor = createJivsElement('input');
+        editor.id = 'email-editor';
+        let label = createJivsElement('label');
+        label.id = 'email-label';
+        let form = createJivsElement('form');
+        form.id = 'summary';
+        registry.addEditor(editor, 'email');
+        registry.addField(label, 'email', ElementRole.label);
+        registry.addForm(form, ElementRole.summary);
+
+        expect(() => registry.addEditor(editor, 'email'))
+            .toThrow("Duplicate element instance detected. ID: 'email-editor'");
+        expect(() => registry.addField(label, 'email', ElementRole.label))
+            .toThrow("Duplicate element instance detected. ID: 'email-label'");
+        expect(() => registry.addForm(form, ElementRole.summary))
+            .toThrow("Duplicate element instance detected. ID: 'summary'");
+    });
+    test('Rejects an element already registered under a different kind, role, or identifier', () => {
+        let { registry } = setup();
+        let element = createJivsElement('div');
+        registry.addField(element, 'email', ElementRole.label);
+
+        expect(() => registry.addEditor(element, 'email')).toThrow('Duplicate element instance detected');
+        expect(() => registry.addField(element, 'other', ElementRole.error)).toThrow('Duplicate element instance detected');
+        expect(() => registry.addForm(element, ElementRole.summary)).toThrow('Duplicate element instance detected');
+    });
+    test('Reports a placeholder when the duplicate element has no id', () => {
+        let { registry } = setup();
+        let element = createJivsElement('div');
+        registry.addForm(element, ElementRole.summary);
+
+        expect(() => registry.addForm(element, ElementRole.summary))
+            .toThrow("Duplicate element instance detected. ID: '<no id>'");
+    });
+    test('Leaves the registry unchanged when a duplicate is rejected', () => {
+        let { registry, lookups } = setup();
+        let element = createJivsElement('div');
+        registry.addField(element, 'email', ElementRole.label);
+        let lookupCount = lookups.length;
+
+        expect(() => registry.addField(element, 'email', ElementRole.label)).toThrow();
+        expect(() => registry.addEditor(element, 'email')).toThrow();
+        expect(() => registry.addForm(element, ElementRole.summary)).toThrow();
+
+        expect(recordsOf(registry)).toHaveLength(1);
+        expect(registry.getResolvedElementIdentifiers()[0].records).toHaveLength(1);
+        expect(lookups).toHaveLength(lookupCount);
+    });
+    test('Allows different element instances that share an id', () => {
+        let { registry } = setup();
+        let first = createJivsElement('div');
+        first.id = 'same';
+        let second = createJivsElement('div');
+        second.id = 'same';
+
+        registry.addField(first, 'email', ElementRole.label);
+        registry.addField(second, 'email', ElementRole.error);
+
+        expect(recordsOf(registry)).toHaveLength(2);
+    });
+});
+
+// getRecordForElement finds the exact record for any registered element without enumerating the registry.
+describe('ElementRegistry.getRecordForElement', () => {
+    test('Returns the exact editor, field, and form record for each registered element', () => {
+        let { registry } = setup();
+        let editor = createJivsElement('input');
+        let label = createJivsElement('label');
+        let form = createJivsElement('form');
+        registry.addEditor(editor, 'email');
+        registry.addField(label, 'email', ElementRole.label);
+        registry.addForm(form, ElementRole.summary);
+        let [editorRecord, labelRecord, formRecord] = recordsOf(registry);
+
+        expect(registry.getRecordForElement(editor)).toBe(editorRecord);
+        expect(registry.getRecordForElement(label)).toBe(labelRecord);
+        expect(registry.getRecordForElement(form)).toBe(formRecord);
+    });
+    test('Returns null for an element that was never registered', () => {
+        let { registry } = setup();
+        registry.addField(createJivsElement('label'), 'email', ElementRole.label);
+
+        expect(registry.getRecordForElement(createJivsElement('label'))).toBeNull();
+    });
+    test('Reflects delayed editor JivsElement assignment on the same record', () => {
+        let { registry } = setup();
+        let editor = createJivsElement('input');
+        let anchor = createJivsElement('div');
+        registry.addEditor(editor, 'email');
+        let record = registry.getRecordForElement(editor) as IEditorElementRegistryRecord;
+
+        registry.setEditorJivsElement(record, anchor);
+
+        expect((registry.getRecordForElement(editor) as IEditorElementRegistryRecord).jivsElement).toBe(anchor);
+    });
+    test('Returns null and accepts the same element again after clear', () => {
+        let { registry } = setup();
+        let element = createJivsElement('label');
+        registry.addField(element, 'email', ElementRole.label);
+
+        registry.clear();
+
+        expect(registry.getRecordForElement(element)).toBeNull();
+        expect(() => registry.addField(element, 'email', ElementRole.label)).not.toThrow();
+        expect(registry.getRecordForElement(element)).toBe(recordsOf(registry)[0]);
+    });
+});
+
 // Disposing releases registered DOM and host references and makes further registry use invalid.
 describe('ElementRegistry.dispose', () => {
     test('Clears retained record references and rejects later queries', () => {

@@ -66,6 +66,7 @@ class RecordingElementRegistry implements IElementRegistry
     public getFormPresentationElements(): IJivsElement[] { throw new Error('Not used by this test.'); }
     public getFieldAriaElementAnchors(): never { throw new Error('Not used by this test.'); }
     public getResolvedElementIdentifiers(): never[] { throw new Error('Not used by this test.'); }
+    public getRecordForElement(): never { throw new Error('Not used by this test.'); }
     public clear(): void { throw new Error('Not used by this test.'); }
     public dispose(): void { throw new Error('Not used by this test.'); }
     public [Symbol.iterator](): Iterator<never> { throw new Error('Not used by this test.'); }

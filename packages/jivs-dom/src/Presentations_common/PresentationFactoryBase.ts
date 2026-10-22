@@ -102,7 +102,7 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
      * @param role The element role for which to create the field presentation.
      * @param presentationName The specific presentation name to use, if any.
      */
-    public create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult
+    public create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult | null
     {
         this.ensureLazyRegistration();
         if (!presentationName)
@@ -111,8 +111,8 @@ export abstract class PresentationFactoryBase<TResult> extends DomServiceBase
             if (!presentationName)
             {
                 let message = `No default presentation registered for role: ${ role }`;
-                this.logger().message(LoggingLevel.Error, ()=> message);
-                throw new Error(message);
+                this.logger().message(LoggingLevel.Debug, ()=> message);
+                return null;
             }
         }
         presentationName = PresentationFactoryBase.normalizePresentationName(presentationName);

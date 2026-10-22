@@ -234,10 +234,10 @@ Owner-approved. Work strictly one class at a time, in this order; within a phase
 - [x] EditorAdapterDefinitions/WrappedCheckboxAdapterDefinition (`tests/EditorAdapterDefinitions/WrappedCheckboxAdapterDefinition.test.ts`)
 - [x] EditorAdapterDefinitions/WrappedFileInputAdapterDefinition (`tests/EditorAdapterDefinitions/WrappedFileInputAdapterDefinition.test.ts`)
 - [x] EditorAdapterDefinitions/WrappedRadioButtonsAdapterDefinition (`tests/EditorAdapterDefinitions/WrappedRadioButtonsAdapterDefinition.test.ts`)
-- [ ] EditorAdapterDefinitions/EditorAdapterDefinitionFactory
-- [ ] Editors/EditorInstaller
-- [ ] FormInstaller/ElementRegistry
-- [ ] FormInstaller/ElementCollectorBase
+- [x] EditorAdapterDefinitions/EditorAdapterDefinitionFactory (`tests/EditorAdapterDefinitions/EditorAdapterDefinitionFactory.test.ts`)
+- [x] Editors/EditorInstaller (`tests/Editors/EditorInstaller.test.ts`)
+- [x] FormInstaller/ElementRegistry (`tests/FormInstaller/ElementRegistry.test.ts`)
+- [x] FormInstaller/ElementCollectorBase (`no code generated due to no code in the class`)
 - [ ] FormInstaller/FormInstaller
 
 ## 10. jsdom and event-testing primer (grows as we learn)

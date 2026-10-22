@@ -59,5 +59,5 @@ export interface IPresentationFactory<TResult>
      * @param presentationName The optional presentation name to use for creating the presentation.
      * When supplied, it overrides the default presentation name set for the role.
      */
-    create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult;
+    create(element: IJivsElement, role: ElementRole | string, presentationName?: string | null): TResult | null;
 }

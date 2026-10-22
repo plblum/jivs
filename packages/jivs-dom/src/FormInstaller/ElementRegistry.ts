@@ -49,6 +49,16 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         return this._entriesByElementIdentifier;
     } 
     private readonly _entriesByElementIdentifier = new Map<string, ElementIdentifierRegistryEntry>(); 
+
+    /**
+     * A secondary mapping used to report attempts at adding duplicate element instances
+     * and to find by element itself.
+     */
+    protected get elementsToRecords(): Map<IJivsElement, ElementRegistryRecord>
+    {
+        return this._elementsToRecords;
+    }
+    private _elementsToRecords = new Map<IJivsElement, ElementRegistryRecord>();
 //#endregion storage    
     
     /**
@@ -60,6 +70,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
     public addEditor(element: IJivsElement, elementIdentifier: string,
         options?: EditorInstallOptions): void
     {
+        this.ensureUniqueElement(element);
         let elIdeEntry = this.resolveElementIdentifierRegistryEntry(elementIdentifier);
         let record: ElementRegistryRecord = {
             kind: 'field',
@@ -72,6 +83,15 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         };
         this.records.push(record);
         elIdeEntry.records.push(record);
+        this.elementsToRecords.set(element, record);
+    }
+    private ensureUniqueElement(element: IJivsElement): void
+    {
+        if (this._elementsToRecords.has(element))
+        {
+            const id = element.id || '<no id>';
+            throw new Error(`Duplicate element instance detected. ID: '${id}'`);
+        }
     }
     /**
      * Finds or creates the registry entry for the specified element identifier.
@@ -107,6 +127,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
     public addField(element: IJivsElement, elementIdentifier: string, role: ElementRole | string,
         options?: FieldPresentationInstallOptions): void
     {
+        this.ensureUniqueElement(element);
         let elIdeEntry = this.resolveElementIdentifierRegistryEntry(elementIdentifier);
         let record: ElementRegistryRecord = {
             kind: 'field',
@@ -118,6 +139,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         };
         this.records.push(record);
         elIdeEntry.records.push(record);
+        this.elementsToRecords.set(element, record);
     }
 
     /**
@@ -137,7 +159,9 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             elementIdentifier: null,
             presentationOptions: options || null,
         };
+        this.ensureUniqueElement(element);
         this.records.push(record);
+        this.elementsToRecords.set(element, record);
     }
     
     /**
@@ -305,7 +329,6 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             }
         }
         return result;
-
     }
     
     /**
@@ -321,6 +344,16 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             }
         }
         return result;
+    }
+
+    /**
+     * Retrieves the registry record for the specified element.
+     * @param element The IJivsElement for which to retrieve the registry record.
+     * @returns The ElementRegistryRecord associated with the element, or null if none exists.
+     */
+    public getRecordForElement(element: IJivsElement): ElementRegistryRecord | null
+    {
+        return this.elementsToRecords.get(element) || null;
     }
 
     /**
@@ -352,6 +385,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
             (entry as any).jivsElement = null;
         }
         this._records = [];
+        this._elementsToRecords.clear();
     }
 
     /**
@@ -365,5 +399,6 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
 
         (this._entriesByElementIdentifier as any) = null;
         (this._records as any) = null;
+        (this._elementsToRecords as any) = null;
     }
 }

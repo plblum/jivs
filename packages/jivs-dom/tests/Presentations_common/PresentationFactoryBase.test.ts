@@ -167,15 +167,14 @@ describe('PresentationFactoryBase.lazyRegistration', () => {
 
 // Failed lookups log the requested error before throwing an actionable exception.
 describe('PresentationFactoryBase failed lookups', () => {
-    test('Logs and throws when no default is configured for the role', () => {
+    test('Logs and returns null when no default is configured for the role', () => {
         let { factory, logger } = setup();
 
-        expect(() => factory.create(createElement(), ElementRole.editor))
-            .toThrow('No default presentation registered for role: editor');
+        expect(factory.create(createElement(), ElementRole.editor)).toBeNull();
 
         expect(logger.calls).toHaveLength(1);
         expect(logger.calls[0]).toMatchObject({
-            level: LoggingLevel.Error,
+            level: LoggingLevel.Debug,
             details: {
                 message: 'No default presentation registered for role: editor',
                 feature: 'Dom',

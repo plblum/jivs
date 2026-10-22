@@ -77,6 +77,7 @@ export class EditorAdapterDefinitionFactory extends DomServiceBase
         // this should discard an existing definition with the same adapter key
         this._registeredDefinitions = this._registeredDefinitions.filter(d => d.adapterKey !== definition.adapterKey);
         this._registeredDefinitions.push(definition);
+        definition.domServices = this.domServices;
         this._sortedDefinitions = undefined; // Invalidate the sorted cache
     }
 

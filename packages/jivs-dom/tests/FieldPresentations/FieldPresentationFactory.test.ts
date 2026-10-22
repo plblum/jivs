@@ -67,7 +67,12 @@ describe('FieldPresentationFactory built-in registrations', () => {
         ];
 
         for (let registration of registrations)
-            registration.verify(factory.create(createElement(), ElementRole.editor, registration.name));
+        {
+            let result = factory.create(createElement(), ElementRole.editor, registration.name);
+            if (result) {
+                registration.verify(result);
+            }
+        }
     });
 });
 

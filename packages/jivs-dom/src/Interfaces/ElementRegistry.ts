@@ -131,6 +131,13 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
     getResolvedElementIdentifiers(): ElementIdentifierRegistryEntry[];
 
     /**
+     * Retrieves the registry record for the specified element.
+     * @param element The IJivsElement for which to retrieve the registry record.
+     * @returns The ElementRegistryRecord associated with the element, or null if none exists.
+     */
+    getRecordForElement(element: IJivsElement): ElementRegistryRecord | null;
+
+    /**
      * Clears all registered elements from the registry.
      * It is aggressive in that it nulls references from the records 
      * to promote rapid garbage collection and memory cleanup.

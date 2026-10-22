@@ -102,6 +102,18 @@ export interface IAriaService
      */
     applyValidationState(element: IJivsElement, 
         valueHost: IFieldValueHost, state: ValueHostValidationState): IAriaValidationStateUpdater | null;
+    
+    /**
+     * Resolves the appropriate ValidationState ARIA element updater for the specified DOM element.
+     * 
+     * The rules are:
+     * 1. Editor adapter definition (not available on non-editor roles)
+     * 2. Field presentation
+     * 3. AriaServices' default updaters based on role
+     * @param element The DOM element for which to resolve the ValidationState ARIA updater.
+     * @returns The resolved ValidationState ARIA element updater, or null if none could be resolved.
+     */
+    resolveValidationStateUpdater(element: IJivsElement): IAriaValidationStateUpdater | null;
 }
 
 /**

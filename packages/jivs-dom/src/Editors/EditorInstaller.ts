@@ -1,3 +1,10 @@
+/**
+ * Provides functionality to install editors on DOM elements, ensuring proper adapter resolution, 
+ * event handling, and field presentation setup.
+ * 
+ * @module jivs-dom/Editors/ConcreteClasses/EditorInstaller
+ */
+
 import { EditorInstallOptions, IEditorInstaller } from '../Interfaces/EditorInstaller';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
@@ -62,8 +69,8 @@ export class EditorInstaller extends DomServiceBase
         // They will use a role-specific default if no presentation name is provided
         // through our options or the definition's default.
         const presentationName = options.presentationName !== null // null means the role default should be used
-                ? options.presentationName  // can be null
-                : definition.recommendedFieldPresentationName;
+                ? options.presentationName
+                : definition.recommendedFieldPresentationName;  // can be null
 
         this.domServices.fieldPresentationInstaller.install(valueHost, jivsElement, ElementRole.editor,
             {

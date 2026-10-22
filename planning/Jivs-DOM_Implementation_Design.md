@@ -745,7 +745,7 @@ The factory preregisters all adapter definitions supplied with jivs-dom. They ar
 
 Priorities from `0` through `100` are the documented normal range, with larger values examined first. Negative values and values greater than `100` remain valid so applications are not prevented from placing definitions before or after the standard range.
 
-`adapterKey` uniquely identifies a registered definition. Registering another definition with an existing key logs the replacement and uses the new definition for future explicit and automatic selection. JivsElements already installed with the earlier definition retain it.
+`adapterKey` uniquely identifies a registered definition. Registering another definition with an existing key silently replaces it in the factory and uses the new definition for future explicit and automatic selection. JivsElements already installed with the earlier definition retain it.
 
 `matches()` is a read-only predicate. It must not modify or retain either argument.
 
@@ -1144,17 +1144,17 @@ The editor installer always invokes `IFieldPresentationInstaller` for `ElementRo
 
 It resolves the presentation name in this order:
 
-1. If `options.presentationName` is a string or `null`, use it.
-2. Otherwise, if `definition.recommendedFieldPresentationName` is a string or `null`, use it.
-3. Otherwise, pass `undefined` so the presentation installer can apply its universal editor fallback.
+1. If `options.presentationName` is `null`, use `definition.recommendedFieldPresentationName`.
+2. Otherwise, use `options.presentationName`, including `undefined` when the option is omitted.
+3. Pass the resolved value to the presentation installer. A `null` or `undefined` name allows the presentation factory to use the role-specific default.
 
 The values have distinct meanings:
 
 | Value       | Meaning                                                  |
 | ----------- | -------------------------------------------------------- |
 | String      | Request that named presentation.                         |
-| `null`      | Explicitly disable presentation for the editor.          |
-| `undefined` | Allow the next fallback policy to select a presentation. |
+| `null`      | Use the definition recommendation; if it is also null, use the role-specific default. |
+| `undefined` | Use the role-specific default.                           |
 
 It then calls:
 
@@ -1974,7 +1974,7 @@ The three possible `options.presentationName` values have distinct meanings:
 | ----------- | -------------------------------------------------------- |
 | String      | Create the presentation registered under that name.      |
 | `undefined` | Use the default presentation name registered for `role`. |
-| `null`      | Explicitly disable field presentation for this element.  |
+| `null`      | Use the default presentation name registered for `role`. |
 
 Presentation installation is idempotent through `IJivsElement.jivsFieldPresentation`:
 
@@ -1984,9 +1984,7 @@ Presentation installation is idempotent through `IJivsElement.jivsFieldPresentat
 | Presentation instance   | Preserve the existing instance without applying it.     |
 | `null`                  | Preserve `null` without attempting presentation resolution. |
 
-When presentation installation is required and `options.presentationName` is `null`, the installer assigns `null` to `element.jivsFieldPresentation` without calling the factory.
-
-Otherwise, when the presentation property is `undefined`, the installer:
+When the presentation property is `undefined`, the installer:
 
 1. Calls `fieldPresentationFactory.create()` with the element, role, and requested presentation name.
 2. Executes init()

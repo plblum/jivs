@@ -345,7 +345,7 @@ export class AriaService extends DomServiceBase
      * @param element The DOM element for which to resolve the ValidationState ARIA updater.
      * @returns The resolved ValidationState ARIA element updater, or null if none could be resolved.
      */
-    protected resolveValidationStateUpdater(element: IJivsElement): IAriaValidationStateUpdater | null
+    public resolveValidationStateUpdater(element: IJivsElement): IAriaValidationStateUpdater | null
     {
         let updater: IAriaValidationStateUpdater | null = null;
         if (element.jivsEditorAdapterDefinition)

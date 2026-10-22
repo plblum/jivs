@@ -65,14 +65,17 @@ export class FormPresentationInstaller extends DomServiceBase
         }
 
         element.jivsElementRole = role;
-        let formPresentation: IFormPresentation =
+        let formPresentation: IFormPresentation | null =
             this.domServices.formPresentationFactory.create(element, role, options.presentationName);
-        formPresentation.init(valueHostsManager);
-        formPresentation.apply(valueHostsManager, valueHostsManager.currentValidationState({
-            group: options.group
-        }));
-        element.jivsFormPresentation = formPresentation;
-        element.jivsFormPresentationGroup = options.group;
+        if (formPresentation)
+        {
+            formPresentation.init(valueHostsManager);
+            formPresentation.apply(valueHostsManager, valueHostsManager.currentValidationState({
+                group: options.group
+            }));
+            element.jivsFormPresentation = formPresentation;
+            element.jivsFormPresentationGroup = options.group;
+        }
         return formPresentation;
     }
 }
