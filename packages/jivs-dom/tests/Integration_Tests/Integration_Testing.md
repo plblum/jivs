@@ -131,6 +131,21 @@ Generated Jivs-role IDs use a role/field/key-style stem plus a unique `-N` suffi
 
 The builder doesn't escape `fieldName`, attributes, content, or option strings: these are trusted test fixtures, not production HTML templating facilities.
 
+## Named test fields (`TestingSupport/`)
+
+Instead of hand-writing rules and HTML in each test, pick entries from a repository of named test fields. Names state purpose (`Text_Required`, `Number_Range`, `Date_Required_LessThan`, `Checkbox`, `Select_Required`, `Radio_Required`).
+
+- `TestFieldRepository.ts`: `TestFieldEntry` pairs `addToConfig(builder)` (FieldValueHost and validators) with `addToHtml(page, options)` (label, editor, required indicator, error display; `FieldBlockOptions` toggles them and can add `ariaError` or a `container`). `createDefaultTestFieldRepository()` holds the starter set; call `register()` to add more.
+- `TestPropertiesRules.ts`: one `ValueHostRulesBase` subclass built from a list of names; its cache key includes the names.
+- `CreateTestForm.ts`: `createTestForm(['Text_Required', 'Checkbox'], options?)` creates services (all conditions, parsers, formatters, ARIA), rules, manager, context, runner and form HTML, writes it to `document.body`, and runs `FormInstaller`. It returns `vhm`, `runner`, `page`, `form`, `install()` and `buildFields(names)` (for AJAX-style replacement).
+
+```ts
+const t = createTestForm(['Text_Required', 'Date_Required_LessThan']);
+t.runner.assertFormInstallation(document, t.vhm);
+```
+
+Note: `ElementCollectorForTests` passes `presentationName: null` for editors without `data-jivs-presentation`, because `EditorInstaller` only uses the adapter's recommended presentation when the option is `null` (not `undefined`).
+
 ## Descriptor contracts
 
 Each role descriptor is constructed directly by the corresponding `TestHtmlBuilder` method, not by a descriptor factory. Its constructor takes `(id, fieldName, context)`; the concrete class declares its own `role`. Optional expectations are writable properties populated by the builder.

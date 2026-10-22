@@ -171,6 +171,15 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
     factory.register('Wrapped:TextArea', (element) => new WrappedTextAreaPresentation(element));
     factory.register('Wrapped:FileInput', (element) => new WrappedFileInputPresentation(element));
 
+    // The editor adapter definitions recommend these names (their built-in defaults).
+    // Registered as aliases so that FormInstaller can resolve the recommendation.
+    factory.register('inputEditor', (element) => new TextInputPresentation(element));
+    factory.register('checkboxEditor', (element) => new CheckboxPresentation(element));
+    factory.register('radiobuttonsEditor', (element) => new RadioButtonsPresentation(element));
+    factory.register('selectEditor', (element) => new SelectPresentation(element));
+    factory.register('textareaEditor', (element) => new TextAreaPresentation(element));
+    factory.register('fileInputEditor', (element) => new FileInputPresentation(element));
+
     // LABELS, REQUIRED INDICATORS, AND CONTAINERS
     factory.register('Label', (element) => new LabelPresentation(element));
     factory.register('RequiredIndicator', (element) => new RequiredIndicatorPresentation(element));

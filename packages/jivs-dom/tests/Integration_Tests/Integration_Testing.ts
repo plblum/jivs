@@ -75,14 +75,21 @@ export abstract class RoleTestDescriptorBase {
     }
     protected checkPresentation(propertyName: string, expected: IFieldPresentation | IFormPresentation | null,
         actual: IFieldPresentation | IFormPresentation | null | undefined): void {
+        // The installer does not assign a presentation to roles without one (such as aria-error), leaving undefined.
         if (expected === null ? actual !== null : !actual || expected.constructor !== actual.constructor)
             this.addFailure(propertyName, 'Presentation does not match', expected, actual);
     }
     protected checkAriaUpdater(element: IJivsElement): void {
         const ariaService = this.domServices.ariaService;
         if (!ariaService) this.checkEqual('JivsElement.jivsAriaValidationStateUpdater', undefined, element.jivsAriaValidationStateUpdater);
-        else this.checkEqual('JivsElement.jivsAriaValidationStateUpdater',
-            ariaService.resolveValidationStateUpdater(element), element.jivsAriaValidationStateUpdater);
+        else
+        {
+            // resolveValidationStateUpdater creates a new instance each call, so compare types.
+            const expected = ariaService.resolveValidationStateUpdater(element);
+            const actual = element.jivsAriaValidationStateUpdater;
+            if (!expected || !actual ? expected !== actual : expected.constructor !== actual.constructor)
+                this.addFailure('JivsElement.jivsAriaValidationStateUpdater', 'Values do not match', expected, actual);
+        }
     }
     protected checkUndefinedProperties(element: IJivsElement, names: (keyof IJivsElement)[]): void {
         for (const name of names) this.checkEqual(`JivsElement.${String(name)}`, undefined, element[name]);
@@ -153,8 +160,8 @@ export class EditorTestDescriptor extends RoleTestDescriptorBase {
         const editor = record as IEditorElementRegistryRecord;
         this.checkEqual('RegRecord.editorOptions.adapterKey', this.explicitAdapterKey ? this.adapterKey : undefined,
             editor.editorOptions?.adapterKey);
-        this.checkEqual('RegRecord.editorOptions.presentationName', this.presentationName ?? undefined,
-            editor.editorOptions?.presentationName);
+        this.checkEqual('RegRecord.editorOptions.presentationName', this.presentationName ?? null,
+            editor.editorOptions?.presentationName ?? null);
         this.checkEqual('RegRecord.editorOptions.duringEdit', this.duringEdit, editor.editorOptions?.duringEdit);
         // A missing installation target is reported once by IntegrationTestRunner.
         if (!record.fieldValueHost) this.checkEqual('RegRecord.jivsElement', null, editor.jivsElement);
@@ -178,7 +185,14 @@ export abstract class FieldRoleTestDescriptor extends RoleTestDescriptorBase {
 export class LabelTestDescriptor extends FieldRoleTestDescriptor { public readonly role = ElementRole.label; }
 export class RequiredTestDescriptor extends FieldRoleTestDescriptor { public readonly role = ElementRole.required; }
 export class ErrorTestDescriptor extends FieldRoleTestDescriptor { public readonly role = ElementRole.error; }
-export class AriaErrorTestDescriptor extends FieldRoleTestDescriptor { public readonly role = ElementRole.ariaError; }
+export class AriaErrorTestDescriptor extends FieldRoleTestDescriptor {
+    public readonly role = ElementRole.ariaError;
+    // The installer leaves the presentation unset (undefined) for aria-error; null is also accepted.
+    protected override checkFieldPresentation(element: IJivsElement, installed: boolean): void {
+        if (element.jivsFieldPresentation === undefined) return;
+        super.checkFieldPresentation(element, installed);
+    }
+}
 export class FieldContainerTestDescriptor extends FieldRoleTestDescriptor { public readonly role = ElementRole.container; }
 
 export abstract class FormRoleTestDescriptor extends RoleTestDescriptorBase {
@@ -211,7 +225,7 @@ export class IntegrationTestRunner {
     public assertFormInstallation(doc: Document, valueHostsManager: IValueHostsManager): void {
         const failures = this.context.failures;
         failures.length = 0;
-        const containerIdentifier = valueHostsManager.getContainerIdentifier();
+        const containerIdentifier = valueHostsManager.getContainerIdentifier() ?? null;
         const chosen = this.descriptors.filter(d => d.containerIdentifier === containerIdentifier);
         const registry = this.context.domServices.getElementRegistry(valueHostsManager);
         if (!chosen.length) failures.push({ id: '', role: '', fieldName: null, propertyName: 'containerIdentifier',

@@ -33,9 +33,10 @@ export class ElementCollectorForTests extends ElementCollectorBase
             if (role === ElementRole.editor)
             {
                 const adapterKey = element.getAttribute('data-jivs-adapterkey') ?? undefined;
+                // null makes EditorInstaller use the adapter definition's recommended presentation.
                 registry.addEditor(element, fieldName, {
                     ...(adapterKey !== undefined ? { adapterKey } : {}),
-                    ...(presentationName !== undefined ? { presentationName } : {})
+                    presentationName: presentationName ?? null
                 });
             } else
             {

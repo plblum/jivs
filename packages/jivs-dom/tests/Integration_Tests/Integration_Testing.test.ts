@@ -304,8 +304,10 @@ describe('Additional option and ARIA coverage', () =>
     test('compares installed updater instance for eligible ARIA field anchors', () =>
     {
         const { records, registry, builder, runner, manager, service, context } = setupForTestingTheTestingTools();
-        const updater = {};
-        (service as any).ariaService = { resolveValidationStateUpdater: () => updater };
+        class UpdaterA {}
+        class UpdaterB {}
+        const updater = new UpdaterA();
+        (service as any).ariaService = { resolveValidationStateUpdater: () => new UpdaterA() };
         builder.ariaError('name');
         document.body.innerHTML = builder.build();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
@@ -321,7 +323,7 @@ describe('Additional option and ARIA coverage', () =>
             elementIdentifier: 'name', fieldValueHost: {} as any, presentationOptions: null
         });
         expect(() => runner.assertFormInstallation(document, manager)).not.toThrow();
-        el.jivsAriaValidationStateUpdater = {} as any;
+        el.jivsAriaValidationStateUpdater = new UpdaterB() as any;
         expect(() => runner.assertFormInstallation(document, manager)).toThrow();
         expect(context.failures.some(f => f.propertyName === 'JivsElement.jivsAriaValidationStateUpdater')).toBe(true);
     });
