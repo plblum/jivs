@@ -60,6 +60,7 @@ export interface EditorInstallOptions
      * the necessary event handlers to handle validation during editing.
      * For example, input tags support oninput events for this purpose.
      * It can be ignored if the editor does not support validation during editing.
+     * Gets a default from domServices.options.validationBehaviors.duringEdit.
      */
     duringEdit?: boolean;
 }

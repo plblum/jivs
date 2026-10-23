@@ -243,6 +243,8 @@ export interface JivsDomGlobalOptions
     iconMessageFrame: IconMessageFrameGlobalOptions,
     columnarErrorIndicatorContent: ColumnarErrorIndicatorContentGlobalOptions,
     validationSummary: ValidationSummaryPresentationGlobalOptions,
+    validationBehaviors: ValidationBehaviors
+    
     // when adding here, also add to initJivsDomGlobalOptions() below
 }
 export function initJivsDomGlobalOptions(): JivsDomGlobalOptions
@@ -261,6 +263,22 @@ export function initJivsDomGlobalOptions(): JivsDomGlobalOptions
         headerFooterMessageFrame: {},
         iconMessageFrame: {},
         columnarErrorIndicatorContent: {},
-        validationSummary: {}
+        validationSummary: {},
+        validationBehaviors: {}
     };
+}
+
+/**
+ * Options for controlling validation behaviors, such as setting up some options
+ * passed into FieldValueHost.validate().
+ */
+export interface ValidationBehaviors
+{
+    /**
+     * Indicates whether validation should occur during editing of the field,
+     * such as when the user is typing in the field.
+     * This is associated with the FieldValueHost.validate({ duringEdit: true }) option.
+     * It only impacts validators that support the feature.
+     */
+    duringEdit?: boolean;
 }

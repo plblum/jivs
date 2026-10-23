@@ -35,8 +35,10 @@ The concrete descriptor names are `EditorTestDescriptor`, `LabelTestDescriptor`,
 1. Prepare the real Jivs services and `ValueHostsManager` required by `FormInstaller`.
 2. Create an `IntegrationTestContext(valueHostsManager)` and an `IntegrationTestRunner(context)` **before creating role elements**. The runner sets `context.runner` and receives newly generated descriptors.
 3. Create `TestHtmlBuilder(context)` and compose a form and its children. Use `build()` to obtain the HTML string. Insert it into the JSDOM `document`.
-4. Run `FormInstaller` with the prepared manager and an element collector. The collector must populate the registry from the markup; the test descriptors are **not** a substitute for the collector.
-5. Call `runner.assertFormInstallation(document, valueHostsManager)` after installation. The runner accesses `domServices.getElementRegistry(valueHostsManager)`.
+4. Use the jivs SimpleDOM syntax in the HTML for the test. Always omit the id attribute on any tag with data-jivs-role attribute.
+5. Use SimpleDomElementCollector as the ElementCollector.
+6. Run `FormInstaller` with the prepared manager and an element collector. The collector must populate the registry from the markup; the test descriptors are **not** a substitute for the collector.
+7. Call `runner.assertFormInstallation(document, valueHostsManager)` after installation. The runner accesses `domServices.getElementRegistry(valueHostsManager)`.
 
 Illustrative usage (adapt imports and manager creation to the repository):
 
@@ -55,12 +57,12 @@ form.errorDisplay('firstName');
 form.submit();
 
 document.body.innerHTML = page.build();
-const collector = new ElementCollectorForTests();
+const collector = new SimpleDomElementCollector();
 new FormInstaller(vhm, collector).install();
 runner.assertFormInstallation(document, vhm);
 ```
 
-The example's `MyModelValueHostsRules` is application-specific. `createJivsServicesForTesting()` configures real engine and DOM services; `ElementCollectorForTests` reads the rendered markup and is only a test collector.
+The example's `MyModelValueHostsRules` is application-specific. `createJivsServicesForTesting()` configures real engine and DOM services; `SimpleDomElementCollector` reads the rendered markup.
 
 ## `IntegrationTestContext`
 
@@ -144,7 +146,7 @@ const t = createTestForm(['Text_Required', 'Date_Required_LessThan']);
 t.runner.assertFormInstallation(document, t.vhm);
 ```
 
-Note: `ElementCollectorForTests` passes `presentationName: null` for editors without `data-jivs-presentation`, because `EditorInstaller` only uses the adapter's recommended presentation when the option is `null` (not `undefined`).
+Note: `SimpleDomElementCollector` passes `presentationName: null` for editors without `data-jivs-presentation`, because `EditorInstaller` only uses the adapter's recommended presentation when the option is `null` (not `undefined`).
 
 ## Descriptor contracts
 
@@ -230,6 +232,33 @@ ARIA checks distinguish participating field anchors from non-participating eleme
 - The runner intentionally does not test for extra registry entries without descriptors; those belong to collector/registry tests.
 - HTML builder attribute strings and select-option values are **not escaped**. Use controlled test fixtures and supply authored markup through `raw()` when necessary.
 - ARIA installation participation follows the registry's field anchors; this test suite does not retest the inner behavior of ARIA updaters.
+
+# Element collector for integration tests
+
+Tests shall use the `SimpleDomElementCollector` class and follow the jivs-simpledom syntax described in
+the ElementCollectorForTests source file.
+
+```ts
+const collector = new SimpleDomElementCollector();
+const formInstaller = new FormInstaller(valueHostsManager, collector);
+formInstaller.install();
+runner.assertFormInstallation(document, valueHostsManager);
+```
+
+Do not assign IDs to any element that has a data-jivs-role attribute because
+our test framework uses and assigns the ID attribute.
+
+```html
+<form>
+    <div data-field='field1' data-jivs-role='container'>
+        <label data-field='field1' data-jivs-role='label'>Field 1</label>
+        <input type='text' data-field='field1' data-jivs-role='editor' >
+        <span data-field='field1' data-jivs-role='error' data-jivs-presentation='fancy'></span>
+        <span data-field='field1' data-jivs-role='aria-error'></span>
+        <span data-field='field1' data-jivs-role='required'></span>
+    </div>
+    <div data-jivs-role='summary' data-jivs-presentation='Nifty'></div>
+</form>
 
 ## Deferred design
 

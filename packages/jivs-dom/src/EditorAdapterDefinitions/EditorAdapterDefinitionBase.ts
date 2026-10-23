@@ -190,12 +190,15 @@ export abstract class EditorAdapterDefinitionBase
      * @param jivsElement The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param options The options for installing the editor.
+     * If the duringEdit option is not specified, it will be derived from domServices.options.validationBehaviors.duringEdit.
      */
     public attachToSendValues(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
         options?: EditorInstallOptions): void
     {
         if (!options)
             options = {};
+        if (options.duringEdit === undefined && this.domServices.options.validationBehaviors)
+            options.duringEdit = this.domServices.options.validationBehaviors.duringEdit;
         this.attachToSendValuesCore(valueHost, editor, jivsElement, options);
 
         this.log(LoggingLevel.Debug,
@@ -205,7 +208,6 @@ export abstract class EditorAdapterDefinitionBase
 
     /**
      * Override to supply editor specific attachment logic for sending values to the value host.
-     * 
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
      * @param jivsElement - the DOM element that contains the IJivsElement structure.

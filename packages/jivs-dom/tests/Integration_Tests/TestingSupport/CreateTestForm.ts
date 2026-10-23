@@ -3,12 +3,12 @@
  * services, rules, ValueHostsManager, context, runner, and a populated, installed form.
  */
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
+import { SimpleDomElementCollector } from '../../../src/SimpleDom/SimpleDomElementCollector';
 import type { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
 import { FormInstaller } from '../../../src/FormInstaller/FormInstaller';
 import { createJivsServicesForTesting, type configureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
 import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from '../Integration_Testing';
-import { ElementCollectorForTests } from '../ElementCollectorForTests';
 import { createDefaultTestFieldRepository, type FieldBlockOptions, type TestFieldRepository } from './TestFieldRepository';
 import { TestPropertiesRules } from './TestPropertiesRules';
 
@@ -38,7 +38,7 @@ export interface TestForm
     runner: IntegrationTestRunner;
     page: TestHtmlBuilder;
     form: TestHtmlBuilder;
-    collector: ElementCollectorForTests;
+    collector: SimpleDomElementCollector;
     /** Gathers the HTML for the names again, as for an AJAX replacement, using the same context. */
     buildFields(names: string[]): TestHtmlBuilder;
     /** Rebuilds the registry from the current document. */
@@ -71,7 +71,7 @@ export function createTestForm(propertyNames: string[], options: TestFormOptions
     };
     addFields(form, propertyNames);
 
-    const collector = new ElementCollectorForTests();
+    const collector = new SimpleDomElementCollector();
     const install = () => { new FormInstaller(vhm, collector).install(); };
     if (options.install ?? true)
     {
