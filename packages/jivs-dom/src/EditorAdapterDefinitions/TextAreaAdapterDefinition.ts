@@ -50,15 +50,20 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
         let textAreaElement = editor as HTMLTextAreaElement;
         let self = this;
         textAreaElement.addEventListener('change', () => {
-            self.sendTextValue(valueHost, editor, jivsElement, false);
+            self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true]);
         });
         if (options.duringEdit)
         {
             textAreaElement.addEventListener('input', () => {
-                self.sendTextValue(valueHost, editor, jivsElement, true);
+                self.sendValue.apply(self, [valueHost, editor, jivsElement, true, true]);
             });
         }
     }
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+    }
+
     public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
         return new TextAreaTextValueAdapter(editor as HTMLTextAreaElement, jivsElement);

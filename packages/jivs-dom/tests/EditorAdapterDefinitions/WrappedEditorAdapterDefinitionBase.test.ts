@@ -58,6 +58,12 @@ class RecordingChildDefinition
     {
         this.attachCalls.push({ valueHost, editor, jivsElement, options });
     }
+    public sendValueCalls: any[] = [];
+    public sendValue(valueHost: IFieldValueHost, editor: HTMLElement,
+        jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.sendValueCalls.push({ valueHost, editor, jivsElement, duringEdit, validate });
+    }
 }
 
 /**
@@ -353,6 +359,24 @@ describe('WrappedEditorAdapterDefinitionBase redirection to the child', () => {
 
         expect(testItem.child.attachCalls[0].options).toEqual({});
         expect(logger.calls).toEqual([]);
+    });
+
+    test('sendValue passes arguments to the child', () => {
+        let { testItem, input, jivsElement, valueHost } = setup();
+
+        testItem.sendValue(valueHost, input, jivsElement, true, false);
+
+        expect(testItem.child.sendValueCalls).toEqual([
+            { valueHost, editor: input, jivsElement, duringEdit: true, validate: false }]);
+    });
+
+    test('sendValue supplies duringEdit false and validate true when omitted', () => {
+        let { testItem, input, jivsElement, valueHost } = setup();
+
+        testItem.sendValue(valueHost, input, jivsElement);
+
+        expect(testItem.child.sendValueCalls).toEqual([
+            { valueHost, editor: input, jivsElement, duringEdit: false, validate: true }]);
     });
 
     test('attachToSendValuesCore does nothing', () => {

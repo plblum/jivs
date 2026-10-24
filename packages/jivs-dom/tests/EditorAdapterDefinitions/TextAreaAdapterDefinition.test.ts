@@ -201,6 +201,27 @@ describe('TextAreaAdapterDefinition.attachToSendValuesCore', () => {
     });
 });
 
+// sendValue is called directly (for example to initialize from the editor) without needing an event.
+describe('TextAreaAdapterDefinition.sendValue', () => {
+    test('Defaults to duringEdit false and validate true', () => {
+        let { testItem, area, jivsElement, valueHost } = setup();
+        area.value = 'abc';
+
+        testItem.sendValue(valueHost, area, jivsElement);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: true, duringEdit: false } }]);
+    });
+
+    test('validate false and duringEdit true are passed along', () => {
+        let { testItem, area, jivsElement, valueHost } = setup();
+        area.value = 'xyz';
+
+        testItem.sendValue(valueHost, area, jivsElement, true, false);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'xyz', options: { validate: false, duringEdit: true } }]);
+    });
+});
+
 // Inherited identification, event attachment and ARIA defaults.
 describe('TextAreaAdapterDefinition inherited behavior', () => {
     test('identify methods return the element and ARIA updaters are the editor updaters', () => {

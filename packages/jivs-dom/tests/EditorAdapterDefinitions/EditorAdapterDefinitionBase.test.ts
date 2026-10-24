@@ -49,7 +49,12 @@ class Publicify_EditorAdapterDefinition extends EditorAdapterDefinitionBase
     protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement,
         jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
-        this.attachCalls.push({ valueHost: valueHost, editor: editor, jivsElement: jivsElement, options: options });
+        this.sendValue(valueHost, editor, jivsElement, options.duringEdit);
+    }
+
+    override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.attachCalls.push({ valueHost: valueHost, editor: editor, jivsElement: jivsElement, options: { duringEdit: duringEdit ?? false } });
     }
     public createTextValueAdapter(): ITextValueAdapter | null
     {
@@ -194,7 +199,7 @@ describe('EditorAdapterDefinitionBase.attachToSendValues', () => {
         expect(testItem.attachCalls[0].valueHost).toBe(valueHost);
         expect(testItem.attachCalls[0].editor).toBe(editor);
         expect(testItem.attachCalls[0].jivsElement).toBe(jivsElement);
-        expect(testItem.attachCalls[0].options).toBe(options);
+        expect(testItem.attachCalls[0].options).toEqual({duringEdit: false});
         expect(logger.calls.length).toBe(1);
     });
 
@@ -203,7 +208,7 @@ describe('EditorAdapterDefinitionBase.attachToSendValues', () => {
 
         testItem.attachToSendValues(valueHost, editor, jivsElement);
 
-        expect(testItem.attachCalls[0].options).toEqual({});
+        expect(testItem.attachCalls[0].options).toEqual({duringEdit: false});
     });
 
     test('Logs a Debug message with element id, value host name, type and identity', () => {
@@ -294,7 +299,7 @@ describe('EditorAdapterDefinitionBase.sendTextValue', () => {
 
         testItem.publicify_sendTextValue(valueHost, editor, jivsElement);
 
-        expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: true, duringEdit: undefined } }]);
+        expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: true, duringEdit: false } }]);
         expect(logger.calls).toEqual([]);
     });
 

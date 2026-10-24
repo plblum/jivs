@@ -261,6 +261,48 @@ describe('InputAdapterDefinition.attachToSendValuesCore', () => {
     });
 });
 
+// sendValue is called directly (for example to initialize from the editor) without needing an event.
+describe('InputAdapterDefinition.sendValue', () => {
+    function setup()
+    {
+        let testItem = new Publicify_InputAdapterDefinition('text');
+        testItem.domServices = createMockJivsDomServices({
+            services: { loggingService: new RecordingLoggingService() } as unknown as IJivsServices
+        });
+        let input = createInput('text');
+        let jivsElement = input as unknown as IJivsElement;
+        let valueHost = createRecordingValueHost();
+        jivsElement.jivsTextValueAdapter = testItem.createTextValueAdapter(valueHost, input, jivsElement)!;
+        return { testItem, input, jivsElement, valueHost };
+    }
+
+    test('Defaults to duringEdit false and validate true', () => {
+        let { testItem, input, jivsElement, valueHost } = setup();
+        input.value = 'abc';
+
+        testItem.sendValue(valueHost, input, jivsElement);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: true, duringEdit: false } }]);
+    });
+
+    test('validate false is passed along without attaching any events', () => {
+        let { testItem, input, jivsElement, valueHost } = setup();
+        input.value = 'abc';
+
+        testItem.sendValue(valueHost, input, jivsElement, false, false);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: false, duringEdit: false } }]);
+    });
+
+    test('duringEdit true is passed along', () => {
+        let { testItem, input, jivsElement, valueHost } = setup();
+
+        testItem.sendValue(valueHost, input, jivsElement, true, false);
+
+        expect(valueHost.textCalls).toEqual([{ value: '', options: { validate: false, duringEdit: true } }]);
+    });
+});
+
 // Inherited identification and ARIA defaults.
 describe('InputAdapterDefinition inherited behavior', () => {
     test('identifyJivsElement and identifyEditor return the element itself', () => {

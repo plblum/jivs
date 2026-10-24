@@ -228,6 +228,11 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
         // Attach event listeners or perform other setup for the editor element here.
         this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, jivsElement, options ?? {});
     }
+
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.childEditorDefinitionAdapter.sendValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+    }
     protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
         // Not used

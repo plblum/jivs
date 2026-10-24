@@ -123,6 +123,17 @@ export interface IEditorAdapterDefinition
         options: EditorInstallOptions): void;    
     
     /**
+     * Handles the work of sending the value. attachToSendValuesCore will attach event handlers that call this method.
+     * Direct calls are made by EditorInstaller to initialize the editor with its current value but without invoking validation.
+     * @param valueHost - the value host associated with the editor.
+     * @param editor - the DOM element representing the editor hosting the actual value.
+     * @param jivsElement - the DOM element that contains the IJivsElement structure.
+     * @param duringEdit - whether the value is being sent during an edit operation.
+     * @param validate - whether to perform validation when sending the value.
+     */
+    sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void;
+    
+    /**
      * Attaches the handler to the widget specific event listener system.
      * Our base class implements the DOM addEventListener mechanism for 
      * attaching event handlers.

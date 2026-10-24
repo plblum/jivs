@@ -67,10 +67,11 @@ export abstract class ParsedTextEditorAdapterDefinitionBase
      * @param editor - The HTML element associated with the value host.
      * @param jivsElement - The DOM element associated with the value host.
      * @param duringEdit - Indicates if the value is being sent during an edit operation.
+     * @param validate - Indicates if the value should be validated.
      * @returns void
      */
     protected sendParsedTextValue(valueHost: IFieldValueHost,
-        editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean): void
+        editor: HTMLElement, jivsElement: IJivsElement, duringEdit: boolean = false, validate: boolean = true): void
     {
         if (!jivsElement.jivsTextValueAdapter)
         {
@@ -86,7 +87,7 @@ export abstract class ParsedTextEditorAdapterDefinitionBase
         let result = this.parseTextValue(textValue, valueHost, editor, jivsElement);
 
         valueHost.setValues(result.nativeValue, textValue, { 
-            validate: true,
+            validate: validate,
             duringEdit: duringEdit,
             injectedError: result.injectedError,
         });

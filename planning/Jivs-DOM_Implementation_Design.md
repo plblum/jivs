@@ -846,10 +846,31 @@ abstract class EditorAdapterDefinitionBase
         jivsElement: IJivsElement,
         options: EditorInstallOptions
     ): void;
+
+    public abstract sendValue(
+        valueHost: IFieldValueHost,
+        editor: HTMLElement,
+        jivsElement: IJivsElement,
+        duringEdit?: boolean,
+        validate?: boolean
+    ): void;
 }
 ```
 
 Concrete definitions override `attachToSendValuesCore()`, not `attachToSendValues()`. They choose and attach the DOM events appropriate to their widgets, while the public method provides consistent logging.
+
+Concrete definitions also implement `sendValue()`. It does the editor-specific work of reading the editor's current value and passing it to the `IFieldValueHost`. Each definition chooses the helper that fits its widget: `sendTextValue()`, `sendNativeValue()`, or `sendParsedTextValue()`.
+
+`sendValue()` is the single path from an editor to its `IFieldValueHost`. Two kinds of callers use it:
+
+* **Event handlers.** The handlers attached by `attachToSendValuesCore()` call `sendValue()` with `validate: true`, because the user changed the value. `duringEdit` is `true` only for an intermediate-edit event such as `input`.
+* **Initialization.** Code that transfers the editors' initial values into the `IFieldValueHost`s calls `sendValue()` directly, with `validate: false`. Validation then runs once, after all values have been transferred, using `ValueHostsManager.validate({ preliminary: true })`.
+
+Both callers get identical parsing, injected-error handling, and text/native value behavior, because the same method does the work.
+
+When `duringEdit` is omitted it is `false`. When `validate` is omitted it is `true`.
+
+Wrapped definitions forward `sendValue()` to their child definition, in the same way they forward `attachToSendValues()`. They have no `attachToSendValuesCore()` logic of their own.
 
 Definitions for ordinary editors inherit `identifyJivsElement()`. Definitions for composite editors override it.
 
@@ -870,7 +891,7 @@ Logs should identify the ValueHost, adapter key, and relevant event names. They 
 
 #### Protected Submission Helpers
 
-The base class provides protected methods for the standard event-handler paths. Concrete definitions attach events and invoke the appropriate helper.
+The base class provides protected methods that a definition's `sendValue()` calls to read the editor and submit the result. Event handlers reach them through `sendValue()`.
 
 ##### Send a Text Value
 
@@ -879,18 +900,18 @@ protected sendTextValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement,
     jivsElement: IJivsElement,
-    duringEdit: boolean
+    duringEdit: boolean = false,
+    validate: boolean = true
 ): void;
 ```
 
 This helper:
 
 1. obtains `jivsElement.jivsTextValueAdapter`;
-2. returns after a Debug log when the adapter is `undefined` or `null`;
+2. returns after a Warn log when the adapter is `undefined` or `null`;
 3. calls `readTextValue()`;
 4. calls `valueHost.setTextValue()` with the result;
-5. sets `validate: true`;
-6. includes `duringEdit: true` only for an intermediate-edit event.
+5. passes the `validate` and `duringEdit` arguments in the options.
 
 Conceptually:
 
@@ -898,8 +919,8 @@ Conceptually:
 valueHost.setTextValue(
     adapter.readTextValue(),
     {
-        validate: true,
-        duringEdit: duringEdit || undefined
+        validate: validate,
+        duringEdit: duringEdit
     }
 );
 ```
@@ -910,17 +931,18 @@ valueHost.setTextValue(
 protected sendNativeValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement, 
-    jivsElement: IJivsElement
+    jivsElement: IJivsElement,
+    validate: boolean = true
 ): void;
 ```
 
 This helper:
 
 1. obtains `jivsElement.jivsValueAdapter`;
-2. returns after a Debug log when the adapter is `undefined` or `null`;
+2. returns after a Warn log when the adapter is `undefined` or `null`;
 3. calls `readValue()`;
 4. calls `valueHost.setValue()` with the result;
-5. sets `validate: true`.
+5. passes the `validate` argument in the options.
 
 Conceptually:
 
@@ -928,7 +950,7 @@ Conceptually:
 valueHost.setValue(
     adapter.readValue(),
     {
-        validate: true
+        validate: validate
     }
 );
 ```
@@ -955,7 +977,8 @@ abstract class ParsedTextEditorAdapterDefinitionBase
         valueHost: IFieldValueHost,
         editor: HTMLElement, 
         jivsElement: IJivsElement,
-        duringEdit: boolean
+        duringEdit: boolean = false,
+        validate: boolean = true
     ): void;
 }
 ```
@@ -963,13 +986,12 @@ abstract class ParsedTextEditorAdapterDefinitionBase
 `sendParsedTextValue()`:
 
 1. obtains `jivsElement.jivsTextValueAdapter`;
-2. returns after a Debug log when the adapter is `undefined` or `null`;
+2. returns after a Warn log when the adapter is `undefined` or `null`;
 3. obtains the current Text Value through `readTextValue()`;
 4. passes it to `parseTextValue()`;
 5. calls `valueHost.setValues()` with both values;
 6. supplies any returned `InjectedError`;
-7. sets `validate: true`;
-8. includes `duringEdit: true` only for an intermediate-edit event.
+7. passes the `validate` and `duringEdit` arguments in the options.
 
 Conceptually:
 
@@ -987,8 +1009,8 @@ valueHost.setValues(
     result.nativeValue,
     textValue,
     {
-        validate: true,
-        duringEdit: duringEdit || undefined,
+        validate: validate,
+        duringEdit: duringEdit,
         injectedError: result.injectedError
     }
 );

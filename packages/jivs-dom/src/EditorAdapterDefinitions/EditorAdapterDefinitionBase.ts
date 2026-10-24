@@ -208,6 +208,13 @@ export abstract class EditorAdapterDefinitionBase
 
     /**
      * Override to supply editor specific attachment logic for sending values to the value host.
+     * See how InputAdapterDefinition implements this method for an example.
+     * ```ts
+     * editor.addEventListener('change', () => this.sendTextValue(valueHost, editor, jivsElement, false));
+     * if (options.duringEdit) {
+     *     editor.addEventListener('input', () => this.sendTextValue(valueHost, editor, jivsElement, true));
+     * }
+     * ```
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
      * @param jivsElement - the DOM element that contains the IJivsElement structure.
@@ -216,6 +223,17 @@ export abstract class EditorAdapterDefinitionBase
      */
     protected abstract attachToSendValuesCore(valueHost: IFieldValueHost,
         editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void;
+
+    /**
+     * Handles the work of sending the value. attachToSendValuesCore will attach event handlers that call this method.
+     * Direct calls are made by EditorInstaller to initialize the editor with its current value but without invoking validation.
+     * @param valueHost - the value host associated with the editor.
+     * @param editor - the DOM element representing the editor hosting the actual value.
+     * @param jivsElement - the DOM element that contains the IJivsElement structure.
+     * @param duringEdit - whether the value is being sent during an edit operation.
+     * @param validate - whether to perform validation when sending the value.
+     */
+    public abstract sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void;
 
     /**
      * Attaches the handler to the widget specific event listener system.
@@ -302,9 +320,10 @@ export abstract class EditorAdapterDefinitionBase
      * @param jivsElement - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
      * @param duringEdit - An optional boolean indicating if the value is being sent during an edit operation.
+     * @param validate - An optional boolean indicating if the value should be validated.
      */
     protected sendTextValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
-        duringEdit?: boolean): void
+        duringEdit: boolean = false, validate: boolean = true): void
     {
         if (!jivsElement.jivsTextValueAdapter)
         {
@@ -317,7 +336,7 @@ export abstract class EditorAdapterDefinitionBase
 
         const textValue = jivsElement.jivsTextValueAdapter.readTextValue();
         valueHost.setTextValue(textValue, {
-            validate: true,
+            validate: validate,
             duringEdit: duringEdit
         });
     }
@@ -343,8 +362,10 @@ export abstract class EditorAdapterDefinitionBase
      * @param editor - The DOM element representing the editor hosting the actual value.
      * @param jivsElement - The DOM element that contains the IJivsElement structure.
      * It is often the same as the editor element.
+     * @param validate - An optional boolean indicating if the value should be validated.
      */
-    protected sendNativeValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): void
+    protected sendNativeValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
+        validate: boolean = true): void
     {
         if (!jivsElement.jivsValueAdapter)
         {
@@ -358,7 +379,7 @@ export abstract class EditorAdapterDefinitionBase
 
         const nativeValue = jivsElement.jivsValueAdapter.readValue();
         valueHost.setValue(nativeValue, {
-            validate: true
+            validate: validate
         });
     }
     //#endregion utilities

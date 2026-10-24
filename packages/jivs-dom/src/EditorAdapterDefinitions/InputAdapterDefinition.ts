@@ -97,15 +97,20 @@ export class InputAdapterDefinition
         const input = this.requireInputElement(editor); // may throw
         let self = this;
         input.addEventListener('change',
-            () => self.sendTextValue(valueHost, editor, jivsElement, false)
+            () => self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true])
         );
 
         if (options.duringEdit)
         {
             input.addEventListener('input',
-                () => self.sendTextValue(valueHost, editor, jivsElement, true)
+                () => self.sendValue.apply(self, [valueHost, editor, jivsElement, true, true])
             );
         }
+    }
+
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
     }
 
     /**

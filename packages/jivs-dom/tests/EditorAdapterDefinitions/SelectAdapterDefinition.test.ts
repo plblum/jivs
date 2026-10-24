@@ -208,6 +208,27 @@ describe('SelectAdapterDefinition.attachToSendValuesCore', () => {
     });
 });
 
+// sendValue is called directly (for example to initialize from the editor) without needing an event.
+describe('SelectAdapterDefinition.sendValue', () => {
+    test('Defaults to duringEdit false and validate true', () => {
+        let { testItem, select, jivsElement, valueHost } = setup();
+        select.value = 'b';
+
+        testItem.sendValue(valueHost, select, jivsElement);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'b', options: { validate: true, duringEdit: false } }]);
+    });
+
+    test('validate false and duringEdit true are passed along', () => {
+        let { testItem, select, jivsElement, valueHost } = setup();
+        select.value = 'c';
+
+        testItem.sendValue(valueHost, select, jivsElement, true, false);
+
+        expect(valueHost.textCalls).toEqual([{ value: 'c', options: { validate: false, duringEdit: true } }]);
+    });
+});
+
 // Inherited identification and ARIA defaults.
 describe('SelectAdapterDefinition inherited behavior', () => {
     test('identify methods return the element and ARIA updaters are the editor updaters', () => {

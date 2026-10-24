@@ -67,9 +67,14 @@ class Publicify_ParsedTextDefinition extends ParsedTextEditorAdapterDefinitionBa
     protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement,
         jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
-        editor.addEventListener('change', () => this.sendParsedTextValue(valueHost, editor, jivsElement, false));
+        editor.addEventListener('change', () => this.sendValue(valueHost, editor, jivsElement, false));
         if (options.duringEdit)
-            editor.addEventListener('input', () => this.sendParsedTextValue(valueHost, editor, jivsElement, true));
+            editor.addEventListener('input', () => this.sendValue(valueHost, editor, jivsElement, true));
+    }
+
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.sendParsedTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
     }
     protected parseTextValue(textValue: string | undefined, valueHost: IFieldValueHost,
         editor: HTMLElement, jivsElement: IJivsElement): IParseResult
@@ -137,7 +142,7 @@ describe('ParsedTextEditorAdapterDefinitionBase.sendParsedTextValue', () => {
         expect(valueHost.setValuesCalls).toEqual([{
             nativeValue: date,
             text: '12/25/2024',
-            options: { validate: true, duringEdit: undefined, injectedError: undefined }
+            options: { validate: true, duringEdit: false, injectedError: undefined }
         }]);
         expect(logger.calls).toEqual([]);
     });

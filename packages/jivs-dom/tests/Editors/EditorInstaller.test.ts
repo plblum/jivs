@@ -53,6 +53,10 @@ class RecordingDefinition implements IEditorAdapterDefinition
     constructor(private readonly eventOrder: string[] = [])
     {
     }
+    public sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        throw new Error('Method not implemented.');
+    }
 
     public matches(_valueHost: IFieldValueHost, _candidateElement: HTMLElement): boolean
     {
@@ -77,6 +81,7 @@ class RecordingDefinition implements IEditorAdapterDefinition
         this.eventOrder.push('attachToSendValues');
         this.calls.push({ method: 'attachToSendValues', valueHost, editor, jivsElement, options });
     }
+    
     public attachEventHandler(_jivsElement: IJivsElement, _valueHost: IFieldValueHost,
         _eventName: string, _handler: EventListener): void
     {

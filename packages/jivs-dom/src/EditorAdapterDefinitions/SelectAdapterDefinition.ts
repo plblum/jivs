@@ -48,9 +48,14 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
         let selectElement = editor as HTMLSelectElement;
         let self = this;
         selectElement.addEventListener('change', () => {
-            self.sendTextValue(valueHost, editor, jivsElement, false);
+            self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true]);
         });
     }
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    {
+        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+    }
+
     public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null
     {
         return new SelectTextValueAdapter(editor as HTMLSelectElement, jivsElement);
