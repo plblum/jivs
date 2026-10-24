@@ -57,7 +57,7 @@ import { MessageFrame } from '../../src/Presentations_common/MessageFrame';
 import { HiddenErrorMessagesAriaValidationStateUpdater } from '../../src/Aria/HiddenErrorMessagesAriaValidationStateUpdater';
 import { ValidationSummaryAriaStaticUpdater } from '../../src/Aria/ValidationSummaryAriaStaticUpdater';
 import { AriaService } from '../../src/Aria/AriaService';
-import { createJivsServicesForTesting as createEngineJivsServicesForTesting, TestingJivsServicesOptions, TestingJivsServices } from '@plblum/jivs-engine/build/support/createJivsServicesForTesting'
+import { createJivsServicesForTesting as createEngineJivsServicesForTesting, TestingJivsServicesOptions, TestingJivsServices } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting'
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 

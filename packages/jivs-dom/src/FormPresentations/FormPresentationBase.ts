@@ -2,8 +2,8 @@
  * Base class for form presentations that handles validation state application.
  * @module jivs-dom/FormPresentations/AbstractClasses/FormPresentationBase
  */
-import type { ValidationState } from '@plblum/jivs-engine/build/interfaces/Validation';
-import type { IValueHostsManager } from '@plblum/jivs-engine/build/interfaces/ValueHostsManager';
+import type { ValidationState } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { groupsMatch } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { PresentationBase, PresentationBaseGlobalOptions } from '../Presentations_common/PresentationBase';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
