@@ -38,8 +38,25 @@ export interface TestFormOptions
     services?: configureOptions;
     /** With fields: id of the generated form element. Defaults to 'test-form'. */
     formId?: string;
+    /** With fields: additional attributes on the generated form element, such as a class a non-#id containerIdentifier selects. */
+    formAttributes?: string;
     /** When true, writes the HTML to document.body and runs FormInstaller. Default true. */
     install?: boolean;
+    /**
+     * Selector of this form's container, such as '#one'. Sets the manager's containerIdentifier,
+     * and the descriptors capture it so the runner checks only this form. Also prefixes generated element ids
+     * so several forms can share a page. With the fields source, '#one' makes the form's id 'one';
+     * for any other selector, or with build/formTemplate, the page you build must contain the matching element.
+     */
+    containerIdentifier?: string;
+    /**
+     * Runs on a shallow copy of the ValueHostsManagerConfig just before the manager is created,
+     * after containerIdentifier has been assigned. Replace nested objects such as behaviors rather than editing them,
+     * because the rules cache shares them.
+     */
+    configure?: (config: ValueHostsManagerConfig) => void;
+    /** Sets context.verbose so the HTML and ElementRegistry are printed. Add it to one createTestForm call while investigating. */
+    verbose?: boolean;
 }
 
 export interface TestForm
@@ -75,6 +92,20 @@ export function createTestForm(options: TestFormOptions): TestForm
 
     const context = new IntegrationTestContext(services.domServices);
     context.fieldTemplateSource = repository;
+    context.verbose = options.verbose ?? false;
+    const container = options.containerIdentifier;
+    if (container)
+    {
+        context.containerIdentifier = container;
+        context.idPrefix = `${ container.replace(/[^A-Za-z0-9_-]/g, '') }-`.toLowerCase();
+    }
+    let formId = options.formId;
+    if (!formId && container)
+    {
+        if (!container.startsWith('#'))
+            throw new Error(`containerIdentifier '${ container }' is not an '#id' selector, so formId is required with the fields source.`);
+        formId = container.slice(1);
+    }
     const runner = new IntegrationTestRunner(context);
     const page = new TestHtmlBuilder(context);
     if (options.build)
@@ -83,13 +114,15 @@ export function createTestForm(options: TestFormOptions): TestForm
         page.formTemplate(options.formTemplate);
     else
     {
-        const form = page.form(options.formId ?? 'test-form');
+        const form = page.form(formId ?? 'test-form', options.formAttributes);
         for (const name of options.fields!)
             form.field(name, options.fieldTemplates?.[name] ?? options.fieldTemplate ?? null);
     }
 
     const rules = new TestPropertiesRules(services, context.fieldNames, repository);
-    const config = rules.configure();
+    const config = { ...rules.configure() };
+    if (container) config.containerIdentifier = container;
+    options.configure?.(config);
     const vhm = new ValueHostsManager(config);
 
     const collector = new SimpleDomElementCollector();

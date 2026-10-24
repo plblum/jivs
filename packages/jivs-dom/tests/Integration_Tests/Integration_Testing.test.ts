@@ -105,7 +105,7 @@ describe('IntegrationTestRunner subtree replacement support', () =>
         const replaced = builder.fieldContainer('oldField');
         replaced.label('nestedField', 'Nested field');
         builder.label('stableField', 'Stable field');
-        document.body.innerHTML = builder.build();
+        builder.assign();
 
         const subtree = document.getElementById(runner.descriptors[0].id)!;
         runner.removeDescriptorsIn(subtree);
@@ -127,7 +127,7 @@ describe('IntegrationTestRunner', () =>
     {
         const { records, builder, runner, context, manager } = setupForTestingTheTestingTools();
         builder.validationSummary();
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.summary;
         el.jivsFormPresentation = null;
@@ -150,7 +150,7 @@ describe('IntegrationTestRunner', () =>
     {
         const { builder, runner, context, manager } = setupForTestingTheTestingTools();
         builder.label('name', 'Name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         expect(() => runner.assertFormInstallation(document, manager)).toThrow();
         expect(context.failures).toHaveLength(1);
         expect(context.failures[0].message).toBe('Registry record not found');
@@ -166,7 +166,7 @@ describe('IntegrationTestRunner', () =>
     {
         const { records, builder, runner, context, manager } = setupForTestingTheTestingTools();
         builder.label('name', 'Name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.required;
         el.jivsFieldPresentation = null;
@@ -204,7 +204,7 @@ describe('Installed role assertions', () =>
         class SummaryPresentation {}
         (service as any).formPresentationFactory.create = () => new SummaryPresentation();
         builder.validationSummary(null, 'main');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.summary;
         el.jivsFormPresentation = new SummaryPresentation() as any;
@@ -225,7 +225,7 @@ describe('Installed role assertions', () =>
         class WrongPresentation {}
         (service as any).fieldPresentationFactory.create = () => new LabelPresentation();
         builder.label('name', 'Name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.label;
         el.jivsFieldPresentation = new LabelPresentation() as any;
@@ -250,7 +250,7 @@ describe('Installed role assertions', () =>
             return new EditorPresentation();
         };
         builder.inputEditor('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.editor;
         el.jivsEditorAdapterDefinition = definition as any;
@@ -269,7 +269,7 @@ describe('Installed role assertions', () =>
         const { records, builder, runner, manager } = setupForTestingTheTestingTools();
         (manager as any).getFieldByElementIdentifier = () => null;
         builder.label('unknown', 'Unknown');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.label;
         records.set(el, {
@@ -282,7 +282,7 @@ describe('Installed role assertions', () =>
     {
         const { records, builder, runner, context, manager } = setupForTestingTheTestingTools();
         builder.label('name', 'Name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.label;
         el.jivsFieldPresentation = null;
@@ -305,7 +305,7 @@ describe('Additional option and ARIA coverage', () =>
         const definition = { recommendedFieldPresentationName: null };
         (service as any).editorAdapterDefinitionFactory.getDefinition = (key: string) => key === 'custom' ? definition : null;
         builder.inputEditor('name', 'text', null, 'custom');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.editor;
         el.jivsEditorAdapterDefinition = definition as any;
@@ -325,7 +325,7 @@ describe('Additional option and ARIA coverage', () =>
         const updater = new UpdaterA();
         (service as any).ariaService = { resolveValidationStateUpdater: () => new UpdaterA() };
         builder.ariaError('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.ariaError;
         el.jivsFieldPresentation = null;
@@ -451,7 +451,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         const { builder, runner, records, manager } = setupForTestingTheTestingTools();
         builder.setContainerIdentifier('#one').validationSummary();
         builder.setContainerIdentifier('#two').validationSummary();
-        document.body.innerHTML = builder.build();
+        builder.assign();
         for (const d of runner.descriptors)
         {
             const el = document.getElementById(d.id) as IJivsElement;
@@ -472,7 +472,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
     {
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         builder.validationSummary().submit();
-        document.body.innerHTML = builder.build();
+        builder.assign();
         for (const d of runner.descriptors)
         {
             const el = document.getElementById(d.id) as IJivsElement;
@@ -497,7 +497,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         const definition = { recommendedFieldPresentationName: null };
         (service as any).editorAdapterDefinitionFactory.findDefinition = () => definition;
         builder.inputEditor('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const original = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         const target = document.createElement('span') as IJivsElement;
         target.jivsElementRole = ElementRole.editor;
@@ -514,7 +514,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
     {
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         builder.inputEditor('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const original = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         records.set(original, {
             kind: 'field', role: ElementRole.editor, element: original,
@@ -529,7 +529,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
     {
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         builder.label('name', 'Name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.label;
         records.set(el, {
@@ -545,7 +545,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         (manager as any).getFieldByElementIdentifier = () => null;
         builder.label('unknown', 'Unknown');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.label;
         records.set(el, {
@@ -561,7 +561,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         const { builder, runner, records, context, manager, service } = setupForTestingTheTestingTools();
         (service as any).editorAdapterDefinitionFactory.findDefinition = () => ({ recommendedFieldPresentationName: null });
         builder.inputEditor('name', 'text', 'correct').label('name', 'Name', 'correct');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         for (const d of runner.descriptors)
         {
             const el = document.getElementById(d.id) as IJivsElement;
@@ -586,7 +586,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         const definition = { recommendedFieldPresentationName: null };
         (service as any).editorAdapterDefinitionFactory.findDefinition = () => definition;
         builder.inputEditor('name').errorDisplay('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const editor = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         const error = document.getElementById(runner.descriptors[1].id) as IJivsElement;
         editor.jivsElementRole = ElementRole.editor;
@@ -614,7 +614,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         (service as any).editorAdapterDefinitionFactory.findDefinition = () => definition;
         (service as any).ariaService = { resolveValidationStateUpdater: () => null };
         builder.inputEditor('name').ariaError('name');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const editor = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         const error = document.getElementById(runner.descriptors[1].id) as IJivsElement;
         editor.jivsElementRole = ElementRole.editor;
@@ -730,7 +730,7 @@ describe('RoleTestDescriptorBase shared assertion utilities', () =>
     {
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         builder.validationSummary(null, 'group-a');
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.summary;
         el.jivsFormPresentation = null;
@@ -749,7 +749,7 @@ describe('RoleTestDescriptorBase shared assertion utilities', () =>
     {
         const { builder, runner, records, context, manager } = setupForTestingTheTestingTools();
         builder.validationSummary();
-        document.body.innerHTML = builder.build();
+        builder.assign();
         const el = document.getElementById(runner.descriptors[0].id) as IJivsElement;
         el.jivsElementRole = ElementRole.summary;
         el.jivsFormPresentation = null;

@@ -42,6 +42,11 @@ export class IntegrationTestContext {
     public fieldTemplateSource: IFieldTemplateSource | null = null;
     public runner: IntegrationTestRunner | null = null;
     public readonly failures: TestFailure[] = [];
+    /**
+     * When true, assign() prints the HTML and the assert methods print the ElementRegistry (console.info).
+     * Set it with createTestForm({ verbose: true }), or at any point: t.context.verbose = true.
+     */
+    public verbose = false;
     /** Field Identity names used through TestHtmlBuilder.field(), in first-use order. Feeds the manager's rules. */
     public readonly fieldNames: string[] = [];
     private readonly fieldStack: string[] = [];
@@ -49,7 +54,9 @@ export class IntegrationTestContext {
 
     constructor(public readonly domServices: IJivsDomServices) {}
 
-    public nextId(base: string): string { return `${base}-${++this.nextNumber}`; }
+    /** Prepended to every generated element id so forms built by separate contexts can share a page. */
+    public idPrefix = '';
+    public nextId(base: string): string { return `${this.idPrefix}${base}-${++this.nextNumber}`; }
     /** The Field Identity name of the innermost running field() call, or null outside of one. */
     public get currentFieldName(): string | null { return this.fieldStack.at(-1) ?? null; }
     /** Records the name, makes it current while run executes, then restores the previous current name. */
@@ -247,7 +254,66 @@ export class IntegrationTestRunner {
             if (ids.has(this.descriptors[i].id)) this.descriptors.splice(i, 1);
         }
     }
+    /**
+     * Checks only what the element collector produced: one registry record per generated role element,
+     * with the expected role, kind, element identifier and options. Does not look at IJivsElement properties
+     * that FormInstaller sets later.
+     */
+    /** One line per ElementRegistry record, in registration order. Shows what the collector (and installer) produced. */
+    public describeRegistry(valueHostsManager: IValueHostsManager): string {
+        const registry = this.context.domServices.getElementRegistry(valueHostsManager);
+        const lines: string[] = [];
+        for (const record of registry) {
+            const parts: string[] = [`${record.role}`, `field=${record.elementIdentifier ?? '-'}`,
+                `host=${record.fieldValueHost ? 'yes' : 'no'}`];
+            const editor = record as IEditorElementRegistryRecord;
+            const options = (editor.editorOptions ?? (record as { presentationOptions?: unknown }).presentationOptions ?? {}) as
+                { presentationName?: string | null; adapterKey?: string; duringEdit?: unknown; group?: string };
+            if (options.presentationName !== undefined) parts.push(`presentation=${options.presentationName}`);
+            if (options.adapterKey !== undefined) parts.push(`adapterKey=${options.adapterKey}`);
+            if (options.group !== undefined) parts.push(`group=${options.group}`);
+            if (options.duringEdit !== undefined) parts.push(`duringEdit=${String(options.duringEdit)}`);
+            parts.push(`<${record.element.tagName.toLowerCase()} id=${record.element.id}>`);
+            lines.push(parts.join(' | '));
+        }
+        return lines.join('\n');
+    }
+    /** Prints describeRegistry() with console.info. Call it directly, or set context.verbose. */
+    public dumpRegistry(valueHostsManager: IValueHostsManager): void {
+        console.info(`ElementRegistry:\n${this.describeRegistry(valueHostsManager)}`);
+    }
+    public assertCollection(doc: Document, valueHostsManager: IValueHostsManager): void {
+        if (this.context.verbose) this.dumpRegistry(valueHostsManager);
+        const failures = this.context.failures;
+        failures.length = 0;
+        const registry = this.context.domServices.getElementRegistry(valueHostsManager);
+        const containerIdentifier = valueHostsManager.getContainerIdentifier() ?? null;
+        const chosen = this.descriptors.filter(d => d.containerIdentifier === containerIdentifier);
+        if (!chosen.length) failures.push({ id: '', role: '', fieldName: null, propertyName: 'containerIdentifier',
+            message: 'No descriptors matched this manager', expected: printable(containerIdentifier) });
+        for (const descriptor of chosen) {
+            const element = doc.getElementById(descriptor.id) as IJivsElement | null;
+            if (!element) { descriptor.report('HTMLElement', 'Element not found'); continue; }
+            const record = registry.getRecordForElement(element);
+            if (!record) { descriptor.report('RegRecord', 'Registry record not found'); continue; }
+            descriptor.testRegistryRecord(record);
+            if (record.kind === 'field' && descriptor.fieldName !== null) {
+                const found = valueHostsManager.getFieldByElementIdentifier(descriptor.fieldName) != null;
+                if (found !== (record.fieldValueHost !== null))
+                    descriptor.report('RegRecord.fieldValueHost', 'FieldValueHost presence does not match', found ? 'defined' : null, record.fieldValueHost ? 'defined' : null);
+            }
+        }
+        // Every role element in the manager's container (or the document) must have been generated by a descriptor.
+        if (chosen.length === this.descriptors.length) {
+            const scope: ParentNode = (containerIdentifier ? doc.querySelector(containerIdentifier) : null) ?? doc;
+            const roleElements = scope.querySelectorAll('[data-jivs-role]').length;
+            if (roleElements !== chosen.length) failures.push({ id: '', role: '', fieldName: null, propertyName: 'RoleElementCount',
+                message: 'Number of role elements does not match descriptors', expected: chosen.length, actual: roleElements });
+        }
+        expect(failures).toEqual([]);
+    }
     public assertFormInstallation(doc: Document, valueHostsManager: IValueHostsManager): void {
+        if (this.context.verbose) this.dumpRegistry(valueHostsManager);
         const failures = this.context.failures;
         failures.length = 0;
         const containerIdentifier = valueHostsManager.getContainerIdentifier() ?? null;
@@ -336,6 +402,7 @@ export class TestHtmlBuilder {
     public assign(target: Document | HTMLElement = document): string {
         const html = this.build();
         (target instanceof Document ? target.body : target).innerHTML = html;
+        if (this.context.verbose) console.info(`HTML assigned:\n${html.replace(/></g, '>\n<')}`);
         return html;
     }
     private addRole<T extends RoleTestDescriptorBase>(descriptor: T, tag: string, attrs: string,
