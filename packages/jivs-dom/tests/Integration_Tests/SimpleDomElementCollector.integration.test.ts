@@ -1,20 +1,21 @@
 /** @jest-environment jsdom */
-import { createTestForm, type TestForm } from './TestingSupport/CreateTestForm';
+import { createTestForm, createTestPage, type TestForm } from './TestingSupport/CreateTestForm';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
-import { TestHtmlBuilder } from './Integration_Testing';
+import { useCleanDocument } from './TestingSupport/TestFileSupport';
 import { ElementRole } from '../../src/Interfaces/Types';
-import type { IElementRegistry, IEditorElementRegistryRecord, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../../src/Interfaces/ElementRegistry';
+import type { IEditorElementRegistryRecord, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../../src/Interfaces/ElementRegistry';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 
 // When true, emits HTML and element registry information to the console.
 let verbose = false;
 
+useCleanDocument();
+
 // install:false leaves the document empty, so each test writes the page and runs only the collector.
 function collect(t: TestForm): void
 {
     t.page.assign();
-    const registry = t.services.domServices.getElementRegistry(t.vhm);
-    t.collector.collect(document.body, registry);
+    t.collect();
 }
 /**
  * These tests stop after SimpleDomElementCollector. The page comes from TestHtmlBuilder, the
@@ -24,8 +25,6 @@ function collect(t: TestForm): void
  */
 describe('SimpleDomElementCollector with generated forms', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('records carry the right roles for a container template', () =>
     {
         const t = createTestForm({ fields: ['Text_Required'], fieldTemplate: 'inContainer', install: false, verbose: verbose });
@@ -116,16 +115,9 @@ describe('SimpleDomElementCollector with generated forms', () =>
     {
         const t = createTestForm({ fields: ['Text_Required', 'Checkbox'], install: false, verbose: verbose });
         collect(t);
-        const registry = t.services.domServices.getElementRegistry(t.vhm);
-        const oldBox = document.querySelector("[data-field='Checkbox']")!.parentElement!;
-        t.runner.removeDescriptorsIn(oldBox);
-        const replacement = new TestHtmlBuilder(t.context);
-        replacement.field('Checkbox', 'labelAfter');
-        const holder = document.createElement('div');
-        replacement.assign(holder);
-        oldBox.replaceChildren(...Array.from(holder.childNodes));
-        registry.clear();
-        t.collector.collect(document.body, registry);
+        const oldBox = t.element('editor', 'Checkbox').parentElement!;
+        t.replace(oldBox, page => page.field('Checkbox', 'labelAfter'));
+        t.collect();
         t.runner.assertCollection(document, t.vhm);
     });
 
@@ -229,16 +221,12 @@ describe('describeRegistry and verbosity tests', () =>
  */
 describe('SimpleDomElementCollector registry details', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
-    function registryOf(t: TestForm)
-    {
-        return t.services.domServices.getElementRegistry(t.vhm);
-    }
+    // The selector pattern is spelled out here because it documents how markup maps to records.
     function recordOf(t: TestForm, selector: string)
     {
-        return registryOf(t).getRecordForElement(document.querySelector<IJivsElement>(selector)!)!;
+        return t.recordFor(document.querySelector<IJivsElement>(selector)!)!;
     }
+    const registryOf = (t: TestForm) => t.registry;
 
     // Each field template yields exactly these roles per field; nothing extra and nothing missing.
     const roleCountsByTemplate: Record<string, Record<string, number>> = {
@@ -430,35 +418,18 @@ describe('SimpleDomElementCollector registry details', () =>
  */
 describe('SimpleDomElementCollector with several forms on one page', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
-    // Joins the forms' HTML into the document, without installing anything.
-    function assignPage(...forms: TestForm[]): void
-    {
-        for (const form of forms.slice(1))
-            forms[0].page.append(form.page);
-        forms[0].page.assign();
-    }
-    // Collects only the form's own container, as FormInstaller does.
-    function collectContainer(t: TestForm): IElementRegistry
-    {
-        const domServices = t.services.domServices;
-        const registry = domServices.getElementRegistry(t.vhm);
-        t.collector.collect(domServices.resolveContainerElement(t.vhm), registry);
-        return registry;
-    }
-
     test('identical forms in two containers keep their records separate and pass their own assertions', () =>
     {
         const names = ['Text_Required', 'Checkbox'];
         const one = createTestForm({ fields: names, containerIdentifier: '#one', install: false, verbose: verbose });
         const two = createTestForm({ fields: names, containerIdentifier: '#two', install: false, verbose: verbose });
-        assignPage(one, two);
+        const page = createTestPage(one, two);
         expect(document.querySelectorAll('#one [data-field="Text_Required"]').length).toBe(3);
         expect(document.querySelectorAll('#two [data-field="Text_Required"]').length).toBe(3);
 
-        const registryOne = collectContainer(one);
-        const registryTwo = collectContainer(two);
+        page.collect();
+        const registryOne = one.registry;
+        const registryTwo = two.registry;
         const containerOne = document.getElementById('one')!;
         const containerTwo = document.getElementById('two')!;
         expect(Array.from(registryOne).length).toBe(6);
@@ -476,7 +447,7 @@ describe('SimpleDomElementCollector with several forms on one page', () =>
     {
         const one = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#one', install: false, verbose: verbose });
         const two = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#two', install: false, verbose: verbose });
-        assignPage(one, two);
+        createTestPage(one, two);
         const ids = Array.from(document.querySelectorAll('[id]'), e => e.id);
         expect(new Set(ids).size).toBe(ids.length);
         expect(ids).toContain('one-label-text_required-1');
@@ -490,9 +461,9 @@ describe('SimpleDomElementCollector with several forms on one page', () =>
             fields: ['Number_Range', 'Checkbox'], fieldTemplate: 'inContainer',
             containerIdentifier: '#two', install: false, verbose: verbose
         });
-        assignPage(one, two);
-        const registryOne = collectContainer(one);
-        const registryTwo = collectContainer(two);
+        createTestPage(one, two).collect();
+        const registryOne = one.registry;
+        const registryTwo = two.registry;
         expect(Array.from(registryOne).map(r => r.role)).toEqual(['label', 'editor', 'error']);
         expect(Array.from(registryTwo).length).toBe(10);
         expect(one.vhm.getFieldByElementIdentifier('Number_Range')).toBeNull();
@@ -504,15 +475,15 @@ describe('SimpleDomElementCollector with several forms on one page', () =>
     test('a form added later, as AJAX would, is collected without disturbing the first', () =>
     {
         const one = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#one', install: false, verbose: verbose });
-        assignPage(one);
-        const registryOne = collectContainer(one);
+        createTestPage(one).collect();
+        const registryOne = one.registry;
         const before = Array.from(registryOne);
 
         const two = createTestForm({ fields: ['Checkbox'], containerIdentifier: '#two', install: false, verbose: verbose });
         const holder = document.createElement('div');
         two.page.assign(holder);
         document.body.appendChild(holder);
-        collectContainer(two);
+        two.collect();
 
         expect(Array.from(registryOne)).toEqual(before);
         one.runner.assertCollection(document, one.vhm);
@@ -549,7 +520,7 @@ describe('SimpleDomElementCollector with several forms on one page', () =>
             fields: ['Text_Required'], containerIdentifier: '#one', install: false, verbose: verbose,
             configure: config => { config.containerIdentifier = '#other'; }
         });
-        assignPage(t);
+        createTestPage(t);
         expect(() => t.runner.assertCollection(document, t.vhm)).toThrow();
         expect(t.context.failures[0].message).toBe('No descriptors matched this manager');
     });
@@ -562,8 +533,8 @@ describe('SimpleDomElementCollector with several forms on one page', () =>
             fields: ['Text_Required'], containerIdentifier: 'form.one', formId: 'f1',
             formAttributes: "class='one'", install: false, verbose: verbose
         });
-        assignPage(t);
-        expect(collectContainer(t).getElementsByRole('editor', 'Text_Required').length).toBe(1);
+        createTestPage(t).collect();
+        expect(t.registry.getElementsByRole('editor', 'Text_Required').length).toBe(1);
         t.runner.assertCollection(document, t.vhm);
     });
 });

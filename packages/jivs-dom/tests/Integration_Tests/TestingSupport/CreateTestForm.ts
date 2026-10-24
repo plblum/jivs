@@ -6,7 +6,10 @@ import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHos
 import { SimpleDomElementCollector } from '../../../src/SimpleDom/SimpleDomElementCollector';
 import type { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/BuildersFactoryInstaller';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { FormInstaller } from '../../../src/FormInstaller/FormInstaller';
+import type { ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry } from '../../../src/Interfaces/ElementRegistry';
+import type { IJivsElement } from '../../../src/Interfaces/IJivsElement';
 import { createJivsServicesForTesting, type configureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
 import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from '../Integration_Testing';
 import { createDefaultTestFieldRepository, type TestFieldRepository } from './TestFieldRepository';
@@ -34,7 +37,10 @@ export interface TestFormOptions
     fieldTemplate?: string;
     /** With fields: field template per Field Identity name. */
     fieldTemplates?: Record<string, string>;
-    /** Passed to createJivsServicesForTesting. Defaults enable all conditions, parsers and formatters. */
+    /**
+     * Passed to createJivsServicesForTesting. Defaults enable all conditions, parsers and formatters,
+     * and log Warn and above into services.loggingService (a TestingLoggingService) so tests can assert on them.
+     */
     services?: configureOptions;
     /** With fields: id of the generated form element. Defaults to 'test-form'. */
     formId?: string;
@@ -68,8 +74,58 @@ export interface TestForm
     runner: IntegrationTestRunner;
     page: TestHtmlBuilder;
     collector: SimpleDomElementCollector;
-    /** Rebuilds the registry from the current document. */
+    /** The manager's ElementRegistry, created on first use. */
+    readonly registry: IElementRegistry;
+    /** Runs FormInstaller against the current document. It clears and rebuilds the registry. */
     install(): void;
+    /** Runs only the collector against the manager's container. It clears and rebuilds the registry. */
+    collect(): void;
+    /**
+     * The first element with data-jivs-role equal to role, and data-field equal to fieldName when supplied.
+     * Searches only the manager's container when it has one. Throws when none exists.
+     */
+    element(role: string, fieldName?: string): IJivsElement;
+    /** The registry record for an element, or null if it is not registered. */
+    recordFor(element: HTMLElement): ElementRegistryRecord | null;
+    /**
+     * The IJivsElement that EditorInstaller created for the field's editor.
+     * Throws when the page has no such editor or it has not been installed.
+     */
+    editorOf(fieldName: string): IJivsElement;
+    /**
+     * Simulates an AJAX-style replacement. Removes the descriptors for oldElement's subtree,
+     * builds new markup with the same context, and replaces oldElement's children with it.
+     * Run collect() or install() afterward to refresh the registry.
+     */
+    replace(oldElement: HTMLElement, build: (page: TestHtmlBuilder) => void): void;
+}
+
+export interface TestPage
+{
+    forms: TestForm[];
+    /** Runs install() on every form, each from its own container. */
+    install(): void;
+    /** Runs collect() on every form, each from its own container. */
+    collect(): void;
+}
+
+/**
+ * Several forms on one page, each with its own ValueHostsManager.
+ * Create each form with createTestForm({ containerIdentifier, install: false }). This joins their HTML
+ * and writes it to document.body. Nothing is collected or installed until you call install() or collect().
+ */
+export function createTestPage(...forms: TestForm[]): TestPage
+{
+    if (!forms.length)
+        throw new Error('createTestPage requires at least one form.');
+    for (const form of forms.slice(1))
+        forms[0].page.append(form.page);
+    forms[0].page.assign();
+    return {
+        forms,
+        install: () => forms.forEach(f => f.install()),
+        collect: () => forms.forEach(f => f.collect())
+    };
 }
 
 /**
@@ -87,6 +143,7 @@ export function createTestForm(options: TestFormOptions): TestForm
         registerDataTypeParsers: true,
         registerFormatters: true,
         ariaService: true,
+        loggerLevel: LoggingLevel.Warn,
         ...options.services
     });
 
@@ -127,10 +184,48 @@ export function createTestForm(options: TestFormOptions): TestForm
 
     const collector = new SimpleDomElementCollector();
     const install = () => { new FormInstaller(vhm, collector).install(); };
+    const registry = () => services.domServices.getElementRegistry(vhm);
+    const scope = (): ParentNode =>
+        (container ? document.querySelector(container) : null) ?? document;
+    const testForm: TestForm = {
+        services, config, vhm, context, runner, page, collector, install,
+        get registry() { return registry(); },
+        collect()
+        {
+            const reg = registry();
+            reg.clear();
+            collector.collect(services.domServices.resolveContainerElement(vhm), reg);
+        },
+        element(role, fieldName)
+        {
+            const selector = `[data-jivs-role='${ role }']` + (fieldName ? `[data-field='${ fieldName }']` : '');
+            const found = scope().querySelector<IJivsElement>(selector);
+            if (!found)
+                throw new Error(`No element matches ${ selector }.`);
+            return found;
+        },
+        recordFor: (element) => registry().getRecordForElement(element),
+        editorOf(fieldName)
+        {
+            const record = registry().getRecordForElement(testForm.element('editor', fieldName)) as IEditorElementRegistryRecord | null;
+            if (!record?.jivsElement)
+                throw new Error(`The editor for '${ fieldName }' is not installed.`);
+            return record.jivsElement;
+        },
+        replace(oldElement, build)
+        {
+            runner.removeDescriptorsIn(oldElement);
+            const replacement = new TestHtmlBuilder(context);
+            build(replacement);
+            const holder = document.createElement('div');
+            replacement.assign(holder);
+            oldElement.replaceChildren(...Array.from(holder.childNodes));
+        }
+    };
     if (options.install ?? true)
     {
         page.assign();
         install();
     }
-    return { services, config, vhm, context, runner, page, collector, install };
+    return testForm;
 }

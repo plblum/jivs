@@ -66,6 +66,76 @@ runner.assertFormInstallation(document, vhm);
 
 The example's `MyModelValueHostsRules` is application-specific. `createJivsServicesForTesting()` configures real engine and DOM services; `SimpleDomElementCollector` reads the rendered markup.
 
+## Typical test file (`createTestForm`)
+
+Most tests should not repeat the steps above. `TestingSupport/CreateTestForm.ts` does them in the right order (page first, then rules and manager), and `TestingSupport/TestFileSupport.ts` handles file setup.
+
+```ts
+/** @jest-environment jsdom */
+import { createTestForm, createTestPage } from './TestingSupport/CreateTestForm';
+import { testEachIdentity, useCleanDocument } from './TestingSupport/TestFileSupport';
+
+// When true, emits HTML and element registry information to the console.
+let verbose = false;
+useCleanDocument();   // empties document.body after each test
+
+test('Text_Required installs', () =>
+{
+    const t = createTestForm({ fields: ['Text_Required'], verbose: verbose });
+    t.runner.assertFormInstallation(document, t.vhm);
+    expect(t.services.loggingService.entryCount).toBe(0);
+});
+```
+
+Keep `let verbose` in each file and pass it to every `createTestForm`, so one file can be switched on without touching the others.
+
+### `createTestForm(options)`
+
+- **Source (exactly one):** `fields` (Field Identity names, using `fieldTemplate` or per-field `fieldTemplates`), `build(page)` (a `TestHtmlBuilder` callback) or `formTemplate` (a registered form template).
+- **Other options:** `repository`, `services` (merged over the defaults, which include real parsers, formatters, conditions, the AriaService and `loggerLevel: Warn`), `formId`, `formAttributes`, `install` (default `true`), `verbose`, `containerIdentifier` and `configure(config)`.
+- `install: false` builds nothing in the document. Call `t.page.assign()`, then `t.install()` or `t.collect()`. Use it when the test needs the page before installation, or only the collector.
+- `containerIdentifier` (an `#id` selector unless `formId` is given) scopes the manager to that container and prefixes generated ids. `configure` receives a copy of the manager config for last-moment changes; replace nested objects rather than editing them.
+
+### `TestForm` members
+
+| Member | Purpose |
+|---|---|
+| `services`, `config`, `vhm`, `context`, `runner`, `page`, `collector` | The pieces created for the test. |
+| `registry` | The manager's `ElementRegistry`. |
+| `install()` | Runs `FormInstaller` (clears and rebuilds the registry). |
+| `collect()` | Runs only the collector on the manager's container (clears and rebuilds the registry). |
+| `element(role, fieldName?)` | First element with that `data-jivs-role` (and `data-field`) inside the container. Throws if none. |
+| `recordFor(element)` | Registry record, or `null`. |
+| `editorOf(fieldName)` | The installed `IJivsElement` of the field's editor. Throws if missing or not installed. |
+| `replace(oldElement, build)` | AJAX-style replacement: removes descriptors in the old subtree, builds with the same context, replaces the children. Follow with `install()` or `collect()`. |
+
+When a test is about how a selector maps to a record, write the `querySelector` in the test; it documents the pattern. Use `element()` for routine lookups.
+
+### Assertions
+
+- `runner.assertCollection(document, vhm)` checks the registry only, for tests that stop after the collector (`install: false` plus `collect()`). It does not examine `IJivsElement` properties.
+- `runner.assertFormInstallation(document, vhm)` checks the registry and everything installed.
+- `runner.describeRegistry(vhm)` returns a text listing of the registry, useful for comparing before and after. `runner.dumpRegistry(vhm)` prints it. With `verbose` on, `assign()` prints the HTML and the assert methods print the registry.
+
+### Several forms on one page
+
+Each `createTestForm` call is one form with its own manager and services. Give each a `containerIdentifier` and `install: false`, then join them:
+
+```ts
+const a = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#one', install: false, verbose: verbose });
+const b = createTestForm({ fields: ['Checkbox'], containerIdentifier: '#two', install: false, verbose: verbose });
+const page = createTestPage(a, b);   // writes both forms to document.body
+page.install();                      // or page.collect(); each form uses its own container
+```
+
+### Sweeps
+
+`testEachIdentity(title, run)` and `testEachFieldTemplate(title, run)` run the test for every identity or template in the repository (`%s` in the title shows the name), so newly registered ones are covered automatically.
+
+### Logging
+
+The default logger level is Warn, so installer warnings are captured by `t.services.loggingService` (`TestingLoggingService`). Use `entryCount`, `findMessage` and `containsLog` to assert them.
+
 ## `IntegrationTestContext`
 
 ```ts

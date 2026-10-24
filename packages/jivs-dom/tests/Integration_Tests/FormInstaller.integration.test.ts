@@ -4,12 +4,13 @@ import { FormInstaller } from '../../src/FormInstaller/FormInstaller';
 import { SimpleDomElementCollector } from '../../src/SimpleDom/SimpleDomElementCollector';
 import type { IEditorElementRegistryRecord } from '../../src/Interfaces/ElementRegistry';
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
-import { TestHtmlBuilder } from './Integration_Testing';
-import { createTestForm, type TestForm, type TestFormOptions } from './TestingSupport/CreateTestForm';
+import { createTestForm, createTestPage, type TestForm, type TestFormOptions } from './TestingSupport/CreateTestForm';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
+import { testEachFieldTemplate, testEachIdentity, useCleanDocument } from './TestingSupport/TestFileSupport';
 
 // When true, emits HTML and element registry information to the console.
 let verbose = false;
+useCleanDocument();
 
 /**
  * Builds the form without installing it, writes the page to the document, and runs FormInstaller.
@@ -17,22 +18,10 @@ let verbose = false;
  */
 function installForm(options: TestFormOptions): TestForm
 {
-    let t = createTestForm({
-        services: { loggerLevel: LoggingLevel.Warn, ...options.services },
-        verbose: verbose,
-        ...options,
-        install: false
-    });
+    let t = createTestForm({ verbose: verbose, ...options, install: false });
     t.page.assign();
     t.install();
     return t;
-}
-
-function getEditorJivsElement(t: TestForm, fieldName: string): IJivsElement
-{
-    let registry = t.services.domServices.getElementRegistry(t.vhm);
-    let editor = document.querySelector<IJivsElement>(`[data-jivs-role='editor'][data-field='${ fieldName }']`)!;
-    return (registry.getRecordForElement(editor) as IEditorElementRegistryRecord).jivsElement!;
 }
 
 /**
@@ -42,10 +31,7 @@ function getEditorJivsElement(t: TestForm, fieldName: string): IJivsElement
  */
 describe('FormInstaller.install with each Field Identity', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
-    test.each(createDefaultTestFieldRepository().identityNames())(
-        '%s installs without warnings', (identityName) =>
+    testEachIdentity('%s installs without warnings', (identityName) =>
     {
         let t = installForm({ fields: [identityName] });
         t.runner.assertFormInstallation(document, t.vhm);
@@ -55,7 +41,7 @@ describe('FormInstaller.install with each Field Identity', () =>
     test('The text input editor gets an adapter definition, a text value adapter and a field presentation', () =>
     {
         let t = installForm({ fields: ['Text_Required'] });
-        let editor = getEditorJivsElement(t, 'Text_Required');
+        let editor = t.editorOf('Text_Required');
         expect(editor.jivsElementRole).toBe('editor');
         expect(editor.jivsEditorAdapterDefinition).toBeDefined();
         expect(editor.jivsTextValueAdapter).toBeTruthy();
@@ -69,10 +55,7 @@ describe('FormInstaller.install with each Field Identity', () =>
  */
 describe('FormInstaller.install with each field template', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
-    test.each(createDefaultTestFieldRepository().fieldTemplateNames())(
-        'The %s template installs without warnings', (templateName) =>
+    testEachFieldTemplate('The %s template installs without warnings', (templateName) =>
     {
         let t = installForm({ fields: ['Number_Range'], fieldTemplate: templateName });
         t.runner.assertFormInstallation(document, t.vhm);
@@ -113,8 +96,6 @@ describe('FormInstaller.install with each field template', () =>
  */
 describe('FormInstaller.install with form roles', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('A validation summary and submit button install, with and without a group', () =>
     {
         let repo = createDefaultTestFieldRepository();
@@ -137,7 +118,7 @@ describe('FormInstaller.install with form roles', () =>
             document.body.innerHTML = '';
             let t = installForm({ repository: repo, formTemplate: name });
             t.runner.assertFormInstallation(document, t.vhm);
-            let summary = document.querySelector<IJivsElement>("[data-jivs-role='summary']")!;
+            let summary = t.element('summary');
             expect(summary.jivsFormPresentation).toBeTruthy();
             expect(summary.jivsFormPresentationGroup).toBe(name === 'grouped' ? 'g1' : undefined);
             expect(t.services.loggingService.entryCount).toBe(0);
@@ -151,8 +132,6 @@ describe('FormInstaller.install with form roles', () =>
  */
 describe('FormInstaller.install with explicit editor options', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('A registered presentation name and an explicit adapter key are used by the editor', () =>
     {
         let t = installForm({
@@ -170,13 +149,11 @@ describe('FormInstaller.install with explicit editor options', () =>
  */
 describe('FormInstaller.install and the AriaService', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('With the AriaService, an editor linked to an aria-error element has an error message id', () =>
     {
         let t = installForm({ fields: ['Text_Required'], fieldTemplate: 'withAriaError' });
         t.runner.assertFormInstallation(document, t.vhm);
-        expect(getEditorJivsElement(t, 'Text_Required').jivsErrorMessageId).toBeDefined();
+        expect(t.editorOf('Text_Required').jivsErrorMessageId).toBeDefined();
     });
 
     test('Without the AriaService, the editor has no error message id and no ARIA updater', () =>
@@ -186,7 +163,7 @@ describe('FormInstaller.install and the AriaService', () =>
             services: { ariaService: false }
         });
         t.runner.assertFormInstallation(document, t.vhm);
-        let editor = getEditorJivsElement(t, 'Text_Required');
+        let editor = t.editorOf('Text_Required');
         expect(editor.jivsErrorMessageId).toBeUndefined();
         expect(editor.jivsAriaValidationStateUpdater).toBeFalsy();
     });
@@ -198,8 +175,6 @@ describe('FormInstaller.install and the AriaService', () =>
  */
 describe('FormInstaller.install with elements that have no FieldValueHost', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('An unknown editor and an unknown label each log a warning, and the known field still installs', () =>
     {
         let t = installForm({
@@ -229,10 +204,10 @@ describe('FormInstaller.install with elements that have no FieldValueHost', () =
         let t = installForm({
             build: page => { page.inputEditor('NotInManager'); }
         });
-        let orphan = document.querySelector<IJivsElement>("[data-jivs-role='editor']")!;
+        let orphan = t.element('editor');
         expect(orphan.jivsElementRole).toBe('editor');
         expect(orphan.jivsEditorAdapterDefinition).toBeUndefined();
-        let record = t.services.domServices.getElementRegistry(t.vhm).getRecordForElement(orphan) as IEditorElementRegistryRecord;
+        let record = t.recordFor(orphan) as IEditorElementRegistryRecord;
         expect(record.jivsElement).toBeFalsy();
     });
 });
@@ -242,8 +217,6 @@ describe('FormInstaller.install with elements that have no FieldValueHost', () =
  */
 describe('FormInstaller.install repeated', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('Installing twice on the same markup leaves the same registry and a valid installation', () =>
     {
         let t = installForm({ fields: ['Text_Required', 'Checkbox'] });
@@ -257,13 +230,8 @@ describe('FormInstaller.install repeated', () =>
     test('After an AJAX-style replacement of one field, installing again matches the new markup', () =>
     {
         let t = installForm({ fields: ['Text_Required', 'Checkbox'] });
-        let oldBox = document.querySelector("[data-field='Checkbox']")!.parentElement!;
-        t.runner.removeDescriptorsIn(oldBox);
-        let replacement = new TestHtmlBuilder(t.context);
-        replacement.field('Checkbox', 'labelAfter');
-        let holder = document.createElement('div');
-        replacement.assign(holder);
-        oldBox.replaceChildren(...Array.from(holder.childNodes));
+        let oldBox = t.element('editor', 'Checkbox').parentElement!;
+        t.replace(oldBox, page => page.field('Checkbox', 'labelAfter'));
         t.install();
         t.runner.assertFormInstallation(document, t.vhm);
         expect(t.services.loggingService.entryCount).toBe(0);
@@ -272,8 +240,8 @@ describe('FormInstaller.install repeated', () =>
     test('Elements removed from the page are no longer in the registry after installing again', () =>
     {
         let t = installForm({ fields: ['Text_Required'] });
-        let registry = t.services.domServices.getElementRegistry(t.vhm);
-        let label = document.querySelector<IJivsElement>("[data-jivs-role='label']")!;
+        let registry = t.registry;
+        let label = t.element('label');
         expect(registry.getRecordForElement(label)).not.toBeNull();
         label.remove();
         t.install();
@@ -286,18 +254,11 @@ describe('FormInstaller.install repeated', () =>
  */
 describe('FormInstaller.install with containerIdentifier', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     test('Two forms on one page install independently, each from its own container', () =>
     {
-        let a = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#one', install: false,
-            services: { loggerLevel: LoggingLevel.Warn }, verbose: verbose });
-        let b = createTestForm({ fields: ['Number_Range', 'Checkbox'], containerIdentifier: '#two', install: false,
-            services: { loggerLevel: LoggingLevel.Warn }, verbose: verbose });
-        a.page.append(b.page);
-        a.page.assign();
-        a.install();
-        b.install();
+        let a = createTestForm({ fields: ['Text_Required'], containerIdentifier: '#one', install: false, verbose: verbose });
+        let b = createTestForm({ fields: ['Number_Range', 'Checkbox'], containerIdentifier: '#two', install: false, verbose: verbose });
+        createTestPage(a, b).install();
         a.runner.assertFormInstallation(document, a.vhm);
         b.runner.assertFormInstallation(document, b.vhm);
         expect(a.runner.describeRegistry(a.vhm).split('\n').length).toBe(3);
@@ -316,8 +277,7 @@ describe('FormInstaller.install with containerIdentifier', () =>
         outside.setAttribute('data-field', 'Text_Required');
         document.body.appendChild(outside);
         t.install();
-        let registry = t.services.domServices.getElementRegistry(t.vhm);
-        expect(registry.getRecordForElement(outside)).toBeNull();
+        expect(t.recordFor(outside)).toBeNull();
         expect((outside as IJivsElement).jivsElementRole).toBeUndefined();
         t.runner.assertFormInstallation(document, t.vhm);
     });
@@ -330,8 +290,6 @@ describe('FormInstaller.install with containerIdentifier', () =>
  */
 describe('FormInstaller static install', () =>
 {
-    afterEach(() => { document.body.innerHTML = ''; });
-
     function getInput(): HTMLInputElement
     {
         return document.querySelector<HTMLInputElement>("input[data-jivs-role='editor']")!;
