@@ -1,153 +1,232 @@
 /**
- * A repository of named test fields for integration tests.
+ * A repository of Field Identities and templates for integration tests.
  *
- * Each entry describes ONE property of a test-only model. Its name states its purpose,
- * such as 'Date_Required_LessThan'. An entry does two things:
- * - addToConfig(): add its FieldValueHostConfig (and validators) to a Builder.
- * - addToHtml(): add the editor and its companion elements to a TestHtmlBuilder.
+ * A Field Identity is one property of a test-only model, named for its purpose, such as 'Date_Required_LessThan'.
+ * It packages two things:
+ * - addConfig(): adds its FieldValueHostConfig and validators to a Builder.
+ * - addEditor(): adds the editor element to a TestHtmlBuilder.
  *
- * A test chooses entry names and the helpers assemble the matching manager configuration and form.
+ * Field templates are shared recipes that surround the editor with the other roles
+ * (label, required indicator, error display...). Any Field Identity can use any field template.
+ * Form templates are recipes for a whole form that call TestHtmlBuilder.field() for each identity.
+ *
+ * Templates are recipes (functions) instead of HTML strings so that TestHtmlBuilder
+ * remains the only code that creates elements, ids, and test descriptors.
  */
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import type { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import type { TestHtmlBuilder } from '../Integration_Testing';
+import type { FieldEditorOptions, IFieldTemplateSource, TestHtmlBuilder } from '../Integration_Testing';
 
-/** Chooses which companion elements accompany the editor. */
-export interface FieldBlockOptions
-{
-    /** Default true. A label whose text is the field name. */
-    label?: boolean;
-    /** Default true only for entries with a required validator. */
-    requiredIndicator?: boolean;
-    /** Default true. Displays error messages. */
-    errorDisplay?: boolean;
-    /** Default false. Visually hidden element used by ARIA. */
-    ariaError?: boolean;
-    /** Default false. Wraps all elements for the field in a field container. */
-    container?: boolean;
-    /** Presentation name given to the editor. */
-    editorPresentationName?: string | null;
-}
-
-export interface ITestFieldEntry
+export interface ITestFieldIdentity
 {
     /** Unique name. It is the ValueHost name and the data-field value. */
     readonly name: string;
+    /** Describes the purpose for people reading the tests. */
     readonly description: string;
-    /** True when the field has a required validator. */
-    readonly isRequired: boolean;
-    addToConfig(builder: IValueHostsManagerConfigBuilder): void;
-    addToHtml(page: TestHtmlBuilder, options?: FieldBlockOptions): void;
+    addConfig(builder: IValueHostsManagerConfigBuilder, name: string): void;
+    addEditor(page: TestHtmlBuilder, name: string, options: FieldEditorOptions): void;
 }
 
-export type EditorHtmlWriter = (page: TestHtmlBuilder, name: string, presentationName: string | null) => void;
-export type FieldConfigWriter = (builder: IValueHostsManagerConfigBuilder, name: string) => void;
-
-export class TestFieldEntry implements ITestFieldEntry
+/** What a field template receives. addEditor writes the identity's editor into any builder. */
+export interface IFieldTemplateTarget
 {
-    constructor(
-        public readonly name: string,
-        public readonly description: string,
-        public readonly isRequired: boolean,
-        private readonly configWriter: FieldConfigWriter,
-        private readonly editorWriter: EditorHtmlWriter)
-    {
-    }
-
-    public addToConfig(builder: IValueHostsManagerConfigBuilder): void
-    {
-        this.configWriter(builder, this.name);
-    }
-
-    public addToHtml(page: TestHtmlBuilder, options: FieldBlockOptions = {}): void
-    {
-        const target = options.container ? page.fieldContainer(this.name) : page;
-        if (options.label ?? true)
-            target.label(this.name, this.name);
-        this.editorWriter(target, this.name, options.editorPresentationName ?? null);
-        if (options.requiredIndicator ?? this.isRequired)
-            target.requiredIndicator(this.name, '*');
-        if (options.errorDisplay ?? true)
-            target.errorDisplay(this.name);
-        if (options.ariaError)
-            target.ariaError(this.name);
-    }
+    readonly name: string;
+    addEditor(target: TestHtmlBuilder): void;
 }
 
-export class TestFieldRepository
-{
-    private readonly entries = new Map<string, ITestFieldEntry>();
+export type FieldTemplateRecipe = (page: TestHtmlBuilder, field: IFieldTemplateTarget) => void;
+export type FormTemplateRecipe = (page: TestHtmlBuilder) => void;
 
-    public register(entry: ITestFieldEntry): this
+export const defaultFieldTemplateName = 'default';
+
+export class TestFieldRepository implements IFieldTemplateSource
+{
+    private readonly identities = new Map<string, ITestFieldIdentity>();
+    private readonly fieldTemplates = new Map<string, FieldTemplateRecipe>();
+    private readonly formTemplates = new Map<string, FormTemplateRecipe>();
+
+    public registerIdentity(identity: ITestFieldIdentity): this
     {
-        if (this.entries.has(entry.name))
-            throw new Error(`Test field '${ entry.name }' is already registered.`);
-        this.entries.set(entry.name, entry);
+        if (this.identities.has(identity.name))
+            throw new Error(`Field Identity '${ identity.name }' is already registered.`);
+        this.identities.set(identity.name, identity);
         return this;
     }
 
-    public get(name: string): ITestFieldEntry
+    public registerFieldTemplate(name: string, recipe: FieldTemplateRecipe): this
     {
-        const entry = this.entries.get(name);
-        if (!entry)
-            throw new Error(`Test field '${ name }' is not registered. Registered: ${ this.names().join(', ') }`);
-        return entry;
+        if (this.fieldTemplates.has(name))
+            throw new Error(`Field template '${ name }' is already registered.`);
+        this.fieldTemplates.set(name, recipe);
+        return this;
     }
 
-    public names(): string[]
+    public registerFormTemplate(name: string, recipe: FormTemplateRecipe): this
     {
-        return Array.from(this.entries.keys());
+        if (this.formTemplates.has(name))
+            throw new Error(`Form template '${ name }' is already registered.`);
+        this.formTemplates.set(name, recipe);
+        return this;
+    }
+
+    public getIdentity(name: string): ITestFieldIdentity
+    {
+        return TestFieldRepository.lookup(this.identities, name, 'Field Identity');
+    }
+
+    public identityNames(): string[]
+    {
+        return Array.from(this.identities.keys());
+    }
+
+    public fieldTemplateNames(): string[]
+    {
+        return Array.from(this.fieldTemplates.keys());
+    }
+
+    public formTemplateNames(): string[]
+    {
+        return Array.from(this.formTemplates.keys());
+    }
+
+    public buildField(page: TestHtmlBuilder, name: string, templateName?: string | null,
+        editorOptions?: FieldEditorOptions): void
+    {
+        const identity = this.getIdentity(name);
+        const recipe = TestFieldRepository.lookup(this.fieldTemplates, templateName ?? defaultFieldTemplateName, 'Field template');
+        recipe(page, {
+            name,
+            addEditor: (target) => identity.addEditor(target, name, editorOptions ?? {})
+        });
+    }
+
+    public buildForm(page: TestHtmlBuilder, templateName: string): void
+    {
+        TestFieldRepository.lookup(this.formTemplates, templateName, 'Form template')(page);
+    }
+
+    private static lookup<T>(map: Map<string, T>, name: string, kind: string): T
+    {
+        const item = map.get(name);
+        if (!item)
+            throw new Error(`${ kind } '${ name }' is not registered. Registered: ${ Array.from(map.keys()).join(', ') }`);
+        return item;
     }
 }
 
-/** Common editor and validation combinations. Extend with register() for specific tests. */
+/** Starter Field Identities and field templates. Extend with the register methods for specific tests. */
 export function createDefaultTestFieldRepository(): TestFieldRepository
 {
     const repository = new TestFieldRepository();
-    repository.register(new TestFieldEntry('Text_Required',
-        'Text input with a required validator', true,
-        (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
-        (page, name, presentation) => { page.inputEditor(name, 'text', presentation); }));
 
-    repository.register(new TestFieldEntry('Number_Range',
-        'Number input that must be 1 to 100', false,
-        (builder, name) =>
+    repository.registerIdentity({
+        name: 'Text_Required',
+        description: 'Text input with a required validator',
+        addConfig: (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
+        addEditor: (page, name, o) =>
+        {
+            page.inputEditor(name, 'text', o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
+
+    repository.registerIdentity({
+        name: 'Number_Range',
+        description: 'Number input that must be 1 to 100',
+        addConfig: (builder, name) =>
         {
             builder.field(name, LookupKey.Number, { parserLookupKey: LookupKey.Number })
                 .dataTypeCheck().range(1, 100);
         },
-        (page, name, presentation) => { page.inputEditor(name, 'number', presentation); }));
+        addEditor: (page, name, o) =>
+        {
+            page.inputEditor(name, 'number', o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
 
-    repository.register(new TestFieldEntry('Date_Required_LessThan',
-        'Required date input that must be before 2030-01-01', true,
-        (builder, name) =>
+    repository.registerIdentity({
+        name: 'Date_Required_LessThan',
+        description: 'Required date input that must be before 2030-01-01',
+        addConfig: (builder, name) =>
         {
             builder.field(name, LookupKey.Date, { parserLookupKey: LookupKey.Date })
                 .requireText().dataTypeCheck().lessThan(new Date(2030, 0, 1));
         },
-        (page, name, presentation) => { page.inputEditor(name, 'date', presentation); }));
+        addEditor: (page, name, o) =>
+        {
+            page.inputEditor(name, 'date', o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
 
-    repository.register(new TestFieldEntry('Checkbox',
-        'Checkbox bound to a boolean', false,
-        (builder, name) => { builder.field(name, LookupKey.Boolean); },
-        (page, name, presentation) => { page.checkboxEditor(name, presentation); }));
+    repository.registerIdentity({
+        name: 'Checkbox',
+        description: 'Checkbox bound to a boolean',
+        addConfig: (builder, name) => { builder.field(name, LookupKey.Boolean); },
+        addEditor: (page, name, o) =>
+        {
+            page.checkboxEditor(name, o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
 
-    repository.register(new TestFieldEntry('Select_Required',
-        'Select with a required validator', true,
-        (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
-        (page, name, presentation) =>
+    repository.registerIdentity({
+        name: 'Select_Required',
+        description: 'Select with a required validator',
+        addConfig: (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
+        addEditor: (page, name, o) =>
         {
             page.selectEditor(name, [
                 { value: '', text: '' },
                 { value: 'a', text: 'Apple' },
                 { value: 'b', text: 'Banana' }
-            ], presentation);
-        }));
+            ], o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
 
-    repository.register(new TestFieldEntry('Radio_Required',
-        'Radio buttons with a required validator', true,
-        (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
-        (page, name, presentation) => { page.radioEditor(name, name, ['x', 'y', 'z'], presentation); }));
+    repository.registerIdentity({
+        name: 'Radio_Required',
+        description: 'Radio buttons with a required validator',
+        addConfig: (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
+        addEditor: (page, name, o) =>
+        {
+            page.radioEditor(name, name, ['x', 'y', 'z'], o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
+
+    // The label text is always the Field Identity name.
+    repository.registerFieldTemplate(defaultFieldTemplateName, (page, field) =>
+    {
+        page.label(field.name, field.name);
+        field.addEditor(page);
+        page.errorDisplay(field.name);
+    });
+    repository.registerFieldTemplate('withRequired', (page, field) =>
+    {
+        page.label(field.name, field.name);
+        field.addEditor(page);
+        page.requiredIndicator(field.name, '*');
+        page.errorDisplay(field.name);
+    });
+    repository.registerFieldTemplate('labelAfter', (page, field) =>
+    {
+        field.addEditor(page);
+        page.label(field.name, field.name);
+        page.errorDisplay(field.name);
+    });
+    repository.registerFieldTemplate('withAriaError', (page, field) =>
+    {
+        page.label(field.name, field.name);
+        field.addEditor(page);
+        page.errorDisplay(field.name);
+        page.ariaError(field.name);
+    });
+    repository.registerFieldTemplate('inContainer', (page, field) =>
+    {
+        const container = page.fieldContainer(field.name);
+        container.label(field.name, field.name);
+        field.addEditor(container);
+        container.requiredIndicator(field.name, '*');
+        container.errorDisplay(field.name);
+    });
+    repository.registerFieldTemplate('editorOnly', (page, field) => { field.addEditor(page); });
 
     return repository;
 }

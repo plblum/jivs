@@ -21,7 +21,7 @@ export class TestPropertiesRules extends ValueHostRulesBase
     protected override configureRules(builder: IValueHostsManagerConfigBuilder, options?: ValueHostRulesOptions): void
     {
         for (const name of this.propertyNames)
-            this.repository.get(name).addToConfig(builder);
+            this.repository.getIdentity(name).addConfig(builder, name);
     }
 
     // Different property sets must not share a cached configuration.

@@ -24,7 +24,7 @@ export function setupForTestingTheTestingTools()
         ariaService: null
     } as unknown as IJivsDomServices;
     const manager = { services: { domServices: service }, getContainerIdentifier: () => null, getFieldByElementIdentifier: () => ({}) } as unknown as IValueHostsManager;
-    const context = new IntegrationTestContext(manager);
+    const context = new IntegrationTestContext(service);
     const runner = new IntegrationTestRunner(context);
     const builder = new TestHtmlBuilder(context);
     return { records, registry, service, manager, context, runner, builder };
@@ -42,6 +42,22 @@ describe('TestHtmlBuilder', () =>
         expect(builder.build()).toContain("data-jivs-role='label'");
         const original = builder.build();
         expect(builder.build()).toBe(original);
+    });
+    // assign() writes build() output into document.body by default, a Document's body, or a given element.
+    test('assign writes the built HTML to document.body, a Document, or an element and returns it', () =>
+    {
+        const { builder } = setupForTestingTheTestingTools();
+        builder.form().label('firstName', 'First');
+        const expected = builder.build();
+        expect(builder.assign()).toBe(expected);
+        expect(document.body.innerHTML).toBe(new DOMParser().parseFromString(expected, 'text/html').body.innerHTML);
+        document.body.innerHTML = '';
+        builder.assign(document);
+        expect(document.body.querySelector('form')).not.toBeNull();
+        const holder = document.createElement('div');
+        builder.assign(holder);
+        expect(holder.querySelector('label')).not.toBeNull();
+        expect(document.body.contains(holder)).toBe(false);
     });
     test('uses one counter across builders and captures changing container identifiers', () =>
     {

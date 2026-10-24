@@ -1,6 +1,6 @@
 /**
- * Assembles everything an integration test needs from a list of TestFieldRepository entry names:
- * services, rules, ValueHostsManager, context, runner, and a populated, installed form.
+ * Assembles everything an integration test needs: services, context, runner, the page,
+ * rules derived from the Field Identities the page uses, ValueHostsManager, and an installed form.
  */
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import { SimpleDomElementCollector } from '../../../src/SimpleDom/SimpleDomElementCollector';
@@ -9,7 +9,7 @@ import { BuildersFactoryInstaller } from '@plblum/jivs-builder/build/Services/Bu
 import { FormInstaller } from '../../../src/FormInstaller/FormInstaller';
 import { createJivsServicesForTesting, type configureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
 import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from '../Integration_Testing';
-import { createDefaultTestFieldRepository, type FieldBlockOptions, type TestFieldRepository } from './TestFieldRepository';
+import { createDefaultTestFieldRepository, type TestFieldRepository } from './TestFieldRepository';
 import { TestPropertiesRules } from './TestPropertiesRules';
 
 // Installs the builders factory on JivsServices.prototype.
@@ -19,11 +19,24 @@ export interface TestFormOptions
 {
     /** Defaults to the repository from createDefaultTestFieldRepository(). */
     repository?: TestFieldRepository;
-    /** Per-field overrides for the companion elements, keyed by entry name. */
-    blocks?: Record<string, FieldBlockOptions>;
+    /**
+     * Supply exactly one of fields, build, or formTemplate.
+     * The Field Identities that configure the ValueHostsManager are those used through TestHtmlBuilder.field().
+     *
+     * fields: names of Field Identities. Generates one form holding each in order.
+     */
+    fields?: string[];
+    /** Your own recipe that builds the page. */
+    build?: (page: TestHtmlBuilder) => void;
+    /** The name of a registered form template. */
+    formTemplate?: string;
+    /** With fields: the field template used for names not in fieldTemplates. Defaults to 'default'. */
+    fieldTemplate?: string;
+    /** With fields: field template per Field Identity name. */
+    fieldTemplates?: Record<string, string>;
     /** Passed to createJivsServicesForTesting. Defaults enable all conditions, parsers and formatters. */
     services?: configureOptions;
-    /** Id of the form element. Defaults to 'test-form'. */
+    /** With fields: id of the generated form element. Defaults to 'test-form'. */
     formId?: string;
     /** When true, writes the HTML to document.body and runs FormInstaller. Default true. */
     install?: boolean;
@@ -37,16 +50,20 @@ export interface TestForm
     context: IntegrationTestContext;
     runner: IntegrationTestRunner;
     page: TestHtmlBuilder;
-    form: TestHtmlBuilder;
     collector: SimpleDomElementCollector;
-    /** Gathers the HTML for the names again, as for an AJAX replacement, using the same context. */
-    buildFields(names: string[]): TestHtmlBuilder;
     /** Rebuilds the registry from the current document. */
     install(): void;
 }
 
-export function createTestForm(propertyNames: string[], options: TestFormOptions = {}): TestForm
+/**
+ * The page is built first, because the Field Identities it uses (context.fieldNames)
+ * determine the rules that create the ValueHostsManager.
+ */
+export function createTestForm(options: TestFormOptions): TestForm
 {
+    const sources = [options.fields, options.build, options.formTemplate].filter(s => s !== undefined).length;
+    if (sources !== 1)
+        throw new Error('createTestForm requires exactly one of: fields, build, formTemplate.');
     const repository = options.repository ?? createDefaultTestFieldRepository();
     const services = createJivsServicesForTesting({
         registerConditions: 'all',
@@ -55,31 +72,32 @@ export function createTestForm(propertyNames: string[], options: TestFormOptions
         ariaService: true,
         ...options.services
     });
-    const rules = new TestPropertiesRules(services, propertyNames, repository);
-    const config = rules.configure();
-    const vhm = new ValueHostsManager(config);
 
-    const context = new IntegrationTestContext(vhm);
+    const context = new IntegrationTestContext(services.domServices);
+    context.fieldTemplateSource = repository;
     const runner = new IntegrationTestRunner(context);
     const page = new TestHtmlBuilder(context);
-    const form = page.form(options.formId ?? 'test-form');
-    const addFields = (target: TestHtmlBuilder, names: string[]) =>
+    if (options.build)
+        options.build(page);
+    else if (options.formTemplate)
+        page.formTemplate(options.formTemplate);
+    else
     {
-        for (const name of names)
-            repository.get(name).addToHtml(target, options.blocks?.[name]);
-        return target;
-    };
-    addFields(form, propertyNames);
+        const form = page.form(options.formId ?? 'test-form');
+        for (const name of options.fields!)
+            form.field(name, options.fieldTemplates?.[name] ?? options.fieldTemplate ?? null);
+    }
+
+    const rules = new TestPropertiesRules(services, context.fieldNames, repository);
+    const config = rules.configure();
+    const vhm = new ValueHostsManager(config);
 
     const collector = new SimpleDomElementCollector();
     const install = () => { new FormInstaller(vhm, collector).install(); };
     if (options.install ?? true)
     {
-        document.body.innerHTML = page.build();
+        page.assign();
         install();
     }
-    return {
-        services, config, vhm, context, runner, page, form, collector, install,
-        buildFields: (names) => addFields(new TestHtmlBuilder(context), names)
-    };
+    return { services, config, vhm, context, runner, page, collector, install };
 }

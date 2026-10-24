@@ -21,20 +21,43 @@ export interface TestFailure {
     [key: string]: unknown;
 }
 
+/** Options passed through to the editor method that a Field Identity chooses. */
+export interface FieldEditorOptions {
+    presentationName?: string | null;
+    adapterKey?: string | null;
+    additionalAttributes?: string;
+}
+
+/**
+ * Supplies Field Identities and templates to TestHtmlBuilder.field() and formTemplate().
+ * Implemented by the repository in TestingSupport so this file does not depend on it.
+ */
+export interface IFieldTemplateSource {
+    buildField(page: TestHtmlBuilder, name: string, templateName?: string | null, editorOptions?: FieldEditorOptions): void;
+    buildForm(page: TestHtmlBuilder, templateName: string): void;
+}
+
 export class IntegrationTestContext {
     public containerIdentifier: string | null = null;
+    public fieldTemplateSource: IFieldTemplateSource | null = null;
     public runner: IntegrationTestRunner | null = null;
     public readonly failures: TestFailure[] = [];
+    /** Field Identity names used through TestHtmlBuilder.field(), in first-use order. Feeds the manager's rules. */
+    public readonly fieldNames: string[] = [];
+    private readonly fieldStack: string[] = [];
     private nextNumber = 0;
-    public readonly valueHostsManager: IValueHostsManager;
-    public readonly domServices: IJivsDomServices;
 
-    constructor(valueHostsManager: IValueHostsManager) {
-        this.valueHostsManager = valueHostsManager;
-        this.domServices = valueHostsManager.services.domServices;
-    }
+    constructor(public readonly domServices: IJivsDomServices) {}
 
     public nextId(base: string): string { return `${base}-${++this.nextNumber}`; }
+    /** The Field Identity name of the innermost running field() call, or null outside of one. */
+    public get currentFieldName(): string | null { return this.fieldStack.at(-1) ?? null; }
+    /** Records the name, makes it current while run executes, then restores the previous current name. */
+    public withField(name: string, run: () => void): void {
+        if (!this.fieldNames.includes(name)) this.fieldNames.push(name);
+        this.fieldStack.push(name);
+        try { run(); } finally { this.fieldStack.pop(); }
+    }
 }
 
 function printable(value: unknown): unknown {
@@ -104,8 +127,10 @@ export abstract class RoleTestDescriptorBase {
             'jivsFormPresentation', 'jivsFormPresentationGroup', 'jivsErrorMessageId']);
     }
     protected checkFormProperties(element: IJivsElement): void {
-        this.checkPresentation('JivsElement.jivsFormPresentation', this.expectedPresentation as IFormPresentation | null,
-            element.jivsFormPresentation);
+        // With no presentation registered for the role (such as submit) the installer leaves the property undefined.
+        if (!(this.expectedPresentation === null && element.jivsFormPresentation === undefined))
+            this.checkPresentation('JivsElement.jivsFormPresentation', this.expectedPresentation as IFormPresentation | null,
+                element.jivsFormPresentation);
         this.checkEqual('JivsElement.jivsFormPresentationGroup', this.expectedPresentation === null ? undefined : this.validationGroup, element.jivsFormPresentationGroup);
         this.checkUndefinedProperties(element, ['jivsEditorAdapterDefinition', 'jivsTextValueAdapter', 'jivsValueAdapter',
             'jivsFieldPresentation', 'jivsErrorMessageId', 'jivsAriaValidationStateUpdater']);
@@ -304,6 +329,15 @@ export class TestHtmlBuilder {
     }
     public setContainerIdentifier(value: string | null): this { this.context.containerIdentifier = value; return this; }
     public build(): string { return this.segments.map(s => typeof s === 'string' ? s : s.build()).join(''); }
+    /**
+     * Builds the HTML and replaces the content of the target with it.
+     * A Document target uses its body. Defaults to document.body. Returns the HTML.
+     */
+    public assign(target: Document | HTMLElement = document): string {
+        const html = this.build();
+        (target instanceof Document ? target.body : target).innerHTML = html;
+        return html;
+    }
     private addRole<T extends RoleTestDescriptorBase>(descriptor: T, tag: string, attrs: string,
         content: string = '', voidTag: boolean = false, presentationName: string | null = null): T {
         descriptor.presentationName = presentationName;
@@ -322,8 +356,16 @@ export class TestHtmlBuilder {
     private makeId(role: string, fieldName: string | null, detail: string = ''): string {
         return this.context.nextId([role, detail, fieldName].filter(Boolean).join('-').toLowerCase());
     }
-    private editorTag(tag: string, field: string, expectedKey: string, presentation: string | null,
+    // A null field name means "the field() currently being built".
+    private resolveField(fieldName: string | null): string {
+        const resolved = fieldName ?? this.context.currentFieldName;
+        if (resolved === null)
+            throw new Error('A null field name needs a current field. Call this inside field() or pass the name.');
+        return resolved;
+    }
+    private editorTag(tag: string, fieldName: string | null, expectedKey: string, presentation: string | null,
         explicitKey: string | null, attrs: string, type?: string, content: string = '', voidTag: boolean = false): this {
+        const field = this.resolveField(fieldName);
         const d = new EditorTestDescriptor(this.makeId('editor', field, expectedKey), field, this.context);
         d.adapterKey = explicitKey ?? expectedKey;
         d.explicitAdapterKey = explicitKey !== null;
@@ -331,24 +373,24 @@ export class TestHtmlBuilder {
             content, voidTag, presentation);
         return this;
     }
-    public editor(tagName: string, fieldName: string, adapterKey: string, presentationName: string | null = null,
+    public editor(tagName: string, fieldName: string | null, adapterKey: string, presentationName: string | null = null,
         additionalAttributes: string = '', explicitAdapterKey: boolean = false): this {
         return this.editorTag(tagName, fieldName, adapterKey, presentationName,
             explicitAdapterKey ? adapterKey : null, additionalAttributes);
     }
-    public inputEditor(fieldName: string, type: string = 'text', presentationName: string | null = null,
+    public inputEditor(fieldName: string | null, type: string = 'text', presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         return this.editorTag('input', fieldName, `input:${type}`, presentationName, adapterKey, additionalAttributes, type, '', true);
     }
-    public checkboxEditor(fieldName: string, presentationName: string | null = null,
+    public checkboxEditor(fieldName: string | null, presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         return this.inputEditor(fieldName, 'checkbox', presentationName, adapterKey, additionalAttributes);
     }
-    public fileInputEditor(fieldName: string, presentationName: string | null = null,
+    public fileInputEditor(fieldName: string | null, presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         return this.inputEditor(fieldName, 'file', presentationName, adapterKey, additionalAttributes);
     }
-    public radioEditor(fieldName: string, groupName: string, values: string[], presentationName: string | null = null,
+    public radioEditor(fieldName: string | null, groupName: string, values: string[], presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         values.forEach((value, i) => {
             if (!i) this.editorTag('input', fieldName, 'input:radio', presentationName, adapterKey,
@@ -357,39 +399,41 @@ export class TestHtmlBuilder {
         });
         return this;
     }
-    public textAreaEditor(fieldName: string, presentationName: string | null = null,
+    public textAreaEditor(fieldName: string | null, presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         return this.editorTag('textarea', fieldName, 'textarea', presentationName, adapterKey, additionalAttributes);
     }
-    public selectEditor(fieldName: string, options: { value: string; text: string }[], presentationName: string | null = null,
+    public selectEditor(fieldName: string | null, options: { value: string; text: string }[], presentationName: string | null = null,
         adapterKey: string | null = null, additionalAttributes: string = ''): this {
         const content = options.map(o => `<option value='${o.value}'>${o.text}</option>`).join('');
         return this.editorTag('select', fieldName, 'select', presentationName, adapterKey, additionalAttributes,
             undefined, content);
     }
     private fieldRole<T extends RoleTestDescriptorBase>(ctor: new (id: string, field: string | null, context: IntegrationTestContext) => T,
-        name: string, fieldName: string, presentationName: string | null, attributes: string,
+        name: string, fieldNameOrNull: string | null, presentationName: string | null, attributes: string,
         tag: string, content: string = ''): this {
+        const fieldName = this.resolveField(fieldNameOrNull);
         const descriptor = new ctor(this.makeId(name, fieldName), fieldName, this.context);
         this.addRole(descriptor, tag, attributes, content, false, presentationName);
         return this;
     }
-    public label(fieldName: string, content: string, presentationName: string | null = null,
+    public label(fieldName: string | null, content: string, presentationName: string | null = null,
         additionalAttributes: string = ''): this {
         return this.fieldRole(LabelTestDescriptor, 'label', fieldName, presentationName, additionalAttributes, 'label', content);
     }
-    public requiredIndicator(fieldName: string, content: string = '', presentationName: string | null = null,
+    public requiredIndicator(fieldName: string | null, content: string = '', presentationName: string | null = null,
         additionalAttributes: string = ''): this {
         return this.fieldRole(RequiredTestDescriptor, 'required', fieldName, presentationName, additionalAttributes, 'span', content);
     }
-    public errorDisplay(fieldName: string, presentationName: string | null = null, additionalAttributes: string = ''): this {
+    public errorDisplay(fieldName: string | null, presentationName: string | null = null, additionalAttributes: string = ''): this {
         return this.fieldRole(ErrorTestDescriptor, 'error', fieldName, presentationName, additionalAttributes, 'div');
     }
-    public ariaError(fieldName: string): this {
+    public ariaError(fieldName: string | null): this {
         return this.fieldRole(AriaErrorTestDescriptor, 'aria-error', fieldName, null, "class='jivs-visually-hidden'", 'div');
     }
-    public fieldContainer(fieldName: string, presentationName: string | null = null,
+    public fieldContainer(fieldNameOrNull: string | null, presentationName: string | null = null,
         additionalAttributes: string = '', tagName: string = 'div'): TestHtmlBuilder {
+        const fieldName = this.resolveField(fieldNameOrNull);
         const descriptor = new FieldContainerTestDescriptor(this.makeId('fieldcontainer', fieldName), fieldName, this.context);
         descriptor.presentationName = presentationName;
         if (this.context.runner) { descriptor.resolveExpectedPresentation(tagName); this.context.runner.add(descriptor); }
@@ -422,5 +466,21 @@ export class TestHtmlBuilder {
     }
     public form(id: string = 'test-form', additionalAttributes: string = ''): TestHtmlBuilder {
         return this.children('form', `id='${id}' novalidate${additionalAttributes ? ' ' + additionalAttributes : ''}`);
+    }
+    private requireTemplateSource(): IFieldTemplateSource {
+        if (!this.context.fieldTemplateSource)
+            throw new Error('context.fieldTemplateSource is not assigned. Assign a TestFieldRepository.');
+        return this.context.fieldTemplateSource;
+    }
+    /** Adds all HTML for one Field Identity using a named field template ('default' when omitted). */
+    public field(name: string, templateName: string | null = null, editorOptions?: FieldEditorOptions): this {
+        this.context.withField(name, () =>
+            this.requireTemplateSource().buildField(this, name, templateName, editorOptions));
+        return this;
+    }
+    /** Runs a registered form template, which is a recipe of calls on this builder. */
+    public formTemplate(templateName: string): this {
+        this.requireTemplateSource().buildForm(this, templateName);
+        return this;
     }
 }

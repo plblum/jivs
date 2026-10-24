@@ -32,8 +32,8 @@ The concrete descriptor names are `EditorTestDescriptor`, `LabelTestDescriptor`,
 
 ## Setup and normal workflow
 
-1. Prepare the real Jivs services and `ValueHostsManager` required by `FormInstaller`.
-2. Create an `IntegrationTestContext(valueHostsManager)` and an `IntegrationTestRunner(context)` **before creating role elements**. The runner sets `context.runner` and receives newly generated descriptors.
+1. Create the real Jivs services (`createJivsServicesForTesting`). The `ValueHostsManager` comes later, because its rules depend on the fields the page uses.
+2. Create an `IntegrationTestContext(services.domServices)` and an `IntegrationTestRunner(context)` **before creating role elements**. The runner sets `context.runner` and receives newly generated descriptors.
 3. Create `TestHtmlBuilder(context)` and compose a form and its children. Use `build()` to obtain the HTML string. Insert it into the JSDOM `document`.
 4. Use the jivs SimpleDOM syntax in the HTML for the test. Always omit the id attribute on any tag with data-jivs-role attribute.
 5. Use SimpleDomElementCollector as the ElementCollector.
@@ -44,10 +44,7 @@ Illustrative usage (adapt imports and manager creation to the repository):
 
 ```ts
 const jivsServices = createJivsServicesForTesting(options);
-const rules = new MyModelValueHostsRules(jivsServices);
-const vhm = new ValueHostsManager(rules.configure());
-
-const context = new IntegrationTestContext(vhm);
+const context = new IntegrationTestContext(jivsServices.domServices);
 const runner = new IntegrationTestRunner(context);
 const page = new TestHtmlBuilder(context);
 const form = page.form('customer-form');
@@ -56,7 +53,12 @@ form.inputEditor('firstName');
 form.errorDisplay('firstName');
 form.submit();
 
-document.body.innerHTML = page.build();
+page.assign();   // builds and writes to document.body; pass a Document or HTMLElement to target another
+
+// Create the manager after the page, when the field names are known (context.fieldNames
+// lists names passed to field()). Hand-built fields like above need their rules written by you.
+const rules = new MyModelValueHostsRules(jivsServices);
+const vhm = new ValueHostsManager(rules.configure());
 const collector = new SimpleDomElementCollector();
 new FormInstaller(vhm, collector).install();
 runner.assertFormInstallation(document, vhm);
@@ -67,13 +69,14 @@ The example's `MyModelValueHostsRules` is application-specific. `createJivsServi
 ## `IntegrationTestContext`
 
 ```ts
-new IntegrationTestContext(valueHostsManager: IValueHostsManager)
+new IntegrationTestContext(domServices: IJivsDomServices)
 ```
 
 Key members:
 
-- `valueHostsManager`: required; its services provide the DOM services used by descriptors and the runner.
-- `domServices`: resolved from the manager's services; used to resolve expected adapter definitions and presentations and to access the registry.
+- `domServices`: used to resolve expected adapter definitions and presentations and to access the registry. The context does not need a manager, so the page can be built first.
+- `fieldNames`: names passed to `field()`, once each, in first-use order. Feeds the rules.
+- `currentFieldName`: the innermost `field()` being built, or `null`. Role methods (`label`, `inputEditor`, `errorDisplay`, `fieldContainer`, etc.) accept `null` as the field name to use it; they throw if there is no current field. An explicit name always wins. `withField(name, run)` records the name, pushes it on a stack, runs, and pops in a `finally`, so a parent's name is restored after a nested field.
 - `runner`: initially `null`; populated by `new IntegrationTestRunner(context)`.
 - `containerIdentifier`: mutable `string | null`, initially `null`. The descriptor captures its value when it is constructed.
 - `failures`: shared `TestFailure[]`; the runner clears it **in place** (`length = 0`) at the start of each complete assertion operation.
@@ -133,20 +136,33 @@ Generated Jivs-role IDs use a role/field/key-style stem plus a unique `-N` suffi
 
 The builder doesn't escape `fieldName`, attributes, content, or option strings: these are trusted test fixtures, not production HTML templating facilities.
 
-## Named test fields (`TestingSupport/`)
+## Field Identities and templates (`TestingSupport/`)
 
-Instead of hand-writing rules and HTML in each test, pick entries from a repository of named test fields. Names state purpose (`Text_Required`, `Number_Range`, `Date_Required_LessThan`, `Checkbox`, `Select_Required`, `Radio_Required`).
+Instead of hand-writing rules and HTML in each test, pick **Field Identities** from a repository. Each is a test-only property named for its purpose (`Text_Required`, `Number_Range`, `Date_Required_LessThan`, `Checkbox`, `Select_Required`, `Radio_Required`) and packages two things: `addConfig(builder, name)` (the FieldValueHost and validators) and `addEditor(page, name, options)` (the editor element). Whether a field is "required" is simply what its `addConfig` does; there is no flag.
 
-- `TestFieldRepository.ts`: `TestFieldEntry` pairs `addToConfig(builder)` (FieldValueHost and validators) with `addToHtml(page, options)` (label, editor, required indicator, error display; `FieldBlockOptions` toggles them and can add `ariaError` or a `container`). `createDefaultTestFieldRepository()` holds the starter set; call `register()` to add more.
-- `TestPropertiesRules.ts`: one `ValueHostRulesBase` subclass built from a list of names; its cache key includes the names.
-- `CreateTestForm.ts`: `createTestForm(['Text_Required', 'Checkbox'], options?)` creates services (all conditions, parsers, formatters, ARIA), rules, manager, context, runner and form HTML, writes it to `document.body`, and runs `FormInstaller`. It returns `vhm`, `runner`, `page`, `form`, `install()` and `buildFields(names)` (for AJAX-style replacement).
+- `TestFieldRepository.ts`: `ITestFieldIdentity` and `TestFieldRepository`, which holds identities, **field templates** and **form templates**. `createDefaultTestFieldRepository()` holds the starter set. Add more with `registerIdentity()`, `registerFieldTemplate()` and `registerFormTemplate()`.
+  - A field template is a shared recipe `(page, field) => void` that surrounds the editor with other roles. Any identity can use any template. Starters: `default` (label, editor, error), `withRequired` (adds the required indicator), `labelAfter`, `withAriaError`, `inContainer`, `editorOnly`. The label text is the identity name.
+  - A form template is a recipe `(page) => void` that builds a whole form with `page.form()`, `field()`, `validationSummary()` and `submit()`. Pass a group to the latter two to write `data-jivs-group`; omit it to write none.
+  - Templates are recipes rather than HTML strings so `TestHtmlBuilder` stays the only code that creates elements, ids and descriptors.
+- `TestHtmlBuilder.field(name, templateName?, editorOptions?)` adds one identity through a field template (default `default`). `editorOptions` (`presentationName`, `adapterKey`, `additionalAttributes`) pass through to the editor. `formTemplate(name)` runs a form template. Both require `context.fieldTemplateSource` to be the repository; `createTestForm` assigns it.
+- `TestPropertiesRules.ts`: one `ValueHostRulesBase` subclass built from a list of identity names; its cache key includes the names.
+- `CreateTestForm.ts`: `createTestForm(options)` creates services (all conditions, parsers, formatters, ARIA), context, runner and form HTML first, then rules from `context.fieldNames`, then the manager; it writes the HTML to `document.body` and runs `FormInstaller`. Supply exactly one source: `fields` (names), `build` (`(page) => void`) or `formTemplate`. Other options: `fieldTemplate`, `fieldTemplates` (per name), `repository`, `services`, `formId`, `install`. It returns `services`, `config`, `vhm`, `runner`, `context`, `page`, `collector` and `install()`. `duringEdit` is not an option; set it on `domServices.options.validationBehaviors`.
 
 ```ts
-const t = createTestForm(['Text_Required', 'Date_Required_LessThan']);
+const t = createTestForm({ fields: ['Text_Required', 'Date_Required_LessThan'], fieldTemplate: 'withRequired' });
+t.runner.assertFormInstallation(document, t.vhm);
+
+// AJAX-style replacement
+t.runner.removeDescriptorsIn(oldSubtree);
+const replacement = new TestHtmlBuilder(t.context).field('Date_Required_LessThan', 'labelAfter');
+// insert replacement.build() into the DOM, then:
+t.install();
 t.runner.assertFormInstallation(document, t.vhm);
 ```
 
-Note: `SimpleDomElementCollector` passes `presentationName: null` for editors without `data-jivs-presentation`, because `EditorInstaller` only uses the adapter's recommended presentation when the option is `null` (not `undefined`).
+Notes:
+- `SimpleDomElementCollector` passes `presentationName: null` for editors without `data-jivs-presentation`, because `EditorInstaller` only uses the adapter's recommended presentation when the option is `null` (not `undefined`).
+- The runner accepts an unset presentation for roles that have none registered (`aria-error`, and form roles such as `submit`), because the installers leave the property `undefined`.
 
 ## Descriptor contracts
 
@@ -259,6 +275,7 @@ our test framework uses and assigns the ID attribute.
     </div>
     <div data-jivs-role='summary' data-jivs-presentation='Nifty'></div>
 </form>
+```
 
 ## Deferred design
 

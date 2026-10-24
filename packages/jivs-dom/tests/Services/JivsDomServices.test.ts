@@ -12,7 +12,7 @@ import type { IEditorInstaller } from '../../src/Interfaces/EditorInstaller';
 import type { IFieldPresentation, IFieldPresentationInstaller } from '../../src/Interfaces/FieldPresentations';
 import type { IFormPresentation, IFormPresentationInstaller } from '../../src/Interfaces/FormPresentations';
 import type { IIssuesFoundFormatterService } from '../../src/Interfaces/IssuesFoundFormatterService';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
+import type { IJivsDomServices, JivsDomGlobalOptions } from '../../src/Interfaces/JivsDomServices';
 import type { IPresentationFactory } from '../../src/Interfaces/Presentations_common';
 import type { IPopupMechanism, IPopupService } from '../../src/Interfaces/PopupErrorMessageDisplays';
 import { ElementRole } from '../../src/Interfaces/Types';
@@ -116,7 +116,7 @@ describe('JivsDomServices.options', () => {
         let options = testItem.options;
 
         expect(testItem.options).toBe(options);
-        expect(options).toEqual({
+        expect(options).toEqual(<JivsDomGlobalOptions>{
             inlineErrorMessageDisplay: {},
             popupErrorMessageDisplay: {},
             editor: {},
@@ -130,7 +130,8 @@ describe('JivsDomServices.options', () => {
             headerFooterMessageFrame: {},
             iconMessageFrame: {},
             columnarErrorIndicatorContent: {},
-            validationSummary: {}
+            validationSummary: {},
+            validationBehaviors: {}
         });
     });
 });
