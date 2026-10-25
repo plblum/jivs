@@ -670,36 +670,6 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
         return vh;
     }
 
-    public override validate(options?: ValidateOptions): ValidationState {
-        throw new Error("Method not implemented.");
-    }
-    public override clearValidation(options?: ValidateOptions): boolean {
-        throw new Error("Method not implemented.");
-    }
-
-    // isValid: boolean = true;        
-
-    // doNotSave: boolean = false;
-    public override addExternalIssuesFound(errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
-        throw new Error("Method not implemented.");
-    }
-    public override addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
-        throw new Error("Method not implemented.");
-    }
-    public override toValidationPayload(externalIssues: IssueFound[] | null): string {
-        throw new Error("Method not implemented.");
-    }
-    public override fromValidationPayload(payload: string, encode?: ((text: string) => string) | null | undefined): boolean {
-        throw new Error("Method not implemented.");
-    }
-   
-    public override getIssuesForField(valueHostName: string): IssueFound[] {
-        throw new Error("Method not implemented.");
-    }
-    public override getIssuesFound(group?: string | undefined): IssueFound[] {
-        throw new Error("Method not implemented.");
-    }
-
     public override notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
     {
 

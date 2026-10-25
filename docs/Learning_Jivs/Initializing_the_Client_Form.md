@@ -40,7 +40,7 @@ The `ModelReader` supplied by Jivs makes quick work of transferring values from 
 
 ```ts
 const reader = new ModelReader(vhm, person, options);
-reader.readFromModel();
+reader.read();
 ```
 
 `ModelReader` uses the Model property name configured for each `FieldValueHost`. By default, that name is the same as the `FieldValueHost` name. When they differ, set `propertyName` while configuring the field:

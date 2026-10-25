@@ -64,7 +64,7 @@ const reader = new ModelReader(
     {}
 );
 
-reader.readFromModel();
+reader.read();
 ```
 
 The exact FormInstaller and ElementCollector APIs remain undecided, but the example exposes the underlying work:
@@ -140,7 +140,7 @@ new SearchFormInstaller(vhm).install();
 
 const model = getMyModel();
 const reader = new ModelReader(vhm, model, {});
-reader.readFromModel();
+reader.read();
 ```
 
 The form-installation operation can internally coordinate:
@@ -180,7 +180,7 @@ When a model supplies the initial data, `ModelReader` provides the standard path
 ```ts
 const model = getMyModel();
 const reader = new ModelReader(vhm, model, {});
-reader.readFromModel();
+reader.read();
 ```
 
 Because the DOM integration has already been installed, the resulting Jivs callbacks can update the editors as values enter the `ValueHostsManager`.

@@ -41,7 +41,7 @@ The actual transfer process is pretty simple, but requires configuration describ
 let vhm = new ValueHostsManager(rules.configure());
 let model = getMyModel(); // your code
 let reader = new ModelReader(vhm, model, {});   // various options available in third parameter
-reader.readFromModel();  // data is now in the ValueHosts
+reader.read();  // data is now in the ValueHosts
 
 // ... interact with the data and finish up with validation before trying to save it ...
 
@@ -58,7 +58,7 @@ vhm.onTextValueChanged = myFunctionToUpdateInputs;
 ```
 
 ## Available operations on ModelReader, DictionaryReader, and FormReader
-- `readFromModel()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
+- `read()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
 - `readFromProperty(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
   and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the `ValueHost`. Will skip when the rule indicates.
 - `readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
@@ -89,7 +89,7 @@ app.use(express.urlencoded({ extended: true }));
 app.post("/submit", (req, res) => {
     const formData = req.body;
     const formReader = new FormReader(valueHostsManager, formData, {});
-    formReader.readFromModel();
+    formReader.read();
 });
 ```
 

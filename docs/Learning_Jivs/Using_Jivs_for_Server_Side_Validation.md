@@ -82,7 +82,7 @@ JSON may already have been deserialized into values suitable for validation and 
 
 ```ts
 const reader = new ModelReader(vhm, requestData, options);
-reader.readFromModel();
+reader.read();
 ```
 
 `ModelReader` does not parse Text Values.
@@ -130,7 +130,7 @@ app.post('/submit', (req, res) => {
     const reader = new FormReader(vhm, formValues,{
         alignEnabled: true  // recommended to setup ValueHosts enabled flags based on the presence of a form entry
     });
-    reader.readFromModel();
+    reader.read();
 
     const validationState = vhm.validate();
 
@@ -380,7 +380,7 @@ async function processPersonRequest(
     const vhm = new ValueHostsManager(rules.configure());
 
     const reader = new ModelReader(vhm, requestData);
-    reader.readFromModel();
+    reader.read();
 
     const validationState = vhm.validate();
 

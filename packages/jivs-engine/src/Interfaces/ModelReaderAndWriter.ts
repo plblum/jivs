@@ -96,7 +96,7 @@ export interface IModelReader
      * They do not throw errors, but log them and continue reading the rest of the fields.
      * @param options The options controlling how the ModelReader interacts with the ValueHostsManager.
      */
-    readFromModel(options?: ModelReaderOptions): void;
+    read(): void;
 }
 
 /**
@@ -104,6 +104,15 @@ export interface IModelReader
  */
 export interface ModelReaderOptions
 {
+    /**
+     * Once finished, invoke validation on all fields using the preliminary option.
+     * This will ensure that all fields are validated, except:
+     *  - Required validators because the user doesn't need to notifications about fields they haven't edited
+     *  - Fields that already show signs of validation. This will let you replace (reinitialize) 
+     *    a few values and run validation without getting other fields involved.
+     * Defaults to true if not specified.
+     */
+    preliminaryValidation?: boolean;
     /**
      * Controls behavior of setValue to turn off its ability to
      * convert the value to text through an associated DataTypeFormatter.

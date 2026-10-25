@@ -665,7 +665,7 @@ export interface ReconcileValueHostsWithEditorsOptions
  *      skipIfUnchanged: true, // use false if you consider every element's data as refreshed
  *      alignEnabled: true
  * });
- * formReader.readFromModel();
+ * formReader.read();
  * ```
  * 
  * @param vhm The ValueHostsManager containing the ValueHosts to reconcile with the DOM editors.

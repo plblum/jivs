@@ -31,7 +31,7 @@ FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
 
 const model = getPerson();
 const reader = new ModelReader(valueHostsManager, model, {});
-reader.readFromModel();
+reader.read();
 ```
 
 The named `rules` variable keeps the form’s Rules visible without retaining a separate configuration variable.
@@ -933,7 +933,7 @@ public static install(
 
 Element and ARIA installation occur before dispatcher attachment. No dispatcher callback can therefore encounter an element before its adapters, presentations, and ARIA updaters have been installed.
 
-Dispatcher attachment occurs before `ModelReader.readFromModel()`, allowing initial formatted Text Values to reach the installed editors.
+Dispatcher attachment occurs before `ModelReader.read()`, allowing initial formatted Text Values to reach the installed editors.
 
 If instance installation throws, the static operation never reaches dispatcher attachment.
 
@@ -1017,7 +1017,7 @@ FormInstaller.install(
 
 const model = getPerson();
 const reader = new ModelReader(valueHostsManager, model, {});
-reader.readFromModel();
+reader.read();
 ```
 
 The sequence is:

@@ -169,10 +169,11 @@ interface ValidateOptions
         group: 'groupName'
     })
     ```
-- `preliminary` - Set to true when running a validation prior to a submit activity.
-    Typically set to true just after loading the form to report any errors already present.
-    During this phase, Validators setup with Category=Require are not checked as the user doesn't need
+- `preliminary` - Set to true when running a validation after initially setting values from the source.
+    It establishes validation errors only where a field has data to validate, except for required value errors.
+    When set, the `RequireTextCondition` is not checked as the user doesn't need
     the noise complaining about missing input when they haven't had a chance to address it.
+    It also ensures that previously validated fields don't get changed.
     When undefined, it is the same as false.
 - `duringEdit` - Set to true when handling an intermediate change activity, such as a keystroke
     changed a textbox but the user remains in the textbox. For example, on the 

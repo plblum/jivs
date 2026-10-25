@@ -4286,7 +4286,7 @@ FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
 
 const model = getPerson();
 const reader = new ModelReader(valueHostsManager, model, {});
-reader.readFromModel();
+reader.read();
 ```
 
 The static operation attaches validation dispatchers and Text Value dispatching by default. Native Value dispatching remains disabled unless requested. Applications requiring separate control may instead construct `FormInstaller` and call `DispatcherService.attach()` independently. There is no expectation that the application retain the Collector or installer afterward.
@@ -4600,7 +4600,7 @@ valueHostsManager.services.domServices.dispatchers.attach(
 );
 ```
 
-Installation completes before callback attachment. Attachment completes before `ModelReader.readFromModel()` so initial Text Values can reach installed editors. If instance installation throws, dispatchers are not attached.
+Installation completes before callback attachment. Attachment completes before `ModelReader.read()` so initial Text Values can reach installed editors. If instance installation throws, dispatchers are not attached.
 
 `DispatcherService.attach()` always attaches field and form validation-state dispatching. Its Boolean parameters opt into Text Value and Native Value dispatching. It owns one `dispatchersAttached` flag in manager metadata; later standard calls are no-ops. The first call determines the optional dispatchers.
 

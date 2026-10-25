@@ -94,7 +94,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         let { logger, valueHostsManager, vhName, vhBirthDate, vhIsActive, vhScore } = setupValueHostsManagerForTestModel1(model1, null, null, null, null);
         // Read the model into the ValueHostsManager
         const modelReader = new ModelReader(valueHostsManager, model1);
-        modelReader.readFromModel();
+        modelReader.read();
 
         // valuehosts should now have the values from the model
         expect(vhName.getValue()).toBe('John Doe');
@@ -152,7 +152,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         
         // Read the model into the ValueHostsManager
         const modelReader = new ModelReader(valueHostsManager, model1);
-        modelReader.readFromModel();
+        modelReader.read();
         // check that the values have been set according to the rules
         expect(vhName.getValue()).toBe('');
         expect(vhBirthDate.getValue()).toEqual(new Date('2000-01-01'));
@@ -183,7 +183,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         );
         // Read the model into the ValueHostsManager
         const modelReader = new ModelReader(valueHostsManager, model1);
-        modelReader.readFromModel();
+        modelReader.read();
         // check that the values have been set according to the rules
         expect(vhName.getValue()).toBe('');
         expect(vhBirthDate.getValue()).toEqual(new Date('2000-01-01'));

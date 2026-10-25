@@ -57,17 +57,46 @@ export abstract class ModelReaderBase<T extends object, TOptions extends ModelRe
      *      any rule that applies to it. The default returns model[modelPropertyName].
      *   * 2. Override getRule to provide a rule for the model property that supersedes the
      *      FieldValueHostConfig.modelReaderRule. The default returns valueHost.getModelReaderRule().
+     * 
+     * The option.preliminaryValidation controls whether validation is invoked on all fields after reading.
+     * It defaults to true if not specified.
      */
-    public readFromModel(): void
+    public read(): void
     {
         let generator = this.valueHostsManager.enumerateValueHosts((valueHost) => valueHost instanceof FieldValueHost);
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            this.readFromProperty(valueHost);
+            this.readOne(valueHost);
+        }
+        if (this.options.preliminaryValidation !== false)
+        {
+            this.valueHostsManager.validate({ preliminary: true });
         }
     }
 
+    /**
+     * Reads the value from the model, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * The model property name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
+     * @param destination The destination ValueHost. It identifies the model property name to read from
+     * with its FieldValueHostConfig.propertyName. If that is not set, it uses the ValueHostConfig.name.
+     * @returns True if the value was successfully read, false otherwise.
+     */
+    protected abstract readOne(destination: IFieldValueHost): boolean;
+}
+
+export abstract class RealModelReaderBase<T extends object, TOptions extends ModelReaderOptions = ModelReaderOptions> extends ModelReaderBase<T, TOptions>
+{
+    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
+    {
+        super(valueHostsManager, model, options);
+    }
+
+    protected override readOne(destination: IFieldValueHost): boolean
+    {
+        return this.readFromProperty(destination);
+    }
+    
     /**
      * Reads the value from the model, applies the rules, and sets it into the specified ValueHost if appropriate.
      * The model property name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
@@ -83,16 +112,18 @@ export abstract class ModelReaderBase<T extends object, TOptions extends ModelRe
      * @returns True if the value was successfully read, false otherwise.
      */
     public readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean;
-    
+
     public readFromProperty(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
     {
         let modelPropertyName: string;
         let destination: IFieldValueHost;
-        if (typeof arg1 === "string") {
+        if (typeof arg1 === "string")
+        {
             modelPropertyName = arg1;
             destination = arg2 as IFieldValueHost;
 
-        } else {
+        } else
+        {
             destination = arg1 as IFieldValueHost;
             modelPropertyName = destination.getPropertyName();
             if (!modelPropertyName)
@@ -126,7 +157,8 @@ export abstract class ModelReaderBase<T extends object, TOptions extends ModelRe
     public setValueWithRule(modelPropertyName: string, modelPropertyValue: any, destination: IFieldValueHost | string): boolean
     {
         let valueHost: IFieldValueHost;
-        if (typeof destination === "string") {
+        if (typeof destination === "string")
+        {
             valueHost = this.valueHostsManager.getFieldValueHost(destination)!;
             if (!valueHost)
             {

@@ -6,7 +6,7 @@
 import { FieldValueHostSetValueOptions, IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { ModelReaderBase } from './ModelReaderBase';
+import { ModelReaderBase, RealModelReaderBase } from './ModelReaderBase';
 
 /**
  * Concrete implementation of ModelReaderBase for reading from a model object.
@@ -14,7 +14,7 @@ import { ModelReaderBase } from './ModelReaderBase';
  * @template T - The type of the model object. Can be a class instance or a plain object.
  */
 export class ModelReader<T extends object = object, TOptions extends ModelReaderOptions = ModelReaderOptions>
-    extends ModelReaderBase<T, TOptions>
+    extends RealModelReaderBase<T, TOptions>
 {
     constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
     {
@@ -30,7 +30,7 @@ export class ModelReader<T extends object = object, TOptions extends ModelReader
  */
 export class DictionaryReader<T extends { [key: string]: any; } = { [key: string]: any; },
     TOptions extends ModelReaderOptions = ModelReaderOptions>
-    extends ModelReaderBase<T, TOptions>
+    extends RealModelReaderBase<T, TOptions>
 {
     constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
     {
@@ -68,7 +68,7 @@ export interface FormReaderOptions extends ModelReaderOptions
  * app.post("/submit", (req, res) => {
  *      const formData = req.body;
  *      const formReader = new FormReader(valueHostsManager, formData);
- *      formReader.readFromModel();
+ *      formReader.read();
  * });
  * ```
  * The options parameter of the constructor has meaningful options:
@@ -78,7 +78,7 @@ export interface FormReaderOptions extends ModelReaderOptions
  * - disableFormatter - It will always be treated as false, regardless of the value passed in the options.
  */
 export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
-    extends ModelReaderBase<{ [key: string]: string; }, TOptions>
+    extends RealModelReaderBase<{ [key: string]: string; }, TOptions>
 {
     /**
      * 
@@ -88,7 +88,7 @@ export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
      * app.post("/submit", (req, res) => {
      *      const formData = req.body;
      *      const formReader = new FormReader(valueHostsManager, formData);
-     *      formReader.readFromModel();
+     *      formReader.read();
      * });
      * ```
      */
@@ -98,13 +98,13 @@ export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
         this.options.disableFormatter = false;
     }
 
-    public override readFromModel(): void
+    public override read(): void
     {
         let saved = this.valueHostsManager.behaviors.reformatTextValue;
         this.valueHostsManager.behaviors.reformatTextValue = this.options.reformatTextValue;
         try
         {
-            super.readFromModel();
+            super.read();
         }
         finally
         {
