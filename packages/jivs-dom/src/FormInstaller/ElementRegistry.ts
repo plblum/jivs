@@ -4,15 +4,14 @@
  * @module jivs-dom/FormInstaller/ConcreteClasses/ElementRegistry
  */
 
+import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
+import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { FieldPresentationInstallOptions } from '../Interfaces/FieldPresentations';
 import { FormPresentationInstallOptions } from '../Interfaces/FormPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { ElementRole } from '../Interfaces/Types';
-import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 
 /**
  * @inheritdoc jivs-dom/Types/ElementRegistry

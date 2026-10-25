@@ -18,8 +18,8 @@ The normal setup should make connecting Jivs to a form look straightforward:
 1. Create the Jivs services.
 2. Create the Rules and `ValueHostsManager`.
 3. Install the form’s DOM behavior.
-4. Load the model.
-5. Establish its initial validation state.
+4. Load the initial values by running a Reader (`ModelReader`, `DictionaryReader`, `FormReader`, or `EditorReader`).
+5. Establish its initial validation state. The Reader does this when it finishes.
 
 The normal client setup is:
 
@@ -1031,6 +1031,116 @@ The sequence is:
 6. Install static and validation-state ARIA updaters.
 7. Apply initial dynamic ARIA state.
 8. Attach validation and selected value-change dispatchers.
-9. Load the initial model.
-10. Allow the attached text-value dispatcher to synchronize formatted values into the installed editors.
-11. Establish the initial validation state
+9. Load the initial values by running a Reader. Which Reader depends on where the values are (see the next section).
+10. Allow the attached text-value dispatcher to synchronize formatted values into the installed editors. Applies when the Reader writes to the ValueHosts from outside the form (`ModelReader`, `DictionaryReader`, `FormReader`).
+11. The Reader establishes the initial validation state by calling `valueHostsManager.validate({ preliminary: true })` after it finishes, unless `options.preliminaryValidation` is `false`.
+
+---
+
+# Loading Initial Values: Choosing a Reader
+
+Every value lives in two places: the form's editors and the `FieldValueHost`s. Before the user is involved, one side has to be loaded from the other. Each Reader below does that for one source. All of them derive from `ReaderBase`, so setup follows the same three steps:
+
+1. Create the Reader.
+2. Call `read()`.
+3. Preliminary validation runs inside `read()`.
+
+`ReaderOptions.preliminaryValidation` defaults to `true`. Set it to `false` only when you will call `valueHostsManager.validate({ preliminary: true })` yourself, such as after running several Readers in a row.
+
+## Where Do the Initial Values Come From?
+
+| Source of values | Reader | Package | Direction | Needs dispatchers attached? |
+|---|---|---|---|---|
+| A model object | `ModelReader` | jivs-engine | model → ValueHosts → editors | Yes, the text-value dispatcher fills the editors. Formatters are required. |
+| A dictionary | `DictionaryReader` | jivs-engine | dictionary → ValueHosts → editors | Same as `ModelReader` |
+| Text values (an HTTP form post) | `FormReader` | jivs-engine | text → ValueHosts (parsed) → editors | Same as `ModelReader`. Parsers are required. |
+| Values already in the HTML (`value`, `checked`, `selected`) | `EditorReader` | jivs-dom | editors → ValueHosts | No. It does not need them to move values into the ValueHosts. |
+
+`EditorReader` is the only Reader that moves values from the form to the ValueHosts. It asks each field's installed `IEditorAdapterDefinition` to do the transfer, so each editor type keeps ownership of how its value is read, parsed, and reported (including an `InjectedError` for text that fails to parse). It is a model-free case: there is no model to combine with the HTML values.
+
+`EditorReader` calls `sendValue(valueHost, editor, jivsElement, false, false)`. This is the same method the editors' event handlers use, except that `validate` is `false`, so every field is transferred first and `read()` validates once at the end. That means fewer updates to the shared Validation Summary.
+
+## Startup Code Compared
+
+Each example assumes the services, rules and `ValueHostsManager` have been created as shown above.
+
+### Model
+
+```ts
+FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
+
+const reader = new ModelReader(valueHostsManager, getPerson());
+reader.read();
+```
+
+### Dictionary
+
+```ts
+FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
+
+const reader = new DictionaryReader(valueHostsManager, { firstName: 'Ann', age: 42 });
+reader.read();
+```
+
+### Form post (text values)
+
+```ts
+FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
+
+const reader = new FormReader(valueHostsManager, formData, { reformatTextValue: true });
+reader.read();
+```
+
+### Values already in the HTML
+
+```ts
+FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
+
+const reader = new EditorReader(valueHostsManager);
+reader.read();
+```
+
+### Several Readers, validating once
+
+```ts
+FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
+
+new ModelReader(valueHostsManager, getPerson(), { preliminaryValidation: false }).read();
+new EditorReader(valueHostsManager, { preliminaryValidation: false }).read();
+valueHostsManager.validate({ preliminary: true });
+```
+
+Use this only when each field has one source. If two Readers supply the same field, the last one wins.
+
+### Setting values by hand
+
+When the application calls `FieldValueHost.setValue()`, `setTextValue()` or `setValues()` directly, it controls the options. Pass `validate: false` for each call, then finish with:
+
+```ts
+valueHostsManager.validate({ preliminary: true });
+```
+
+## What `validate({ preliminary: true })` Does
+
+- Fields whose `ValidationStatus` is `NotAttempted` or `NeedsValidation` are validated. Fields that were already validated are skipped.
+- Within a `FieldValueHost`, validators with `Category=Require` are skipped. The user has not had a chance to supply input yet.
+
+Because already-validated fields are skipped, the same call also works after replacing part of the form. Install the new HTML, run a Reader for it, and only the replaced editors are affected. Fields outside the replaced part keep their state.
+
+## Required Order
+
+1. `FormInstaller.install()` installs the editors, presentations, and ARIA, and attaches the dispatchers.
+2. Run the Reader.
+
+`EditorReader` logs a Warn for each field with no editor element, or with an element that `EditorInstaller` has not finished, and continues with the remaining fields. If the Reader runs before installation, expect one Warn per field.
+
+## Configuration Errors to Expect
+
+- Moving values from a ValueHost to an editor needs a `DataTypeFormatter` registered in the services for the field's data type. A missing one is a configuration error and is logged.
+- `FormReader` and any editor that parses text need a `DataTypeParser` for the data type.
+
+## Notes
+
+- `reset` is not part of `EditorReader`. Resetting a field's `ValidationStatus` to `NotAttempted` is for a complete first load. A partial replacement of the form must not reset other fields.
+- Only the first editor element registered for a field is read. A radio group counts as one element.
+- Reformatting text after the user types (`reformatTextValue`, `disableFormattingOnValueChange`) belongs to the user-driven part of the lifecycle and is not part of loading initial values.
