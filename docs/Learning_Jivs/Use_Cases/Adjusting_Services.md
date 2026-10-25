@@ -40,7 +40,7 @@ Each Lookup Key is connected to many tools that are automatically applied when y
 You don't often have to write new parsers, formatters, etc. In fact, if your Lookup Key is a refinement of an existing one, like Email is a specific use of String and Currency is a specific use of Number, you can register a fallback Lookup Key with the `LookupKeyFallbackService`. See [LookupKeyFallbackService](../../API/JivsServices/Logging.md).
 
 ## Moving values between external sources and Jivs
-Your stored data needs to work within Jivs, and those native values may not exactly match what Jivs expects. So we provide the `ValueAdapterService` to transistion values between two systems. Its used by the `ModelReader` and `ModelWriter`. See [ValueAdapterService](../../API/ModelReader_and_ModelWriter/Home.md#value-adapter-rules).
+Your stored data needs to work within Jivs, and those native values may not exactly match what Jivs expects. So we provide the `ValueAdapterService` to transistion values between two systems. Its used by the `ModelReader`, `ModelWriter`, and the rest of the Readers and Writers. See [ValueAdapterService](../../API/Readers_and_Writers//Home.md#value-adapter-rules).
 
 ## Logging
 Our `LoggingService` is an excellent way to diagnose issues. It is actively logging at whatever minimum logging level you request: Debug, Info, Warning, Error. Without taking any further action, it logs only Errors.

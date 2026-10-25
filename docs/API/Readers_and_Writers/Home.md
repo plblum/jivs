@@ -1,18 +1,15 @@
-# ModelReader and ModelWriter
-`ModelReader` and `ModelWriter` classes transfer data between an external source and `ValueHostsManager`.
-That external source is often your own model object. However, you may have a dictionary or string values from an HTTP Form that are the source. They use `DictionaryReader` and `FormReader` respectively.
-
-When initializing the `ValueHostsManager`, source values are copied to the `ValueHosts`, ready for change and validation. 
+# Readers and Writers
+**Readers** transfer data from an external source into `ValueHostsManager`. Use them to initialize `ValueHostsManager` with the data prior to data entry and validation.
 ```text
-source → ValueHost
+external source → ValueHost
 ```
-This is the role of `ModelReader`, `DictionaryReader`, and `FormReader`.
-
-When you want to retrieve that data, `ValueHosts` have them already in their native form. You have the option to copy its values to the model's properties.
+**Writers** transfer data from the `ValueHostsManager` to an external destination. Use them to retrieve the validated data after editing has completed.
 ```text
-ValueHost → model property
+ValueHost → external destination
 ```
-This is the role of `ModelWriter`.
+- `ModelReader` and `ModelWriter` - expects a model, which is an object representation of your data. It can handle nested objects. Its properties are expected to be their native values.
+- `DictionaryReader` - expects a dictionary, a list of string names and native values.
+- `FormReader` - expects a dictionary coming from an HTTP Post request, which is a dictionary of string names and string values that need to be parsed into their native values.
 
 ## The work is slightly more complex than it seems
 You don't have to use our Readers or Writers. Instead of `ModelReader`, you can do this:
@@ -58,9 +55,13 @@ vhm.onTextValueChanged = myFunctionToUpdateInputs;
 ```
 
 ## Available operations on ModelReader, DictionaryReader, and FormReader
-- `read()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
-- `readField(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
-  and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the `ValueHost`. Will skip when the rule indicates.
+- `read()` - Copies values into all `FieldValueHosts`. 
+    - Will apply [Value Adapter Rule](#value-adapter-rules) established on the `readerRule` property of the `FieldValueHost` configuration.
+    - Will not read properties for which there is no `FieldValueHost`. 
+    - Will validate all fields upon completion.
+- `readField(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data for the field associated with the FieldValueHost.
+    - Will apply [Value Adapter Rule](#value-adapter-rules) established on the `readerRule` property of the `FieldValueHost` configuration.
+
 - `readField(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
@@ -69,9 +70,10 @@ vhm.onTextValueChanged = myFunctionToUpdateInputs;
     writer.writeField('property2', vhm.vh.field('field2'));
     ```
 ## Available operations on ModelWriter
-- `write()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
-- `writeField(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
-  and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the model. Will skip when the rule indicates.
+- `write()` - Copies values into all model properties with a corresponding `FieldValueHost`. 
+    - Will apply [Value Adapter Rule](#value-adapter-rules) established on the `writerRule` property of the `FieldValueHost` configuration.
+- `writeField(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost and writing to the external data.
+    - Will apply [Value Adapter Rule](#value-adapter-rules) established on the `writerRule` property of the `FieldValueHost` configuration.
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
@@ -100,6 +102,15 @@ const reader = new FormReader(valueHostsManager, formData, options);
 const reader = new DictionaryReader(vhm, dictionaryData, options);
 ```
 The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object that supports these values:
+
+
+
+- `preliminaryValidation` - Once finished, invoke validation on all fields using the preliminary option. This will ensure that all fields are validated, except:
+    - Required validators because the user doesn't need to notifications about fields they haven't edited
+    - Fields that already show signs of validation. This will let you replace (reinitialize) 
+    a few values and run validation without getting other fields involved.
+    
+    Defaults to true if not specified.
 - `disableFormatter` - (Not on `FormReader`) When true, do not convert the value to text. Just set the native value.
     When false, these settings still disable the formatter:
     - `valueHostsManager.behaviors.disableFormatterOnValueChange`
@@ -146,15 +157,15 @@ without some adjustment, or may need to be skipped. The `ValueAdapterService` ha
 
 Frequently the value representing "unassigned" differs. Jivs uses the JavaScript value `undefined` to mean unassigned. You might use undefined, null, 0, etc. This is a typical case for adapting values.
 
-When a value needs adjustment, setup rules within the `modelReaderRule` or `modelWriterRule` properties of `FieldValueHostConfig`.
+When a value needs adjustment, setup rules within the `readerRule` or `writerRule` properties of `FieldValueHostConfig`.
 ```ts
 builder.field('Field1', LookupKey.Number, { 
-    modelReaderRule: // if undefined in the model, use 0 in the ValueHost
+    readerRule: // if undefined in the model, use 0 in the ValueHost
     {
         when: 'undefined',
         then: '0'
     },
-    modelWriterRule: // if 0 in the valuehost, assign undefined in the model
+    writerRule: // if 0 in the valuehost, assign undefined in the model
     {
         when: '0',
         then: 'undefined'

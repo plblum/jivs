@@ -230,10 +230,10 @@ export class MockFieldValueHost extends MockValueHost
     getPropertyName(): string {
         throw new Error("Method not implemented.");
     }    
-    public getModelReaderRule(): ValueAdapterRule | undefined {
+    public getReaderRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }
-    public getModelWriterRule(): ValueAdapterRule | undefined {
+    public getWriterRule(): ValueAdapterRule | undefined {
         throw new Error("Method not implemented.");
     }    
 

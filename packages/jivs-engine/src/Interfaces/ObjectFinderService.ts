@@ -1,5 +1,6 @@
 /**
- * ObjectFinderService provides a search feature on the model to locate the object that hosts a given property.
+ * ObjectFinderService provides a search feature on an object to locate a given property.
+ * It can look through nested objects and arrays to find the object that contains the specified property.
  * Its used to resolve paths when reading or writing data to the model. ModelReader and ModelWriter use this service.
  * 
  * The interface does not specify any syntax for the path.
@@ -25,8 +26,8 @@ import { IService } from './Services';
 
 
 /**
- * ObjectFinderService provides a search feature on the model to locate the object that hosts a given property.
- * Its used to resolve paths when reading or writing data to the model. ModelReader and ModelWriter use this service.
+ * ObjectFinderService provides a search feature on an object to locate a given property.
+ * Its used to resolve paths when reading or writing data to an object. ModelReader and ModelWriter use this service.
  * 
  * This interface does not specify any syntax.
  */

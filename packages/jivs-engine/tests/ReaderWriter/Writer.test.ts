@@ -12,7 +12,7 @@ import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
-import { ModelWriter } from '../../src/ModelReaderWriter/Writer_classes';
+import { ModelWriter } from '../../src/ReaderWriter/Writer_classes';
 
 /**
  * This class is used to expose the protected members of ModelWriter for testing purposes.
@@ -82,14 +82,14 @@ function setup(model: object, propertyName: string,
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
             propertyName: propertyName,
-            modelWriterRule: { when: whenRule, then: thenRule },
+            writerRule: { when: whenRule, then: thenRule },
         }, 1), null) as IFieldValueHost;
     let writer = new PublicifyModelWriter(valueHostsManager, model);
     return { services, logger, writer, valueHostsManager, valueHost };
 }
 
 /**
- * Creates a FieldValueHost with a modelWriterRule and adds it to the valueHostsManager.
+ * Creates a FieldValueHost with a writerRule and adds it to the valueHostsManager.
  * @param valueHostsManager 
  * @param when 
  * @param then 
@@ -101,7 +101,7 @@ function createFieldValueHostWithRule(valueHostsManager: IValueHostsManager,
 {
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
-            modelWriterRule: {
+            writerRule: {
                 when: when,
                 then: then
             },
@@ -178,9 +178,9 @@ describe('ModelWriter', () =>
             let { valueHost, writer } = setup(model, 'prop1',
                 'unknown', 'unassigned');
 
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule('value1', modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule('value1', writerRule!, valueHost);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
         });
@@ -188,9 +188,9 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'unknown');
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule(model.prop1, modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
         });
@@ -199,9 +199,9 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHost, writer } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule(model.prop1, modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(model.prop1);
         });
@@ -210,9 +210,9 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'null');
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule(model.prop1, modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(null);
         });
@@ -220,9 +220,9 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'unassigned');
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule(model.prop1, modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBeUndefined();
         });
@@ -230,9 +230,9 @@ describe('ModelWriter', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'keep');
-            let modelWriterRule = valueHost.getModelWriterRule();
-            expect(modelWriterRule).toBeDefined();
-            let result = writer.publicify_adjustValueByRule(model.prop1, modelWriterRule!, valueHost);
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBeNull();
         });
@@ -245,7 +245,7 @@ describe('ModelWriter', () =>
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1', 'undefined', 'unassigned');
             let rule = writer.publicify_getRule(valueHost);
-            expect(rule).toBe(valueHost.getModelWriterRule());
+            expect(rule).toBe(valueHost.getWriterRule());
         });
         test('returns undefined for a valueHost with no rule', () =>
         {
@@ -253,7 +253,7 @@ describe('ModelWriter', () =>
             let services = new MockJivsServices(false, false);
             services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             let valueHostsManager = new MockValueHostsManager(services);
-            // not modelWriterRule is set on this valueHost
+            // not writerRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
 
@@ -321,7 +321,7 @@ describe('ModelWriter', () =>
 
     describe('write with limited tests around the functions already tested above', () =>
     {
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model', () =>
+        test('writerRule adjusts the value. Expect the adjusted value to be set into the model', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
@@ -335,7 +335,7 @@ describe('ModelWriter', () =>
         });
 
         // same but specifically calling writeField with the ValueHost for prop1
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeField', () =>
+        test('writerRule adjusts the value. Expect the adjusted value to be set into the model using writeField', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
@@ -347,7 +347,7 @@ describe('ModelWriter', () =>
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
         // same but passes the model property name explicitly to writeField
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeField with explicit model property name', () =>
+        test('writerRule adjusts the value. Expect the adjusted value to be set into the model using writeField with explicit model property name', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
@@ -359,7 +359,7 @@ describe('ModelWriter', () =>
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
-        test('modelWriterRule does not adjust the value. Expect the original value to be set into the model', () =>
+        test('writerRule does not adjust the value. Expect the original value to be set into the model', () =>
         {
             let model = { prop1: 5, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
@@ -371,7 +371,7 @@ describe('ModelWriter', () =>
             expect(logger.findMessage(`ValueAdapterService When rule 'zero' has indicated the original value will be retained.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
-        test('modelWriterRule that has a rule that adjusts the value to unassigned. Expect the model property  to be set to undefined.', () =>
+        test('writerRule that has a rule that adjusts the value to unassigned. Expect the model property  to be set to undefined.', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'unassigned');
@@ -382,7 +382,7 @@ describe('ModelWriter', () =>
             expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'unassigned' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
-        test('modelWriterRule that has a rule that adjusts the value to keep. Expect the model property to be set to null.', () =>
+        test('writerRule that has a rule that adjusts the value to keep. Expect the model property to be set to null.', () =>
         {
             let model = { prop1: 1, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'keep');

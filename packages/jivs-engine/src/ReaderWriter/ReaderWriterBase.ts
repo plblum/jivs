@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/ModelReaderWriter/Types
- * @module jivs-engine/ModelReaderWriter/AbstractClasses
+ * @inheritdoc jivs-engine/ReaderWriter/Types
+ * @module jivs-engine/ReaderWriter/AbstractClasses
  */
 
 import { ValueAdapterResolution, ValueAdapterRule } from '../Interfaces/ValueAdapterService';

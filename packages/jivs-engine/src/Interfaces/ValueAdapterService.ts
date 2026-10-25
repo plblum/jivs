@@ -4,7 +4,7 @@
  * 
  * ValueAdapterService is a service that provides a set of functions to adapt values 
  * between two systems: an external data source and the ValueHosts.
- * It is designed to be used in conjunction with the ModelReader and ModelWriter classes, 
+ * It is designed to be used in conjunction with the Reader and Writer classes, 
  * which handle the reading and writing of data between the two systems.
  * However, it works stand-alone too.
  * 
@@ -101,7 +101,7 @@ import { IServiceWithAccessor } from './Services';
  * Contains the pair of settings that define a rule for the ValueAdapterService.
  * The When function is used to determine if the value is invalid and needs to be replaced. 
  * The Then function is used to determine what to do with the value identified by When functions.
- * FieldValueHostConfig.modelReaderRule and FieldValueHostConfig.modelWriterRule are of this type.
+ * FieldValueHostConfig.readerRule and FieldValueHostConfig.writerRule are of this type.
  */
 export interface ValueAdapterRule
 {

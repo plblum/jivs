@@ -4,10 +4,10 @@ import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
-import { IValueHostsManager, ValueHostsManagerConfig } from './../../src/Interfaces/ValueHostsManager';
-import { createJivsServicesForTesting } from './../../src/Support/createJivsServicesForTesting';
-import { ModelReader } from './../../src/ModelReaderWriter/Reader_classes';
-import { ModelWriter } from '../../src/ModelReaderWriter/Writer_classes';
+import { IValueHostsManager, ValueHostsManagerConfig } from '../../src/Interfaces/ValueHostsManager';
+import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
+import { ModelReader } from './../../src/ReaderWriter/Reader_classes';
+import { ModelWriter } from '../../src/ReaderWriter/Writer_classes';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 // Tests that use ModelReader and ModelWriter.
@@ -138,16 +138,16 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         expect(model2.score).toBe(99);
     });
 
-    // original has only undefined values. Rules exist on FieldValueHostConfig.modelReaderRule to set default values. No attempt to setValue on ValueHostManager in the middle
-    test('Original model has only undefined values. Rules exist on FieldValueHostConfig.modelReaderRule to set default values. No attempt to setValue on ValueHostManager in the middle', () =>
+    // original has only undefined values. Rules exist on FieldValueHostConfig.readerRule to set default values. No attempt to setValue on ValueHostManager in the middle
+    test('Original model has only undefined values. Rules exist on FieldValueHostConfig.readerRule to set default values. No attempt to setValue on ValueHostManager in the middle', () =>
     {
         let model1 = new TestModel1();
         // all properties are undefined
         let { logger, valueHostsManager, vhName, vhBirthDate, vhIsActive, vhScore } = setupValueHostsManagerForTestModel1(model1,
-            { modelReaderRule: { when: 'undefined', then: 'emptystring' } },
-            { modelReaderRule: { when: 'undefined', then: 'twoThousand' } },   // we created a rule for this in the setup function
-            { modelReaderRule: { when: 'undefined', then: 'true' } },
-            { modelReaderRule: { when: 'undefined', then: '0' } }
+            { readerRule: { when: 'undefined', then: 'emptystring' } },
+            { readerRule: { when: 'undefined', then: 'twoThousand' } },   // we created a rule for this in the setup function
+            { readerRule: { when: 'undefined', then: 'true' } },
+            { readerRule: { when: 'undefined', then: '0' } }
         );
         
         // Read the model into the ValueHostsManager
@@ -170,16 +170,16 @@ describe('ModelReader and ModelWriter round trip tests', () =>
     });
 
     // similar but the original will have extra1 assigned and then we'll write back to it
-    test('Original model has only undefined values. Rules exist on FieldValueHostConfig.modelReaderRule to set default values. Original model has extra1 assigned and then we write back to it', () =>
+    test('Original model has only undefined values. Rules exist on FieldValueHostConfig.readerRule to set default values. Original model has extra1 assigned and then we write back to it', () =>
     {
         let model1 = new TestModel1();
         model1.extra1 = 'Extra value preserved';
         // all other properties are undefined
         let { logger, valueHostsManager, vhName, vhBirthDate, vhIsActive, vhScore } = setupValueHostsManagerForTestModel1(model1,
-            { modelReaderRule: { when: 'undefined', then: 'emptystring' } },
-            { modelReaderRule: { when: 'undefined', then: 'twoThousand' } },   // we created a rule for this in the setup function
-            { modelReaderRule: { when: 'undefined', then: 'true' } },
-            { modelReaderRule: { when: 'undefined', then: '0' } }
+            { readerRule: { when: 'undefined', then: 'emptystring' } },
+            { readerRule: { when: 'undefined', then: 'twoThousand' } },   // we created a rule for this in the setup function
+            { readerRule: { when: 'undefined', then: 'true' } },
+            { readerRule: { when: 'undefined', then: '0' } }
         );
         // Read the model into the ValueHostsManager
         const modelReader = new ModelReader(valueHostsManager, model1);

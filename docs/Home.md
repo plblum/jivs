@@ -12,7 +12,7 @@
   - [JivsServices](./API/JivsServices/Home.md)
   - [ValueHost Rules](./API/ValueHost_Rules/Home.md)
   - [Builder API](./ValueHostsManager_Configuration_Guide.md)
-  - [ModelReader and ModelWriter](./API/ModelReader_and_ModelWriter/Home.md)
+  - [Readers and Writers](./API/Readers_and_Writers/Home.md)
   - [ValidationState and IssueFound](./API/Validators/Validation_State.md)
   - [All types](http://jivs.peterblum.com/TypeDoc/)
 

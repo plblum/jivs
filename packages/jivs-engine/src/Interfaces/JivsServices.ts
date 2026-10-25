@@ -148,14 +148,16 @@ export interface IJivsServices extends IServices {
     cachingService: ICachingService;
 
     /**
-     * Service for adapting values between two systems: the external source (such as a model) and the ValueHost.
-     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
-     * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
+     * Service for adapting values between two systems: external data (such as a model) and the ValueHost.
+     * It supports the Reader and Writer classes like ModelReader, FormReader, and ModelWriter
+     * which uses the rules to determine if the value can be used and if it needs to be transformed.
+     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.readerRule property
+     * and the ModelWriter with the FieldValueHostConfig.writerRule property.
      */
     valueAdapterService: IValueAdapterService;
 
     /**
-     * Service for finding the object that hosts a property in a model, given a path to that property.
+     * Service for finding the object that hosts a property in an object, given a path to that property.
      */
     objectFinderService: IObjectFinderService;
 

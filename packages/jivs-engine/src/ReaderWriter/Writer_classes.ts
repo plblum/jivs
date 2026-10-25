@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/ModelReaderWriter/Types
- * @module jivs-engine/ModelReaderWriter/ConcreteClasses
+ * @inheritdoc jivs-engine/ReaderWriter/Types
+ * @module jivs-engine/ReaderWriter/ConcreteClasses
  */
 
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';

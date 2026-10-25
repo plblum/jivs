@@ -15,7 +15,7 @@ import { ReaderOptions } from '../../src/Interfaces/ReaderAndWriter';
 import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
 import { NumberParser } from '../../src/DataTypes/DataTypeParsers';
 import { NumberCultureInfo } from '../../src/DataTypes/DataTypeParserBase';
-import { ModelReader, FormReaderOptions, FormReader } from '../../src/ModelReaderWriter/Reader_classes';
+import { ModelReader, FormReaderOptions, FormReader } from '../../src/ReaderWriter/Reader_classes';
 
 /**
  * This class is used to expose the protected members of ModelReader for testing purposes.
@@ -93,14 +93,14 @@ function setup(model: object, propertyName: string,
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
             propertyName: propertyName,
-            modelReaderRule: { when: whenRule, then: thenRule },
+            readerRule: { when: whenRule, then: thenRule },
         }, 1), null) as IFieldValueHost;
     let reader = new PublicifyModelReader(valueHostsManager, model, options);
     return { services, logger, reader, valueHostsManager, valueHost };
 }
 
 /**
- * Creates a FieldValueHost with a modelReaderRule and adds it to the valueHostsManager.
+ * Creates a FieldValueHost with a readerRule and adds it to the valueHostsManager.
  * @param valueHostsManager 
  * @param when 
  * @param then 
@@ -112,7 +112,7 @@ function createFieldValueHostWithRule(valueHostsManager: IValueHostsManager,
 {
     let valueHost = valueHostsManager.addValueHost(
         finishPartialFieldValueHostConfig({
-            modelReaderRule: {
+            readerRule: {
                 when: when,
                 then: then
             },
@@ -189,9 +189,9 @@ describe('ModelReader', () =>
             let { valueHost, reader } = setup(model, 'prop1',
                 'unknown', 'unassigned');
             
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule('value1', modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule('value1', readerRule!, valueHost);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
         });
@@ -199,9 +199,9 @@ describe('ModelReader', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'unknown');
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
             expect(result.skip).toBe(true);
             expect(result.value).toBeUndefined();
         });
@@ -210,9 +210,9 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(model.prop1);
         });
@@ -221,9 +221,9 @@ describe('ModelReader', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'null');
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBe(null);
         });
@@ -231,9 +231,9 @@ describe('ModelReader', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'unassigned');
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBeUndefined();
         });
@@ -241,9 +241,9 @@ describe('ModelReader', () =>
         {
             let model = { prop1: null, prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'keep');
-            let modelReaderRule = valueHost.getModelReaderRule();
-            expect(modelReaderRule).toBeDefined();
-            let result = reader.publicify_adjustValueByRule(model.prop1, modelReaderRule!, valueHost);
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
             expect(result.skip).toBe(false);
             expect(result.value).toBeNull();
         });
@@ -320,7 +320,7 @@ describe('ModelReader', () =>
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
             let rule = reader.publicify_getRule(valueHost);
-            expect(rule).toBe(valueHost.getModelReaderRule());
+            expect(rule).toBe(valueHost.getReaderRule());
         });
         test('returns undefined for a valueHost with no rule', () =>
         {
@@ -328,7 +328,7 @@ describe('ModelReader', () =>
             let services = new MockJivsServices(false, false);
             services.valueAdapterService = new ValueAdapterService(); // supplies the standard rules for when and then
             let valueHostsManager = new MockValueHostsManager(services);
-            // not modelReaderRule is set on this valueHost
+            // not readerRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
             let reader = new PublicifyModelReader(valueHostsManager, model);
 
@@ -380,7 +380,7 @@ describe('ModelReader', () =>
                         valueHostType: 'Field',
                         name: 'prop1',
                         dataType: LookupKey.Number,
-                        modelReaderRule: { when: 'null', then: 'skip'}
+                        readerRule: { when: 'null', then: 'skip'}
                     }
                 ],
             };
@@ -425,8 +425,8 @@ describe('ModelReader', () =>
         {
             execute({ }, { alignEnabled: true }, undefined, undefined, 0, 0, false);
         });
-        // property is value of null, which our modelReaderRule will skip, so the valueHost should be disabled
-        test('property is value of null, which our modelReaderRule will skip, so the valueHost should be disabled', () =>
+        // property is value of null, which our readerRule will skip, so the valueHost should be disabled
+        test('property is value of null, which our readerRule will skip, so the valueHost should be disabled', () =>
         {
             execute({ 'prop1': null }, { alignEnabled: true }, undefined, undefined, 0, 0, false);
         });

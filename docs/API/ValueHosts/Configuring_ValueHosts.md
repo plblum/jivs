@@ -52,8 +52,8 @@ builder.field('fieldname', LookupKey.Integer, {
     group?: null | string | string[];
     elementIdentifier?: string | null;
     propertyName?: string;
-    modelReaderRule?: ValueAdapterRule;
-    modelWriterRule?: ValueAdapterRule;
+    readerRule?: ValueAdapterRule;
+    writerRule?: ValueAdapterRule;
 }
 ```
 All parameters and arguments are [discussed below](#configuration-parameters-of-all-valuehosts).
@@ -156,11 +156,11 @@ Here are the arguments and parameters for all `ValueHosts` described above.
     Use `ValueHostsManager.getFieldByElementIdentifier(elementIdentifier)` to retrieve a `FieldValueHost` by its Element Identifier.    
 - `propertyName` – The actual property name on the model. If not supplied, `FieldValueHost.getPropertyName()` will use the `ValueHost` name. 
 
-    Helps mapping between model and `ValueHost`, especially when using the [ModelReader and ModelWriter](../ModelReader_and_ModelWriter/Home.md). `ModelReader` and `ModelWriter` permit _dot notation_ to locate a property of a child, such as "Address.Street1".
+    Helps mapping between model and `ValueHost`, especially when using the [Readers and Writers](../Readers_and_Writers//Home.md). `ModelReader` and `ModelWriter` permit _dot notation_ to locate a property of a child, such as "Address.Street1".
 
     Use `ValueHostsManager.getFieldByPropertyName(propertyName)` to retrieve a `FieldValueHost` by its property name.
-- `modelReaderRule` - Assists the `ModelReader` to adjust values moving from the model to the ValueHost. See [ModelReader](../ModelReader_and_ModelWriter/Home.md).
-- `modelWriterRule` - Assists the `ModelWriter` to adjust values moving from the ValueHost to the model. See [ModelWriter](../ModelReader_and_ModelWriter/Home.md).
+- `readerRule` - Assists the `ModelReader` and other Readers to adjust values moving from an external data source to the ValueHost. See [Readers](../Readers_and_Writers//Home.md).
+- `writerRule` - Assists the `ModelWriter` and other Writers to adjust values moving from the ValueHost to the external data source. See [Writers](../Readers_and_Writers//Home.md).
 ---
 
 ## API References

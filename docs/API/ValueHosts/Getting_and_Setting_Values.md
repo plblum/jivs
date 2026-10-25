@@ -79,7 +79,7 @@ There are 4 functions available.
 Set the native value. Optionally applies a `DataTypeFormatter` and sets the text value from the result.
 
 _Use Cases:_
-- Initializing the `ValueHost` from the native value on your model. [`ModelReader`](../ModelReader_and_ModelWriter/Home.md) uses this.
+- Initializing the `ValueHost` from the native value on your model. [`ModelReader`](../Readers_and_Writers/Home.md) uses this.
 - The editor supplies a native value. Be careful, an HTML input offers a way to get a native date and some other values based on its type attribute. Always use its text value because it lets Jivs detect invalid input errors.
 
 ```ts

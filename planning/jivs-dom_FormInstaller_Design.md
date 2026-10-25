@@ -19,6 +19,7 @@ The normal setup should make connecting Jivs to a form look straightforward:
 2. Create the Rules and `ValueHostsManager`.
 3. Install the form’s DOM behavior.
 4. Load the model.
+5. Establish its initial validation state.
 
 The normal client setup is:
 
@@ -31,7 +32,7 @@ FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
 
 const model = getPerson();
 const reader = new ModelReader(valueHostsManager, model, {});
-reader.read();
+reader.read();  // also establishes initial validation state
 ```
 
 The named `rules` variable keeps the form’s Rules visible without retaining a separate configuration variable.
@@ -1017,7 +1018,7 @@ FormInstaller.install(
 
 const model = getPerson();
 const reader = new ModelReader(valueHostsManager, model, {});
-reader.read();
+reader.read();  // also establishes the initial validation state
 ```
 
 The sequence is:
@@ -1032,3 +1033,4 @@ The sequence is:
 8. Attach validation and selected value-change dispatchers.
 9. Load the initial model.
 10. Allow the attached text-value dispatcher to synchronize formatted values into the installed editors.
+11. Establish the initial validation state

@@ -64,7 +64,7 @@ const reader = new ModelReader(
     {}
 );
 
-reader.read();
+reader.read();  // also establishes initial validation state
 ```
 
 The exact FormInstaller and ElementCollector APIs remain undecided, but the example exposes the underlying work:
@@ -78,6 +78,7 @@ The exact FormInstaller and ElementCollector APIs remain undecided, but the exam
 7. Establish ARIA behavior.
 8. Load the initial values into the `ValueHostsManager`.
 9. Allow those values to reach the editors.
+10. Establish the initial validation state
 
 This is accurate, but it exposes too much infrastructure to the application developer.
 
@@ -140,7 +141,7 @@ new SearchFormInstaller(vhm).install();
 
 const model = getMyModel();
 const reader = new ModelReader(vhm, model, {});
-reader.read();
+reader.read();  // also establishes the initial validatino state
 ```
 
 The form-installation operation can internally coordinate:

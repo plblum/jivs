@@ -17,19 +17,19 @@
  * 
  * # ReaderBase (IReader interface)
  * Native value from external source -> FieldValueHost native value -> (optionally) FieldValueHost text value
- * See {@link jivs-engine/ModelReaderWriter/Types!IReader} for details.
+ * See {@link jivs-engine/ReaderWriter/Types!IReader} for details.
  * 
  * ReaderBase has a rule on each FieldValueHostConfig to determine how to read the data and 
  * convert it to the correct type. Mostly it is used to detect values in the source that represent
  * "unassigned", and to convert them to undefined in the FieldValueHost. 
  * 
- * The rule is assigned to FieldValueHostConfig.modelReaderRule. It is an object with two required string properties: when and then.
+ * The rule is assigned to FieldValueHostConfig.readerRule. It is an object with two required string properties: when and then.
  * 
  * Rules are defined in the ValueAdapterService. 
  * 
  * # WriterBase (IWriter interface)
  * FieldValueHost native value -> Native value on external source
- * See {@link jivs-engine/ModelReaderWriter/Types!IWriter} for details.
+ * See {@link jivs-engine/ReaderWriter/Types!IWriter} for details.
  * 
  * WriterBase has a rule on each FieldValueHostConfig to determine how to write the data and 
  * convert it to the correct type. Mostly it is used to detect values in the FieldValueHost that are undefined
@@ -37,13 +37,13 @@
  * and be used when there are non-undefined values. For example, when 'null' then 'zero' would 
  * convert a null value to 0 in the external source.
  * 
- * The rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
+ * The rule is assigned to FieldValueHostConfig.writerRule. It is an object with two required string properties: when and then.
  * 
  * Rules are defined in the ValueAdapterService.
  * 
  * See {@link jivs-engine/Services/Types/ValueAdapterService} for details.
  * 
- * @module jivs-engine/ModelReaderWriter/Types
+ * @module jivs-engine/ReaderWriter/Types
  */
 
 /**
@@ -140,7 +140,7 @@ export interface ReaderOptions
 
 /**
  * The WriterBase is responsible for writing data from the ValueHostsManager to an external source.
- * It uses the FieldValueHostConfig.modelWriterRule to determine how to write the data and convert it to the correct type.
+ * It uses the FieldValueHostConfig.writerRule to determine how to write the data and convert it to the correct type.
  * If that property is not defined, it uses the default rule: { when: 'undefined', then: 'omit' }.
  * 
  * Actual class is expected to take in services so it has access to the logService,
@@ -162,17 +162,17 @@ export interface ReaderOptions
  * - That value may not be compatible with requirements on the external destination. By default, WriterBase will omit the a value of undefined and keep the rest.
  *   To override that, we provide a rule system. Each rule takes the original value and returns the final value, which could be unchanged or a flag to omit it.
  *   There are several parts here:
- *      + Each rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
+ *      + Each rule is assigned to FieldValueHostConfig.writerRule. It is an object with two required string properties: when and then.
  *          ```ts
  *          {
  *              valueHostName: 'myField',
  *              dataType: LookupKey.Number,
- *              modelWriterRule: { when: 'undefined', then: 'null' }
+ *              writerRule: { when: 'undefined', then: 'null' }
  *          }
  *          ```
  *          Examples:
  *          ```ts
- *          { when: 'undefined', then: 'omit' }        // skip the property when the value is undefined - this is used when modelWriterRule is absent from FieldValueHostConfig
+ *          { when: 'undefined', then: 'omit' }        // skip the property when the value is undefined - this is used when writerRule is absent from FieldValueHostConfig
  *          { when: 'undefined', then: 'null' }          // write null when the value is undefined
  *          { when: 'nullorundefined', then: 'zero' }    // write 0 when the value is null or undefined
  *          { when: 'undefined', then: 'keep' }          // write undefined as-is
@@ -182,7 +182,7 @@ export interface ReaderOptions
  *          - Predefined rules are shown below and registered in the factory.
  *          - Expect the user to create very data specific rules like returning an object with a specific shape or a specific value. Date object is a good example.
  * 
- *      + When modelWriterRule is absent from FieldValueHostConfig, the default applies: { when: 'undefined', then: 'omit' }.
+ *      + When writerRule is absent from FieldValueHostConfig, the default applies: { when: 'undefined', then: 'omit' }.
  * 
  * - No callbacks, DataTypeParsers, nor DataTypeFormatters are used in WriterBase.
  * 

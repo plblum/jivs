@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/ModelReaderWriter/Types
- * @module jivs-engine/ModelReaderWriter/AbstractClasses
+ * @inheritdoc jivs-engine/ReaderWriter/Types
+ * @module jivs-engine/ReaderWriter/AbstractClasses
  */
 
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
@@ -66,9 +66,9 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
     }
 
     /**
-     * Reads the value from the model, applies the rules, and sets it into the specified ValueHost if appropriate.
-     * The model property name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
-     * @param destination The destination ValueHost. It identifies the model property name to read from
+     * Reads the value from the external data, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * The field name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
+     * @param destination The destination ValueHost. It identifies the field name to read from
      * with its FieldValueHostConfig.propertyName. If that is not set, it uses the ValueHostConfig.name.
      * @returns True if the value was successfully read, false otherwise.
      */
@@ -249,18 +249,18 @@ export abstract class ReaderWithRulesBase<TExternalData extends object, TOptions
 
     /**
      * Resolve the rule for adjusting or omitting the value of the field.
-     * This class uses valueHost.getModelReaderRule() to get the rule.
+     * This class uses valueHost.getReaderRule() to get the rule.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
      * Often subclasses are used to avoid the need to setup rules directly in
-     * FieldValueHostConfig.modelReaderRule.
+     * FieldValueHostConfig.readerRule.
      *
      * @param valueHost
      * @returns The rule for the field, or undefined if no rule applies.
      */
     protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
-        return valueHost.getModelReaderRule();
+        return valueHost.getReaderRule();
     }
 
     /**

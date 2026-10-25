@@ -38,7 +38,7 @@
 import { type IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { type IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { type IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { ModelWriter } from '@plblum/jivs-engine/build/ModelReaderWriter/ModelWriter_classes';
+import { ModelWriter } from '@plblum/jivs-engine/build/ReaderWriter/ModelWriter_classes';
 import { encodeHtml } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
 
 /**

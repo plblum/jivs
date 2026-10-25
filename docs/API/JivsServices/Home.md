@@ -67,7 +67,7 @@ interface IJivsServices {
 - `errorMessagesService` - Supports localized strings for error messages, labels, and more. See [ErrorMessagesService](./ErrorMessagesService.md).
 - `loggingService` - Our default logger is often replaced within unit tests to use our [`TestingLoggingService`](https://github.com/plblum/jivs/tree/main/packages/jivs-engine/src/Support/TestingLoggingService.ts). Its minLevel is often adjusted to one of these values: Debug, Info, Warn, Error, both in unit tests and `createJivsServices()` function. See [Logging](./Logging.md)
 - `lookupKeyFallbackService` - When you create a new [Lookup Key](../Data_Type_Support/Home.md#lookup-keys), update this to give it a fallback Lookup Key that will deliver existing parsers and formatters to your Lookup Key. See [LookupKeyFallbackService](LookupKeyFallbackService.md).
-- `valueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../ModelReader_and_ModelWriter/Home.md#value-adapter-rules).
+- `valueAdapterService` - Supports `ModelReader`, `DictionaryReader`, `FormReader`, and `ModelWriter` to adapt the value between the external system and the ValueHost. See [ValueAdapterService](../Readers_and_Writers//Home.md#value-adapter-rules).
 - `dataTypeCheckGeneratorService`: Give your own [Lookup Keys](../Data_Type_Support/Home.md#lookup-keys) the ability to auto generate Data Type Check Validators. See [Data Type Check Validators](../Validators/DataTypeCheck_validators.md).
 
 ### Factories where its common to register objects

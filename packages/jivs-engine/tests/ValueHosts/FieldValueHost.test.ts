@@ -2347,11 +2347,11 @@ describe('toIFieldValueHost function', () => {
         getPropertyName(): string {
             return this.getName();
         }        
-        getModelReaderRule(): ValueAdapterRule | undefined
+        getReaderRule(): ValueAdapterRule | undefined
         {
             throw new Error('Method not implemented.');
         }
-        getModelWriterRule(): ValueAdapterRule | undefined
+        getWriterRule(): ValueAdapterRule | undefined
         {
             throw new Error('Method not implemented.');
         }

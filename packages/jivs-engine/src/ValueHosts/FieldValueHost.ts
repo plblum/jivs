@@ -534,18 +534,20 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         return this.config.propertyName ?? this.getName();
     }    
     /**
-     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports external data Readers to get the rule for how to handle unassigned values in the external source.
+     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ReaderWithRulesBase
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    public getModelReaderRule(): ValueAdapterRule | undefined {
-        return this.config.modelReaderRule;
+    public getReaderRule(): ValueAdapterRule | undefined {
+        return this.config.readerRule;
     }
     /**
-     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports external data Writers to get the rule for how to handle the native value when writing to the external source.
+     * Supported by ModelWriter and other subclasses of WriterBase.
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    public getModelWriterRule(): ValueAdapterRule | undefined {
-        return this.config.modelWriterRule;
+    public getWriterRule(): ValueAdapterRule | undefined {
+        return this.config.writerRule;
     }
 
     /**

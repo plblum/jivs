@@ -147,15 +147,18 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
     getPropertyName(): string;      
     
     /**
-     * Used with the ModelReader feature to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports external data Readers to get the rule for how to handle unassigned values in the external source.
+     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ReaderWithRulesBase
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    getModelReaderRule(): ValueAdapterRule | undefined;
+    getReaderRule(): ValueAdapterRule | undefined;
+
     /**
-     * Used with the ModelWriter feature to determine how to handle the native value when writing to the model.
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports external data Writers to get the rule for how to handle the native value when writing to the external source.
+     * Supported by ModelWriter and other subclasses of WriterBase
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    getModelWriterRule(): ValueAdapterRule | undefined;
+    getWriterRule(): ValueAdapterRule | undefined;
 
     /**
      * Identifies the input element in the UI that is associated with this FieldValueHost by either
@@ -285,15 +288,17 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
     propertyName?: string;    
 
     /**
-     * Supports the ModelReader to determine how to handle unassigned values in the model source.
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports external data Readers to determine how to handle unassigned values in the external source.
+     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ReaderWithRulesBase
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    modelReaderRule?: ValueAdapterRule;
+    readerRule?: ValueAdapterRule;
     /**
-     * Supports the ModelWriter to determine how to handle the native value when writing to the model. 
-     * See {@link jivs-engine/ModelReaderWriter/Types} for details.
+     * Supports the external data Writers to determine how to handle the native value when writing to the model. 
+     * Supported by ModelWriter and other WriterBase subclasses.
+     * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
-    modelWriterRule?: ValueAdapterRule;    
+    writerRule?: ValueAdapterRule;    
 
     /**
      * When provided, this is used to identify the input element in the UI that is associated with this FieldValueHost.

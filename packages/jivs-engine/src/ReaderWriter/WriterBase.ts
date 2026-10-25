@@ -1,6 +1,6 @@
 /**
- * @inheritdoc jivs-engine/ModelReaderWriter/Types
- * @module jivs-engine/ModelReaderWriter/AbstractClasses
+ * @inheritdoc jivs-engine/ReaderWriter/Types
+ * @module jivs-engine/ReaderWriter/AbstractClasses
  * 
  */
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
@@ -14,7 +14,7 @@ import { ReaderWriterBase } from './ReaderWriterBase';
 /**
  * Base class for writers. Reads from the ValueHosts and writes to the external data's fields.
  *
- * See {@link jivs-engine/ModelReaderWriter/Types!IWriter} for details.
+ * See {@link jivs-engine/ReaderWriter/Types!IWriter} for details.
  *
  * - Supports objects and arrays as the model.
  * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when writing to the external data.
@@ -106,18 +106,18 @@ export abstract class WriterBase<TExternalData extends object>
 
     /**
      * Resolve the rule for adjusting or omitting the field value.
-     * This class uses valueHost.getModelWriterRule() to get the rule for the field.
+     * This class uses valueHost.getWriterRule() to get the rule for the field.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
      * Often subclasses are used to avoid the need to setup rules directly in
-     * FieldValueHostConfig.modelWriterRule.
+     * FieldValueHostConfig.writerRule.
      *
      * @param valueHost
      * @returns The rule for the field, or undefined if no rule applies.
      */
     protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
-        return valueHost.getModelWriterRule();
+        return valueHost.getWriterRule();
     }
 
 

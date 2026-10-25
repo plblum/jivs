@@ -8,7 +8,7 @@
 - [JivsServices](./JivsServices/Home.md)
 - [ValueHost Rules](./ValueHost_Rules/Home.md)
 - [Builder API](../ValueHostsManager_Configuration_Guide.md)
-- [ModelReader and ModelWriter](./ModelReader_and_ModelWriter/Home.md)
+- [Readers and Writers](./Readers_and_Writers//Home.md)
 - [ValidationState and IssueFound](./Validators/Validation_State.md)
 
 **Additional topics**

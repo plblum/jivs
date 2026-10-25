@@ -374,8 +374,8 @@ export class JivsServices extends Services implements IJivsServices
     //#region ValueAdapterService
     /**
      * Service for adapting values between two systems: the external source (such as a model) and the ValueHost.
-     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.modelReaderRule property
-     * and the ModelWriter with the FieldValueHostConfig.modelWriterRule property.
+     * The FieldValueHost supports the ModelReader with the FieldValueHostConfig.readerRule property
+     * and the ModelWriter with the FieldValueHostConfig.writerRule property.
      */
     public get valueAdapterService(): IValueAdapterService
     {

@@ -48,14 +48,14 @@ reader.read();
 ```ts
 builder.field('FirstName', LookupKey.String, {
     propertyName: 'firstName',
-    modelReaderRule: {
+    readerRule: {
         when: 'null',
         then: 'emptystring'
     }
 });
 ```
 
-`ModelReader` now knows that the `FieldValueHost` named `FirstName` receives its initial Native Value from `person.firstName`. The `modelReaderRule` configuration also converts a `null` value to an empty string.
+`ModelReader` now knows that the `FieldValueHost` named `FirstName` receives its initial Native Value from `person.firstName`. The `readerRule` configuration also converts a `null` value to an empty string.
 
 The same `propertyName` mapping is later used by `ModelWriter` when building a Model for submission.
 
