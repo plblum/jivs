@@ -12,7 +12,7 @@ import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
 import type { IValidatableValueHost, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
-import { type IssueFound, type ValidateOptions, ValidationState } from '../Interfaces/Validation';
+import { type IssueFound, type ValidateOptions, ValidationState, ValidationStatus } from '../Interfaces/Validation';
 import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
@@ -675,7 +675,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         if (!options)
             options = {};
 
-        for (const vh of this.validatableValueHost()) {
+        for (const vh of this.validatableValueHost())
+        {
+            // preliminary is looking for value hosts that have yet to be validated
+            // Within FieldValueHost, it will also ignore the required validators.
+            if (options.preliminary &&
+                vh.validationStatus !== ValidationStatus.NotAttempted && vh.validationStatus !== ValidationStatus.NeedsValidation)
+                continue;
             vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
         const snapshot = this.createValidationState(options);

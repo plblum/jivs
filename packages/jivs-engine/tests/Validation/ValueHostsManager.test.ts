@@ -2164,6 +2164,69 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
 
         expect(setup.valueHostsManager.getIssuesFound()).toEqual([expectedIssueFound]);
     });
+    test('Preliminary=true validates a fieldValueHost that is NotAttempted', () => {
+        let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValueHostsManager([config]);
+        let fvh = setup.valueHostsManager.getValueHost('Field1')! as IFieldValueHost;
+        expect(fvh.validationStatus).toBe(ValidationStatus.NotAttempted);
+
+        let validationState = setup.valueHostsManager.validate({ preliminary: true });
+
+        expect(fvh.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(validationState.isValid).toBe(false);
+        expect(validationState.issuesFound!.length).toBe(1);
+    });
+    test('Preliminary=true validates a fieldValueHost that is NeedsValidation, as left by setValue with validate false', () => {
+        let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
+        let setup = setupValueHostsManager([config]);
+        let fvh = setup.valueHostsManager.getValueHost('Field1')! as IFieldValueHost;
+        fvh.setValue('abc', { validate: false });
+        expect(fvh.validationStatus).toBe(ValidationStatus.NeedsValidation);
+
+        let validationState = setup.valueHostsManager.validate({ preliminary: true });
+
+        expect(fvh.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(validationState.isValid).toBe(false);
+    });
+    test('Preliminary=true skips fieldValueHosts that were already validated, keeping their results', () => {
+        let configValid = setupFieldValueHostConfig(0, [AlwaysMatchesConditionType]);
+        let configInvalid = setupFieldValueHostConfig(1, [NeverMatchesConditionType]);
+        let setup = setupValueHostsManager([configValid, configInvalid]);
+        let fvhValid = setup.valueHostsManager.getValueHost('Field1')! as IFieldValueHost;
+        let fvhInvalid = setup.valueHostsManager.getValueHost('Field2')! as IFieldValueHost;
+        setup.valueHostsManager.validate();
+        expect(fvhValid.validationStatus).toBe(ValidationStatus.Valid);
+        expect(fvhInvalid.validationStatus).toBe(ValidationStatus.Invalid);
+        let validated: string[] = [];
+        for (let fvh of [fvhValid, fvhInvalid])
+        {
+            let original = fvh.validate.bind(fvh);
+            fvh.validate = (options) => { validated.push(fvh.getName()); return original(options); };
+        }
+
+        let validationState = setup.valueHostsManager.validate({ preliminary: true });
+
+        expect(validated).toEqual([]);
+        expect(fvhValid.validationStatus).toBe(ValidationStatus.Valid);
+        expect(fvhInvalid.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(validationState.isValid).toBe(false);
+        expect(validationState.issuesFound!.length).toBe(1);
+    });
+    test('Preliminary=true validates only the fieldValueHosts that are NotAttempted or NeedsValidation in a mix', () => {
+        let configDone = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
+        let configPending = setupFieldValueHostConfig(1, [NeverMatchesConditionType]);
+        let setup = setupValueHostsManager([configDone, configPending]);
+        let fvhDone = setup.valueHostsManager.getValueHost('Field1')! as IFieldValueHost;
+        let fvhPending = setup.valueHostsManager.getValueHost('Field2')! as IFieldValueHost;
+        fvhDone.validate();
+        fvhPending.setValue('abc', { validate: false });
+
+        setup.valueHostsManager.validate({ preliminary: true });
+
+        expect(fvhDone.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(fvhPending.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHostsManager.getIssuesFound()!.length).toBe(2);
+    });
     test('With 1 fieldValueHost and a condition that will evaluate as NoMatch during Edit, use option DuringEdit=true, expect Invalid', () => {
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
         let setup = setupValueHostsManager([config]);
