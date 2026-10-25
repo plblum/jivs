@@ -6,33 +6,33 @@
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost, FieldValueHostSetValueOptions } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggingService';
-import { IModelReader, ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
+import { IReader, ReaderOptions } from '../Interfaces/ReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { assertNotNull } from '../Utilities/ErrorHandling';
 import { FieldValueHost } from '../ValueHosts/FieldValueHost';
-import { ModelReaderWriterBase } from './ModelReaderWriterBase';
+import { ReaderWriterBase } from './ReaderWriterBase';
 
 /**
- * Base class for model readers. It reads from the model's properties and writes
+ * Base class for readers. It reads from the external data source's fields and writes them
  * to the ValueHosts.
- *
- * - Supports objects and arrays as the model.
- * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when reading from the model.
- * - Uses the ObjectFinder to find the value of a model property using a path syntax.
+ * At this level, it does not incorporate any of the ValueAdapterService rules.
+ * 
+ * @typeParam TExternalData - The type of the external data. It can be an object/model, dictionary, or a class that hosts data.
+ * @typeParam TOptions - The type of the reader options.
  */
 
-export abstract class ModelReaderBase<T extends object, TOptions extends ModelReaderOptions = ModelReaderOptions>
-    extends ModelReaderWriterBase<T>
-    implements IModelReader
+export abstract class ReaderBase<TExternalData extends object, TOptions extends ReaderOptions = ReaderOptions>
+    extends ReaderWriterBase<TExternalData>
+    implements IReader
 {
     /**
      *
      * @param valueHostsManager - The manager for the ValueHosts.
-     * @param model - The model object to be read.
+     * @param externalData - The external data source from which to read.
      */
-    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
+    constructor(valueHostsManager: IValueHostsManager, externalData: TExternalData, options?: TOptions)
     {
-        super(valueHostsManager, model);
+        super(valueHostsManager, externalData);
         this._options = options ?? {} as TOptions;
     }
 
@@ -43,20 +43,10 @@ export abstract class ModelReaderBase<T extends object, TOptions extends ModelRe
     private _options: TOptions;
 
     /**
-     * Reads all values from the model into the corresponding ValueHosts.
+     * Reads all values from the external data into the corresponding ValueHosts.
      * 
      * Loops through all ValueHosts to determine their values.
-     * If the model has a value, it is assigned to the ValueHost.
-     * Any value is run through the rule on FieldValueHostsConfig.modelReaderRule
-     * to determine if the value should be modified or treated as unassigned.
-     * All conversions are logged in debug level.
-     * Any errors are logged in error level.
-     *
-     * Designed for subclasses to customize in the following ways:
-     *   * 1. Override getModelPropertyValue to provide a value for the model property and
-     *      any rule that applies to it. The default returns model[modelPropertyName].
-     *   * 2. Override getRule to provide a rule for the model property that supersedes the
-     *      FieldValueHostConfig.modelReaderRule. The default returns valueHost.getModelReaderRule().
+     * If the external data has an associated field with a value, it is assigned to the ValueHost.
      * 
      * The option.preliminaryValidation controls whether validation is invoked on all fields after reading.
      * It defaults to true if not specified.
@@ -85,76 +75,83 @@ export abstract class ModelReaderBase<T extends object, TOptions extends ModelRe
     protected abstract readOne(destination: IFieldValueHost): boolean;
 }
 
-export abstract class RealModelReaderBase<T extends object, TOptions extends ModelReaderOptions = ModelReaderOptions> extends ModelReaderBase<T, TOptions>
+/**
+ * Expands the ReaderBase to support ValueAdapterService rules.
+ * The ValueAdapterService determines if a value should be adjusted or skipped before being set into the ValueHost.
+ * 
+ * @type TExternalData The type of the external data object that the reader will process.
+ * @type TOptions The type of the reader options.
+ */
+export abstract class ReaderWithRulesBase<TExternalData extends object, TOptions extends ReaderOptions = ReaderOptions> extends ReaderBase<TExternalData, TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
+    constructor(valueHostsManager: IValueHostsManager, model: TExternalData, options?: TOptions)
     {
         super(valueHostsManager, model, options);
     }
 
     protected override readOne(destination: IFieldValueHost): boolean
     {
-        return this.readFromProperty(destination);
+        return this.readField(destination);
     }
-    
+
     /**
-     * Reads the value from the model, applies the rules, and sets it into the specified ValueHost if appropriate.
-     * The model property name is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
-     * @param destination The destination ValueHost. It identifies the model property name to read from
+     * Reads the value from the external data, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * The external data's field is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
+     * @param destination The destination ValueHost. It identifies the field name to read from
      * with its FieldValueHostConfig.propertyName. If that is not set, it uses the ValueHostConfig.name.
      * @returns True if the value was successfully read, false otherwise.
      */
-    public readFromProperty(destination: IFieldValueHost): boolean;
+    public readField(destination: IFieldValueHost): boolean;
     /**
-     * Reads the value of a specified model property, applies the rules, and sets it into the specified ValueHost if appropriate.
-     * @param modelPropertyName The name of the model property to read.
+     * Reads the value of a specified external data field, applies the rules, and sets it into the specified ValueHost if appropriate.
+     * @param fieldName The name of the external data field to read.
      * @param destination The destination ValueHost.
      * @returns True if the value was successfully read, false otherwise.
      */
-    public readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean;
+    public readField(fieldName: string, destination: IFieldValueHost): boolean;
 
-    public readFromProperty(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
+    public readField(arg1: string | IFieldValueHost, arg2?: IFieldValueHost): boolean
     {
-        let modelPropertyName: string;
+        let fieldName: string;
         let destination: IFieldValueHost;
         if (typeof arg1 === "string")
         {
-            modelPropertyName = arg1;
+            fieldName = arg1;
             destination = arg2 as IFieldValueHost;
 
         } else
         {
             destination = arg1 as IFieldValueHost;
-            modelPropertyName = destination.getPropertyName();
-            if (!modelPropertyName)
+            fieldName = destination.getPropertyName();
+            if (!fieldName)
                 return false; // very unlikely since its value defaults to ValueHostConfig.name. So we don't waste code logging
         }
 
         let valueHostName = destination.getName();
-        this.logger.message(LoggingLevel.Debug, () => `Reading model property '${ modelPropertyName }' for ValueHost '${ valueHostName }'.`);
+        this.logger.message(LoggingLevel.Debug, () => `Reading field '${ fieldName }' for ValueHost '${ valueHostName }'.`);
 
-        let modelPropertyResult = this.tryGetValueFromModel(modelPropertyName, destination);
+        let modelPropertyResult = this.tryGetFieldValue(fieldName, destination);
         if (modelPropertyResult.skip)
         {
-            this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' does not exist in the model. ValueHost '${ destination.getName() }' will be treated as unassigned.`);
+            this.logger.message(LoggingLevel.Warn, () => `Field '${ fieldName }' does not exist in the source data. ValueHost '${ destination.getName() }' will be treated as unassigned.`);
             if (this.options.alignEnabled)
                 destination.setEnabled(false);
             return false;
         }
-        return this.setValueWithRule(modelPropertyName, modelPropertyResult.value, destination);
+        return this.setValueWithRule(fieldName, modelPropertyResult.value, destination);
     }
 
     /**
-     * Sets the value of a model property into a specified ValueHost.
+     * Sets the value of a field into a specified ValueHost.
      * It applies the rules supporting adjustments or skipping the value, and calling ValueHost.setValue if appropriate.
-     * It is up to the caller to resolve the model property value.
+     * It is up to the caller to resolve the field value.
      * 
-     * @param modelPropertyName The name of the model property.
-     * @param modelPropertyValue The value of the model property.
+     * @param fieldName The name of the field.
+     * @param fieldValue The value of the field.
      * @param destination The destination ValueHost or its name.
      * @returns True if the value was successfully set, false otherwise.
      */
-    public setValueWithRule(modelPropertyName: string, modelPropertyValue: any, destination: IFieldValueHost | string): boolean
+    public setValueWithRule(fieldName: string, fieldValue: any, destination: IFieldValueHost | string): boolean
     {
         let valueHost: IFieldValueHost;
         if (typeof destination === "string")
@@ -162,7 +159,7 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
             valueHost = this.valueHostsManager.getFieldValueHost(destination)!;
             if (!valueHost)
             {
-                this.logger.message(LoggingLevel.Error, () => `Cannot find ValueHost '${ destination }' to assign model property '${ modelPropertyName }' value.`);
+                this.logger.message(LoggingLevel.Error, () => `Cannot find ValueHost '${ destination }' to assign field '${ fieldName }' value.`);
                 return false;
             }
         }
@@ -174,20 +171,20 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
         let rule = this.getRule(valueHost);
         if (rule)
         {
-            let result = this.adjustValueByRule(modelPropertyValue, rule, valueHost);
+            let result = this.adjustValueByRule(fieldValue, rule, valueHost);
             if (result.skip)
             {
                 if (this.options.alignEnabled)
                     valueHost.setEnabled(false);
                 return false;
             }
-            modelPropertyValue = result.value;
+            fieldValue = result.value;
         }
 
-        // special case: if the model property is undefined and there is no rule, we take no action
-        else if (rule === undefined && modelPropertyValue === undefined)
+        // special case: if the field value is undefined and there is no rule, we take no action
+        else if (rule === undefined && fieldValue === undefined)
         {
-            this.logger.message(LoggingLevel.Warn, () => `Model property '${ modelPropertyName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
+            this.logger.message(LoggingLevel.Warn, () => `Field '${ fieldName }' value is undefined and no rule to handle it. No change to the ValueHost '${ valueHostName }'.`);
             if (this.options.alignEnabled)
                 valueHost.setEnabled(false);
             return false;
@@ -195,16 +192,16 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
 
         // we have a value to assign.
         let setValueOptions = this.getSetValueOptions();
-        if (modelPropertyValue !== undefined)
+        if (fieldValue !== undefined)
         {
-            this.setValueIntoValueHost(valueHost, modelPropertyValue, setValueOptions);
-            this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value assigned to ValueHost '${ valueHostName }'.`);
+            this.setValueIntoValueHost(valueHost, fieldValue, setValueOptions);
+            this.logger.message(LoggingLevel.Info, () => `Field '${ fieldName }' value assigned to ValueHost '${ valueHostName }'.`);
         }
 
         else
         {
             valueHost.setValueToUndefined(setValueOptions);
-            this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value of undefined will be assigned to ValueHost '${ valueHostName }'.`);
+            this.logger.message(LoggingLevel.Info, () => `Field '${ fieldName }' value of undefined will be assigned to ValueHost '${ valueHostName }'.`);
         }
         if (this.options.alignEnabled)
             valueHost.setEnabled(true);
@@ -212,8 +209,8 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
     }
 
     /**
-     * Resolve the value of the model property and any rule that applies to it.
-     * This class uses model[modelPropertyName] to get the value.
+     * Resolve the field value and any rule that applies to it.
+     * This class uses the objectFinderService to locate the field value in the source data.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
      * While data adjustment is permitted, you could use the rules of the ValueAdapterService instead to handle that.
@@ -224,34 +221,34 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
      *
      * The syntax can be reworked by implementing IObjectFinderService.
      *
-     * @param modelPropertyName
+     * @param fieldName
      * @param valueHost
-     * @returns The value of the model property or skip: true if the property does not exist in the model.
+     * @returns The value of the field or skip: true if the property does not exist in the model.
      */
-    protected tryGetValueFromModel(modelPropertyName: string, valueHost: IFieldValueHost):
+    protected tryGetFieldValue(fieldName: string, valueHost: IFieldValueHost):
         {
             skip?: boolean;
             value?: any;
         }
     {
-        let result = this.services.objectFinderService.find(this.model, modelPropertyName);
+        let result = this.services.objectFinderService.find(this.externalData, fieldName);
         if (result.object === undefined)
         {
-            this.logger.message(LoggingLevel.Warn, () => `Cannot resolve this '${ modelPropertyName }' against the model.`);
+            this.logger.message(LoggingLevel.Warn, () => `Cannot find a field named '${ fieldName }' in the source data.`);
             return { skip: true };
         }
         assertNotNull(result.propertyName, 'result.propertyName');
         // 'in' checks both own properties and the prototype chain (for class instances)
         if (!(result.propertyName! in result.object))
         {
-            this.logger.message(LoggingLevel.Warn, () => `Model property '${ result.propertyName }' does not exist in the model. ValueHost '${ valueHost.getName() }' will be treated as unassigned.`);
+            this.logger.message(LoggingLevel.Warn, () => `Field '${ result.propertyName }' does not exist in the source data. ValueHost '${ valueHost.getName() }' will be treated as unassigned.`);
             return { skip: true };
         }
-        return { skip: false, value: (result.object as any)[result.propertyName!] };
+        return { skip: false, value: (result.object as any)[result.propertyName!] }; // Field value retrieved successfully
     }
 
     /**
-     * Resolve the rule for adjusting or omitting the value of the model property.
+     * Resolve the rule for adjusting or omitting the value of the field.
      * This class uses valueHost.getModelReaderRule() to get the rule.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
@@ -259,7 +256,7 @@ export abstract class RealModelReaderBase<T extends object, TOptions extends Mod
      * FieldValueHostConfig.modelReaderRule.
      *
      * @param valueHost
-     * @returns The rule for the model property, or undefined if no rule applies.
+     * @returns The rule for the field, or undefined if no rule applies.
      */
     protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {

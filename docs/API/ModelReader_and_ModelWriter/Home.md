@@ -47,7 +47,7 @@ reader.read();  // data is now in the ValueHosts
 
 let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
 let writer = new ModelWriter(vhm, model);
-writer.writeToModel(); // your model is updated
+writer.write(); // your model is updated
 saveMyModel(model); // your code
 ```
 
@@ -59,24 +59,24 @@ vhm.onTextValueChanged = myFunctionToUpdateInputs;
 
 ## Available operations on ModelReader, DictionaryReader, and FormReader
 - `read()` - Copies values into all `FieldValueHosts`. Will not read properties for which there is no `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
-- `readFromProperty(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
+- `readField(destination: IFieldValueHost): boolean` - Handles a single `FieldValueHost`, reading the data from the model property identified in its configuration,
   and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the `ValueHost`. Will skip when the rule indicates.
-- `readFromProperty(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
+- `readField(modelPropertyName: string, destination: IFieldValueHost): boolean` - Supply the property name directly instead of depending on the `ValueHost` configuration.  
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeToProperty('property1', vhm.vh.field('field1'));
-    writer.writeToProperty('property2', vhm.vh.field('field2'));
+    writer.writeField('property1', vhm.vh.field('field1'));
+    writer.writeField('property2', vhm.vh.field('field2'));
     ```
 ## Available operations on ModelWriter
-- `writeToModel()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
-- `writeToProperty(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
+- `write()` - Copies values into all model properties with a corresponding `FieldValueHost`. Will skip when the [Value Adapter Rule](#value-adapter-rules) indicates.
+- `writeField(source: IFieldValueHost, modelPropertyName?: string): boolean` - Handles a single `FieldValueHost`, reading from the ValueHost
   and applying its [Value Adapter Rules](#value-adapter-rules) before setting it in the model. Will skip when the rule indicates.
     ```ts
     let model = new MyModel(); // or use an existing one. Doesn't matter. Just know its properties will be overwritten where a FieldValueHost is setup
     let writer = new ModelWriter(vhm, model);
-    writer.writeToProperty(vhm.vh.field('field1'), 'property1');
-    writer.writeToProperty(vhm.vh.field('field2'), 'property2');
+    writer.writeField(vhm.vh.field('field1'), 'property1');
+    writer.writeField(vhm.vh.field('field2'), 'property2');
     ```
 ## Getting the form data into FormReader
 `FormReader` is a variation of `ModelReader` that expects its data to be a dictionary of strings taken from an HTTP form. It delivers those string values through each `FieldValueHost.setTextValue()`, instead of `setValue`. It uses a parser to convert the text value into the native value.
@@ -223,7 +223,7 @@ Register in the service:
 jivsServices.valueAdapterService.registerThenFunction('year2000', replaceWithYear2000);
 ```
 ## API References
-- [ModelReaderWriterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_AbstractClasses.ModelReaderWriterBase.html)
+- [ReaderWriterBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_AbstractClasses.ReaderWriterBase.html)
 - [ModelReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.ModelReader.html)
 - [DictionaryReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.DictionaryReader.html)
 - [FormReader class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ModelReaderWriter_ConcreteClasses.FormReader.html)

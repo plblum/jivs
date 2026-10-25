@@ -5,37 +5,39 @@
  * Jivs provides a way to encapsulate this knowledge into classes, one to read from external source
  * and the other two write to it.
  * 
- * IModelReader: from external source to ValueHostsManager
- * IModelWriter: from ValueHostsManager to external source
+ * IReader: from external source to ValueHostsManager
+ * IWriter: from ValueHostsManager to external source
  * 
- * Core classes provide tooling for going through the fields of a model and converting them to the correct type. This is done by using a ModelReader and ModelWriter to read and write the data.
- * Special cases are handled by subclassing the ModelReader and ModelWriter and overriding the methods for the special cases.
+ * Core classes provide tooling for going through the fields of a model or other data holder and converting them to the correct type. 
+ * This is done by using a Reader and Writer to read and write the data.
+ * The base Reader and Writer classes handle the common functionality, while the subclasses handle the shape of the external data.
+ * - ModelReader/Writer - handle the reading and writing of model data to and from ValueHostsManager.
+ * - DictionaryReader/Writer - handle the reading and writing of dictionary data to and from ValueHostsManager.
+ * - FormReader - handle the reading HTML form data passed into the server side validation phase from an HTTP post request.
  * 
- * A premise: external data does not have a predefined shape at the base class level. Subclasses implement types for object (model)
- * and dictionary (map) types. The base class implements the common functionality for reading and writing data.
- * To work, the transfer methods do not take or return the external object. Instead, the constructor of the ModelReader and ModelWriter takes the external object and stores it in a private field. The transfer methods then read and write to this private field.
+ * # ReaderBase (IReader interface)
+ * Native value from external source -> FieldValueHost native value -> (optionally) FieldValueHost text value
+ * See {@link jivs-engine/ModelReaderWriter/Types!IReader} for details.
  * 
- * # ModelReader (IModelReader interface)
- * Native value on model -> FieldValueHost native value -> (optionally) FieldValueHost text value
- * See {@link jivs-engine/ModelReaderWriter/Types!IModelReader} for details.
- * 
- * ModelReader has a rule on each FieldValueHostConfig to determine how to read the data and 
+ * ReaderBase has a rule on each FieldValueHostConfig to determine how to read the data and 
  * convert it to the correct type. Mostly it is used to detect values in the source that represent
  * "unassigned", and to convert them to undefined in the FieldValueHost. 
  * 
- * The rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
+ * The rule is assigned to FieldValueHostConfig.modelReaderRule. It is an object with two required string properties: when and then.
  * 
  * Rules are defined in the ValueAdapterService. 
  * 
- * # ModelWriter (IModelWriter interface)
- * FieldValueHost native value -> Native value on model
- * See {@link jivs-engine/ModelReaderWriter/Types!IModelWriter} for details.
+ * # WriterBase (IWriter interface)
+ * FieldValueHost native value -> Native value on external source
+ * See {@link jivs-engine/ModelReaderWriter/Types!IWriter} for details.
  * 
- * ModelWriter has a rule on each FieldValueHostConfig to determine how to write the data and 
+ * WriterBase has a rule on each FieldValueHostConfig to determine how to write the data and 
  * convert it to the correct type. Mostly it is used to detect values in the FieldValueHost that are undefined
- * and give them the correct representation in the model. However, it can create other values
+ * and give them the correct representation in the external source. However, it can create other values
  * and be used when there are non-undefined values. For example, when 'null' then 'zero' would 
- * convert a null value to 0 in the model.
+ * convert a null value to 0 in the external source.
+ * 
+ * The rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
  * 
  * Rules are defined in the ValueAdapterService.
  * 
@@ -45,19 +47,17 @@
  */
 
 /**
- * The ModelReader is responsible for reading data from an external source and populating the ValueHostsManager with the data. 
+ * The Reader is responsible for reading data from an external source and populating the ValueHostsManager with the data. 
  * It uses the FieldValueHostConfig to determine how to read the data and convert it to the correct type.
  * In particular, dataType to ensure the value is converted to the correct type.
  * 
  * Actual class is expected to take in services so it has access to the logService,
- * and an instance of the external object to read from.
+ * and an instance of the external source to read from.
  * 
- * constructor(services: JivsServices, externalObject: any)
- * 
- * Expected implementations are ObjectModelReader and DictionaryModelReader.
+ * constructor(valueHostsManager: IValueHostsManager, externalSource: TSource)
  * 
  * Implementation:
- * - ModelReader only reads fields defined as FieldValueHosts in ValueHostsManager. 
+ * - ReaderBase only reads fields defined as FieldValueHosts in ValueHostsManager. 
  * 
  * - It uses the FieldValueHost.getPropertyName() function to resolve the name of the field in the external object. If the field is not found, it is ignored.
  *   getPropertyName uses the FieldValueHostConfig.propertyName if defined, otherwise it uses the FieldValueHost.name.
@@ -67,8 +67,8 @@
  *      + The FieldValueHostConfig must be setup to identify a lookup key for a DataTypeFormatter. It gets the lookup key from formatterLookupKey and dataType as a fallback.
  *      + DataTypeFormatterService must support that lookup key.
  *      + There are several switches to opt out: behaviors.disableFormattingOnValueChange, formatterLookupKey = null, and the setValueOption.disableFormatter.
- *        Since ModelReader calls setValue internally, it hides the setValueOption.disableFormatter from the caller.
- *        Instead, ModelReader has a property disableFormattingOnValueChange that can be set to true to disable formatting on value change.
+ *        Since ReaderBase calls setValue internally, it hides the setValueOption.disableFormatter from the caller.
+ *        Instead, ReaderBase has a property disableFormattingOnValueChange that can be set to true to disable formatting on value change.
  * 
  * - Values of the external object may be converted to the correct type using the DataTypeConversionService.
  * 
@@ -76,7 +76,7 @@
  *   we are providing initial population of the ValueHostsManager. The UI that wires up onTextValueChanged prior to running the reader will
  *   get their callback invoked. If wired up to update the input element, it will replace the current value. That may be what we want.
  *   So its up to the user to decide if the callback is used. Using setValue(value, { skipValueChangedCallback: true }) will suppress the callback. However, 
- *   setValueOptions are not exposed to the ModelReader. Instead, ModelReader has a property skipValueChangedCallback that can be set to true to suppress the callback.
+ *   setValueOptions are not exposed to the ReaderBase. Instead, ReaderBase has a property skipValueChangedCallback that can be set to true to suppress the callback.
  * 
  * - If a model property value = undefined, the associated ValueHost gets setValueToUndefined(). No callbacks will happen.
  * 
@@ -85,7 +85,7 @@
  * 
  * - Logging from LogService is used to track the writing of each field. Most logging is debug level, but errors are logged as errors.
  */
-export interface IModelReader
+export interface IReader
 {
     /**
      * Reads the data from the external source and populates the ValueHostsManager with the data.
@@ -94,15 +94,15 @@ export interface IModelReader
      * It writes to the log for each field read, and logs errors if any occur.
      * Invalid values are handled by the DataTypeFormatterService and the error message is injected into the ValueHost using InjectedError.
      * They do not throw errors, but log them and continue reading the rest of the fields.
-     * @param options The options controlling how the ModelReader interacts with the ValueHostsManager.
+     * @param options The options controlling how the Reader interacts with the ValueHostsManager.
      */
     read(): void;
 }
 
 /**
- * Configures options for the ModelReader, controlling how it interacts with ValueHostsManager during the reading process.
+ * Configures options for the ReaderBase, controlling how it interacts with ValueHostsManager during the reading process.
  */
-export interface ModelReaderOptions
+export interface ReaderOptions
 {
     /**
      * Once finished, invoke validation on all fields using the preliminary option.
@@ -139,29 +139,27 @@ export interface ModelReaderOptions
 }
 
 /**
- * The ModelWriter is responsible for writing data from the ValueHostsManager to an external source.
+ * The WriterBase is responsible for writing data from the ValueHostsManager to an external source.
  * It uses the FieldValueHostConfig.modelWriterRule to determine how to write the data and convert it to the correct type.
  * If that property is not defined, it uses the default rule: { when: 'undefined', then: 'omit' }.
  * 
  * Actual class is expected to take in services so it has access to the logService,
  * and an instance of the external object to write to.
- * The instance can be prepopulated with data, and the ModelWriter will update the fields that are defined as FieldValueHosts in the ValueHostsManager.
+ * The instance can be prepopulated with data, and the WriterBase will update the fields that are defined as FieldValueHosts in the ValueHostsManager.
  * 
- * constructor(services: JivsServices, externalObject: any)
- * 
- * Expected implementations are ObjectModelWriter and DictionaryModelWriter.
+ * constructor(valueHostsManager: IValueHostsManager, externalDestination: TDestination)
  * 
  * Implementation:
  * - Writing does not use the text value in any way. It only uses the native value. The text value is only used for display purposes.
  * 
- * - ModelWriter only writes fields defined as FieldValueHosts in ValueHostsManager.
+ * - WriterBase only writes fields defined as FieldValueHosts in ValueHostsManager.
  * 
  * - It uses the FieldValueHost.getPropertyName() function to resolve the name of the field in the external object. If the field is not found, it is ignored.
  *   getPropertyName uses the FieldValueHostConfig.propertyName if defined, otherwise it uses the FieldValueHost.name.
  * 
  * - It uses FieldValueHost.getValue() to get the native value.
  * 
- * - That value may not be compatible with the model property. By default, ModelWriter will omit the a value of undefined and keep the rest.
+ * - That value may not be compatible with requirements on the external destination. By default, WriterBase will omit the a value of undefined and keep the rest.
  *   To override that, we provide a rule system. Each rule takes the original value and returns the final value, which could be unchanged or a flag to omit it.
  *   There are several parts here:
  *      + Each rule is assigned to FieldValueHostConfig.modelWriterRule. It is an object with two required string properties: when and then.
@@ -186,20 +184,20 @@ export interface ModelReaderOptions
  * 
  *      + When modelWriterRule is absent from FieldValueHostConfig, the default applies: { when: 'undefined', then: 'omit' }.
  * 
- * - No callbacks, DataTypeParsers, nor DataTypeFormatters are used in ModelWriter.
+ * - No callbacks, DataTypeParsers, nor DataTypeFormatters are used in WriterBase.
  * 
  * - Logging from LogService is used to track the writing of each field. Most logging is debug level, but errors are logged as errors.
  * 
  */
-export interface IModelWriter
+export interface IWriter
 {
     /**
-     * Writes the data from the ValueHostsManager to the external source.
+     * Writes the data from the ValueHostsManager to the external destination.
      * It uses the FieldValueHostConfig to determine how to write the data and convert it to the correct type.
      * In particular, dataType to ensure the value is converted to the correct type.
      * It writes to the log for each field written, and logs errors if any occur.
      * Invalid values are handled by the ValueAdapterService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
-    writeToModel(): void;
+    write(): void;
 }

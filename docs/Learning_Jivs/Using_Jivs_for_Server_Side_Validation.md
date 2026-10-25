@@ -176,7 +176,7 @@ If validation succeeds, the Native Values are ready for Model construction.
 ```ts
 const person = new Person();
 const writer = new ModelWriter(vhm, person);
-writer.writeToModel();
+writer.write();
 ```
 
 `ModelWriter` needs to know which Model property corresponds to each `FieldValueHost`. When the ValueHost name differs from the Model property name, configure `propertyName`:
@@ -392,7 +392,7 @@ async function processPersonRequest(
 
     const person = new Person();
     const writer = new ModelWriter(vhm, person);
-    writer.writeToModel();
+    writer.write();
 
     const issuesFound: IssueFound[] = [
         ...await validatePersonBeforeSave(person)

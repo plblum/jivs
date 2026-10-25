@@ -11,22 +11,28 @@ import { assertNotNull } from '../Utilities/ErrorHandling';
 import { LoggingFacade } from '../Utilities/LoggingFacade';
 
 /**
- * Base class for ModelReader and ModelWriter.
+ * Base class for Readers and Writers.
+ * 
+ * @typeParam T - The type of the external data container (e.g., model) being read or written.
+ * It can be a model, or other structured data container, or even
+ * a class containing the data.
  */
-export abstract class ModelReaderWriterBase<T extends object> 
+export abstract class ReaderWriterBase<T extends object> 
 {
     /**
      * 
      * @param valueHostsManager - The manager for the ValueHosts.
-     * @param model - The model object to be read.
+     * @param externalData - The external data container to read from or write to.
+     * It can be a model, or other structured data container, or even
+     * a class containing the data.
      */
-    constructor(valueHostsManager: IValueHostsManager, model: T)
+    constructor(valueHostsManager: IValueHostsManager, externalData: T)
     {
         assertNotNull(valueHostsManager, 'valueHostsManager');
-        assertNotNull(model, 'model');
+        assertNotNull(externalData, 'externalData');
         this._valueHostsManager = valueHostsManager;
         this._services = valueHostsManager.services;
-        this._model = model;
+        this._externalData = externalData;
     }
 
     /**
@@ -39,15 +45,16 @@ export abstract class ModelReaderWriterBase<T extends object>
     private _valueHostsManager: IValueHostsManager;
     
     /**
-     * The model object that is being read. It can be a class instance or a plain object.
-     * The model's properties are read and written to the ValueHosts.
+     * The external data that is being read or written. It can be a class instance or a plain object.
+     * Subclasses determine how to utilize it.
+     * The external data's properties are read and written to the ValueHosts.
      * Treat this object as read-only.
      */
-    protected get model(): T
+    protected get externalData(): T
     {
-        return this._model;
+        return this._externalData;
     }
-    private _model: T;
+    private _externalData: T;
 
     protected get services(): IJivsServices
     {
@@ -68,18 +75,18 @@ export abstract class ModelReaderWriterBase<T extends object>
     private _logger: LoggingFacade | null = null;
 
     /**
-     * Evaluate the value of the model property and any rule that applies to it.
+     * Evaluate the value of the field on the external data and any rule that applies to it.
      * Return either the original value, the adjusted value, or a skip flag indicating the value 
      * should not be assigned to the ValueHost.
-     * @param modelPropertyValue 
+     * @param fieldValue - The value of the field on the external data. Field can also be: property, attribute or similar.
      * @param rule 
      * @param valueHost - while not used by ValueAdapterService, it is provided for subclasses that may need to use it.
      * @returns An object with either skip: true, or adjustedValue: any. 
      * If skip is true, the value will be ignored.
      */
-    protected adjustValueByRule(modelPropertyValue: any,
+    protected adjustValueByRule(fieldValue: any,
         rule: ValueAdapterRule, valueHost: IFieldValueHost): ValueAdapterResolution
     {
-        return this.services.valueAdapterService.resolve(modelPropertyValue, rule);
+        return this.services.valueAdapterService.resolve(fieldValue, rule);
     }
 }

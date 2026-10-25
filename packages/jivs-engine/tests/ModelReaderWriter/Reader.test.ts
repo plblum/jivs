@@ -7,22 +7,22 @@ import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager, ValueHostsManagerConfig } from '../../src/Interfaces/ValueHostsManager';
-import { FormReader, FormReaderOptions, ModelReader } from '../../src/ModelReaderWriter/ModelReader_classes';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
-import { ModelReaderOptions } from '../../src/Interfaces/ModelReaderAndWriter';
+import { ReaderOptions } from '../../src/Interfaces/ReaderAndWriter';
 import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
 import { NumberParser } from '../../src/DataTypes/DataTypeParsers';
 import { NumberCultureInfo } from '../../src/DataTypes/DataTypeParserBase';
+import { ModelReader, FormReaderOptions, FormReader } from '../../src/ModelReaderWriter/Reader_classes';
 
 /**
  * This class is used to expose the protected members of ModelReader for testing purposes.
  */
 class PublicifyModelReader extends ModelReader<object>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: object, options?: ModelReaderOptions)
+    constructor(valueHostsManager: IValueHostsManager, model: object, options?: ReaderOptions)
     {
         super(valueHostsManager, model, options);
     }
@@ -32,9 +32,9 @@ class PublicifyModelReader extends ModelReader<object>
         return super.valueHostsManager;
     }
 
-    public get publicify_model(): object
+    public get publicify_externalData(): object
     {
-        return super.model;
+        return super.externalData;
     }
     public get publicify_services(): IJivsServices
     {
@@ -54,13 +54,13 @@ class PublicifyModelReader extends ModelReader<object>
         return this.adjustValueByRule(modelPropertyValue, rule, valueHost);
     }
 
-    public publicify_tryGetValueFromModel(modelPropertyName: string, valueHost: IFieldValueHost):
+    public publicify_tryGetFieldValue(modelPropertyName: string, valueHost: IFieldValueHost):
         {
             skip?: boolean,
             value?: any
         }
     {
-        return super.tryGetValueFromModel(modelPropertyName, valueHost);
+        return super.tryGetFieldValue(modelPropertyName, valueHost);
     }
 
     public publicify_setValueIntoValueHost(valueHost: IFieldValueHost, value: any,
@@ -77,7 +77,7 @@ class PublicifyModelReader extends ModelReader<object>
 }
 
 function setup(model: object, propertyName: string,
-    whenRule: string, thenRule: string, options?: ModelReaderOptions):
+    whenRule: string, thenRule: string, options?: ReaderOptions):
     {
         services: IJivsServices, logger: TestingLoggingService,
         reader: PublicifyModelReader,
@@ -122,7 +122,7 @@ function createFieldValueHostWithRule(valueHostsManager: IValueHostsManager,
 
 describe('ModelReader', () =>
 {
-    // mostly a concrete tester of ModelReaderBase, but also tests the ModelReader class itself
+    // mostly a concrete tester of ReaderBase, but also tests the ModelReader class itself
     // Tests are setup similarly to FieldValueHost.test.ts and consume functions
     // from TestSupport/FieldValueHostTestFunctions.ts.
     // They can use the MockJivsServices and MockValueHostsManager
@@ -137,7 +137,7 @@ describe('ModelReader', () =>
 
             let reader = new PublicifyModelReader(valueHostsManager, model);
             expect(reader.publicify_valueHostsManager).toBe(valueHostsManager);
-            expect(reader.publicify_model).toBe(model);
+            expect(reader.publicify_externalData).toBe(model);
             expect(reader.publicify_services).toBe(services);
             expect(reader.publicify_logger).toBeDefined();
         });
@@ -154,7 +154,7 @@ describe('ModelReader', () =>
             let model = null as unknown as object;
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
-            expect(() => new PublicifyModelReader(valueHostsManager, model)).toThrow(/model/);
+            expect(() => new PublicifyModelReader(valueHostsManager, model)).toThrow(/externalData/);
         });
         test('confirm logger is created and has correct feature name', () =>
         {
@@ -254,7 +254,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('prop1', valueHost);
+            let result = reader.publicify_tryGetFieldValue('prop1', valueHost);
             expect(result.value).toBe('value1');
             expect(result.skip).toBe(false);
         });
@@ -262,10 +262,10 @@ describe('ModelReader', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('nonexistentProp', valueHost);
+            let result = reader.publicify_tryGetFieldValue('nonexistentProp', valueHost);
             expect(result.value).toBeUndefined();
             expect(result.skip).toBe(true);
-            expect(logger.findMessage(`property 'nonexistentProp' does not exist`, LoggingLevel.Warn)).toBeTruthy();
+            expect(logger.findMessage(`field 'nonexistentProp' does not exist`, LoggingLevel.Warn)).toBeTruthy();
         });
         test('When model is a real class instance, returns the value from the model for the given property name', () =>
         {
@@ -276,7 +276,7 @@ describe('ModelReader', () =>
             }
             let model = new MyModel();
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('prop1', valueHost);
+            let result = reader.publicify_tryGetFieldValue('prop1', valueHost);
             expect(result.value).toBe('value1');
             expect(result.skip).toBe(false);
         });
@@ -289,17 +289,17 @@ describe('ModelReader', () =>
             }
             let model = new MyModel();
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('nonexistentProp', valueHost);
+            let result = reader.publicify_tryGetFieldValue('nonexistentProp', valueHost);
             expect(result.value).toBeUndefined();
             expect(result.skip).toBe(true);
-            expect(logger.findMessage(`property 'nonexistentProp' does not exist`, LoggingLevel.Warn)).toBeTruthy();
+            expect(logger.findMessage(`field 'nonexistentProp' does not exist`, LoggingLevel.Warn)).toBeTruthy();
         });
         // test a few happy path cases using ObjectFinder's syntax for nested properties and arrays
         test('When model has nested properties, returns the value from the model for the given property name using dot notation', () =>
         {
             let model = { prop1: { nestedProp: 'nestedValue' }, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1.nestedProp', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('prop1.nestedProp', valueHost);
+            let result = reader.publicify_tryGetFieldValue('prop1.nestedProp', valueHost);
             expect(result.value).toBe('nestedValue');
             expect(result.skip).toBe(false);
         });
@@ -307,7 +307,7 @@ describe('ModelReader', () =>
         {
             let model = { prop1: [{ nestedProp: 'nestedValue', prop2: 42}] };
             let { valueHost, reader } = setup(model, 'prop1[0].nestedProp', 'undefined', 'unassigned');
-            let result = reader.publicify_tryGetValueFromModel('prop1[0].nestedProp', valueHost);
+            let result = reader.publicify_tryGetFieldValue('prop1[0].nestedProp', valueHost);
             expect(result.value).toBe('nestedValue');
             expect(result.skip).toBe(false);
         });
@@ -361,7 +361,7 @@ describe('ModelReader', () =>
          * @param expectedOnTextValueChangedCounter 
          * @param expectedOnValueChangedCounter 
          */
-        function execute(model: any, options: ModelReaderOptions,
+        function execute(model: any, options: ReaderOptions,
             expectedValue: any, expectedTextValue: any,
             expectedOnTextValueChangedCounter: number, expectedOnValueChangedCounter: number,
             expectedEnabledState?: boolean
@@ -440,28 +440,28 @@ describe('ModelReader', () =>
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
             reader.read();
             expect(valueHost.getValue()).toBeNull();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
-        // same using readFromProperty(valueHost) on prop1
-        test('readFromProperty with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        // same using readField(valueHost) on prop1
+        test('readField with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.readFromProperty(valueHost);
+            reader.readField(valueHost);
             expect(valueHost.getValue()).toBeNull();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
-        // same using readFromProperty('prop1', valueHost)
-        test('readFromProperty with a model property name and valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
+        // same using readField('prop1', valueHost)
+        test('readField with a model property name and valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
-            reader.readFromProperty('prop1', valueHost);
+            reader.readField('prop1', valueHost);
             expect(valueHost.getValue()).toBeNull();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
 
         test('read with a valueHost that has a rule that does not adjust the value. Expect the original value to be set into the valueHost', () =>
@@ -470,8 +470,8 @@ describe('ModelReader', () =>
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
             reader.read();
             expect(valueHost.getValue()).toBe(5);
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
         });
 
         test('read with a valueHost that has a rule that adjusts the value to unassigned. Expect the valueHost to be set to undefined.', () =>
@@ -480,8 +480,8 @@ describe('ModelReader', () =>
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'unassigned');
             reader.read();
             expect(valueHost.getValue()).toBeUndefined();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value of undefined`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value of undefined`, LoggingLevel.Info)).toBeTruthy();
         });
         test('read with a valueHost that has a rule that adjusts the value to keep. Expect the valueHost to be set to null.', () =>
         {
@@ -489,8 +489,8 @@ describe('ModelReader', () =>
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'nullorundefined', 'keep');
             reader.read();
             expect(valueHost.getValue()).toBeNull();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value assigned to`, LoggingLevel.Info)).toBeTruthy();
 
         });
         // property not included on model
@@ -500,8 +500,8 @@ describe('ModelReader', () =>
             let { valueHostsManager, logger, valueHost, reader } = setup(model, 'prop1', 'zero', 'null');
             reader.read();
             expect(valueHost.getValue()).toBeUndefined();
-            expect(logger.findMessage(`Reading model property 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' does not exist in the model.`, LoggingLevel.Warn)).toBeTruthy();
+            expect(logger.findMessage(`Reading field 'prop1' for ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' does not exist in the source data.`, LoggingLevel.Warn)).toBeTruthy();
         });
         // valuehostname = FieldValueHostConfig.propertyName
         test('read with a valueHost that has a propertyName that does not exist on the model. Expect the valueHost to be set to undefined and a warning logged.', () =>
@@ -594,9 +594,9 @@ describe('ModelReader', () =>
             expect(valueHost2.getValue()).toBe(42);
             expect(valueHost3.getValue()).toBeUndefined();
             // see logs indicating the final result of all 3
-            expect(logger.findMessage(`Model property '${ valueHost1.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`Model property '${ valueHost2.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`Model property '${ valueHost3.getName() }' does not exist in the model.`, LoggingLevel.Warn)).toBeTruthy();
+            expect(logger.findMessage(`Field '${ valueHost1.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Field '${ valueHost2.getName() }' value assigned to`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Field '${ valueHost3.getName() }' does not exist in the source data.`, LoggingLevel.Warn)).toBeTruthy();
         });
         // special case: Mixed ValueHost types. Only FieldValueHosts are supposed to be used with ModelReader, but  we'll test that the ModelReader ignores non-FieldValueHosts and does not throw an error.
         test('read with mixed ValueHost types. Expect the ModelReader to ignore non-FieldValueHosts and not throw an error.', () =>
@@ -622,7 +622,7 @@ describe('ModelReader', () =>
             expect(valueHost3.getValue()).toBe(10); // static valueHost should not be changed by ModelReader
             // make sure there is no log message indicating that the static valueHost was processed
             let logger = valueHostsManager.services.loggingService as TestingLoggingService;
-            expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
+            expect(logger.findMessage(`Reading field '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
         // same using CalcValueHost
         test('read with mixed ValueHost types including CalcValueHost. Expect the ModelReader to ignore non-FieldValueHosts and not throw an error.', () =>
@@ -649,7 +649,7 @@ describe('ModelReader', () =>
             expect(valueHost3.getValue()).toBe(20);
             // make sure there is no log message indicating that the calc valueHost was processed
             let logger = valueHostsManager.services.loggingService as TestingLoggingService;
-            expect(logger.findMessage(`Reading model property '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
+            expect(logger.findMessage(`Reading field '${ valueHost3.getName() }' for ValueHost '${ valueHost3.getName() }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
     });
 });

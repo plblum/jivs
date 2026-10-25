@@ -497,7 +497,7 @@ export abstract class JivsClientSubmitBase<TModel extends object, TError>
 
         const model = this.modelFactory();
         const writer = new ModelWriter(this.valueHostsManager, model);
-        writer.writeToModel();
+        writer.write();
 
         const issuesFound = this.validateModelBeforeSave(model);
         if (issuesFound && issuesFound.length > 0)

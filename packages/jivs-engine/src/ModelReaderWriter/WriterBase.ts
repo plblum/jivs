@@ -6,30 +6,32 @@
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggingService';
-import { IModelWriter } from '../Interfaces/ModelReaderAndWriter';
+import { IWriter } from '../Interfaces/ReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { FieldValueHost } from '../ValueHosts/FieldValueHost';
-import { ModelReaderWriterBase } from './ModelReaderWriterBase';
+import { ReaderWriterBase } from './ReaderWriterBase';
 
 /**
- * Base class for model writers. It writes to the model's properties from the ValueHosts.
+ * Base class for writers. Reads from the ValueHosts and writes to the external data's fields.
  *
- * See {@link jivs-engine/ModelReaderWriter/Types!IModelWriter} for details.
+ * See {@link jivs-engine/ModelReaderWriter/Types!IWriter} for details.
  *
  * - Supports objects and arrays as the model.
- * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when writing to the model.
+ * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when writing to the external data.
  * - Uses the ObjectFinder to find the value of a model property using a path syntax.
+ * 
+ * @typeParam TExternalData - The type of the external data object that this writer will write to.
  */
 
-export abstract class ModelWriterBase<T extends object>
-    extends ModelReaderWriterBase<T>
-    implements IModelWriter
+export abstract class WriterBase<TExternalData extends object>
+    extends ReaderWriterBase<TExternalData>
+    implements IWriter
 {
     /**
      * @param valueHostsManager - The manager for the ValueHosts.
      * @param model
      */
-    constructor(valueHostsManager: IValueHostsManager, model: T)
+    constructor(valueHostsManager: IValueHostsManager, model: TExternalData)
     {
         super(valueHostsManager, model);
     }
@@ -42,76 +44,76 @@ export abstract class ModelWriterBase<T extends object>
      * Invalid values are handled by the ValueAdapterService and the error message is logged.
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
-    public writeToModel(): void
+    public write(): void
     {
         let generator = this.valueHostsManager.enumerateValueHosts((valueHost) => valueHost instanceof FieldValueHost);
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            this.writeToProperty(valueHost);
+            this.writeField(valueHost);
         }
     }
 
     /**
-     * Writes the value from the given ValueHost to the specified model property.
-     * Apply the rules to adjust or skip the value before writing it to the model.
+     * Writes the fieldvalue from the given ValueHost to the external data.
+     * Apply the rules to adjust or skip the value before writing it to the external data.
      *
      * @param source The ValueHost containing the value to write.
-     * @param modelPropertyName The name of the model property to write to.
+     * @param fieldName The name of the external data field to write to.
      * When not provided, it is resolved from the ValueHost's FieldValueHostConfig.propertyName or ValueHostConfig.name.
      */
-    public writeToProperty(source: IFieldValueHost, modelPropertyName?: string): boolean 
+    public writeField(source: IFieldValueHost, fieldName?: string): boolean 
     {
-        if (!modelPropertyName) {
-            modelPropertyName = source.getPropertyName();
-            if (!modelPropertyName) 
+        if (!fieldName) {
+            fieldName = source.getPropertyName();
+            if (!fieldName) 
                 return false;   // rare case: no property name to write to
         }
         let valueHostName = source.getName();
-        this.logger.message(LoggingLevel.Debug, () => `Preparing to move value from ValueHost '${ valueHostName }' to model property '${ modelPropertyName }'.`);
+        this.logger.message(LoggingLevel.Debug, () => `Preparing to move value from ValueHost '${ valueHostName }' to field '${ fieldName }'.`);
 
-        return this.setValueWithRule(source, modelPropertyName);
+        return this.setValueWithRule(source, fieldName);
     }
 
     /**
-     * Gets the value from the source, applies the rules, and sets it into the model property if appropriate.
+     * Gets the value from the source, applies the rules, and sets it into the external data field if appropriate.
      * @param source The source ValueHost to get the value from.
-     * @param modelPropertyName The name of the model property to set.
+     * @param fieldName The name of the external data field to set.
      * @returns True if the value was successfully written, false otherwise.
      */
-    public setValueWithRule(source: IFieldValueHost, modelPropertyName: string): boolean
+    public setValueWithRule(source: IFieldValueHost, fieldName: string): boolean
     {
-        let modelPropertyValue = source.getValue();
+        let fieldValue = source.getValue();
         let rule = this.getRule(source);
         if (rule)
         {
-            let result = this.adjustValueByRule(modelPropertyValue, rule, source);
+            let result = this.adjustValueByRule(fieldValue, rule, source);
             if (result.skip)
                 return false;
-            modelPropertyValue = result.value;
+            fieldValue = result.value;
         }
 
         // special case: if the value is undefined and there is no rule, we take no action
-        else if (rule === undefined && modelPropertyValue === undefined)
+        else if (rule === undefined && fieldValue === undefined)
         {
-            this.logger.message(LoggingLevel.Warn, () => `ValueHost '${ source.getName() }' has no value and no rule applied to Model property '${ modelPropertyName }'.`);
+            this.logger.message(LoggingLevel.Warn, () => `ValueHost '${ source.getName() }' has no value and no rule applied to field '${ fieldName }'.`);
             return false;
         }
-        this.setValueIntoModel(modelPropertyName, modelPropertyValue, source);
-        this.logger.message(LoggingLevel.Info, () => `Model property '${ modelPropertyName }' value was assigned from ValueHost '${ source.getName() }'.`);
+        this.setValueIntoExternalData(fieldName, fieldValue, source);
+        this.logger.message(LoggingLevel.Info, () => `Field '${ fieldName }' value was assigned from ValueHost '${ source.getName() }'.`);
         return true;
     }
 
     /**
-     * Resolve the rule for adjusting or omitting the value of the model property.
-     * This class uses valueHost.getModelWriterRule() to get the rule.
+     * Resolve the rule for adjusting or omitting the field value.
+     * This class uses valueHost.getModelWriterRule() to get the rule for the field.
      *
      * Designed to be subclassed to allow for different retrieval mechanisms.
      * Often subclasses are used to avoid the need to setup rules directly in
      * FieldValueHostConfig.modelWriterRule.
      *
      * @param valueHost
-     * @returns The rule for the model property, or undefined if no rule applies.
+     * @returns The rule for the field, or undefined if no rule applies.
      */
     protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
@@ -120,21 +122,21 @@ export abstract class ModelWriterBase<T extends object>
 
 
     /**
-     * Write the value to the model property. This is called after the value has been adjusted by the rule.
-     * It assumes the value is valid and can be assigned to the model property.
+     * Write the value to the external data field. This is called after the value has been adjusted by the rule.
+     * It assumes the value is valid and can be assigned to the field.
      * It assumes that any child objects or arrays have already been created and are ready to receive the value.
      *
-     * @param modelPropertyName The name of the model property to set. This is in a syntax
+     * @param fieldName The field name on external data to set. This is in a syntax
      * supported by ObjectFinder, which can find child elements in objects and arrays.
-     * @param value The value to assign to the model property, including undefined if supplied.
+     * @param value The value to assign to the external data field, including undefined if supplied.
      * @param valueHost The value host providing the value.
      */
-    protected setValueIntoModel(modelPropertyName: string, value: any, valueHost: IFieldValueHost): void
+    protected setValueIntoExternalData(fieldName: string, value: any, valueHost: IFieldValueHost): void
     {
-        let result = this.services.objectFinderService.find(this.model, modelPropertyName);
+        let result = this.services.objectFinderService.find(this.externalData, fieldName);
         if (result.object === undefined)
         {
-            this.logger.message(LoggingLevel.Warn, () => `Model property '${ result.propertyName }' does not exist in the model.`);
+            this.logger.message(LoggingLevel.Warn, () => `Field '${ result.propertyName }' does not exist in the external data.`);
             return;
         }
         // if the object is a class instance, we confirm that the property exists on the class
@@ -142,12 +144,12 @@ export abstract class ModelWriterBase<T extends object>
         // If the object is a plain object, we allow the property to be created if it does not exist.
         if (result.object.constructor !== Object && !(result.propertyName! in result.object))
         {
-            this.logger.message(LoggingLevel.Error, () => `Specified property '${ result.propertyName }' does not exist in the model. It will not be set.`);
+            this.logger.message(LoggingLevel.Error, () => `Specified field '${ result.propertyName }' does not exist in the external data. It will not be set.`);
             return;
         }
         else if (!(result.propertyName! in result.object))
         {
-            this.logger.message(LoggingLevel.Info, () => `Specified property '${ result.propertyName }' does not exist in the model. It will be created.`);
+            this.logger.message(LoggingLevel.Info, () => `Specified field '${ result.propertyName }' does not exist in the external data. It will be created.`);
         }
         (result.object as any)[result.propertyName as string] = value;
     }

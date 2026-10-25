@@ -4,19 +4,19 @@
  */
 
 import { FieldValueHostSetValueOptions, IFieldValueHost } from '../Interfaces/FieldValueHost';
-import { ModelReaderOptions } from '../Interfaces/ModelReaderAndWriter';
+import { ReaderOptions } from '../Interfaces/ReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { ModelReaderBase, RealModelReaderBase } from './ModelReaderBase';
+import { ReaderWithRulesBase } from './ReaderBase';
 
 /**
- * Concrete implementation of ModelReaderBase for reading from a model object.
+ * Concrete implementation of ReaderBase for reading from a model object.
  * 
- * @template T - The type of the model object. Can be a class instance or a plain object.
+ * @template TExternalData - The type of the model object. Can be a class instance or a plain object.
  */
-export class ModelReader<T extends object = object, TOptions extends ModelReaderOptions = ModelReaderOptions>
-    extends RealModelReaderBase<T, TOptions>
+export class ModelReader<TExternalData extends object = object, TOptions extends ReaderOptions = ReaderOptions>
+    extends ReaderWithRulesBase<TExternalData, TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
+    constructor(valueHostsManager: IValueHostsManager, model: TExternalData, options?: TOptions)
     {
         super(valueHostsManager, model, options);
     }
@@ -24,21 +24,21 @@ export class ModelReader<T extends object = object, TOptions extends ModelReader
 }
 
 /**
- * Concrete implementation of ModelReaderBase for reading from a dictionary object.
+ * Concrete implementation of ReaderBase for reading from a dictionary object.
  * 
- * @template T - The type of the dictionary object. Must be an object with string keys and any values.
+ * @template TExternalData - The type of the dictionary object. Must be an object with string keys and any values.
  */
-export class DictionaryReader<T extends { [key: string]: any; } = { [key: string]: any; },
-    TOptions extends ModelReaderOptions = ModelReaderOptions>
-    extends RealModelReaderBase<T, TOptions>
+export class DictionaryReader<TExternalData extends { [key: string]: any; } = { [key: string]: any; },
+    TOptions extends ReaderOptions = ReaderOptions>
+    extends ReaderWithRulesBase<TExternalData, TOptions>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: T, options?: TOptions)
+    constructor(valueHostsManager: IValueHostsManager, dictionary: TExternalData, options?: TOptions)
     {
-        super(valueHostsManager, model, options);
+        super(valueHostsManager, dictionary, options);
     }
 }
 
-export interface FormReaderOptions extends ModelReaderOptions
+export interface FormReaderOptions extends ReaderOptions
 {
     /**
      * When true, enables the reformatTextValues feature that can be used to reformat the text values in the form. 
@@ -78,12 +78,12 @@ export interface FormReaderOptions extends ModelReaderOptions
  * - disableFormatter - It will always be treated as false, regardless of the value passed in the options.
  */
 export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
-    extends RealModelReaderBase<{ [key: string]: string; }, TOptions>
+    extends ReaderWithRulesBase<{ [key: string]: string; }, TOptions>
 {
     /**
      * 
      * @param valueHostsManager 
-     * @param model - Use the Express library to supply this model.
+     * @param httpFormData - Use the Express library to supply this model.
      * ```ts
      * app.post("/submit", (req, res) => {
      *      const formData = req.body;
@@ -92,9 +92,9 @@ export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
      * });
      * ```
      */
-    constructor(valueHostsManager: IValueHostsManager, model: { [key: string]: string; }, options?: TOptions)
+    constructor(valueHostsManager: IValueHostsManager, httpFormData: { [key: string]: string; }, options?: TOptions)
     {
-        super(valueHostsManager, model, options);
+        super(valueHostsManager, httpFormData, options);
         this.options.disableFormatter = false;
     }
 

@@ -8,11 +8,11 @@ import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
-import { ModelWriter } from '../../src/ModelReaderWriter/ModelWriter_classes';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
+import { ModelWriter } from '../../src/ModelReaderWriter/Writer_classes';
 
 /**
  * This class is used to expose the protected members of ModelWriter for testing purposes.
@@ -30,9 +30,9 @@ class PublicifyModelWriter extends ModelWriter<object>
         return super.valueHostsManager;
     }
 
-    public get publicify_model(): object
+    public get publicify_externalData(): object
     {
-        return super.model;
+        return super.externalData;
     }
     public get publicify_services(): IJivsServices
     {
@@ -57,9 +57,9 @@ class PublicifyModelWriter extends ModelWriter<object>
         return this.getRule(valueHost);
     }
 
-    public publicify_setValueIntoModel(modelPropertyName: string, value: any, valueHost: IFieldValueHost): void
+    public publicify_setValueIntoExternalData(fieldName: string, value: any, valueHost: IFieldValueHost): void
     {
-        this.setValueIntoModel(modelPropertyName, value, valueHost);
+        this.setValueIntoExternalData(fieldName, value, valueHost);
     }
 }
 
@@ -111,7 +111,7 @@ function createFieldValueHostWithRule(valueHostsManager: IValueHostsManager,
 
 describe('ModelWriter', () =>
 {
-    // mostly a concrete tester of ModelWriterBase, but also tests the ModelWriter class itself
+    // mostly a concrete tester of WriterBase, but also tests the ModelWriter class itself
     // Tests are setup similarly to FieldValueHost.test.ts and consume functions
     // from TestSupport/FieldValueHostTestFunctions.ts.
     // They can use the MockJivsServices and MockValueHostsManager
@@ -126,7 +126,7 @@ describe('ModelWriter', () =>
 
             let writer = new PublicifyModelWriter(valueHostsManager, model);
             expect(writer.publicify_valueHostsManager).toBe(valueHostsManager);
-            expect(writer.publicify_model).toBe(model);
+            expect(writer.publicify_externalData).toBe(model);
             expect(writer.publicify_services).toBe(services);
             expect(writer.publicify_logger).toBeDefined();
         });
@@ -143,7 +143,7 @@ describe('ModelWriter', () =>
             let model = null as unknown as object;
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
-            expect(() => new PublicifyModelWriter(valueHostsManager, model)).toThrow(/model/);
+            expect(() => new PublicifyModelWriter(valueHostsManager, model)).toThrow(/externalData/);
         });
         test('confirm logger is created and has correct feature name', () =>
         {
@@ -261,7 +261,7 @@ describe('ModelWriter', () =>
             expect(rule).toBeUndefined();
         });
     });
-    describe('setValueIntoModel via publicify_', () =>
+    describe('setValueIntoExternalData via publicify_', () =>
     {
         test('sets the value into the model as a top-level property', () => 
         {
@@ -269,7 +269,7 @@ describe('ModelWriter', () =>
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1', 'undefined', 'unassigned');
             let value = 'newValue';
             let options = { disableFormatter: false, skipValueChangedCallback: false, validate: false, reset: true };
-            writer.publicify_setValueIntoModel('prop1', value, valueHost);
+            writer.publicify_setValueIntoExternalData('prop1', value, valueHost);
             expect(model.prop1).toBe(value);
         });
         // as a child property
@@ -278,7 +278,7 @@ describe('ModelWriter', () =>
             let model = { prop1: { childProp: 'childValue' }, prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1.childProp', 'undefined', 'unassigned');
             let value = 'newChildValue';
-            writer.publicify_setValueIntoModel('prop1.childProp', value, valueHost);
+            writer.publicify_setValueIntoExternalData('prop1.childProp', value, valueHost);
             expect(model.prop1.childProp).toBe(value);
         });
         // an an array at the top level
@@ -287,7 +287,7 @@ describe('ModelWriter', () =>
             let model = { prop1: [{ ChildName: 'childValue1' }, { ChildName: 'childValue2' }], prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1[1].ChildName', 'undefined', 'unassigned');
             let value = 'newChildValue2';
-            writer.publicify_setValueIntoModel('prop1[1].ChildName', value, valueHost);
+            writer.publicify_setValueIntoExternalData('prop1[1].ChildName', value, valueHost);
             expect(model.prop1[1].ChildName).toBe(value);
         });
 
@@ -297,9 +297,9 @@ describe('ModelWriter', () =>
             let model = { prop1: { existingProp: 'existingValue' }, prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1.newProp', 'undefined', 'unassigned');
             let value = 'newValue';
-            writer.publicify_setValueIntoModel('prop1.newProp', value, valueHost);
+            writer.publicify_setValueIntoExternalData('prop1.newProp', value, valueHost);
             expect((model.prop1 as any)['newProp']).toBe(value);
-            logger.findMessage(`Specified property 'newProp' does not exist in the model. It will be created.`, LoggingLevel.Info);
+            logger.findMessage(`Specified field 'newProp' does not exist in the external data. It will be created.`, LoggingLevel.Info);
         });
 
         // class instance will not add a property that does not exist and logs an error
@@ -312,9 +312,10 @@ describe('ModelWriter', () =>
             let model = new MyClass();
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'newProp', 'undefined', 'unassigned');
             let value = 'newValue';
-            writer.publicify_setValueIntoModel('newProp', value, valueHost);
+            writer.publicify_setValueIntoExternalData('newProp', value, valueHost);
             expect((model as any)['newProp']).toBeUndefined();
-            expect(logger.findMessage(`Specified property 'newProp' does not exist in the model. It will not be set.`, LoggingLevel.Error)).toBeTruthy();
+            logger.toConsole();
+            expect(logger.findMessage(`Specified field 'newProp' does not exist in the external data. It will not be set.`, LoggingLevel.Error)).toBeTruthy();
         });
     });
 
@@ -325,36 +326,36 @@ describe('ModelWriter', () =>
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeToModel();
+            writer.write();
             expect(model.prop1).toBeNull();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
 
         });
 
-        // same but specifically calling writeToProperty with the ValueHost for prop1
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeToProperty', () =>
+        // same but specifically calling writeField with the ValueHost for prop1
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeField', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeToProperty(valueHost);
+            writer.writeField(valueHost);
             expect(model.prop1).toBeNull();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
-        // same but passes the model property name explicitly to writeToProperty
-        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeToProperty with explicit model property name', () =>
+        // same but passes the model property name explicitly to writeField
+        test('modelWriterRule adjusts the value. Expect the adjusted value to be set into the model using writeField with explicit model property name', () =>
         {
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeToProperty(valueHost, 'prop1');
+            writer.writeField(valueHost, 'prop1');
             expect(model.prop1).toBeNull();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
@@ -363,10 +364,10 @@ describe('ModelWriter', () =>
             let model = { prop1: 5, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(5);
-            writer.writeToModel();
+            writer.write();
             expect(model.prop1).toBe(5);
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService When rule 'zero' has indicated the original value will be retained.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
@@ -375,10 +376,10 @@ describe('ModelWriter', () =>
             let model = { prop1: 0, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'unassigned');
             valueHost.setValue(0);
-            writer.writeToModel();
+            writer.write();
             expect(model.prop1).toBeUndefined();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'unassigned' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
         test('modelWriterRule that has a rule that adjusts the value to keep. Expect the model property to be set to null.', () =>
@@ -386,22 +387,22 @@ describe('ModelWriter', () =>
             let model = { prop1: 1, prop2: 42 };
             let { logger, valueHost, writer } = setup(model, 'prop1', 'nullorundefined', 'keep');
             valueHost.setValue(null);
-            writer.writeToModel();
+            writer.write();
             expect(model.prop1).toBeNull();
             logger.toConsole();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
         });
         // property not included on plain object model but comes from ValueHost gets added to the model
-        test('ValueHost.propertyName specifies a property not found on a plain object model. Expect the model property to be set anyway.', () =>
+        test('ValueHost.propertyName specifies a property not found on a plain object model. Expect the external data to be set anyway.', () =>
         {
             let model = { prop2: 42 };
             let { valueHostsManager, logger, valueHost, writer } = setup(model, 'prop1', 'zero', 'null');
             valueHost.setValue(0);
-            writer.writeToModel();
+            writer.write();
             expect((model as any).prop1).toBeNull();
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to model property 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
-            expect(logger.findMessage(`Model property 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost.getName() }' to field 'prop1'.`, LoggingLevel.Debug)).toBeTruthy();
+            expect(logger.findMessage(`Field 'prop1' value was assigned from ValueHost '${ valueHost.getName() }'.`, LoggingLevel.Info)).toBeTruthy();
             expect(logger.findMessage(`ValueAdapterService Then rule 'null' has adjusted the source value.`, LoggingLevel.Debug)).toBeTruthy();
         });
 
@@ -430,7 +431,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = true;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(2);
             expect((model as any)[propName3]).toBe(false);
@@ -453,7 +454,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 'hello';
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBeNull();
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBe('hello-changed');
@@ -476,7 +477,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 0;  // this will be adjusted to null
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBeNull();
@@ -500,14 +501,14 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             // valueHost3 does not have a corresponding property in the model
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
             expect((model as any)[propName3]).toBe('hello-changed');
             // see logs indicating the final result of all 3
-            expect(logger.findMessage(`Model property '${ propName1 }' value was assigned from ValueHost`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`Model property '${ propName2 }' value was assigned from ValueHost`, LoggingLevel.Info)).toBeTruthy();
-            expect(logger.findMessage(`Specified property '${ propName3 }' does not exist in the model. It will be created.`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Field '${ propName1 }' value was assigned from ValueHost`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Field '${ propName2 }' value was assigned from ValueHost`, LoggingLevel.Info)).toBeTruthy();
+            expect(logger.findMessage(`Specified field '${ propName3 }' does not exist in the external data. It will be created.`, LoggingLevel.Info)).toBeTruthy();
         });
         // special case: Mixed ValueHost types. Only FieldValueHosts are supposed to be used with ModelWriter, but  we'll test that the ModelWriter ignores non-FieldValueHosts and does not throw an error.
         test('write with mixed ValueHost types including StaticValueHost. Expect the ModelWriter to ignore non-FieldValueHosts and not throw an error.', () =>
@@ -532,7 +533,7 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
             expect((model as any)[propName3]).toBe(100);    // not changed to 10 like the static valueHost would have done if it was processed by ModelWriter
@@ -540,7 +541,7 @@ describe('ModelWriter', () =>
             // static valueHost should not be changed by ModelWriter
             // make sure there is no log message indicating that the static valueHost was processed
             let logger = valueHostsManager.services.loggingService as TestingLoggingService;
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to model property '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to field '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
         });
         // same using CalcValueHost
         test('write with mixed ValueHost types including CalcValueHost. Expect the ModelWriter to ignore non-FieldValueHosts and not throw an error.', () =>
@@ -567,12 +568,12 @@ describe('ModelWriter', () =>
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
             let writer = new PublicifyModelWriter(valueHostsManager, model);
-            writer.writeToModel();
+            writer.write();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
             expect((model as any)[propName3]).toBe(100);    // not changed to 20 like the calc valueHost would have done if it was processed by ModelWriter
             let logger = valueHostsManager.services.loggingService as TestingLoggingService;
-            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to model property '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
+            expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to field '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
 
         });
     });

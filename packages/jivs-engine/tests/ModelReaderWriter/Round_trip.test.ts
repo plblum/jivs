@@ -6,8 +6,8 @@ import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
 import { IValueHostsManager, ValueHostsManagerConfig } from './../../src/Interfaces/ValueHostsManager';
 import { createJivsServicesForTesting } from './../../src/Support/createJivsServicesForTesting';
-import { ModelReader } from './../../src/ModelReaderWriter/ModelReader_classes';
-import { ModelWriter } from './../../src/ModelReaderWriter/ModelWriter_classes';
+import { ModelReader } from './../../src/ModelReaderWriter/Reader_classes';
+import { ModelWriter } from '../../src/ModelReaderWriter/Writer_classes';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 // Tests that use ModelReader and ModelWriter.
@@ -106,7 +106,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         // Now write the values back into a new model
         let model2 = new TestModel1();
         let modelWriter = new ModelWriter(valueHostsManager, model2);
-        modelWriter.writeToModel();
+        modelWriter.write();
         // The new model should have the same values as the original model
         expect(model2.name).toBe('John Doe');
         expect(model2.birthDate).toEqual(new Date('1990-01-01'));
@@ -130,7 +130,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         // Now write the values back into a new model
         let model2 = new TestModel1();
         let modelWriter = new ModelWriter(valueHostsManager, model2);
-        modelWriter.writeToModel();
+        modelWriter.write();
         // The new model should have the updated values
         expect(model2.name).toBe('Jane Smith');
         expect(model2.birthDate).toEqual(new Date('1985-05-15'));
@@ -161,7 +161,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         // write them back into a new model
         let model2 = new TestModel1();
         let modelWriter = new ModelWriter(valueHostsManager, model2);
-        modelWriter.writeToModel();
+        modelWriter.write();
         // The new model should have the values set by the rules
         expect(model2.name).toBe('');
         expect(model2.birthDate).toEqual(new Date('2000-01-01'));
@@ -191,7 +191,7 @@ describe('ModelReader and ModelWriter round trip tests', () =>
         expect(vhScore.getValue()).toBe(0);
         // write them back into the original model
         let modelWriter = new ModelWriter(valueHostsManager, model1);
-        modelWriter.writeToModel();
+        modelWriter.write();
         // The original model should have the values set by the rules and extra1 preserved
         expect(model1.name).toBe('');
         expect(model1.birthDate).toEqual(new Date('2000-01-01'));

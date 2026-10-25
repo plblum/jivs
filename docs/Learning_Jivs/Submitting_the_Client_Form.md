@@ -59,7 +59,7 @@ Once Jivs validation succeeds, the Native Values can be copied into the Model th
 ```ts
 const person = new Person();
 const writer = new ModelWriter(vhm, person);
-writer.writeToModel();
+writer.write();
 ```
 
 `ModelWriter` uses the Model property name configured for each `FieldValueHost`. By default, that property name is the name supplied to `builder.field()`.
@@ -197,7 +197,7 @@ async function submitPerson(vhm: ValueHostsManager): Promise<void> {
 
     const person = new Person();
     const writer = new ModelWriter(vhm, person);
-    writer.writeToModel();
+    writer.write();
 
     const issuesFound = validatePersonBeforeSave(person);
     if (issuesFound.length > 0) {
