@@ -17,6 +17,7 @@ import type { EditorInstallOptions } from '../../src/Interfaces/EditorInstaller'
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 interface IAttachCall
 {
@@ -24,6 +25,7 @@ interface IAttachCall
     editor: HTMLElement;
     jivsElement: IJivsElement;
     options: EditorInstallOptions;
+    setValueOptions: SetValueOptions;
 }
 
 /**
@@ -49,12 +51,12 @@ class Publicify_EditorAdapterDefinition extends EditorAdapterDefinitionBase
     protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement,
         jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
-        this.sendValue(valueHost, editor, jivsElement, options.duringEdit);
+        this.sendValue(valueHost, editor, jivsElement, { duringEdit: options.duringEdit });
     }
 
-    override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.attachCalls.push({ valueHost: valueHost, editor: editor, jivsElement: jivsElement, options: { duringEdit: duringEdit ?? false } });
+        this.attachCalls.push({ valueHost: valueHost, editor: editor, jivsElement: jivsElement, options: {}, setValueOptions: options ?? {} });
     }
     public createTextValueAdapter(): ITextValueAdapter | null
     {
@@ -65,14 +67,14 @@ class Publicify_EditorAdapterDefinition extends EditorAdapterDefinitionBase
         return null;
     }
     public publicify_sendTextValue(valueHost: IFieldValueHost, editor: HTMLElement,
-        jivsElement: IJivsElement, duringEdit?: boolean): void
+        jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendTextValue(valueHost, editor, jivsElement, duringEdit);
+        this.sendTextValue(valueHost, editor, jivsElement, options);
     }
     public publicify_sendNativeValue(valueHost: IFieldValueHost, editor: HTMLElement,
-        jivsElement: IJivsElement): void
+        jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendNativeValue(valueHost, editor, jivsElement);
+        this.sendNativeValue(valueHost, editor, jivsElement, options);
     }
 }
 
@@ -199,7 +201,7 @@ describe('EditorAdapterDefinitionBase.attachToSendValues', () => {
         expect(testItem.attachCalls[0].valueHost).toBe(valueHost);
         expect(testItem.attachCalls[0].editor).toBe(editor);
         expect(testItem.attachCalls[0].jivsElement).toBe(jivsElement);
-        expect(testItem.attachCalls[0].options).toEqual({duringEdit: false});
+        expect(testItem.attachCalls[0].options).toMatchObject({});
         expect(logger.calls.length).toBe(1);
     });
 
@@ -208,7 +210,7 @@ describe('EditorAdapterDefinitionBase.attachToSendValues', () => {
 
         testItem.attachToSendValues(valueHost, editor, jivsElement);
 
-        expect(testItem.attachCalls[0].options).toEqual({duringEdit: false});
+        expect(testItem.attachCalls[0].options).toMatchObject({});
     });
 
     test('Logs a Debug message with element id, value host name, type and identity', () => {
@@ -307,8 +309,8 @@ describe('EditorAdapterDefinitionBase.sendTextValue', () => {
         let { testItem, editor, jivsElement, valueHost } = setup();
         jivsElement.jivsTextValueAdapter = { readTextValue: () => '' } as ITextValueAdapter;
 
-        testItem.publicify_sendTextValue(valueHost, editor, jivsElement, true);
-        testItem.publicify_sendTextValue(valueHost, editor, jivsElement, false);
+        testItem.publicify_sendTextValue(valueHost, editor, jivsElement, { duringEdit: true });
+        testItem.publicify_sendTextValue(valueHost, editor, jivsElement, { duringEdit: false });
 
         expect(valueHost.textCalls).toEqual([
             { value: '', options: { validate: true, duringEdit: true } },
@@ -342,7 +344,7 @@ describe('EditorAdapterDefinitionBase.sendNativeValue', () => {
 
         testItem.publicify_sendNativeValue(valueHost, editor, jivsElement);
 
-        expect(valueHost.valueCalls).toEqual([{ value: 42, options: { validate: true } }]);
+        expect(valueHost.valueCalls).toMatchObject([{ value: 42, options: { validate: true } }]);
         expect(logger.calls).toEqual([]);
     });
 
@@ -352,7 +354,7 @@ describe('EditorAdapterDefinitionBase.sendNativeValue', () => {
 
         testItem.publicify_sendNativeValue(valueHost, editor, jivsElement);
 
-        expect(valueHost.valueCalls).toEqual([{ value: null, options: { validate: true } }]);
+        expect(valueHost.valueCalls).toMatchObject([{ value: null, options: { validate: true } }]);
     });
 
     test('Logs a Warn and sends nothing when there is no value adapter', () => {

@@ -8,6 +8,7 @@ import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/Field
 import { TextAreaTextValueAdapter } from '../Adapters/TextAreaTextValueAdapter';
 import { defaultTextAreaPresentationName } from '../FieldPresentations/TextAreaPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
@@ -50,18 +51,18 @@ export class TextAreaAdapterDefinition extends EditorAdapterDefinitionBase
         let textAreaElement = editor as HTMLTextAreaElement;
         let self = this;
         textAreaElement.addEventListener('change', () => {
-            self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true]);
+            self.sendValue.apply(self, [valueHost, editor, jivsElement, { validate: true }]);
         });
         if (options.duringEdit)
         {
             textAreaElement.addEventListener('input', () => {
-                self.sendValue.apply(self, [valueHost, editor, jivsElement, true, true]);
+                self.sendValue.apply(self, [valueHost, editor, jivsElement, { duringEdit: true, validate: true }]);
             });
         }
     }
-    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+        this.sendTextValue(valueHost, editor, jivsElement, options);
     }
 
     public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null

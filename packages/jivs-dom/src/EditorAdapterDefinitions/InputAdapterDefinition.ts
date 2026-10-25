@@ -7,12 +7,14 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/InputAdapterDefinition
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { InputTextValueAdapter } from '../Adapters/InputTextValueAdapter';
 import { defaultTextInputPresentationName } from '../FieldPresentations/TextInputPresentation';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
+
 
 /**
  * Provides an editor adapter definition for HTML input elements of a specific type.
@@ -97,20 +99,20 @@ export class InputAdapterDefinition
         const input = this.requireInputElement(editor); // may throw
         let self = this;
         input.addEventListener('change',
-            () => self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true])
+            () => self.sendValue.apply(self, [valueHost, editor, jivsElement, { validate: true }])
         );
 
         if (options.duringEdit)
         {
             input.addEventListener('input',
-                () => self.sendValue.apply(self, [valueHost, editor, jivsElement, true, true])
+                () => self.sendValue.apply(self, [valueHost, editor, jivsElement, { duringEdit: true, validate: true }])
             );
         }
     }
 
-    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+        this.sendTextValue(valueHost, editor, jivsElement, options);
     }
 
     /**

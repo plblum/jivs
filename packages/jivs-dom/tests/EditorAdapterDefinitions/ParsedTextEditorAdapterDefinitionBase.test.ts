@@ -14,6 +14,8 @@ import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+
 
 // This ensures that references to JivsServices include the domServices property
 // for the VSCode environment. Not needed for compiling or runtime
@@ -67,14 +69,14 @@ class Publicify_ParsedTextDefinition extends ParsedTextEditorAdapterDefinitionBa
     protected attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement,
         jivsElement: IJivsElement, options: EditorInstallOptions): void
     {
-        editor.addEventListener('change', () => this.sendValue(valueHost, editor, jivsElement, false));
+        editor.addEventListener('change', () => this.sendValue(valueHost, editor, jivsElement));
         if (options.duringEdit)
-            editor.addEventListener('input', () => this.sendValue(valueHost, editor, jivsElement, true));
+            editor.addEventListener('input', () => this.sendValue(valueHost, editor, jivsElement, { duringEdit: true }));
     }
 
-    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendParsedTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+        this.sendParsedTextValue(valueHost, editor, jivsElement, options);
     }
     protected parseTextValue(textValue: string | undefined, valueHost: IFieldValueHost,
         editor: HTMLElement, jivsElement: IJivsElement): IParseResult
@@ -85,9 +87,9 @@ class Publicify_ParsedTextDefinition extends ParsedTextEditorAdapterDefinitionBa
         return this.parseResult;
     }
     public publicify_sendParsedTextValue(valueHost: IFieldValueHost, editor: HTMLElement,
-        jivsElement: IJivsElement, duringEdit?: boolean): void
+        jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendParsedTextValue(valueHost, editor, jivsElement, duringEdit);
+        this.sendParsedTextValue(valueHost, editor, jivsElement, options);
     }
 }
 
@@ -152,7 +154,7 @@ describe('ParsedTextEditorAdapterDefinitionBase.sendParsedTextValue', () => {
         let injectedError: InjectedError = { errorMessage: 'Not a date' } as InjectedError;
         testItem.parseResult = { nativeValue: undefined, injectedError: injectedError };
 
-        testItem.publicify_sendParsedTextValue(valueHost, editor, jivsElement, false);
+        testItem.publicify_sendParsedTextValue(valueHost, editor, jivsElement, { duringEdit: false });
 
         expect(valueHost.setValuesCalls).toEqual([{
             nativeValue: undefined,
@@ -164,7 +166,7 @@ describe('ParsedTextEditorAdapterDefinitionBase.sendParsedTextValue', () => {
     test('Passes duringEdit true through', () => {
         let { testItem, editor, jivsElement, valueHost } = setup();
 
-        testItem.publicify_sendParsedTextValue(valueHost, editor, jivsElement, true);
+        testItem.publicify_sendParsedTextValue(valueHost, editor, jivsElement, { duringEdit: true });
 
         expect(valueHost.setValuesCalls[0].options.duringEdit).toBe(true);
     });

@@ -92,7 +92,8 @@ Keep `let verbose` in each file and pass it to every `createTestForm`, so one fi
 ### `createTestForm(options)`
 
 - **Source (exactly one):** `fields` (Field Identity names, using `fieldTemplate` or per-field `fieldTemplates`), `build(page)` (a `TestHtmlBuilder` callback) or `formTemplate` (a registered form template).
-- **Other options:** `repository`, `services` (merged over the defaults, which include real parsers, formatters, conditions, the AriaService and `loggerLevel: Warn`), `formId`, `formAttributes`, `install` (default `true`), `verbose`, `containerIdentifier` and `configure(config)`.
+- **Other options:** `repository`, `services` (merged over the defaults, which include real parsers, formatters, conditions, the AriaService and `loggerLevel: Warn`), `formId`, `formAttributes`, `initialValues`, `install` (default `true`), `verbose`, `containerIdentifier` and `configure(config)`.
+- `initialValues` is a map keyed by Field Identity name. It places a value into the generated editor before collection: text, number, and date inputs receive a `value`; checkboxes are checked only for `true`; select and radio editors select the matching option. Use strings for text-formatted values and numbers/booleans when those are the field's native type. For example, `createTestForm({ fields: ['Text_Required', 'Checkbox'], initialValues: { Text_Required: 'Ann', Checkbox: true } })`.
 - `install: false` builds nothing in the document. Call `t.page.assign()`, then `t.install()` or `t.collect()`. Use it when the test needs the page before installation, or only the collector.
 - `containerIdentifier` (an `#id` selector unless `formId` is given) scopes the manager to that container and prefixes generated ids. `configure` receives a copy of the manager config for last-moment changes; replace nested objects rather than editing them.
 
@@ -177,9 +178,9 @@ Every role method writes markup immediately to an internal sequence and returns 
 | `inputEditor(fieldName, type = 'text', presentationName = null, adapterKey = null, additionalAttributes = '')` | Native `<input>`; expected key `input:${type}` unless overridden. |
 | `checkboxEditor(fieldName, presentationName = null, adapterKey = null, additionalAttributes = '')` | `<input type='checkbox'>`. |
 | `fileInputEditor(fieldName, presentationName = null, adapterKey = null, additionalAttributes = '')` | `<input type='file'>`. |
-| `radioEditor(fieldName, groupName, values, presentationName = null, adapterKey = null, additionalAttributes = '')` | Multiple radio inputs, one carrying Jivs-role attributes. `groupName` is mandatory. |
+| `radioEditor(fieldName, groupName, values, presentationName = null, adapterKey = null, additionalAttributes = '', selectedValue?)` | Multiple radio inputs, one carrying Jivs-role attributes. `groupName` is mandatory; an optional `selectedValue` marks the matching input checked. |
 | `textAreaEditor(fieldName, presentationName = null, adapterKey = null, additionalAttributes = '')` | `<textarea>`. |
-| `selectEditor(fieldName, options, presentationName = null, adapterKey = null, additionalAttributes = '')` | `<select>` with `{ value, text }[]` options; no selected-state helper. |
+| `selectEditor(fieldName, options, presentationName = null, adapterKey = null, additionalAttributes = '', selectedValue?)` | `<select>` with `{ value, text }[]` options; an optional `selectedValue` marks the matching option selected. |
 
 The default expected adapter key exists for descriptor checks even when `data-jivs-adapterkey` is absent from markup. Specialized methods emit that attribute when the caller explicitly supplies `adapterKey`. Native void elements are rendered as opening tags only; the generic `editor()` emits opening and closing tags.
 
@@ -214,7 +215,7 @@ Instead of hand-writing rules and HTML in each test, pick **Field Identities** f
   - A field template is a shared recipe `(page, field) => void` that surrounds the editor with other roles. Any identity can use any template. Starters: `default` (label, editor, error), `withRequired` (adds the required indicator), `labelAfter`, `withAriaError`, `inContainer`, `editorOnly`. The label text is the identity name.
   - A form template is a recipe `(page) => void` that builds a whole form with `page.form()`, `field()`, `validationSummary()` and `submit()`. Pass a group to the latter two to write `data-jivs-group`; omit it to write none.
   - Templates are recipes rather than HTML strings so `TestHtmlBuilder` stays the only code that creates elements, ids and descriptors.
-- `TestHtmlBuilder.field(name, templateName?, editorOptions?)` adds one identity through a field template (default `default`). `editorOptions` (`presentationName`, `adapterKey`, `additionalAttributes`) pass through to the editor. `formTemplate(name)` runs a form template. Both require `context.fieldTemplateSource` to be the repository; `createTestForm` assigns it.
+- `TestHtmlBuilder.field(name, templateName?, editorOptions?)` adds one identity through a field template (default `default`). `editorOptions` (`presentationName`, `adapterKey`, `additionalAttributes`, `initialValue`) pass through to the editor. `formTemplate(name)` runs a form template. Both require `context.fieldTemplateSource` to be the repository; `createTestForm` assigns it.
 - `TestPropertiesRules.ts`: one `ValueHostRulesBase` subclass built from a list of identity names; its cache key includes the names.
 - `CreateTestForm.ts`: `createTestForm(options)` creates services (all conditions, parsers, formatters, ARIA), context, runner and form HTML first, then rules from `context.fieldNames`, then the manager; it writes the HTML to `document.body` and runs `FormInstaller`. Supply exactly one source: `fields` (names), `build` (`(page) => void`) or `formTemplate`. Other options: `fieldTemplate`, `fieldTemplates` (per name), `repository`, `services`, `formId`, `formAttributes`, `install`, `verbose`, `containerIdentifier` and `configure`. It returns `services`, `config`, `vhm`, `runner`, `context`, `page`, `collector` and `install()`. `duringEdit` is not an option; set it on `domServices.options.validationBehaviors`.
 

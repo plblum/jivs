@@ -289,7 +289,7 @@ describe('InputAdapterDefinition.sendValue', () => {
         let { testItem, input, jivsElement, valueHost } = setup();
         input.value = 'abc';
 
-        testItem.sendValue(valueHost, input, jivsElement, false, false);
+        testItem.sendValue(valueHost, input, jivsElement, { validate: false, duringEdit: false });
 
         expect(valueHost.textCalls).toEqual([{ value: 'abc', options: { validate: false, duringEdit: false } }]);
     });
@@ -297,7 +297,7 @@ describe('InputAdapterDefinition.sendValue', () => {
     test('duringEdit true is passed along', () => {
         let { testItem, input, jivsElement, valueHost } = setup();
 
-        testItem.sendValue(valueHost, input, jivsElement, true, false);
+        testItem.sendValue(valueHost, input, jivsElement, { validate: false, duringEdit: true });
 
         expect(valueHost.textCalls).toEqual([{ value: '', options: { validate: false, duringEdit: true } }]);
     });

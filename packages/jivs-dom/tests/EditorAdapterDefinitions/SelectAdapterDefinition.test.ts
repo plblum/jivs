@@ -223,7 +223,7 @@ describe('SelectAdapterDefinition.sendValue', () => {
         let { testItem, select, jivsElement, valueHost } = setup();
         select.value = 'c';
 
-        testItem.sendValue(valueHost, select, jivsElement, true, false);
+        testItem.sendValue(valueHost, select, jivsElement, { duringEdit: true, validate: false });
 
         expect(valueHost.textCalls).toEqual([{ value: 'c', options: { validate: false, duringEdit: true } }]);
     });

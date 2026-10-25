@@ -9,6 +9,7 @@ import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 /**
  * Provides an editor adapter definition for HTML select elements.
@@ -48,12 +49,12 @@ export class SelectAdapterDefinition extends EditorAdapterDefinitionBase
         let selectElement = editor as HTMLSelectElement;
         let self = this;
         selectElement.addEventListener('change', () => {
-            self.sendValue.apply(self, [valueHost, editor, jivsElement, false, true]);
+            self.sendValue.apply(self, [valueHost, editor, jivsElement, { validate: true }]);
         });
     }
-    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendTextValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+        this.sendTextValue(valueHost, editor, jivsElement, options);
     }
 
     public override createTextValueAdapter(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement): ITextValueAdapter | null

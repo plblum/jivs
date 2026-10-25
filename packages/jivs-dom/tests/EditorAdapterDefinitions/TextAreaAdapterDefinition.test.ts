@@ -216,7 +216,7 @@ describe('TextAreaAdapterDefinition.sendValue', () => {
         let { testItem, area, jivsElement, valueHost } = setup();
         area.value = 'xyz';
 
-        testItem.sendValue(valueHost, area, jivsElement, true, false);
+        testItem.sendValue(valueHost, area, jivsElement, { duringEdit: true, validate: false });
 
         expect(valueHost.textCalls).toEqual([{ value: 'xyz', options: { validate: false, duringEdit: true } }]);
     });

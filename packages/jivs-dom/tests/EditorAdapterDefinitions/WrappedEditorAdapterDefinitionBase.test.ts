@@ -16,6 +16,8 @@ import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import { DomLoggingFacade } from '../../src/Utilities/DomLoggingFacade';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+
 // This ensures that references to JivsServices include the domServices property
 // for the VSCode environment. Not needed for compiling or runtime
 import { JivsDomServicesInstaller } from './../../src/Services/JivsDomServicesInstaller';
@@ -60,9 +62,9 @@ class RecordingChildDefinition
     }
     public sendValueCalls: any[] = [];
     public sendValue(valueHost: IFieldValueHost, editor: HTMLElement,
-        jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+        jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.sendValueCalls.push({ valueHost, editor, jivsElement, duringEdit, validate });
+        this.sendValueCalls.push({ valueHost, editor, jivsElement, options });
     }
 }
 
@@ -364,19 +366,19 @@ describe('WrappedEditorAdapterDefinitionBase redirection to the child', () => {
     test('sendValue passes arguments to the child', () => {
         let { testItem, input, jivsElement, valueHost } = setup();
 
-        testItem.sendValue(valueHost, input, jivsElement, true, false);
+        testItem.sendValue(valueHost, input, jivsElement,  { duringEdit: true, validate: false });
 
-        expect(testItem.child.sendValueCalls).toEqual([
-            { valueHost, editor: input, jivsElement, duringEdit: true, validate: false }]);
+        expect(testItem.child.sendValueCalls).toMatchObject([
+            { valueHost, editor: input, jivsElement, options: { duringEdit: true, validate: false } }]);
     });
 
-    test('sendValue supplies duringEdit false and validate true when omitted', () => {
+    test('sendValue forwards omitted options to the child unchanged, leaving defaults to the child', () => {
         let { testItem, input, jivsElement, valueHost } = setup();
 
         testItem.sendValue(valueHost, input, jivsElement);
 
-        expect(testItem.child.sendValueCalls).toEqual([
-            { valueHost, editor: input, jivsElement, duringEdit: false, validate: true }]);
+        expect(testItem.child.sendValueCalls.length).toBe(1);
+        expect(testItem.child.sendValueCalls[0].options).toBeUndefined();
     });
 
     test('attachToSendValuesCore does nothing', () => {

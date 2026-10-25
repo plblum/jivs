@@ -1060,6 +1060,8 @@ Every value lives in two places: the form's editors and the `FieldValueHost`s. B
 
 `EditorReader` calls `sendValue(valueHost, editor, jivsElement, false, false)`. This is the same method the editors' event handlers use, except that `validate` is `false`, so every field is transferred first and `read()` validates once at the end. That means fewer updates to the shared Validation Summary.
 
+`EditorReader` does not require dispatchers to read editor values. It sends values with `skipValueChangedCallback: true`, so an attached text-value dispatcher does not write the text back to the editor the value came from. Reformatting on read (`reformatTextValue`) is not supported by `EditorReader`.
+
 ## Startup Code Compared
 
 Each example assumes the services, rules and `ValueHostsManager` have been created as shown above.

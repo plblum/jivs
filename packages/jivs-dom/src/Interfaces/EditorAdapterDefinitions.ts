@@ -13,6 +13,7 @@ import { EditorInstallOptions } from './EditorInstaller';
 import { IJivsElement } from "./IJivsElement";
 import { ITextValueAdapter, IValueAdapter } from './Adapters';
 import { IJivsDomServices } from './JivsDomServices';
+import { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 
 /**
@@ -128,10 +129,10 @@ export interface IEditorAdapterDefinition
      * @param valueHost - the value host associated with the editor.
      * @param editor - the DOM element representing the editor hosting the actual value.
      * @param jivsElement - the DOM element that contains the IJivsElement structure.
-     * @param duringEdit - whether the value is being sent during an edit operation.
-     * @param validate - whether to perform validation when sending the value.
+     * @param options - the options for sending the value, including whether it is during an edit operation and whether to perform validation.
+     * This is passed into setValue() on the value host, although it may have options revised as needed by the editor adapter.
      */
-    sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void;
+    sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void;
     
     /**
      * Attaches the handler to the widget specific event listener system.

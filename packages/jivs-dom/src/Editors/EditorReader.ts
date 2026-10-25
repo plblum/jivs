@@ -5,6 +5,7 @@ import { IElementRegistry } from '../Interfaces/ElementRegistry';
 import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ElementRole } from '../Interfaces/Types';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import type { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
 /**
  * A reader class that uses editors established by the ElementCollector, thus found in ElementRegistry.
@@ -12,6 +13,12 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
  * Unlike many readers, it does not support the ValueAdapterService and rules found on FieldValueHostConfig.
  * It goes through FieldValueHosts, gets each EditorAdapterDefinition, and executes its sendValue() method,
  * much like event handlers do when responding to events.
+ * 
+ * By design, will use these FieldValueHostSetValueOptions:
+ * - skipIfChanged = true
+ * - skipValueChangedCallback = true
+ * - disableFormatter = true (but we may change this to allow for reformatTextValue. TDB)
+ * - validate = false
  */
 export class EditorReader extends ReaderBase<IElementRegistry>
 {
@@ -43,7 +50,16 @@ export class EditorReader extends ReaderBase<IElementRegistry>
             return false;
         }
         let editor = editorAdapterDefinition.identifyEditor(destination, jivsElement);
-        editorAdapterDefinition.sendValue(destination, editor, jivsElement, false, false); // note: validation is handled by read() once all values are sent
+        editorAdapterDefinition.sendValue(destination, editor, jivsElement, this.getSetValueOptions());
         return true;
     }    
+    protected getSetValueOptions(): FieldValueHostSetValueOptions
+    {
+        return {
+            skipValueChangedCallback: true,
+            disableFormatter: true,
+            validate: false, // note: validation is handled by read() once all values are sent
+            skipIfUnchanged: true
+        };
+    }
 }    

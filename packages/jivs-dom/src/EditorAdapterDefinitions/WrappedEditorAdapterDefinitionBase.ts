@@ -12,6 +12,7 @@ import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
 import { IEditorAdapterDefinition } from '../Interfaces/EditorAdapterDefinitions';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import { ITextValueAdapter, IValueAdapter } from '../Interfaces/Adapters';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 
 /**
  * Base class for editor adapter definitions that use a wrapper around the actual editor element.
@@ -229,9 +230,9 @@ export abstract class WrappedEditorAdapterDefinitionBase<TEditor extends HTMLEle
         this.childEditorDefinitionAdapter.attachToSendValues(valueHost, editor, jivsElement, options ?? {});
     }
 
-    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public override sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
-        this.childEditorDefinitionAdapter.sendValue(valueHost, editor, jivsElement, duringEdit ?? false, validate ?? true);
+        this.childEditorDefinitionAdapter.sendValue(valueHost, editor, jivsElement, options);
     }
     protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void
     {

@@ -114,6 +114,20 @@ export class TestFieldRepository implements IFieldTemplateSource
     }
 }
 
+function valueAttribute(options: FieldEditorOptions): string
+{
+    if (options.initialValue === undefined)
+        return options.additionalAttributes ?? '';
+    const value = String(options.initialValue).replace(/&/g, '&amp;').replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `${ options.additionalAttributes ?? ''} value='${ value }'`.trim();
+}
+
+function selectedValue(options: FieldEditorOptions): string | undefined
+{
+    return options.initialValue === undefined ? undefined : String(options.initialValue);
+}
+
 /** Starter Field Identities and field templates. Extend with the register methods for specific tests. */
 export function createDefaultTestFieldRepository(): TestFieldRepository
 {
@@ -125,7 +139,7 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
         addConfig: (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
         addEditor: (page, name, o) =>
         {
-            page.inputEditor(name, 'text', o.presentationName, o.adapterKey, o.additionalAttributes);
+            page.inputEditor(name, 'text', o.presentationName, o.adapterKey, valueAttribute(o));
         }
     });
 
@@ -139,7 +153,7 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
         },
         addEditor: (page, name, o) =>
         {
-            page.inputEditor(name, 'number', o.presentationName, o.adapterKey, o.additionalAttributes);
+            page.inputEditor(name, 'number', o.presentationName, o.adapterKey, valueAttribute(o));
         }
     });
 
@@ -153,7 +167,7 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
         },
         addEditor: (page, name, o) =>
         {
-            page.inputEditor(name, 'date', o.presentationName, o.adapterKey, o.additionalAttributes);
+            page.inputEditor(name, 'date', o.presentationName, o.adapterKey, valueAttribute(o));
         }
     });
 
@@ -163,7 +177,8 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
         addConfig: (builder, name) => { builder.field(name, LookupKey.Boolean); },
         addEditor: (page, name, o) =>
         {
-            page.checkboxEditor(name, o.presentationName, o.adapterKey, o.additionalAttributes);
+            const checked = o.initialValue === true ? ' checked' : '';
+            page.checkboxEditor(name, o.presentationName, o.adapterKey, `${ o.additionalAttributes ?? ''}${ checked }`);
         }
     });
 
@@ -177,7 +192,7 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
                 { value: '', text: '' },
                 { value: 'a', text: 'Apple' },
                 { value: 'b', text: 'Banana' }
-            ], o.presentationName, o.adapterKey, o.additionalAttributes);
+            ], o.presentationName, o.adapterKey, o.additionalAttributes, selectedValue(o));
         }
     });
 
@@ -187,7 +202,8 @@ export function createDefaultTestFieldRepository(): TestFieldRepository
         addConfig: (builder, name) => { builder.field(name, LookupKey.String).requireText(); },
         addEditor: (page, name, o) =>
         {
-            page.radioEditor(name, name, ['x', 'y', 'z'], o.presentationName, o.adapterKey, o.additionalAttributes);
+            page.radioEditor(name, name, ['x', 'y', 'z'], o.presentationName, o.adapterKey,
+                o.additionalAttributes, selectedValue(o));
         }
     });
 

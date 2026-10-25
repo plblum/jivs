@@ -7,11 +7,12 @@
  */
 
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import type { InjectedError } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import type { InjectedError } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
+import { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorAdapterDefinitionBase } from './EditorAdapterDefinitionBase';
-import { IJivsDomServices } from '../Interfaces/JivsDomServices';
+import { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
 /**
  * Supports Applications that parse editor text into its native value prior to
@@ -71,7 +72,7 @@ export abstract class ParsedTextEditorAdapterDefinitionBase
      * @returns void
      */
     protected sendParsedTextValue(valueHost: IFieldValueHost,
-        editor: HTMLElement, jivsElement: IJivsElement, duringEdit: boolean = false, validate: boolean = true): void
+        editor: HTMLElement, jivsElement: IJivsElement, options?: SetValueOptions): void
     {
         if (!jivsElement.jivsTextValueAdapter)
         {
@@ -85,11 +86,14 @@ export abstract class ParsedTextEditorAdapterDefinitionBase
         }
         let textValue = jivsElement.jivsTextValueAdapter.readTextValue();
         let result = this.parseTextValue(textValue, valueHost, editor, jivsElement);
+        if (!options)
+            options = {};
+        if (options.validate === undefined)
+            options.validate = true;
+        if (options.duringEdit === undefined)
+            options.duringEdit = false;
+        (<FieldValueHostSetValueOptions> options).injectedError = result.injectedError;
 
-        valueHost.setValues(result.nativeValue, textValue, { 
-            validate: validate,
-            duringEdit: duringEdit,
-            injectedError: result.injectedError,
-        });
+        valueHost.setValues(result.nativeValue, textValue, options);
     }
 }

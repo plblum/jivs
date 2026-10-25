@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 import type { FieldValueHostConfig, IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
@@ -24,8 +25,7 @@ interface ISendValueCall
     valueHost: IFieldValueHost;
     editor: HTMLElement;
     jivsElement: IJivsElement;
-    duringEdit?: boolean;
-    validate?: boolean;
+    setValueOptions: SetValueOptions;
 }
 
 /**
@@ -47,9 +47,9 @@ class RecordingDefinition implements IEditorAdapterDefinition
     {
     }
     public sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement,
-        duringEdit?: boolean, validate?: boolean): void
+        options: SetValueOptions): void
     {
-        this.sendValueCalls.push({ valueHost, editor, jivsElement, duringEdit, validate });
+        this.sendValueCalls.push({ valueHost, editor, jivsElement, setValueOptions: options });
         valueHost.setTextValue(this.textToSend, { validate: false });
     }
     public identifyEditor(valueHost: IFieldValueHost, jivsElement: IJivsElement): HTMLElement
@@ -186,10 +186,10 @@ describe('EditorReader.read sending values', () => {
 
         new EditorReader(valueHostsManager).read();
 
-        expect(definition1.sendValueCalls).toEqual([
-            { valueHost: field1, editor: element1, jivsElement: element1, duringEdit: false, validate: false }]);
-        expect(definition2.sendValueCalls).toEqual([
-            { valueHost: field2, editor: element2, jivsElement: element2, duringEdit: false, validate: false }]);
+        expect(definition1.sendValueCalls).toMatchObject([
+            { valueHost: field1, editor: element1, jivsElement: element1, setValueOptions: { validate: false } }]);
+        expect(definition2.sendValueCalls).toMatchObject([
+            { valueHost: field2, editor: element2, jivsElement: element2, setValueOptions: { validate: false } }]);
         expect(field1.getTextValue()).toBe('one');
         expect(field2.getTextValue()).toBe('two');
         expect(readerLogs(services)).toEqual([]);

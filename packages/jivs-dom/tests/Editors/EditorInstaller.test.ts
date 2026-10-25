@@ -2,12 +2,12 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import type { SetValueOptions } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { TestingLoggingService } from '@plblum/jivs-engine/build/Support/TestingLoggingService';
-import { EditorInstaller } from '../../src/Editors/EditorInstaller';
 import { InputTextValueAdapter } from '../../src/Adapters/InputTextValueAdapter';
 import { InputAdapterDefinition } from '../../src/EditorAdapterDefinitions/InputAdapterDefinition';
+import { EditorInstaller } from '../../src/Editors/EditorInstaller';
 import { TextInputPresentation } from '../../src/FieldPresentations/TextInputPresentation';
-import { JivsDomServices } from '../../src/Services/JivsDomServices';
 import type { ITextValueAdapter, IValueAdapter } from '../../src/Interfaces/Adapters';
 import type {
     IEditorAdapterDefinition,
@@ -17,9 +17,11 @@ import type { EditorInstallOptions } from '../../src/Interfaces/EditorInstaller'
 import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
 import { ElementRole } from '../../src/Interfaces/Types';
-import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
+import { JivsDomServices } from '../../src/Services/JivsDomServices';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
+import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+
 // This ensures that references to JivsServices include the domServices property
 // for the VSCode environment. Not needed for compiling or runtime
 import { JivsDomServicesInstaller } from '../../src/Services/JivsDomServicesInstaller';
@@ -53,7 +55,7 @@ class RecordingDefinition implements IEditorAdapterDefinition
     constructor(private readonly eventOrder: string[] = [])
     {
     }
-    public sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, duringEdit?: boolean, validate?: boolean): void
+    public sendValue(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options: SetValueOptions): void
     {
         throw new Error('Method not implemented.');
     }

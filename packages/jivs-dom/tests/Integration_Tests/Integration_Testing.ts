@@ -26,6 +26,7 @@ export interface FieldEditorOptions {
     presentationName?: string | null;
     adapterKey?: string | null;
     additionalAttributes?: string;
+    initialValue?: string | number | boolean;
 }
 
 /**
@@ -458,11 +459,11 @@ export class TestHtmlBuilder {
         return this.inputEditor(fieldName, 'file', presentationName, adapterKey, additionalAttributes);
     }
     public radioEditor(fieldName: string | null, groupName: string, values: string[], presentationName: string | null = null,
-        adapterKey: string | null = null, additionalAttributes: string = ''): this {
+        adapterKey: string | null = null, additionalAttributes: string = '', selectedValue?: string): this {
         values.forEach((value, i) => {
             if (!i) this.editorTag('input', fieldName, 'input:radio', presentationName, adapterKey,
-                `name='${groupName}' value='${value}' ${additionalAttributes}`, 'radio', '', true);
-            else this.raw(`<input type='radio' name='${groupName}' value='${value}'>`);
+                `name='${groupName}' value='${value}' ${additionalAttributes}${value === selectedValue ? ' checked' : ''}`, 'radio', '', true);
+            else this.raw(`<input type='radio' name='${groupName}' value='${value}'${value === selectedValue ? ' checked' : ''}>`);
         });
         return this;
     }
@@ -471,8 +472,8 @@ export class TestHtmlBuilder {
         return this.editorTag('textarea', fieldName, 'textarea', presentationName, adapterKey, additionalAttributes);
     }
     public selectEditor(fieldName: string | null, options: { value: string; text: string }[], presentationName: string | null = null,
-        adapterKey: string | null = null, additionalAttributes: string = ''): this {
-        const content = options.map(o => `<option value='${o.value}'>${o.text}</option>`).join('');
+        adapterKey: string | null = null, additionalAttributes: string = '', selectedValue?: string): this {
+        const content = options.map(o => `<option value='${o.value}'${o.value === selectedValue ? ' selected' : ''}>${o.text}</option>`).join('');
         return this.editorTag('select', fieldName, 'select', presentationName, adapterKey, additionalAttributes,
             undefined, content);
     }

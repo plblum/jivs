@@ -37,6 +37,8 @@ export interface TestFormOptions
     fieldTemplate?: string;
     /** With fields: field template per Field Identity name. */
     fieldTemplates?: Record<string, string>;
+    /** With fields: values placed into the generated editors before installation. */
+    initialValues?: Record<string, string | number | boolean>;
     /**
      * Passed to createJivsServicesForTesting. Defaults enable all conditions, parsers and formatters,
      * and log Warn and above into services.loggingService (a TestingLoggingService) so tests can assert on them.
@@ -173,7 +175,11 @@ export function createTestForm(options: TestFormOptions): TestForm
     {
         const form = page.form(formId ?? 'test-form', options.formAttributes);
         for (const name of options.fields!)
-            form.field(name, options.fieldTemplates?.[name] ?? options.fieldTemplate ?? null);
+        {
+            const initialValue = options.initialValues?.[name];
+            form.field(name, options.fieldTemplates?.[name] ?? options.fieldTemplate ?? null,
+                initialValue === undefined ? undefined : { initialValue });
+        }
     }
 
     const rules = new TestPropertiesRules(services, context.fieldNames, repository);
