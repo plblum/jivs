@@ -148,25 +148,105 @@ describe('RadioButtonsAdapterDefinition inherited behavior', () => {
             .toBeNull();
     });
 
-    test('attachToSendValues sends the group text on change of the registered radio only', () => {
+});
+
+// A user picks any radio in the group, and only the selected radio fires change.
+// So every radio of the group needs its own change listener.
+describe('RadioButtonsAdapterDefinition.attachToSendValues', () => {
+    function setup(extraRadios?: (parent: HTMLElement) => void)
+    {
         let testItem = new RadioButtonsAdapterDefinition();
         testItem.domServices = createMockJivsDomServices({
             services: { loggingService: new RecordingLoggingService() } as unknown as IJivsServices
         });
-        let { radios } = createGroup();
+        let { parent, radios } = createGroup();
+        extraRadios?.(parent);
         let calls: any[] = [];
         let host = createStubFieldValueHost('Field1') as any;
         host.setTextValue = (v: string, o: any) => calls.push({ v, o });
         let jivsElement = radios[0] as unknown as IJivsElement;
         jivsElement.jivsTextValueAdapter = testItem.createTextValueAdapter(host, radios[0], jivsElement);
+        return { testItem, radios, calls, host, jivsElement };
+    }
 
-        testItem.attachToSendValues(host, radios[0], jivsElement, { duringEdit: true });
-        radios[1].checked = true;
-        radios[1].dispatchEvent(new Event('change'));   // listener is not on this radio
-        expect(calls).toEqual([]);
+    test('A change on the registered radio sends the checked value with validation', () => {
+        let { testItem, radios, calls, host, jivsElement } = setup();
+        testItem.attachToSendValues(host, radios[0], jivsElement);
+
+        radios[0].checked = true;
         radios[0].dispatchEvent(new Event('change'));
 
+        expect(calls).toEqual([{ v: 'red', o: { validate: true, duringEdit: false } }]);
+    });
+
+    test('A change on each of the other radios in the group sends the checked value with validation', () => {
+        let { testItem, radios, calls, host, jivsElement } = setup();
+        testItem.attachToSendValues(host, radios[0], jivsElement);
+
+        radios[1].checked = true;
+        radios[1].dispatchEvent(new Event('change'));
+        radios[2].checked = true;
+        radios[2].dispatchEvent(new Event('change'));
+
+        expect(calls).toEqual([
+            { v: 'green', o: { validate: true, duringEdit: false } },
+            { v: 'blue', o: { validate: true, duringEdit: false } }
+        ]);
+    });
+
+    test('Each change sends once, regardless of how many radios are in the group', () => {
+        let { testItem, radios, calls, host, jivsElement } = setup();
+        testItem.attachToSendValues(host, radios[0], jivsElement);
+
+        radios[2].checked = true;
+        radios[2].dispatchEvent(new Event('change'));
+
+        expect(calls).toHaveLength(1);
+    });
+
+    test('Radios with a different name in the same parent are not wired', () => {
+        let other: HTMLInputElement;
+        let { testItem, radios, calls, host, jivsElement } = setup((parent) => {
+            other = createRadio('size', 'large');
+            parent.appendChild(other);
+        });
+        testItem.attachToSendValues(host, radios[0], jivsElement);
+
+        other!.checked = true;
+        other!.dispatchEvent(new Event('change'));
+
+        expect(calls).toEqual([]);
+    });
+
+    test('The duringEdit option adds no input listener, because radios have only change', () => {
+        let { testItem, radios, calls, host, jivsElement } = setup();
+        testItem.attachToSendValues(host, radios[0], jivsElement, { duringEdit: true });
+
+        radios[1].checked = true;
+        radios[1].dispatchEvent(new Event('input'));
+        expect(calls).toEqual([]);
+
+        radios[1].dispatchEvent(new Event('change'));
         expect(calls).toEqual([{ v: 'green', o: { validate: true, duringEdit: false } }]);
+    });
+
+    test('A radio without a name or parent is a group of one and its change sends', () => {
+        let testItem = new RadioButtonsAdapterDefinition();
+        testItem.domServices = createMockJivsDomServices({
+            services: { loggingService: new RecordingLoggingService() } as unknown as IJivsServices
+        });
+        let lone = createRadio('', 'solo');
+        let calls: any[] = [];
+        let host = createStubFieldValueHost('Field1') as any;
+        host.setTextValue = (v: string, o: any) => calls.push({ v, o });
+        let jivsElement = lone as unknown as IJivsElement;
+        jivsElement.jivsTextValueAdapter = testItem.createTextValueAdapter(host, lone, jivsElement);
+        testItem.attachToSendValues(host, lone, jivsElement);
+
+        lone.checked = true;
+        lone.dispatchEvent(new Event('change'));
+
+        expect(calls).toEqual([{ v: 'solo', o: { validate: true, duringEdit: false } }]);
     });
 });
 
@@ -192,6 +272,30 @@ describe('RadioButtonsAdapterDefinition integration with real FieldValueHost', (
         testItem.attachToSendValues(host, radios[0], jivsElement);
         radios[2].checked = true;
         radios[0].dispatchEvent(new Event('change'));
+
+        expect(host.getTextValue()).toBe('blue');
+    });
+
+    test('A change on a radio other than the registered one sets the FieldValueHost text', () => {
+        let services = createJivsServicesForTesting();
+        let host = new ValueHostsManager({
+            services: services,
+            valueHostConfigs: [<FieldValueHostConfig>{
+                valueHostType: ValueHostType.Field, name: 'Field1', dataType: LookupKey.String
+            }]
+        }).getFieldValueHost('Field1')!;
+        let testItem = new RadioButtonsAdapterDefinition();
+        testItem.domServices = createMockJivsDomServices({
+            services: services,
+            loggingFacade: new DomLoggingFacade(services)
+        });
+        let { radios } = createGroup();
+        let jivsElement = radios[0] as unknown as IJivsElement;
+        jivsElement.jivsTextValueAdapter = testItem.createTextValueAdapter(host, radios[0], jivsElement);
+
+        testItem.attachToSendValues(host, radios[0], jivsElement);
+        radios[2].checked = true;
+        radios[2].dispatchEvent(new Event('change'));
 
         expect(host.getTextValue()).toBe('blue');
     });

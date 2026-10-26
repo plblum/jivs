@@ -9,11 +9,12 @@
  * @module jivs-dom/EditorAdapterDefinitions/ConcreteClasses/RadioButtonAdapterDefinition
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import type { ITextValueAdapter } from '../Interfaces/Adapters';
 import { RadioButtonsTextValueAdapter } from '../Adapters/RadioButtonsTextValueAdapter';
+import { defaultRadioButtonsPresentationName } from '../FieldPresentations/RadioButtonsPresentation';
+import type { ITextValueAdapter } from '../Interfaces/Adapters';
+import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { InputAdapterDefinition } from './InputAdapterDefinition';
-import { defaultRadioButtonsPresentationName } from '../FieldPresentations/RadioButtonsPresentation';
 
 /**
  * Provides an editor adapter definition for HTML input elements of type radio.
@@ -52,6 +53,24 @@ export class RadioButtonsAdapterDefinition extends InputAdapterDefinition
             this.requireInputElement(editor),   // may throw
             jivsElement
         );
+    }
+
+    /**
+     * Each radiobutton's change event must be wired to send its value to the adapter definition
+     * which is shared among all radio buttons in the same group.
+     * @param valueHost 
+     * @param editor 
+     * @param jivsElement 
+     * @param options 
+     */
+    protected override attachToSendValuesCore(valueHost: IFieldValueHost, editor: HTMLElement, jivsElement: IJivsElement, options: EditorInstallOptions): void
+    {
+        let siblings = RadioButtonsTextValueAdapter.getAllSiblingRadioButtons(editor as HTMLInputElement);
+        siblings.forEach(radio => {
+            radio.addEventListener('change', () => {
+                this.sendValue(valueHost, editor, jivsElement, { validate: true });
+            });
+        });
     }
 }
 
