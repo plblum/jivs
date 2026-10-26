@@ -1,9 +1,9 @@
 /** @jest-environment jsdom */
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
-import type { IElementRegistry, ElementRegistryRecord } from '../../src/Interfaces/ElementRegistry';
-import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
-import { ElementRole } from '../../src/Interfaces/Types';
+import type { IJivsDomServices } from '../../../src/Interfaces/JivsDomServices';
+import type { IElementRegistry, ElementRegistryRecord } from '../../../src/Interfaces/ElementRegistry';
+import type { IJivsElement } from '../../../src/Interfaces/IJivsElement';
+import { ElementRole } from '../../../src/Interfaces/Types';
 import
     {
         IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder,

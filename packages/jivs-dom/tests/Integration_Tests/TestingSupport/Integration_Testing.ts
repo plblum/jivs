@@ -3,12 +3,12 @@
  * rebuilding its descriptors and rerunning the collector/installer before assertions.
  */
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
-import type { IJivsElement } from '../../src/Interfaces/IJivsElement';
-import type { IEditorElementRegistryRecord, ElementRegistryRecord } from '../../src/Interfaces/ElementRegistry';
-import type { IFieldPresentation } from '../../src/Interfaces/FieldPresentations';
-import type { IFormPresentation } from '../../src/Interfaces/FormPresentations';
-import { ElementRole } from '../../src/Interfaces/Types';
+import type { IJivsDomServices } from '../../../src/Interfaces/JivsDomServices';
+import type { IJivsElement } from '../../../src/Interfaces/IJivsElement';
+import type { IEditorElementRegistryRecord, ElementRegistryRecord } from '../../../src/Interfaces/ElementRegistry';
+import type { IFieldPresentation } from '../../../src/Interfaces/FieldPresentations';
+import type { IFormPresentation } from '../../../src/Interfaces/FormPresentations';
+import { ElementRole } from '../../../src/Interfaces/Types';
 
 export interface TestFailure {
     id: string;

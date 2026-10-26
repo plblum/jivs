@@ -18,6 +18,7 @@ Reference for any chat/agent writing unit tests in this repo. It was derived fro
 12. **Use fakes for isolation and real collaborators for meaningful integration.** Keep focused unit tests with hand-written fakes when they make the class's request or edge case explicit. Prefer real collaborators when their behavior is directly relevant and they are lightweight to construct; add clearly labeled integration tests alongside the isolated tests rather than replacing all fakes. As classes in the checklist get tested, revisit earlier suites where a real collaborator adds useful coverage.
 13. **Website demonstrations.** `packages/jivs-dom/website/` (currently only `playground-preview/`, which does not use jivs-dom) will host user demos and testing demos, rebuilt on jivs-dom after the unit tests are in place. These are integration oriented and meaningful to a UI observer (an end user exercising the page). Only note a candidate in `planning/Testing_Demonstrations.md` when a class surfaces user-visible behavior; internals like `DomLoggingFacade` get no entry. Append; do not build them.
 14. Run npm run compile in packages/jivs-engine after any engine change. jivs-dom imports from build/.
+15. Do not expect integration tests to repeat tests that are fully handled within a unit test
 
 ## 1. Tooling and layout
 

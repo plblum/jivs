@@ -3,7 +3,7 @@ import { createTestForm } from './CreateTestForm';
 import { createDefaultTestFieldRepository, TestFieldRepository } from './TestFieldRepository';
 import { TestPropertiesRules } from './TestPropertiesRules';
 import { createJivsServicesForTesting } from '../../TestSupport/CreateJivsServicesForTesting';
-import { IntegrationTestContext, TestHtmlBuilder } from '../Integration_Testing';
+import { IntegrationTestContext, TestHtmlBuilder } from './Integration_Testing';
 
 afterEach(() => { document.body.innerHTML = ''; });
 

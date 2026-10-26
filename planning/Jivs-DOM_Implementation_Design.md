@@ -900,8 +900,7 @@ protected sendTextValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement,
     jivsElement: IJivsElement,
-    duringEdit: boolean = false,
-    validate: boolean = true
+    options?: SetValueOptions
 ): void;
 ```
 
@@ -911,17 +910,13 @@ This helper:
 2. returns after a Warn log when the adapter is `undefined` or `null`;
 3. calls `readTextValue()`;
 4. calls `valueHost.setTextValue()` with the result;
-5. passes the `validate` and `duringEdit` arguments in the options.
+5. passes the options object, initializing duringEdit to false and validate to true if not supplied.
 
 Conceptually:
 
 ```ts
 valueHost.setTextValue(
-    adapter.readTextValue(),
-    {
-        validate: validate,
-        duringEdit: duringEdit
-    }
+    adapter.readTextValue(), options
 );
 ```
 
@@ -932,7 +927,7 @@ protected sendNativeValue(
     valueHost: IFieldValueHost,
     editor: HTMLElement, 
     jivsElement: IJivsElement,
-    validate: boolean = true
+    options?: SetValueOptions
 ): void;
 ```
 
@@ -942,16 +937,14 @@ This helper:
 2. returns after a Warn log when the adapter is `undefined` or `null`;
 3. calls `readValue()`;
 4. calls `valueHost.setValue()` with the result;
-5. passes the `validate` argument in the options.
+5. passes the options object, initializing duringEdit to false and validate to true if not supplied.
 
 Conceptually:
 
 ```ts
 valueHost.setValue(
     adapter.readValue(),
-    {
-        validate: validate
-    }
+    options
 );
 ```
 
@@ -977,8 +970,7 @@ abstract class ParsedTextEditorAdapterDefinitionBase
         valueHost: IFieldValueHost,
         editor: HTMLElement, 
         jivsElement: IJivsElement,
-        duringEdit: boolean = false,
-        validate: boolean = true
+        options?: SetValueOptions
     ): void;
 }
 ```
@@ -990,8 +982,7 @@ abstract class ParsedTextEditorAdapterDefinitionBase
 3. obtains the current Text Value through `readTextValue()`;
 4. passes it to `parseTextValue()`;
 5. calls `valueHost.setValues()` with both values;
-6. supplies any returned `InjectedError`;
-7. passes the `validate` and `duringEdit` arguments in the options.
+6. passes the options object, initializing duringEdit to false and validate to true if not supplied, and assigns injectedError from the returned `InjectedError`
 
 Conceptually:
 
@@ -1005,14 +996,11 @@ const result = this.parseTextValue(
     jivsElement
 );
 
+options.injectedError = result.injectedError;
 valueHost.setValues(
     result.nativeValue,
     textValue,
-    {
-        validate: validate,
-        duringEdit: duringEdit,
-        injectedError: result.injectedError
-    }
+    options
 );
 ```
 
@@ -1153,7 +1141,7 @@ A completed installation never reaches this call again because the installer has
 
 * `undefined` or `false` installs only the definition’s completed-edit behavior;
 * `true` permits the definition to attach an intermediate-edit event, such as `input`;
-* intermediate Text Value and parsed Text Value events pass `duringEdit: true` to Jivs;
+* intermediate Text Value and parsed Text Value events pass `options.duringEdit: true` to Jivs;
 * Native Value submission does not support `duringEdit`, so native-only definitions ignore this option.
 
 The option determines which DOM triggers are attached. It is not passed to callers as an unrestricted `FieldValueHostSetValueOptions` object.
@@ -1444,8 +1432,7 @@ class InputAdapterDefinition
             "change",
             () => this.sendTextValue(
                 valueHost,
-                editor, jivsElement,
-                false
+                editor, jivsElement
             )
         );
 
@@ -1455,7 +1442,7 @@ class InputAdapterDefinition
                 () => this.sendTextValue(
                     valueHost,
                     editor, jivsElement,
-                    true
+                    { duringEdit: true }
                 )
             );
         }
@@ -4275,6 +4262,16 @@ The DOM installation architecture separates discovery, retained form data, eleme
 - `DispatcherService` attaches manager callbacks independently of the instance `FormInstaller`.
 - The static `FormInstaller.install()` utility combines installation and dispatcher attachment for normal application setup.
 
+The normal setup should make connecting Jivs to a form look straightforward to the user:
+
+1. Create the Jivs services.
+2. Create the Rules and `ValueHostsManager`.
+3. Install the form’s DOM behavior.
+4. Load the initial values by running a Reader (`ModelReader`, `DictionaryReader`, `FormReader`, or `EditorReader`).
+5. Establish its initial validation state. The Reader does this when it finishes.
+
+However, there are numerous details underlying these actions, and the user may choose to implement them directly.
+
 The normal setup is deliberately concise:
 
 ```ts
@@ -4285,7 +4282,7 @@ const valueHostsManager = new ValueHostsManager(rules.configure());
 FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
 
 const model = getPerson();
-const reader = new ModelReader(valueHostsManager, model, {});
+const reader = new ModelReader(valueHostsManager, model, {});   // any Reader: FormReader, DictionaryReader, EditorReader
 reader.read();
 ```
 
@@ -4305,6 +4302,104 @@ valueHostsManager.services.domServices.dispatchers.attach(
     false
 );
 ```
+
+### Detail look at the steps to fully initialize a page
+1. Create `JivsServices` itself
+    ```ts
+    const services = createJivsServices('en-US');
+    ```
+2. Create a `ValueHostRules` subclass to describe each ValueHost along with its rules like validators on `FieldValueHosts`.
+3. Create an instance of that rules class, execute its configure method, and create the instance of the `ValueHostsManager`.
+    ```ts
+    const rules = new PersonFormRules(services);
+    const valueHostsManager = new ValueHostsManager(rules.configure());    
+    ```    
+4. Extend with `JivsDomServices`, which becomes the domServices property on IJivsServices.
+    ```ts
+    new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
+    configureJivsDom(services); // supplied function that the user will edit to register services as needed. Found in the repo's starter_code folder as createJivsDom.ts
+    ```
+    `configureJivsDom()` is often placed by the user inside of `createJivsServices()`
+    but if not, they have to add it explicitly.
+5. Select an ElementCollector, which is the tool to retrieve HTML elements and register them with the `ElementRegistry`.
+    - Using Jivs-SimpleDom, use `SimpleDomElementCollector`.
+    - Otherwise, subclass ElementCollectorBase, calling methods on ElementRegistry like `addEditor`, `addField`, and `addForm`.
+        - You can have a different rules oriented approach from Jivs-SimpleDom to "scrape the page" for the data: MyFormScraperElementCollection.
+        - You can build one for each form that knows each individual editor, label, error message display, summary, etc: FormNameElementCollection
+6. Prepare the HTML to work with the ElementCollector.
+    - Using Jivs-SimpleDom, use its attributes like data-field, data-jivs-role, data-jivs-presentation, data-jivs-adapter, and data-jivs-group.
+7. Execute the FormInstaller using your ElementCollector:
+    ```ts
+    const collector = new SimpleDomElementCollector();
+    const installer = new FormInstaller(valueHostsManager, collector);
+    installer.install();
+    ```
+8. Attach jivs-dom's Dispatchers to ValueHostsManager's callbacks, so validation status changes are reported and values sent into ValueHostsManager can update editors.
+    ```ts
+    valueHostsManager.services.domServices.dispatchers.attach(valueHostsManager);
+    ```
+    NOTE: This and the previous step are encapsulated in this shortform syntax:
+    ```ts
+    FormInstaller.install(valueHostsManager, new SimpleDomElementCollector());
+    ```
+9. Initialize the values of each field and associated FieldValueHost. Depends on the source of those values:
+    - From a model, use the `ModelReader`.
+    - From an HTTP post request containing an HTML form's data, use the `FormReader`.
+    - From the editors within the HTML itself, use the `EditorReader`.
+    - From a dictionary with native values, use the `DictionaryReader`.
+    - Otherwise, use the `setValue()`, `setTextValue()`, or `setValues()` functions on each `FieldValueHost`.
+
+    When using `ModelReader`, `FormReader`, or `DictionaryReader`, you have the option to let this tool also populate the HTML editors.
+    - Ensure the TextValueDispatcher was attached to the ValueHostManager's onTextValueChanged callback. This is the default behavior from the previous steps.
+    - Ensure the options parameter on each reader does not have disableFormatter = true and skipValueChangedCallback = true. Both default to false.
+
+    `ModelReader` example:
+    ```ts
+    const model = getPerson();
+    const reader = new ModelReader(valueHostsManager, model);   // without options, expect editors to be updated too
+    reader.read();        
+    ```
+    `EditorReader` example:
+    ```ts
+    const reader = new EditorReader(valueHostsManager);
+    ```
+10. Execute a preliminary validation on all fields, without reporting any required field errors.
+    This is built into the Reader.read() operation. But if you don't use read, do this:
+    ```ts
+    valueHostsManager.validate({preliminary: true});
+    ```
+#### The Long Form of setup
+```ts
+const services = createJivsServices('en-US');
+const rules = new PersonFormRules(services);    // WORK: Create this class first!
+const valueHostsManager = new ValueHostsManager(rules.configure());
+
+configureJivsDom(services); // WORK: Configure within this function first!
+
+const collector = new SimpleDomElementCollector();  // WORK: If not using Jivs-SimpleDom, create a ElementCollector class first
+// WORK: Prepare your HTML for the collector, such as adding Jivs-SimpleDom attributes
+const installer = new FormInstaller(valueHostsManager, collector);
+installer.install();
+valueHostsManager.services.domServices.dispatchers.attach(valueHostsManager);
+
+const model = getPerson();
+const reader = new ModelReader(valueHostsManager, model, {});   // any Reader: FormReader, DictionaryReader, EditorReader
+reader.read();
+```
+#### Preliminaries
+The following are prequisites if you intend to just add the setup code.
+1. Have configureJivsDom() configured - one time
+2. Establish a call to configureJivsDom() within createJivsServices() - one time
+3. Created a ValueHostsRules subclass for the model or form involved - each use case
+4. Selected an approach for using an ElementCollector, and if needed, built the ElementCollector class - one time
+5. Setup your HTML with:
+    - syntax for a "page scrape" ElementCollector like SimpleDomElementCollector - each page
+    - installed placeholder tags for error message display, required indicator, aria errors (if error message display will popup its messages), and validation summary. - each page
+6. Determined how you will establish initial values in ValueHostsManager (pick a reader or write code to use FieldValueHost.setValue/Values/TextValue) - each page
+
+End result: The user could feel overwhelmed with the work involved and we have to make this process seem easier. We do this with jivs-simpledom, the readers, and good default service configuration.
+
+
 ### ElementRegistry
 
 #### Purpose and Ownership

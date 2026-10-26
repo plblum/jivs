@@ -11,7 +11,7 @@ import { FormInstaller } from '../../../src/FormInstaller/FormInstaller';
 import type { ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry } from '../../../src/Interfaces/ElementRegistry';
 import type { IJivsElement } from '../../../src/Interfaces/IJivsElement';
 import { createJivsServicesForTesting, type configureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
-import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from '../Integration_Testing';
+import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from './Integration_Testing';
 import { createDefaultTestFieldRepository, type TestFieldRepository } from './TestFieldRepository';
 import { TestPropertiesRules } from './TestPropertiesRules';
 
