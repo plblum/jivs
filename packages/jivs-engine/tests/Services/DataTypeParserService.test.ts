@@ -1,5 +1,5 @@
 import { populateServicesWithManyCultures } from "../TestSupport/utilities";
-import { CurrencyParser, NumberParser } from "../../src/DataTypes/DataTypeParsers";
+import { CurrencyParser, NumberParser, ShortDatePatternParser } from "../../src/DataTypes/DataTypeParsers";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
@@ -11,6 +11,7 @@ import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { JivsServices } from "../../src/Services/JivsServices";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { SevereErrorBase } from "../../src/Utilities/ErrorHandling";
+import { DatePatternParserBase } from '../../src/DataTypes/DataTypeParserBase';
 
 
 class TestParser<TDataType> implements IDataTypeParser<TDataType> {
@@ -21,12 +22,23 @@ class TestParser<TDataType> implements IDataTypeParser<TDataType> {
         this._supportedCultureIds = supportedCultureIds ?? ['en'];
         this._returnThis = returnThis;
     }
+    returnError(message?: string, errorCode?: string): DataTypeResolution<TDataType>
+    {
+        return {
+            errorDetails: {
+                errorMessage: 'TEST',
+                errorCode: 'badData'
+            }
+        };
+    }
+
     supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
        return this.isCompatible(dataTypeLookupKey, cultureId);
     }
     parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType | null> {
         return this._returnThis;
     }
+
 
     private _supportedLookupKey: string;
     private _supportedCultureIds: Array<string> | null;
@@ -106,6 +118,15 @@ describe('DataTypeParserService.parse', () => {
             parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string | null> {
                 throw new Error('ERROR');
             }
+            returnError(message?: string, errorCode?: string): DataTypeResolution<string>
+            {
+                return {
+                    errorDetails: {
+                        errorMessage: 'TEST',
+                        errorCode: 'badData'
+                    }
+                };
+            }            
         }
         let services = new MockJivsServices(false, true, 'en');
         populateServicesWithManyCultures(services, false);
@@ -133,6 +154,15 @@ describe('DataTypeParserService.parse', () => {
             parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<string | null> {
                 throw 'ERROR';
             }
+            returnError(message?: string, errorCode?: string): DataTypeResolution<string>
+            {
+                return {
+                    errorDetails: {
+                        errorMessage: 'TEST',
+                        errorCode: 'badData'
+                    }
+                };
+            }            
         }
         let services = new MockJivsServices(false, true);
         populateServicesWithManyCultures(services, false);
@@ -234,7 +264,24 @@ describe('parse() using lookupKeyFallbackService', () => {
         let dtfs = services.dataTypeParserService;
         let result: DataTypeResolution<string> | null = null;
         expect(() => result = dtfs.parse('1', 'CUSTOMB', 'en')).toThrow(/loop involving CUSTOMB/);
-    });        
+    });
+    // ShortDatePatternParser is designed to be compatible with 'Date' + cultures,
+    // but it rejects any string that doesn't match an expected date format.
+    // This test confirms the ParseService rejects incompatible text even when a compatible parser exists,
+    // but returns an error instead of throwing an exception.
+    test('Incompatible text with compatible parser returns error', () => {
+        let services = createJivsServices();
+        services.dataTypeParserService.register(new ShortDatePatternParser(LookupKey.Date, ['en'],
+            {
+                order: 'mdy',
+                shortDateSeparator: '/'
+            }
+        ));
+        let dtfs = services.dataTypeParserService;
+        let result = dtfs.parse('not-a-date', 'Date', 'en');
+        expect(result.errorDetails).toBeDefined();
+        expect(result.errorDetails!.errorMessage).toBe(DatePatternParserBase.badDataMessage);
+    });
     
 });
 describe('DataTypeParserServices register and find', () => {
@@ -295,6 +342,10 @@ describe('lazyLoad', () => {
         isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
             return dataTypeLookupKey === 'Normal';
         };
+        returnError(message?: string, errorCode?: string): DataTypeResolution<any>
+        {
+            throw new Error("Method not implemented.");
+        }
     }
     class LazyLoadParser implements IDataTypeParser<any>
     {
@@ -307,6 +358,10 @@ describe('lazyLoad', () => {
         isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
             return dataTypeLookupKey === 'LazyLoad';
         };
+        returnError(message?: string, errorCode?: string): DataTypeResolution<any>
+        {
+            throw new Error("Method not implemented.");
+        }
     }    
     test('Call to register does not lazy load', () => {
         let tls = new DataTypeParserService();

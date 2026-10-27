@@ -197,17 +197,22 @@ export abstract class DataTypeParserBase<TDataType, TOptions extends DataTypePar
      * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
      * @returns 
      */
-    protected returnError(message: string, errorCode?: string): DataTypeResolution<TDataType> 
+    public returnError(message?: string, errorCode?: string): DataTypeResolution<TDataType> 
     {
         if (!errorCode)
             errorCode = this.defaultErrorCode;
         return {
             errorDetails: {
-                errorMessage: message,
+                errorMessage: message ?? this.defaultErrorMessage,
                 errorMessagel10n: `${errorCode}_${this.supportedLookupKey}_l10n`,
                 errorCode: errorCode
             }
         };
+    }
+
+    protected get defaultErrorMessage(): string
+    {
+        return `Invalid entry`;
     }
 
     protected get defaultErrorCode(): string
@@ -396,6 +401,10 @@ export abstract class StrongPatternParserBase<TDataType, TOptions extends DataTy
 
     protected abstract processPattern(pattern: RegExpExecArray, text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType>;
     protected abstract patternDidNotMatchMessage(): string;
+
+    protected override get defaultErrorMessage(): string {
+        return this.patternDidNotMatchMessage();
+    }
 }
 
 /**

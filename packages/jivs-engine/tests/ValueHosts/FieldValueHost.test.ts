@@ -658,7 +658,15 @@ describe('setTextValue with parserLookupKey enabled to see both text value and n
         {
             throw new CodingError('EXCEPTION');
         }
-
+        returnError(message?: string, errorCode?: string): DataTypeResolution<string>
+        {
+            return {
+                errorDetails: {
+                    errorMessage: 'TEST',
+                    errorCode: 'badData'
+                }
+            };
+        }
     };
     test('Parser throws', () => {  
         let ivh: FieldValueHostConfig = {

@@ -95,4 +95,15 @@ export interface IDataTypeParser<TDataType> {
      * @param cultureId - Such as 'en-US' and 'en'
      */
     parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType | null>;
+
+    /**
+     * Utility to use when the parser needs to return an error in DataTypeResolution. 
+     * It will use the errorCode property to provide a default errorCode if one is not supplied.
+     * Error messages will have a generated localization key based on the LookupKey of the parser:
+     * {errorCode}_{LookupKey}_l10n
+     * @param message - The error message to return in the DataTypeResolution. If not supplied, a default is used.
+     * @param errorCode - Optional error code to return in the DataTypeResolution. If not supplied, the default errorCode property is used.
+     * @returns 
+     */
+    returnError(message?: string, errorCode?: string): DataTypeResolution<TDataType>;
 }

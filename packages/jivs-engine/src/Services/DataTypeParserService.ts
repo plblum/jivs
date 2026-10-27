@@ -68,6 +68,12 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
     }
     protected parseRecursive<T>(text: string, lookupKey: string, cultureId: string, alreadyChecked: Set<string>): DataTypeResolution<T> {
         assertNotEmptyString(lookupKey, 'lookupKey');
+        // parsers may be compatible based on lookup key and culture, but ultimately
+        // not selected because it may not be able to parse the given text successfully.
+        // That is designed to allow multiple parsers to be considered and fallbacks to be attempted if parsing fails.
+        // If a compatible parser is found but fails to parse, we need to report
+        // the failure differently: not as a missing parser, but as a parsing error.
+        let compatible: IDataTypeParser<T>| null = null;
         try {
             LookupKeyFallbackService.ensureRecursionSafe(lookupKey, alreadyChecked);
 
@@ -86,11 +92,20 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
                     } );
                 return result;
             }
+            let c = this.compatible(lookupKey, cultureId);
+            if (c) {
+                compatible = c[0];  // will end up with the last fallback checked
+            }
 
             const fallbackLookupKey = this.services.lookupKeyFallbackService.find(lookupKey);
             if (fallbackLookupKey) {
                 this.logger.message(LoggingLevel.Debug, () => `Trying fallback: ${fallbackLookupKey}`);
                 return this.parseRecursive(text, fallbackLookupKey, cultureId, alreadyChecked);
+            }
+            if (compatible)
+            {
+                this.logger.message(LoggingLevel.Debug, () => `Found compatible parsers for "${ lookupKey }" with culture "${ cultureId }" but none could parse the text successfully.`);
+                return compatible!.returnError();
             }
             throw new CodingError(`No DataTypeParser for LookupKey "${lookupKey}" with culture "${cultureId}"`);
         }
