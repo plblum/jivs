@@ -299,7 +299,7 @@ The `aria-error` role identifies the dedicated, visually hidden error-message el
 ## Field Element Discovery
 
 ```ts
-interface IFieldAriaElementAnchors {
+interface IFieldAriaElementInfo {
     readonly editorAnchor:
         IJivsElement | null;
 
@@ -334,7 +334,7 @@ abstract class AriaServiceBase
     protected abstract findElements(
         root: HTMLElement,
         valueHost: IFieldValueHost
-    ): IFieldAriaElementAnchors;
+    ): IFieldAriaElementInfo;
 }
 ```
 

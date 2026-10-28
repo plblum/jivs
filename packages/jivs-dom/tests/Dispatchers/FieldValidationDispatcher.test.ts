@@ -152,9 +152,9 @@ describe('FieldValidationDispatcher.dispatch with the real ElementRegistry', () 
         expect(ariaCalls).toEqual([
             { element: editor, field: valueHost, state: state },
             { element: label, field: valueHost, state: state },
-            { element: visibleError, field: valueHost, state: state }
+            { element: visibleError, field: valueHost, state: state },
+            { element: ariaError, field: valueHost, state: state }
         ]);
-        expect(ariaCalls.some(call => call.element === ariaError)).toBe(false);
         expect(ariaCalls.some(call => call.element === unrelatedElement)).toBe(false);
     });
 

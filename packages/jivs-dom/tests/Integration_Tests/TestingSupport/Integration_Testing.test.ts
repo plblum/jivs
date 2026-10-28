@@ -331,7 +331,7 @@ describe('Additional option and ARIA coverage', () =>
         el.jivsElementRole = ElementRole.ariaError;
         el.jivsFieldPresentation = null;
         el.jivsAriaValidationStateUpdater = updater as any;
-        (registry as any).getFieldAriaElementAnchors = () => ({
+        (registry as any).getFieldAriaElementInfo = () => ({
             editorJivsElement: null, errorMessageElement: el, errorMessageRole: ElementRole.ariaError,
             elementIdentifier: 'name'
         });
@@ -625,7 +625,7 @@ describe('IntegrationTestRunner expanded coverage', () =>
         error.jivsElementRole = ElementRole.ariaError;
         error.jivsFieldPresentation = null;
         error.jivsAriaValidationStateUpdater = null;
-        (registry as any).getFieldAriaElementAnchors = () => ({
+        (registry as any).getFieldAriaElementInfo = () => ({
             editorJivsElement: editor,
             errorMessageElement: error, errorMessageRole: ElementRole.ariaError, elementIdentifier: 'name'
         });

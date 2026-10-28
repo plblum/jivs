@@ -1039,7 +1039,7 @@ The service is supplied IDomServices upon creation to provide access to relevant
 `jivs-dom` exports `AriaServiceBase` as the standard reusable implementation and extension point. It implements `IAriaService`, the standard attribute-update policy, error handling, and use of sibling `DomServices` services. Its subclasses provide field discovery for their markup convention.
 
 ```ts
-interface IFieldAriaElementAnchors {
+interface IFieldAriaElementInfo {
     readonly editorAnchor:
         IJivsElement | null;
 
@@ -1061,7 +1061,7 @@ abstract class AriaServiceBase
     protected abstract findFieldElements(
         root: HTMLElement,
         valueHost: IFieldValueHost
-    ): IFieldAriaElementAnchors;
+    ): IFieldAriaElementInfo;
 }
 ```
 

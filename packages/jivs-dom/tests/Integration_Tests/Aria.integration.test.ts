@@ -1,9 +1,10 @@
 /** @jest-environment jsdom */
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
-import { TestForm } from './TestingSupport/CreateTestForm';
+import { createTestForm, TestForm } from './TestingSupport/CreateTestForm';
+import { FormInstaller } from '../../src/FormInstaller/FormInstaller';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
-import { installForm } from './TestingSupport/FieldFeedbackExpectations';
+import { installForm, installPopupForm } from './TestingSupport/FieldFeedbackExpectations';
 import { useCleanDocument } from './TestingSupport/TestFileSupport';
 
 /**
@@ -55,6 +56,19 @@ function createRepository()
             page.inputEditor(name, 'text', o.presentationName, o.adapterKey, o.additionalAttributes);
         }
     });
+    repository.registerIdentity({
+        name: 'Text_Max5_Warning',
+        description: 'Text input where more than 5 characters is only a Warning',
+        addConfig: (builder, name) =>
+        {
+            builder.field(name, LookupKey.String)
+                .stringLength(5, { errorMessage: 'LEN-WARN', severity: ValidationSeverity.Warning });
+        },
+        addEditor: (page, name, o) =>
+        {
+            page.inputEditor(name, 'text', o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
     return repository;
 }
 
@@ -97,5 +111,197 @@ describe('Static ARIA attributes at install', () =>
         expect(record!.role).toBe('required');
         expect(record!.element).toBe(indicator);
         expect(indicator.getAttribute('aria-hidden')).toBe('true');
+    });
+});
+
+/** The user edits the editor and leaves it, which sends a change event. */
+function userEdits(t: TestForm, field: string, value: string): void
+{
+    let editor = t.element('editor', field) as unknown as HTMLInputElement;
+    editor.value = value;
+    editor.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+// The validation state phase follows the field's state. The editor points at its error element with aria-errormessage,
+// and the error element's id is assigned at install when the markup has none.
+describe('Validation state ARIA attributes on the editor', () =>
+{
+    const field = 'Text_Upper_Max5';
+
+    test('aria-invalid and aria-errormessage appear when invalid and are removed when valid', () =>
+    {
+        let t = installWithAria([field]);
+        let editor = t.element('editor', field);
+        let errorElement = t.element('error', field);
+        expect(errorElement.id).not.toBe('');
+
+        userEdits(t, field, 'abcdefg');
+
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(editor.getAttribute('aria-errormessage')).toBe(errorElement.id);
+
+        userEdits(t, field, 'ABC');
+
+        expect(editor.hasAttribute('aria-invalid')).toBe(false);
+        expect(editor.hasAttribute('aria-errormessage')).toBe(false);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('An error element without an id is given a generated one, and aria-errormessage uses it', () =>
+    {
+        // The builder always writes ids, so build without installing, assign to the document, remove the id, then install.
+        let t = createTestForm({
+            repository: createRepository(), fields: [field], verbose: verbose, fieldTemplate: 'withRequired',
+            servicesConfigOptions: { ariaService: true }, install: false
+        });
+        t.page.assign();
+        document.querySelector("[data-jivs-role='error']")!.removeAttribute('id');
+        FormInstaller.install(t.vhm, t.collector);
+        let errorElement = t.element('error', field);
+        let editor = t.element('editor', field);
+
+        expect(errorElement.id).toMatch(/^error-.+/);
+        expect(errorElement.id).toContain(field);
+
+        userEdits(t, field, 'abcdefg');
+
+        expect(editor.getAttribute('aria-errormessage')).toBe(errorElement.id);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// A Warning does not make the field invalid, so aria-invalid is not set. The message still reaches the screen reader
+// through the aria-error element, which shows whatever issues the state holds.
+describe('Warnings', () =>
+{
+    const field = 'Text_Max5_Warning';
+
+    test('A warning leaves aria-invalid off but still fills the aria-error element', () =>
+    {
+        let t = installWithAria([field], 'withAriaError');
+        let editor = t.element('editor', field);
+        let ariaError = t.element('aria-error', field);
+
+        userEdits(t, field, 'abcdefg');
+
+        expect(t.vhm.getFieldValueHost(field)!.currentValidationState.isValid).toBe(true);
+        expect(t.vhm.getFieldValueHost(field)!.currentValidationState.issuesFound).toHaveLength(1);
+        expect(editor.hasAttribute('aria-invalid')).toBe(false);
+        expect(ariaError.textContent).toBe('LEN-WARN');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// Each new state replaces the previous one, so nothing stale remains on the editor or the aria-error element.
+describe('ARIA through a sequence of edits and a clear', () =>
+{
+    const field = 'Text_Upper_Max5';
+
+    test('Invalid, valid, then invalid again, each state fully replaces the previous', () =>
+    {
+        let t = installWithAria([field], 'withAriaError');
+        let editor = t.element('editor', field);
+        let ariaError = t.element('aria-error', field);
+
+        userEdits(t, field, 'abcdefg');
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(editor.getAttribute('aria-errormessage')).toBe(ariaError.id);
+        expect(ariaError.textContent).toBe('UPPER-MSG; LEN-MSG');
+
+        userEdits(t, field, 'ABC');
+        expect(editor.hasAttribute('aria-invalid')).toBe(false);
+        expect(editor.hasAttribute('aria-errormessage')).toBe(false);
+        expect(ariaError.textContent).toBe('');
+
+        userEdits(t, field, 'ABCDEFG');
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(editor.getAttribute('aria-errormessage')).toBe(ariaError.id);
+        expect(ariaError.textContent).toBe('LEN-MSG');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('ValueHostsManager.clearValidation() removes aria-invalid and aria-errormessage and empties the aria-error element', () =>
+    {
+        let t = installWithAria([field], 'withAriaError');
+        let editor = t.element('editor', field);
+        let ariaError = t.element('aria-error', field);
+        userEdits(t, field, 'abcdefg');
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+
+        t.vhm.clearValidation();
+
+        expect(editor.hasAttribute('aria-invalid')).toBe(false);
+        expect(editor.hasAttribute('aria-errormessage')).toBe(false);
+        expect(ariaError.textContent).toBe('');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// When the markup has both an error display and an aria-error element, aria-error supplies the id for aria-errormessage.
+// It holds the messages as plain text for screen readers, and the editor's aria-errormessage points to it.
+describe('The aria-error element', () =>
+{
+    const field = 'Text_Upper_Max5';
+
+    test('Holds the plain-text messages while invalid, clears when valid, and is the editor\'s aria-errormessage target', () =>
+    {
+        let t = installWithAria([field], 'withAriaError');
+        let editor = t.element('editor', field);
+        let ariaError = t.element('aria-error', field);
+
+        userEdits(t, field, 'abcdefg');
+
+        expect(editor.getAttribute('aria-errormessage')).toBe(ariaError.id);
+        expect(ariaError.textContent).toBe('UPPER-MSG; LEN-MSG');
+        expect(ariaError.children.length).toBe(0);
+
+        userEdits(t, field, 'ABC');
+
+        expect(ariaError.textContent).toBe('');
+        expect(editor.hasAttribute('aria-errormessage')).toBe(false);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// A popup error display and an aria-error element together. The aria-error element always supplies the id for
+// aria-errormessage and the plain-text messages, while the popup indicator keeps the ARIA its own presentation supplies.
+describe('Popup error display together with an aria-error element', () =>
+{
+    const field = 'Text_Upper_Max5';
+
+    test('The popup indicator keeps its button role and aria-label, and the aria-error element supplies aria-errormessage', () =>
+    {
+        let repository = createRepository();
+        repository.registerFieldTemplate('popupWithAriaError', (page, f) =>
+        {
+            page.label(f.name, f.name);
+            f.addEditor(page);
+            page.errorDisplay(f.name, 'PopupError');
+            page.ariaError(f.name);
+        });
+        let { t } = installPopupForm({
+            repository: repository, fields: [field], verbose: verbose, fieldTemplate: 'popupWithAriaError',
+            servicesConfigOptions: { ariaService: true }
+        });
+        let editor = t.element('editor', field);
+        let indicator = t.element('error', field);
+        let ariaError = t.element('aria-error', field);
+
+        expect(indicator.getAttribute('role')).toBe('button');
+        expect(indicator.getAttribute('aria-label')).toBe('Show validation errors');
+        expect(ariaError.classList.contains('jivs-visually-hidden')).toBe(true);
+
+        userEdits(t, field, 'abcdefg');
+
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(editor.getAttribute('aria-errormessage')).toBe(ariaError.id);
+        expect(ariaError.textContent).toBe('UPPER-MSG; LEN-MSG');
+        expect(indicator.hasAttribute('aria-errormessage')).toBe(false);
+
+        userEdits(t, field, 'ABC');
+
+        expect(editor.hasAttribute('aria-errormessage')).toBe(false);
+        expect(ariaError.textContent).toBe('');
+        expect(t.services.loggingService.entryCount).toBe(0);
     });
 });

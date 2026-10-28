@@ -7,7 +7,7 @@
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { EditorInstallOptions } from '../Interfaces/EditorInstaller';
-import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementAnchors, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
+import { ElementIdentifierRegistryEntry, ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry, IFieldAriaElementInfo, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { FieldPresentationInstallOptions } from '../Interfaces/FieldPresentations';
 import { FormPresentationInstallOptions } from '../Interfaces/FormPresentations';
 import { IJivsElement } from '../Interfaces/IJivsElement';
@@ -235,9 +235,7 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
         if (!entry) return [];
         let elements: IJivsElement[] = [];
         for (let record of entry.records) { // already kind='field'
-            if (record.role !== ElementRole.ariaError) {
-                elements.push(record.element);
-            }
+            elements.push(record.element);
         }
         return elements;
     }
@@ -295,11 +293,11 @@ export class ElementRegistry implements IElementRegistry, Iterable<ElementRegist
      * Both may not exist, and it will return null for the element property in that case.
      * @param elementIdentifier 
      */
-    public getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors
+    public getFieldAriaElementInfo(elementIdentifier: string): IFieldAriaElementInfo
     {
         let elementIdentifierLC = elementIdentifier.toLowerCase();
         let entry = this.entriesByElementIdentifier.get(elementIdentifierLC);
-        let result: IFieldAriaElementAnchors = {
+        let result: IFieldAriaElementInfo = {
             editorJivsElement: null,
             errorMessageElement: null,
             errorMessageRole: null,

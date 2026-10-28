@@ -3366,12 +3366,12 @@ flowchart TB
     Elements["IJivsElement instances"]
 
     Dispatcher -->|"applyValidationState()"| AriaService
-    AriaService -->|"getFieldAriaElementAnchors()"| Registry
+    AriaService -->|"getFieldAriaElementInfo()"| Registry
     AriaService -->|"calls attached updaters"| Updaters
     Updaters -->|"updates attributes or content"| Elements
 ```
 
-After applying the installed field presentations, `FieldValidationDispatcher` calls `AriaService.applyValidationState()`. The service obtains the field’s editor and selected error-message elements through `IElementRegistry.getFieldAriaElementAnchors()`. It then invokes the Validation State Updater retained on each applicable element.
+After applying the installed field presentations, `FieldValidationDispatcher` calls `AriaService.applyValidationState()`. The service obtains the field’s editor and selected error-message elements through `IElementRegistry.getFieldAriaElementInfo()`. It then invokes the Validation State Updater retained on each applicable element.
 
 ### Managed Accessibility Attributes
 
@@ -3409,15 +3409,15 @@ Jivs supports two alternatives:
 `AriaService` uses:
 
 ```ts
-IElementRegistry.getFieldAriaElementAnchors(
+IElementRegistry.getFieldAriaElementInfo(
     elementIdentifier: string
-): IFieldAriaElementAnchors;
+): IFieldAriaElementInfo;
 ```
 
 The returned object identifies the editor jivsElement, the selected error-message element, and its content owner:
 
 ```ts
-interface IFieldAriaElementAnchors {
+interface IFieldAriaElementInfo {
     readonly jivsElement:
         IJivsElement | null;
 
@@ -3439,7 +3439,7 @@ interface IFieldAriaElementAnchors {
 
 The anchors determine which element is passed to each updater. Updaters do not receive the complete anchors object.
 
-`IElementRegistry.getFieldAriaElementAnchors()` applies this precedence:
+`IElementRegistry.getFieldAriaElementInfo()` applies this precedence:
 
 1. Select the field’s editor jivsElement from its `ElementRole.editor` record.
 2. Select the field’s `ElementRole.ariaError` element when one exists.
@@ -3538,7 +3538,7 @@ The ARIA implementation requires the following public contracts and classes.
 | `IAriaStaticUpdater` | Defines installation-time accessibility work for one field or form element. |
 | `IAriaValidationStateUpdater` | Defines validation-state accessibility work for one field element. Its application method does not receive the element’s role. |
 | `IAriaService` | Defines updater registration, registry-based installation, static application, and field validation-state orchestration. |
-| `IFieldAriaElementAnchors` | Identifies the editor and selected error-message elements returned by `IElementRegistry.getFieldAriaElementAnchors()`. |
+| `IFieldAriaElementInfo` | Identifies the editor and selected error-message elements returned by `IElementRegistry.getFieldAriaElementInfo()`. |
 | `AriaService` | Implements updater registries, composition, registry-based installation, static application, and validation-state orchestration. |
 | `EditorAriaStaticUpdater` | Applies aria-required if FieldValueHost.required = true |
 | `ValidationSummaryAriaStaticUpdater` | Applies the standard static Validation Summary semantics. |
@@ -3725,6 +3725,17 @@ of the container of the error messages. It is used by the editor's validation st
 - The ID is retrieved from the error message element. If that attribute is not present, one will be generated and assigned to it by AriaService.install().
 - The ID is a parameter to AriaValidationStateUpdater.applyValidationState. Editor implementations are expected to consume it.
 
+**Which error element supplies the ID**
+
+A field may have both role='error' (the Field Error Display) and role='aria-error' (the dedicated ARIA error element).
+Only one element can supply the ID, because `aria-errormessage` must not reference two elements.
+- When role='aria-error' exists, it always supplies the ID, no matter how role='error' is set up
+  (inline display, popup, or anything else). It also receives the plain text of the messages.
+- When only role='error' exists, it supplies the ID.
+- The element that does not supply the ID still receives its own static and validation state updaters, as every other
+  role does. For example, a popup indicator with role='error' keeps its button role and aria-label
+  from `PopupErrorMessageDisplayStaticUpdater` even when role='aria-error' supplies the ID.
+
 
 ### ElementRole
 
@@ -3752,7 +3763,7 @@ enum ElementRole {
 - applies Static Updaters to eligible field and form elements;
 - selects and retains specialized Validation State Updaters on eligible field elements;
 - applies initial and later validation states;
-- obtains field ARIA anchors through `IElementRegistry.getFieldAriaElementAnchors()`;
+- obtains field ARIA anchors through `IElementRegistry.getFieldAriaElementInfo()`;
 - retrieves the selected error-message element’s existing ID;
 - performs no role-specific attribute or content mutation itself.
 
@@ -3773,13 +3784,6 @@ The service does not retain an `IElementRegistry`, `IFieldValueHost`, `ValueHost
         jivsElementRole
 2. Executes the updater's applyValidationState or logs a warning when not found.
 3. Returns the updater or null.
-### Resolving ErrorMessageId for the editors aria-errormessage attribute
-Each editor requires aria-errormessage attribute to specify the id 
-of the container of the error messages. It is used by the editor's validation state updater. The AriaService.install() function resolves the ID prior to executing that updater.
-- Only gets setup when both editor and an error message element are present
-- The ID is stored in IJivsElement.jivsErrorMessageId.
-- The ID is retrieved from the error message element. If that attribute is not present, one will be generated and assigned to it by AriaService.install().
-- The ID is a parameter to AriaValidationStateUpdater.applyValidationState. Editor implementations are expected to consume it.
 
 ### Built-in Updater Implementations
 
@@ -4540,18 +4544,18 @@ getFormPresentationElements(): IJivsElement[];
 getElementsByRole(role: ElementRole | string, elementIdentifier: string | null): IJivsElement[];
 ```
 
-Results preserve Registry order. Adapter queries return installed editor anchors. The field-presentation query includes editor anchors with Field Presentations and excludes `aria-error` elements. Dispatchers still check the installed property before invoking it.
+Results preserve Registry order. Adapter queries return installed editor anchors. The field-presentation query includes editor anchors with Field Presentations. Dispatchers still check the installed property before invoking it.
 
 ARIA uses:
 
 ```ts
-interface IFieldAriaElementAnchors {
+interface IFieldAriaElementInfo {
     editorJivsElement: IJivsElement | null;
     errorMessageElement: IJivsElement | null;
     errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
 }
 
-getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;
+getFieldAriaElementInfo(elementIdentifier: string): IFieldAriaElementInfo;
 ```
 
 The query selects the last editor jivsElement and last `aria-error` record. If no `aria-error` record exists, it selects the first `error` record. It returns the selected role for updater selection.

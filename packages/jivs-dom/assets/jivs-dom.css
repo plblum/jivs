@@ -1055,7 +1055,7 @@
  * 'jivs-visually-hidden' class visually hides the element while keeping it accessible to assistive technologies.
  * If you use jivs-simpledom, this class is added for you automatically.
  *    <span data-jivs-role='aria-error' ></span>
- * If not, add it:
+ * If not, add it explicitly:
  *    <span class='jivs-visually-hidden'></span>
  */
 

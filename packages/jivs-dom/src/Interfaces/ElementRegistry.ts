@@ -122,7 +122,7 @@ export interface IElementRegistry extends Iterable<ElementRegistryRecord>
      * Both may not exist, and it will return null for the element property in that case.
      * @param elementIdentifier 
      */
-    getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;   
+    getFieldAriaElementInfo(elementIdentifier: string): IFieldAriaElementInfo;   
     
     /**
      * Returns each unique Element Identifier associated with the registered elements
@@ -236,9 +236,9 @@ export type ElementRegistryRecord =
 //#endregion Element Registry Records
 
 /**
- * Results from IElementRegistry.getFieldAriaElementAnchors()
+ * Results from IElementRegistry.getFieldAriaElementInfo()
  */
-export interface IFieldAriaElementAnchors
+export interface IFieldAriaElementInfo
 {
     editorJivsElement: IJivsElement | null;
     errorMessageElement: IJivsElement | null;

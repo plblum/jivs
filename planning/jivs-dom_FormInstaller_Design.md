@@ -405,7 +405,7 @@ Each query is named for its consumer use case. The Registry does not expose one 
 The existing ARIA result contract remains in use:
 
 ```ts
-interface IFieldAriaElementAnchors {
+interface IFieldAriaElementInfo {
     readonly editorAnchor: IJivsElement | null;
     readonly errorMessageElement: IJivsElement | null;
     readonly errorMessageRole: ElementRole.error | ElementRole.ariaError | null;
@@ -415,7 +415,7 @@ interface IFieldAriaElementAnchors {
 The Registry exposes:
 
 ```ts
-getFieldAriaElementAnchors(elementIdentifier: string): IFieldAriaElementAnchors;
+getFieldAriaElementInfo(elementIdentifier: string): IFieldAriaElementInfo;
 ```
 
 The query:

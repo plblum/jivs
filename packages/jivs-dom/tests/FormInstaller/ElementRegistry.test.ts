@@ -7,7 +7,7 @@ import type {
     ElementRegistryRecord,
     IEditorElementRegistryRecord,
     IElementRegistry,
-    IFieldAriaElementAnchors,
+    IFieldAriaElementInfo,
     IFieldElementRegistryRecord,
     IFormElementRegistryRecord
 } from '../../src/Interfaces/ElementRegistry';
@@ -248,7 +248,7 @@ describe('ElementRegistry adapter and field-presentation queries', () => {
         expect(registry.getTextValueAdapterElements('email')).toEqual([]);
         expect(registry.getValueAdapterElements('email')).toEqual([]);
     });
-    test('Includes field records regardless of installed presentation, except aria-error', () => {
+    test('Includes every field record, including aria-error, regardless of installed presentation', () => {
         let { registry } = setup();
         let editor = createJivsElement('input');
         let label = createJivsElement('label');
@@ -259,7 +259,7 @@ describe('ElementRegistry adapter and field-presentation queries', () => {
         registry.addField(visibleError, 'email', ElementRole.error);
         registry.addField(hiddenError, 'email', ElementRole.ariaError);
 
-        expect(registry.getFieldPresentationElements('EMAIL')).toEqual([editor, label, visibleError]);
+        expect(registry.getFieldPresentationElements('EMAIL')).        toEqual([editor, label, visibleError, hiddenError]);
         expect(registry.getFieldPresentationElements('unknown')).toEqual([]);
     });
 });
@@ -308,11 +308,11 @@ describe('ElementRegistry form and role queries', () => {
 });
 
 // ARIA anchor lookup returns null defaults when absent, prioritizes aria-error, and applies last-match semantics for duplicates.
-describe('ElementRegistry.getFieldAriaElementAnchors', () => {
+describe('ElementRegistry.getFieldAriaElementInfo', () => {
     test('Returns null anchors and the requested identifier when no records are registered', () => {
         let { registry } = setup();
 
-        let result = registry.getFieldAriaElementAnchors('Missing');
+        let result = registry.getFieldAriaElementInfo('Missing');
 
         expect(result).toEqual({
             editorJivsElement: null,
@@ -331,7 +331,7 @@ describe('ElementRegistry.getFieldAriaElementAnchors', () => {
         registry.setEditorJivsElement(editorRecord, editorAnchor);
         registry.addField(error, 'email', ElementRole.error);
 
-        let result = registry.getFieldAriaElementAnchors('EMAIL');
+        let result = registry.getFieldAriaElementInfo('EMAIL');
 
         expect(result).toEqual({
             editorJivsElement: editorAnchor,
@@ -347,7 +347,7 @@ describe('ElementRegistry.getFieldAriaElementAnchors', () => {
         registry.addField(firstError, 'email', ElementRole.error);
         registry.addField(secondError, 'email', ElementRole.error);
 
-        let result = registry.getFieldAriaElementAnchors('email');
+        let result = registry.getFieldAriaElementInfo('email');
 
         expect(result.errorMessageElement).toBe(firstError);
         expect(result.errorMessageRole).toBe(ElementRole.error);
@@ -372,7 +372,7 @@ describe('ElementRegistry.getFieldAriaElementAnchors', () => {
         registry.addField(firstAriaError, 'email', ElementRole.ariaError);
         registry.addField(lastAriaError, 'email', ElementRole.ariaError);
 
-        let result = registry.getFieldAriaElementAnchors('email');
+        let result = registry.getFieldAriaElementInfo('email');
 
         expect(result).toEqual({
             editorJivsElement: lastEditorAnchor,
@@ -430,11 +430,11 @@ describe('ElementRegistry.clear', () => {
         expect(registry.getResolvedElementIdentifiers()).toEqual([]);
         expect(registry.getFormPresentationElements()).toEqual([]);
         expect(registry.getElementsByRole(ElementRole.label, null)).toEqual([]);
-        expect(registry.getFieldAriaElementAnchors('email')).toMatchObject({
+        expect(registry.getFieldAriaElementInfo('email')).toMatchObject({
             editorJivsElement: null,
             errorMessageElement: null,
             errorMessageRole: null
-        } satisfies Partial<IFieldAriaElementAnchors>);
+        } satisfies Partial<IFieldAriaElementInfo>);
     });
     test('Can accept and resolve new records after clear', () => {
         let { registry } = setup();

@@ -355,6 +355,39 @@ describe('AriaService.applyValidationState', () => {
         expect(calls).toEqual([[element, valueHost, state]]);
     });
 
+    test('Passes the element\'s jivsErrorMessageId to the updater as the fourth argument', () => {
+        let { ariaService } = createAriaFixture();
+        let valueHost = createStubFieldValueHost('Email');
+        let ids: Array<string | undefined> = [];
+        let updater = {
+            applyValidationState: (_e: IJivsElement, _h: IFieldValueHost, _s: ValueHostValidationState,
+                errorMessageId?: string) => { ids.push(errorMessageId); }
+        } as IAriaValidationStateUpdater;
+        let element = createJivsElement(ElementRole.editor);
+        element.jivsAriaValidationStateUpdater = updater;
+        element.jivsErrorMessageId = 'error-Email-123';
+
+        ariaService.applyValidationState(element, valueHost, createValidationState());
+
+        expect(ids).toEqual(['error-Email-123']);
+    });
+
+    test('Passes undefined as the error message id when the element has none', () => {
+        let { ariaService } = createAriaFixture();
+        let valueHost = createStubFieldValueHost('Email');
+        let ids: Array<string | undefined> = ['sentinel'];
+        let updater = {
+            applyValidationState: (_e: IJivsElement, _h: IFieldValueHost, _s: ValueHostValidationState,
+                errorMessageId?: string) => { ids.length = 0; ids.push(errorMessageId); }
+        } as IAriaValidationStateUpdater;
+        let element = createJivsElement(ElementRole.editor);
+        element.jivsAriaValidationStateUpdater = updater;
+
+        ariaService.applyValidationState(element, valueHost, createValidationState());
+
+        expect(ids).toEqual([undefined]);
+    });
+
     test('Returns null and logs when no updater was installed', () => {
         let { ariaService, logger } = createAriaFixture();
         let valueHost = createStubFieldValueHost('Email');
@@ -428,10 +461,10 @@ describe('AriaService.install', () => {
                 ...withError.registry.getResolvedElementIdentifiers(),
                 ...withoutError.registry.getResolvedElementIdentifiers()
             ],
-            getFieldAriaElementAnchors: (identifier: string) =>
+            getFieldAriaElementInfo: (identifier: string) =>
                 identifier === 'with-error'
-                    ? withError.registry.getFieldAriaElementAnchors(identifier)
-                    : withoutError.registry.getFieldAriaElementAnchors(identifier),
+                    ? withError.registry.getFieldAriaElementInfo(identifier)
+                    : withoutError.registry.getFieldAriaElementInfo(identifier),
             [Symbol.iterator]: function* () {
                 yield* withError.registry;
                 yield* withoutError.registry;
@@ -445,7 +478,7 @@ describe('AriaService.install', () => {
         expect(editorWithoutError.jivsErrorMessageId).toBeUndefined();
     });
 
-    test('Uses the aria-error anchor in preference to the visible error role', () => {
+    test('Applies ARIA to both error roles, while the aria-error element is the one that supplies the editor\'s error message id', () => {
         let { ariaService } = createAriaFixture();
         let { valueHost, registry } = createResolvedField();
         let editor = createJivsElement(ElementRole.editor);
@@ -463,7 +496,8 @@ describe('AriaService.install', () => {
 
         expect(visited).toContain(editor);
         expect(visited).toContain(ariaError);
-        expect(visited).not.toContain(visibleError);
+        expect(visited).toContain(visibleError);
+        expect(editor.jivsErrorMessageId).toBe(ariaError.id);
     });
 
     test('Falls back to registered validation updaters when specialized providers return null', () => {
@@ -544,7 +578,7 @@ describe('AriaService.install element selection and repeat installs', () => {
         expect(label.jivsAriaValidationStateUpdater).toBeNull();
     });
 
-    test('When both error roles exist, only the aria-error element gets ARIA', () => {
+    test('When both error roles exist, aria-error supplies the id but both get their ARIA updaters', () => {
         let { ariaService } = createAriaFixture();
         let { valueHost, registry } = createResolvedField();
         let editor = createJivsElement(ElementRole.editor);
@@ -556,12 +590,16 @@ describe('AriaService.install element selection and repeat installs', () => {
         let visited: IJivsElement[] = [];
         for (let role of [ElementRole.editor, ElementRole.error, ElementRole.ariaError])
             ariaService.registerStaticUpdater(role, createStaticUpdater((element) => visited.push(element)));
+        let validated: IJivsElement[] = [];
+        ariaService.registerValidationStateUpdater(ElementRole.error, createValidationUpdater((element) => validated.push(element)));
 
         ariaService.install(registry);
 
-        expect(visited).toEqual([editor, ariaError]);
-        expect(errorElement.jivsAriaValidationStateUpdater).toBeUndefined();
+        expect(visited).toEqual([editor, errorElement, ariaError]);
+        expect(validated).toEqual([errorElement]);
+        expect(errorElement.jivsAriaValidationStateUpdater).not.toBeNull();
         expect(editor.jivsErrorMessageId).toBe(ariaError.id);
+        expect(errorElement.jivsErrorMessageId).toBeUndefined();
     });
 
     test('Skips an editor whose Jivs element has not been resolved but still installs the error element', () => {

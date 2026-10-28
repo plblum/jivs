@@ -131,7 +131,7 @@ export interface IAriaService
  * Your findElements() implementation may encounter both for a field, and must
  * know how to select one from them.
  */
-export interface IFieldAriaElementAnchors
+export interface IFieldAriaElementInfo
 {
     /**
      * The JivsElement for the field's editor, which is used to determine the ARIA context.

@@ -364,12 +364,11 @@ export class IntegrationTestRunner {
             const ariaService = this.context.domServices.ariaService;
             let participates = false;
             if (ariaService) {
-                const anchors = registry.getFieldAriaElementAnchors(record.elementIdentifier);
-                // Every role takes part except the one error role not chosen as the editor's error message element.
-                const isErrorRole = record.role === 'error' || record.role === 'aria-error';
-                participates = !isErrorRole || target === anchors.errorMessageElement;
+                const anchors = registry.getFieldAriaElementInfo(record.elementIdentifier);
+                // Every role takes part, including the error role that does not supply the editor's error message id.
+                participates = true;
                 if (isEditor) {
-                    const shouldHaveId = participates && anchors.errorMessageElement !== null;
+                    const shouldHaveId = anchors.errorMessageElement !== null;
                     const hasId = target.jivsErrorMessageId !== undefined;
                     if (shouldHaveId !== hasId)
                         descriptor.report('JivsElement.jivsErrorMessageId', 'Error message ID presence does not match',
