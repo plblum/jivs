@@ -157,12 +157,18 @@ export class AriaService extends DomServiceBase
             let ariaElementAnchors = registry.getFieldAriaElementAnchors(resolvedEI.fieldValueHost!.getElementIdentifier());
             for (const record of resolvedEI.records)
             {
+                // we skip one of the two error roles. The one to keep is in ariaElementAnchors.errorMessageRole
+                // NOTE: We ignore most of what IFieldAriaElementAnchors offers. That function may no longer need to be as comprehensive 
+                // since we only care about the error message role here.
+                if (record.role === ElementRole.ariaError || record.role === ElementRole.error)
+                    if (record.role !== ariaElementAnchors.errorMessageRole)
+                        continue;
+
                 // Editor records carry the adapter-resolved jivsElement, which may differ from record.element.
                 const target = record.role === ElementRole.editor
                     ? (record as IEditorElementRegistryRecord).jivsElement
                     : record.element;
-                if (target && (target === ariaElementAnchors.editorJivsElement ||
-                    target === ariaElementAnchors.errorMessageElement))
+                if (target)
                 {
                     if (target.jivsAriaValidationStateUpdater === undefined) // has yet to have installation attempted
                     {

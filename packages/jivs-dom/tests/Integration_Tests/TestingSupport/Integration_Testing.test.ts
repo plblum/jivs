@@ -77,11 +77,12 @@ describe('TestHtmlBuilder', () =>
         expect(builder.build().match(/type='radio'/g)).toHaveLength(2);
         expect(runner.descriptors).toHaveLength(3);
     });
-    test('renders ARIA error class and alternative submit tags', () =>
+    test('renders aria-error without a class, and alternative submit tags', () =>
     {
         const { builder } = setupForTestingTheTestingTools();
         builder.ariaError('email').submit().submit(null, 'main', 'Send', '', true);
-        expect(builder.build()).toContain("class='jivs-visually-hidden'");
+        expect(builder.build()).toContain("data-jivs-role='aria-error'");
+        expect(builder.build()).not.toContain('jivs-visually-hidden');
         expect(builder.build()).toContain("type='submit' value='Submit'");
         expect(builder.build()).toContain('>Send</button>');
         expect(builder.build()).toContain("data-jivs-group='main'");

@@ -3483,7 +3483,7 @@ The dedicated element:
 
 - has no field presentation;
 - remains in the accessibility tree;
-- is visually hidden by the published `jivs-visually-hidden` class;
+- is visually hidden by the published `jivs-visually-hidden` class, which `HiddenErrorMessagesAriaStaticUpdater` adds during `AriaService.install()` when the author did not (the `class` attribute in the example above is therefore optional);
 - receives plain-text error content from its registered ARIA validation-state updater;
 - is cleared by that updater when the field becomes valid.
 
@@ -3547,6 +3547,7 @@ The ARIA implementation requires the following public contracts and classes.
 | `EditorAriaValidationStateUpdater` | Applies validation state to editors that support the aria
 attributes on the element passed in. |
 | `AriaRequiredEditorValidationStateUpdater` | Applies ARIA required and validation state to editors without equivalent native semantics. |
+| `HiddenErrorMessagesAriaStaticUpdater` | Adds the `jivs-visually-hidden` class (replaceable through its constructor) to the dedicated `aria-error` element. |
 | `HiddenErrorMessagesAriaValidationStateUpdater` | Writes and clears plain-text error content in the dedicated `aria-error` element. |
 
 ### Public Service Contract
@@ -3793,7 +3794,7 @@ All built-in updater classes are exported from `jivs-dom`.
 | `RequiredIndicatorAriaStaticUpdater` | Registered for `ElementRole.required` | Assigns missing `aria-hidden="true"`. |
 | `PopupErrorMessageDisplayStaticUpdater` | Supplied by `PopupErrorMessageDisplayPresentation.getStaticAriaUpdater()` | Supplies the popup trigger's missing button role and accessible name without overriding authored accessibility attributes. |
 | `RadioGroupAriaStaticUpdater` | Returned by `RadioGroupAdapterDefinition` | Assigns missing `role="radiogroup"` to the editor jivsElement. |
-
+| `HiddenErrorMessagesAriaStaticUpdater` | Registered for `ElementRole.ariaError`|Adds the `jivs-visually-hidden` class (replaceable through its constructor) to the dedicated `aria-error` element. |
 
 #### Popup Error Indicator Static ARIA
 

@@ -59,6 +59,7 @@ import { ValidationSummaryAriaStaticUpdater } from '../../src/Aria/ValidationSum
 import { AriaService } from '../../src/Aria/AriaService';
 import { createJivsServicesForTesting as createEngineJivsServicesForTesting, TestingJivsServicesOptions, TestingJivsServices } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting'
 import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypeParsers';
+import { HiddenErrorMessagesAriaStaticUpdater } from '../../src/Aria/HiddenErrorMessagesAriaStaticUpdater';
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 
@@ -628,6 +629,7 @@ function registerAriaService(domServices: IJivsDomServices): void
         factory.registerStaticUpdater(ElementRole.error, new PopupErrorMessageDisplayStaticUpdater());
         factory.registerStaticUpdater(ElementRole.required, new RequiredIndicatorAriaStaticUpdater());
         factory.registerStaticUpdater(ElementRole.summary, new ValidationSummaryAriaStaticUpdater());
+        factory.registerStaticUpdater(ElementRole.ariaError, new HiddenErrorMessagesAriaStaticUpdater());
 
         factory.registerValidationStateUpdater(ElementRole.ariaError, new HiddenErrorMessagesAriaValidationStateUpdater());
         factory.registerValidationStateUpdater(ElementRole.editor, new EditorAriaValidationStateUpdater());

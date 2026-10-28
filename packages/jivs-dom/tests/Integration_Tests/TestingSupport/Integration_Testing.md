@@ -191,7 +191,7 @@ The default expected adapter key exists for descriptor checks even when `data-ji
 | `label(fieldName, content, presentationName = null, additionalAttributes = '')` | `<label>`; `content` may contain HTML. Does not generate a `for` attribute. |
 | `requiredIndicator(fieldName, content = '', presentationName = null, additionalAttributes = '')` | `<span>` for required indicator content. |
 | `errorDisplay(fieldName, presentationName = null, additionalAttributes = '')` | Empty `<div>`; presentation later supplies content. |
-| `ariaError(fieldName)` | Empty `<div class='jivs-visually-hidden'>`; no additional attributes parameter. |
+| `ariaError(fieldName)` | Empty `<div>` with no class, as a jivs-simpledom author would write it. `HiddenErrorMessagesAriaStaticUpdater` adds `jivs-visually-hidden` when ARIA is on. No additional attributes parameter. |
 | `fieldContainer(fieldName, presentationName = null, additionalAttributes = '', tagName = 'div')` | Enclosing fieldcontainer element; returns a child builder. |
 
 ### Form-role methods

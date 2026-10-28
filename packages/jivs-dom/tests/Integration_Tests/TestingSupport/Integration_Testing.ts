@@ -365,7 +365,9 @@ export class IntegrationTestRunner {
             let participates = false;
             if (ariaService) {
                 const anchors = registry.getFieldAriaElementAnchors(record.elementIdentifier);
-                participates = target === anchors.editorJivsElement || target === anchors.errorMessageElement;
+                // Every role takes part except the one error role not chosen as the editor's error message element.
+                const isErrorRole = record.role === 'error' || record.role === 'aria-error';
+                participates = !isErrorRole || target === anchors.errorMessageElement;
                 if (isEditor) {
                     const shouldHaveId = participates && anchors.errorMessageElement !== null;
                     const hasId = target.jivsErrorMessageId !== undefined;
@@ -497,7 +499,7 @@ export class TestHtmlBuilder {
         return this.fieldRole(ErrorTestDescriptor, 'error', fieldName, presentationName, additionalAttributes, 'div');
     }
     public ariaError(fieldName: string | null): this {
-        return this.fieldRole(AriaErrorTestDescriptor, 'aria-error', fieldName, null, "class='jivs-visually-hidden'", 'div');
+        return this.fieldRole(AriaErrorTestDescriptor, 'aria-error', fieldName, null, '', 'div');
     }
     public fieldContainer(fieldNameOrNull: string | null, presentationName: string | null = null,
         additionalAttributes: string = '', tagName: string = 'div'): TestHtmlBuilder {

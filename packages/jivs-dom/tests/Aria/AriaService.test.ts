@@ -522,9 +522,9 @@ describe('AriaService.install', () => {
     });
 });
 
-// Install only touches the registry-selected anchors and respects prior installation.
+// Install touches every role except the error role not chosen as the editor's error message element, and respects prior installation.
 describe('AriaService.install element selection and repeat installs', () => {
-    test('Applies ARIA only to the editor and error anchors, not other field roles', () => {
+    test('Applies ARIA to the editor, the error anchor and other field roles', () => {
         let { ariaService } = createAriaFixture();
         let { valueHost, registry } = createResolvedField();
         let editor = createJivsElement(ElementRole.editor);
@@ -539,8 +539,29 @@ describe('AriaService.install element selection and repeat installs', () => {
 
         ariaService.install(registry);
 
-        expect(visited).toEqual([editor, errorElement]);
-        expect(label.jivsAriaValidationStateUpdater).toBeUndefined();
+        expect(visited).toEqual([editor, errorElement, label]);
+        // Installation was attempted, and the label has no validation state updater.
+        expect(label.jivsAriaValidationStateUpdater).toBeNull();
+    });
+
+    test('When both error roles exist, only the aria-error element gets ARIA', () => {
+        let { ariaService } = createAriaFixture();
+        let { valueHost, registry } = createResolvedField();
+        let editor = createJivsElement(ElementRole.editor);
+        let errorElement = createJivsElement(ElementRole.error);
+        let ariaError = createJivsElement(ElementRole.ariaError);
+        addEditor(registry, valueHost, editor);
+        addFieldElement(registry, valueHost, errorElement, ElementRole.error);
+        addFieldElement(registry, valueHost, ariaError, ElementRole.ariaError);
+        let visited: IJivsElement[] = [];
+        for (let role of [ElementRole.editor, ElementRole.error, ElementRole.ariaError])
+            ariaService.registerStaticUpdater(role, createStaticUpdater((element) => visited.push(element)));
+
+        ariaService.install(registry);
+
+        expect(visited).toEqual([editor, ariaError]);
+        expect(errorElement.jivsAriaValidationStateUpdater).toBeUndefined();
+        expect(editor.jivsErrorMessageId).toBe(ariaError.id);
     });
 
     test('Skips an editor whose Jivs element has not been resolved but still installs the error element', () => {
