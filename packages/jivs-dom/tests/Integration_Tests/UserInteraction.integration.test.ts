@@ -14,6 +14,50 @@ import { LabelPresentation } from '../../src/FieldPresentations/LabelPresentatio
 import { RequiredIndicatorPresentation } from '../../src/FieldPresentations/RequiredIndicatorPresentation';
 import { TextInputPresentation } from '../../src/FieldPresentations/TextInputPresentation';
 
+/**
+ * Purpose: To test user interactions with form fields, including validation, required behavior, and popup handling.
+ * 
+ * Overview of tests:
+ * **A. Single change event, field feedback (done)**
+ * - A-1 Invalid value
+ * - A-2 Valid value
+ * 
+ * **B. Single event variations**
+ * - B-1 No `RequiredText`: indicator state, empty value valid
+ * - B-2 `duringEdit` with a non-supporting validator
+ * - B-3 Date and number data types: `dataTypeCheck` versus range severities
+ * - B-4 Parser and formatter value flow (custom "Test" type)
+ * - B-5 Reformat feedback loops
+ * 
+ * **C. `validate()` group**
+ * - C-1 `NotAttempted` baseline, no `validate()`
+ * - C-2 `validate({preliminary: true})`
+ * - C-3 `validate()`
+ * - C-4 Validation groups
+ * 
+ * **D. Presentation variants**
+ * - D-1 `jivs-validated` and `jivs-corrected` (custom presentations)
+ * - D-2 Popup error display
+ * - D-3 Template variations (`labelAfter`, `inContainer`, `editorOnly`)
+ * 
+ * **E. ARIA**
+ * - E-1 aria-error display, `aria-invalid`, `aria-describedby`
+ * - E-2 ARIA with the popup display
+ * 
+ * **F. Multi-event sequences**
+ * - F-1 Invalid → valid → invalid, with stale state clearing
+ * - F-2 Corrected and validated across a sequence
+ * - F-3 Severity transitions
+ * 
+ * **G. Multiple fields**
+ * - G-1 Two-field isolation
+ * - G-2 Shared error display or summary
+ * 
+ * **H. Other**
+ * - H-1 Summary and form-level submit validation
+ * - H-2 Model-driven updates after install
+ */
+
 // When true, emits HTML and element registry information to the console.
 let verbose = false;
 useCleanDocument();
