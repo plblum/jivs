@@ -210,11 +210,11 @@ describe('createTestForm default logger level', () =>
         expect(t.services.loggingService.entryCount).toBe(1);
     });
 
-    test('services.loggerLevel overrides the default', () =>
+    test('servicesConfigOptions.loggerLevel overrides the default', () =>
     {
         const t = createTestForm({
             build: page => { page.inputEditor('NotInManager'); },
-            services: { loggerLevel: LoggingLevel.Error }, verbose: verbose
+            servicesConfigOptions: { loggerLevel: LoggingLevel.Error }, verbose: verbose
         });
         expect(t.services.loggingService.entryCount).toBe(0);
     });

@@ -10,10 +10,12 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
 import { FormInstaller } from '../../../src/FormInstaller/FormInstaller';
 import type { ElementRegistryRecord, IEditorElementRegistryRecord, IElementRegistry } from '../../../src/Interfaces/ElementRegistry';
 import type { IJivsElement } from '../../../src/Interfaces/IJivsElement';
-import { createJivsServicesForTesting, type configureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
+import { createJivsServicesForTesting, type ConfigureOptions } from '../../TestSupport/CreateJivsServicesForTesting';
 import { IntegrationTestContext, IntegrationTestRunner, TestHtmlBuilder } from './Integration_Testing';
 import { createDefaultTestFieldRepository, type TestFieldRepository } from './TestFieldRepository';
 import { TestPropertiesRules } from './TestPropertiesRules';
+import { installConfigAnalysisService } from '@plblum/jivs-configanalysis/build/ConfigAnalysisService';
+import { CAIssueSeverity } from '@plblum/jivs-configanalysis/build/Types/ConfigAnalysisResults';
 
 // Installs the builders factory on JivsServices.prototype.
 new BuildersFactoryInstaller();
@@ -43,7 +45,7 @@ export interface TestFormOptions
      * Passed to createJivsServicesForTesting. Defaults enable all conditions, parsers and formatters,
      * and log Warn and above into services.loggingService (a TestingLoggingService) so tests can assert on them.
      */
-    services?: configureOptions;
+    servicesConfigOptions?: ConfigureOptions;
     /** With fields: id of the generated form element. Defaults to 'test-form'. */
     formId?: string;
     /** With fields: additional attributes on the generated form element, such as a class a non-#id containerIdentifier selects. */
@@ -65,6 +67,15 @@ export interface TestFormOptions
     configure?: (config: ValueHostsManagerConfig) => void;
     /** Sets context.verbose so the HTML and ElementRegistry are printed. Add it to one createTestForm call while investigating. */
     verbose?: boolean;
+    /** When true, runs the configuration analysis service and reports any errors to the console.
+     * This is used to track down errors related to JivsService configuration.
+     */
+    configAnalysisCheck?: boolean;    
+    /**
+     * Runs right after the services are created and before the page is built, so it can set up what
+     * presentations need at the moment they are created, such as domServices.popupMechanism.
+     */
+    configureServices?: (services: ReturnType<typeof createJivsServicesForTesting>) => void;
 }
 
 export interface TestForm
@@ -146,8 +157,9 @@ export function createTestForm(options: TestFormOptions): TestForm
         registerFormatters: true,
         ariaService: true,
         loggerLevel: LoggingLevel.Warn,
-        ...options.services
+        ...options.servicesConfigOptions
     });
+    options.configureServices?.(services);
 
     const context = new IntegrationTestContext(services.domServices);
     context.fieldTemplateSource = repository;
@@ -186,6 +198,24 @@ export function createTestForm(options: TestFormOptions): TestForm
     const config = { ...rules.configure() };
     if (container) config.containerIdentifier = container;
     options.configure?.(config);
+    if (options.configAnalysisCheck)
+    {
+        let configAnalysisService = installConfigAnalysisService(services);
+        let explorer = configAnalysisService.analyze(config, {});
+        if (explorer.hasErrors())
+        {
+            // dump a report into the console before triggering the unit test error
+            const includeValueHostResults = { severities: [CAIssueSeverity.error] };
+            const includeLookupKeyResults = { severities: [CAIssueSeverity.error] };
+            const includeCompleteResults = false;
+            explorer.reportToConsole(
+                includeValueHostResults,
+                includeLookupKeyResults,
+                includeCompleteResults, 2);
+            expect(false).toBe(true); // Force the test to fail if there are configuration analysis errors
+        }
+    }
+
     const vhm = new ValueHostsManager(config);
 
     const collector = new SimpleDomElementCollector();

@@ -19,7 +19,7 @@ describe('TestFieldRepository', () =>
             'Text_Required', 'Number_Range', 'Date_Required_LessThan',
             'Checkbox', 'Select_Required', 'Radio_Required']);
         expect(repo.fieldTemplateNames()).toEqual([
-            'default', 'withRequired', 'labelAfter', 'withAriaError', 'inContainer', 'editorOnly']);
+            'withoutRequired', 'withRequired', 'labelAfter', 'withAriaError', 'inContainer', 'editorOnly']);
         expect(repo.formTemplateNames()).toEqual([]);
     });
     test('lookups throw naming the kind and the registered names', () =>
@@ -34,7 +34,7 @@ describe('TestFieldRepository', () =>
     {
         const repo = createDefaultTestFieldRepository();
         expect(() => repo.registerIdentity({ name: 'Checkbox', ...emptyIdentity })).toThrow(/already registered/);
-        expect(() => repo.registerFieldTemplate('default', () => {})).toThrow(/already registered/);
+        expect(() => repo.registerFieldTemplate('withoutRequired', () => {})).toThrow(/already registered/);
         repo.registerFormTemplate('f', () => {});
         expect(() => repo.registerFormTemplate('f', () => {})).toThrow(/already registered/);
     });

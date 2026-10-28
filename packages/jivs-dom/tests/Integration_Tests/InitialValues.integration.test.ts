@@ -341,7 +341,7 @@ describe('Initial value reader configuration errors', () =>
         let t = createTestForm({
             fields: ['Number_Range'],
             install: false,
-            services: { registerFormatters: false },
+            servicesConfigOptions: { registerFormatters: false },
             verbose: verbose
         });
         installWithDispatchers(t);
@@ -365,7 +365,7 @@ describe('Initial value reader configuration errors', () =>
         let t = createTestForm({
             fields: ['Number_Range'],
             install: false,
-            services: { registerDataTypeParsers: false },
+            servicesConfigOptions: { registerDataTypeParsers: false },
             verbose: verbose
         });
         t.services.dataTypeParserService.register(new CleanUpStringParser(LookupKey.String, { trim: true }));

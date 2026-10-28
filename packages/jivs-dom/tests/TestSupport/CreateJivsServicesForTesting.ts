@@ -58,6 +58,7 @@ import { HiddenErrorMessagesAriaValidationStateUpdater } from '../../src/Aria/Hi
 import { ValidationSummaryAriaStaticUpdater } from '../../src/Aria/ValidationSummaryAriaStaticUpdater';
 import { AriaService } from '../../src/Aria/AriaService';
 import { createJivsServicesForTesting as createEngineJivsServicesForTesting, TestingJivsServicesOptions, TestingJivsServices } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting'
+import { IDataTypeParser } from '@plblum/jivs-engine/build/Interfaces/DataTypeParsers';
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 
@@ -66,15 +67,22 @@ const iconInErrorMessages = '&#9888;'; // ⚠ = '&#9888;'
 //   const iconInErrorMessages = '&#x2716;'; // ✖ = '&#x2716;'
 const toggleIconInErrorMessages = '&#8250;'; // › = '&#8250;'
 
-export interface configureOptions extends TestingJivsServicesOptions
+export interface ConfigureOptions extends TestingJivsServicesOptions
 {
     ariaService?: boolean;
     popupMechanism?: boolean;
+    /**
+     * Parsers registered in addition to the engine's defaults (when registerDataTypeParsers is true).
+     * Each parser names the cultureIds it supports, which must be among the cultures
+     * registered by the cultures option (default: en, en-US, es, es-MX, fr).
+     */
+    dataTypeParsers?: IDataTypeParser<any>[];
 }
 
-export function createJivsServicesForTesting(options?: configureOptions): TestingJivsServices
+export function createJivsServicesForTesting(options?: ConfigureOptions): TestingJivsServices
 {
     let jivsServices = createEngineJivsServicesForTesting(options);
+    options?.dataTypeParsers?.forEach(parser => jivsServices.dataTypeParserService.register(parser));
     configureJivsDomForTesting(jivsServices, options);
     return jivsServices;
 }
@@ -86,7 +94,7 @@ export function createJivsServicesForTesting(options?: configureOptions): Testin
  * @param jivsServices 
  * @returns 
  */
-export function configureJivsDomForTesting(jivsServices: IJivsServices, options?: configureOptions):void {
+export function configureJivsDomForTesting(jivsServices: IJivsServices, options?: ConfigureOptions):void {
     // Implementation for creating and configuring JivsDomServices goes here
     const domServices = jivsServices.domServices;
 

@@ -71,7 +71,7 @@ describe('FormInstaller.install with each field template', () =>
                 Number_Range: 'labelAfter',
                 Date_Required_LessThan: 'withAriaError',
                 Checkbox: 'inContainer',
-                Select_Required: 'default',
+                Select_Required: 'withoutRequired',
                 Radio_Required: 'editorOnly'
             }
         });
@@ -135,7 +135,7 @@ describe('FormInstaller.install with explicit editor options', () =>
     test('A registered presentation name and an explicit adapter key are used by the editor', () =>
     {
         let t = installForm({
-            build: page => page.field('Text_Required', 'default',
+            build: page => page.field('Text_Required', 'withoutRequired',
                 { presentationName: 'inputEditor', adapterKey: 'input:text' })
         });
         t.runner.assertFormInstallation(document, t.vhm);
@@ -160,7 +160,7 @@ describe('FormInstaller.install and the AriaService', () =>
     {
         let t = installForm({
             fields: ['Text_Required'], fieldTemplate: 'withAriaError',
-            services: { ariaService: false }
+            servicesConfigOptions: { ariaService: false }
         });
         t.runner.assertFormInstallation(document, t.vhm);
         let editor = t.editorOf('Text_Required');

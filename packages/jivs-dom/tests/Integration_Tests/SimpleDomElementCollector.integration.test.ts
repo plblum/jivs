@@ -200,7 +200,7 @@ describe('describeRegistry and verbosity tests', () =>
         t.runner.assertCollection(document, t.vhm);
     });
 
-    test.each(['default', 'withRequired', 'labelAfter', 'withAriaError', 'inContainer', 'editorOnly'])(
+    test.each(['withoutRequired', 'withRequired', 'labelAfter', 'withAriaError', 'inContainer', 'editorOnly'])(
         'field template %s', (template) =>
     {
         const t = createTestForm({
@@ -230,7 +230,7 @@ describe('SimpleDomElementCollector registry details', () =>
 
     // Each field template yields exactly these roles per field; nothing extra and nothing missing.
     const roleCountsByTemplate: Record<string, Record<string, number>> = {
-        default: { label: 1, editor: 1, error: 1 },
+        withoutRequired: { label: 1, editor: 1, error: 1 },
         withRequired: { label: 1, editor: 1, required: 1, error: 1 },
         labelAfter: { label: 1, editor: 1, error: 1 },
         withAriaError: { label: 1, editor: 1, error: 1, 'aria-error': 1 },

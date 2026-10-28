@@ -15,7 +15,7 @@
  */
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import type { IValueHostsManagerConfigBuilder } from '@plblum/jivs-builder/build/Interfaces/ManagerConfigBuilder';
-import type { FieldEditorOptions, IFieldTemplateSource, TestHtmlBuilder } from '../Integration_Testing';
+import type { FieldEditorOptions, IFieldTemplateSource, TestHtmlBuilder } from './Integration_Testing';
 
 export interface ITestFieldIdentity
 {
@@ -37,7 +37,7 @@ export interface IFieldTemplateTarget
 export type FieldTemplateRecipe = (page: TestHtmlBuilder, field: IFieldTemplateTarget) => void;
 export type FormTemplateRecipe = (page: TestHtmlBuilder) => void;
 
-export const defaultFieldTemplateName = 'default';
+export const defaultFieldTemplateName = 'withoutRequired';
 
 export class TestFieldRepository implements IFieldTemplateSource
 {
