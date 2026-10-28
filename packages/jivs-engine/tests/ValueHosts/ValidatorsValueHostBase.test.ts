@@ -1584,29 +1584,62 @@ describe('corrected property', () => {
         setup.valueHost.validate();
         expect(setup.valueHost.corrected).toBe(true);
     });
-    test('From Invalid->Valid->Valid, corrected=true', () => {
+    // Helper for the tests below: starts Invalid, then lets the caller switch to Valid conditions.
+    function setupInvalid() {
         let setup = setupValidatorsValueHostBaseForValidate([{
-            conditionConfig: {
-                conditionType: NeverMatchesConditionType,
-            },
+            conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: 'NeverMatch',
             enabled: true
         },
         {
-            conditionConfig: {
-                conditionType: AlwaysMatchesConditionType,
-            },
+            conditionConfig: { conditionType: AlwaysMatchesConditionType },
             errorMessage: 'Never shown',
             enabled: false
         }], null);
         setup.valueHost.validate();
-        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        return setup;
+    }
+    function switchToValidConditions(setup: ReturnType<typeof setupInvalid>) {
         setup.valueHost.getValidator(NeverMatchesConditionType)?.setEnabled(false);
         setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
+    }
+    test('From Invalid->several edits without validation->Valid, corrected=true', () => {
+        let setup = setupInvalid();
+        switchToValidConditions(setup);
+        setup.valueHost.setValue('A');
+        setup.valueHost.setValue('B');
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.corrected).toBe(false);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+    });
+    test('From Invalid->clearValidation->Valid, corrected=false because the Invalid history is gone', () => {
+        let setup = setupInvalid();
+        switchToValidConditions(setup);
+        setup.valueHost.clearValidation();
+        setup.valueHost.validate();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('From Invalid->Valid(corrected)->edit->Valid, corrected=false', () => {
+        let setup = setupInvalid();
+        switchToValidConditions(setup);
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(true);
+        setup.valueHost.setValue('A');
+        setup.valueHost.validate();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+    test('From Invalid->Valid->Valid, corrected lasts only one validation cycle', () => {
+        let setup = setupInvalid();
+        switchToValidConditions(setup);
         setup.valueHost.validate();
         expect(setup.valueHost.corrected).toBe(true);
         setup.valueHost.validate();
-        expect(setup.valueHost.corrected).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.corrected).toBe(false);
     });
     test('From Invalid->Valid->Invalid, corrected=false', () => {
         let setup = setupValidatorsValueHostBaseForValidate([{

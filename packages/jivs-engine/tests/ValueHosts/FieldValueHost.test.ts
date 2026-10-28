@@ -1,4 +1,4 @@
-import { RegExpCondition, RegExpConditionConfig } from "../../src/Conditions/ConcreteConditions";
+import { RegExpCondition, RegExpConditionConfig, RequireTextConditionConfig } from "../../src/Conditions/ConcreteConditions";
 import { ConditionFactory } from "../../src/Conditions/ConditionFactory";
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
@@ -54,6 +54,7 @@ import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig, f
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { restoreCapturedState } from '../TestSupport/utilities';
 import { IntegerDataTypeCheckGenerator, RegExpDataTypeCheckGenerator } from '../../src/DataTypes/DataTypeCheckGenerators';
+import { CleanUpStringParser } from '../../src/DataTypes/DataTypeParsers';
 
 
 interface ITestSetupConfig {
@@ -354,6 +355,63 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(vrChange.status).toBe(ValidationStatus.Undetermined);
         expect(vrChange.changeCounter).toBe(1);
     });
+
+    test('Follow the state of corrected flag through multiple validated changes', () => {
+        let setup = setupFieldValueHost({
+            dataType: LookupKey.String,
+            validatorConfigs: [{
+                errorMessage: "Required text is missing",
+                conditionConfig: <RequireTextConditionConfig> {
+                    conditionType: ConditionType.RequireText,
+                }
+            }]
+        });
+        // test -> native to get setup for validation
+        setup.services.dataTypeParserService.register(new CleanUpStringParser(LookupKey.String, { trim: true }));
+
+        // initial state
+        setup.valueHost.setTextValue('', { reset: true});
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+
+        // initial value is valid
+        setup.valueHost.setTextValue('initialValue', { validate: true });
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+
+        // now invalid
+        setup.valueHost.setTextValue('', { validate: true });
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        // validate again to be sure back to back validation doesn't change it
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+
+        // valid again: corrected -> true
+        setup.valueHost.setTextValue('validValue', { validate: true });
+        expect(setup.valueHost.corrected).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+
+        // validate with a different value: corrected -> false
+        setup.valueHost.setTextValue('differentValue', { validate: true });
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+
+        // repeat corrected->true but use validate for the second validation
+        setup.valueHost.setTextValue('', { validate: true });
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+
+        setup.valueHost.setTextValue('validValue', { validate: true });
+        expect(setup.valueHost.corrected).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        // valid again: corrected -> false
+        setup.valueHost.validate();
+        expect(setup.valueHost.corrected).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+
+    });
     // with onTextValueChanged callback, the callback is called when the text value changes. The callback is not called when the text value does not change.
     test('with onTextValueChanged callback, the callback is called when the text value changes', () =>
     {
@@ -490,6 +548,85 @@ describe('setTextValue with getTextValue to check result', () => {
         expect(setup.logger.findMessage('Value not changed')).toBeTruthy();
     });    
 });
+// setValues is the shared path for callers that already have both native and text values.
+describe('setValues', () =>
+{
+    test('Changed values clear corrected state before validation', () =>
+    {
+        let setup = setupFieldValueHost(null, {
+            value: 'oldValue',
+            textValue: 'oldValue',
+            corrected: true,
+            status: ValidationStatus.Valid
+        });
+
+        setup.valueHost.setValues('newValue', 'newValue');
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.corrected).toBe(false);
+    });
+
+    test('Follow the state of corrected flag through multiple validated changes', () =>
+    {
+        expectCorrectedFlagSequence((vh, value, options) => vh.setValues(value, value, options));
+    });
+});
+// setValue (inherited from ValidatableValueHostBase) is the third setter that must follow the corrected rules.
+describe('setValue', () =>
+{
+    test('Follow the state of corrected flag through multiple validated changes', () =>
+    {
+        expectCorrectedFlagSequence((vh, value, options) => vh.setValue(value, options));
+    });
+});
+
+// Runs the same Invalid->Valid->Valid sequence through any setter. Corrected must be true
+// only for the validation cycle that follows an Invalid status.
+function expectCorrectedFlagSequence(
+    setter: (vh: FieldValueHost, value: string, options: FieldValueHostSetValueOptions) => void): void
+{
+    let setup = setupFieldValueHost({
+        dataType: LookupKey.String,
+        validatorConfigs: [{
+            errorMessage: "Required text is missing",
+            conditionConfig: <RequireTextConditionConfig> {
+                conditionType: ConditionType.RequireText,
+            }
+        }]
+    });
+    const vh = setup.valueHost;
+    const expectState = (status: ValidationStatus, corrected: boolean) => {
+        expect(vh.validationStatus).toBe(status);
+        expect(vh.corrected).toBe(corrected);
+    };
+
+    setter(vh, '', { reset: true });
+    expectState(ValidationStatus.NotAttempted, false);
+
+    setter(vh, 'initialValue', { validate: true });
+    expectState(ValidationStatus.Valid, false);
+
+    setter(vh, '', { validate: true });
+    expectState(ValidationStatus.Invalid, false);
+
+    vh.validate();
+    expectState(ValidationStatus.Invalid, false);
+
+    setter(vh, 'validValue', { validate: true });
+    expectState(ValidationStatus.Valid, true);
+
+    setter(vh, 'differentValue', { validate: true });
+    expectState(ValidationStatus.Valid, false);
+
+    setter(vh, '', { validate: true });
+    expectState(ValidationStatus.Invalid, false);
+
+    setter(vh, 'validValue', { validate: true });
+    expectState(ValidationStatus.Valid, true);
+
+    vh.validate();
+    expectState(ValidationStatus.Valid, false);
+}
 describe('setTextValue with parserLookupKey enabled to see both text value and native values are assigned', () => {
     function testWithParser(textValue: any,
         nativeDataTypeLookupKey: string,

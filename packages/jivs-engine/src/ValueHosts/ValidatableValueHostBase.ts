@@ -92,7 +92,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) || (stateToUpdate.corrected === true);
-                stateToUpdate.status = ValidationStatus.NeedsValidation;
+                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
                 delete stateToUpdate.corrected;
                 stateToUpdate.value = value;
             }
@@ -167,7 +167,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             else {
                 this.updateInstanceState((stateToUpdate) => {
                     this.clearValidationDataFromInstanceState(stateToUpdate);
-                    stateToUpdate.status = ValidationStatus.NeedsValidation;
+                    this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
                     return stateToUpdate;
                 }, this);
             }
@@ -329,8 +329,29 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         return groupsMatch(requestedGroup, expectedGroup);
     }
 
-    protected clearValidationDataFromInstanceState(stateToUpdate: TState): void {
-        stateToUpdate.status = ValidationStatus.NotAttempted;
+    /**
+     * Single place to change instanceState.status so that lastStatus stays correct.
+     * lastStatus is the last completed status (anything other than NeedsValidation)
+     * before the current run of unvalidated edits. adjustCorrectedFlag() needs it
+     * because setValue/setTextValue/setValues replace status with NeedsValidation.
+     * - Entering NeedsValidation from another status captures that status. Repeated edits while
+     *   already NeedsValidation keep the captured value.
+     * - Any other status is a completed state, so lastStatus is consumed.
+     */
+    protected setInstanceStateStatus(stateToUpdate: TState, newStatus: ValidationStatus): void
+    {
+        if (newStatus === ValidationStatus.NeedsValidation) {
+            if (stateToUpdate.status !== ValidationStatus.NeedsValidation)
+                stateToUpdate.lastStatus = stateToUpdate.status;
+        }
+        else
+            delete stateToUpdate.lastStatus;
+        stateToUpdate.status = newStatus;
+    }
+
+    protected clearValidationDataFromInstanceState(stateToUpdate: TState): void
+    {
+        this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NotAttempted);
         stateToUpdate.issuesFound = null;
         delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
         delete stateToUpdate.externalIssuesFound;
@@ -680,8 +701,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
         const changed = this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.issuesFound = updating;
             if (issueFound.severity !== ValidationSeverity.Warning)
-                stateToUpdate.status = ValidationStatus.Invalid;
-
+            {
+                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.Invalid);
+            }
             return stateToUpdate;
         }, this);
 

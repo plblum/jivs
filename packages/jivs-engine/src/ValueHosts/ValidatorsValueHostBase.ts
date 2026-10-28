@@ -262,10 +262,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
             return self.updateInstanceState((stateToUpdate) => {
                 if (result.corrected)
+                {
                     stateToUpdate.corrected = true;
+                }
                 else
                     delete stateToUpdate.corrected;
-                stateToUpdate.status = result.status;
+                self.setInstanceStateStatus(stateToUpdate, result.status);
                 stateToUpdate.issuesFound = result.issuesFound;
                 if (options!.group)
                     stateToUpdate.group = options!.group;
@@ -331,10 +333,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
         function adjustCorrectedFlag(): void
         {
-            // transition Invalid->Valid or already corrected and still valid, corrected=true
-            if ((self.instanceState.status === ValidationStatus.Invalid &&
-                result.status === ValidationStatus.Valid) ||
-                (self.instanceState.corrected && result.status === ValidationStatus.Valid))
+            // corrected=true only for the validation that moves Invalid->Valid.
+            // The previous status is in instanceState.status when validate() is called directly.
+            // When a setter ran first, status is NeedsValidation and lastStatus holds the previous status.
+            let isValid = result.status === ValidationStatus.Valid;
+            let wasInvalid = self.instanceState.status === ValidationStatus.Invalid ||
+                (self.instanceState.status === ValidationStatus.NeedsValidation &&
+                    self.instanceState.lastStatus === ValidationStatus.Invalid);
+
+            if (wasInvalid && isValid)
                 result.corrected = true;
             else
                 delete result.corrected;                        
@@ -486,7 +493,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                                 stateToUpdate.issuesFound.push(valResult.issueFound!);
                             else
                                 stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
-                            stateToUpdate.status = ValidationStatus.Invalid;
+                            this.setInstanceStateStatus(stateToUpdate, ValidationStatus.Invalid);
                             //NOTE: leave stateToUpdate.group and asyncProcessing alone
                             return stateToUpdate;
                         }, this);
@@ -589,6 +596,7 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                     vr = ValidationStatus.Valid;
             }
             state.status = vr;
+            delete state.lastStatus;
         }
     }
 

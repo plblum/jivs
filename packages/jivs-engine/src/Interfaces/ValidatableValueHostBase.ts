@@ -239,6 +239,13 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
      * When true, an async Validator is running
      */
     asyncProcessing?: boolean;
+
+    /**
+     * Each time the status is updated, transfer the old value here.
+     * This is used by the corrected flag which needs to observe
+     * Invalid->Valid transitions.
+     */
+    lastStatus?: ValidationStatus;
 }
 
 export interface ValidatableValueHostBaseSetValueOptions extends SetValueOptions

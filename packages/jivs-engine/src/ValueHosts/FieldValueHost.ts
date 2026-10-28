@@ -225,8 +225,9 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
-                valStateChanged = stateToUpdate.status !== ValidationStatus.NeedsValidation;
-                stateToUpdate.status = ValidationStatus.NeedsValidation;
+                valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) || (stateToUpdate.corrected === true);
+                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
+                delete stateToUpdate.corrected;
                 stateToUpdate.textValue = textValue;
             }
             this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, changed, options!);
@@ -432,8 +433,11 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 // effectively clear past validation
-                valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) || (stateToUpdate.issuesFound != null);
-                stateToUpdate.status = ValidationStatus.NeedsValidation;
+                valStateChanged = (stateToUpdate.status !== ValidationStatus.NeedsValidation) ||
+                    (stateToUpdate.issuesFound != null) ||
+                    (stateToUpdate.corrected === true);
+                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
+                delete stateToUpdate.corrected;
                 stateToUpdate.issuesFound = null;
 
                 stateToUpdate.value = nativeValue;
