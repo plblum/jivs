@@ -480,11 +480,13 @@ describe('validate() baseline', () =>
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    // No group, or '*', means every group.
+    // No group, '', '*' or null means every group.
     test.each([
         { name: 'no options', options: undefined },
         { name: 'empty options', options: {} },
-        { name: "group '*'", options: { group: '*' } }
+        { name: "group ''", options: { group: '' } },
+        { name: "group '*'", options: { group: '*' } },
+        { name: 'group null', options: { group: null as any } }
     ])('validate() with $name updates the fields of all groups', (c) =>
     {
         let { t, a, b } = installTwoGroups();
@@ -1007,6 +1009,45 @@ describe('Required behavior with and without the indicator', () =>
         userEdits(t, '');
 
         expectElementsMatchValidationState(t, 'Text_Upper_Max5', ValidationStatus.Invalid);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// Fields on the same form do not affect each other's elements. Each edit is a change event on one field's editor.
+describe('Two fields on one form', () =>
+{
+    test('An edit on one field leaves the other field\'s elements alone', () =>
+    {
+        let a = 'Text_Upper_Max5';
+        let b = 'Text_Upper_Max5_Optional';
+        let t = installForm({ repository: createRepository(), fields: [a, b], verbose: verbose });
+        let edit = (field: string, value: string) =>
+        {
+            let editor = t.element('editor', field) as unknown as HTMLInputElement;
+            editor.value = value;
+            fireChange(editor);
+        };
+        expectElementsMatchValidationState(t, a, ValidationStatus.NotAttempted);
+        expectElementsMatchValidationState(t, b, ValidationStatus.NotAttempted);
+
+        edit(a, 'abcdefg');
+
+        expectElementsMatchValidationState(t, a, ValidationStatus.Invalid);
+        expectIssueCodes(t, a, [ConditionType.RegExp, ConditionType.StringLength]);
+        expectElementsMatchValidationState(t, b, ValidationStatus.NotAttempted);
+
+        edit(b, 'xy');
+
+        expectElementsMatchValidationState(t, b, ValidationStatus.Invalid);
+        expectIssueCodes(t, b, [ConditionType.RegExp]);
+        expectElementsMatchValidationState(t, a, ValidationStatus.Invalid);
+        expectIssueCodes(t, a, [ConditionType.RegExp, ConditionType.StringLength]);
+
+        edit(a, 'ABC');
+
+        expectElementsMatchValidationState(t, a, ValidationStatus.Valid);
+        expectElementsMatchValidationState(t, b, ValidationStatus.Invalid);
+        expectIssueCodes(t, b, [ConditionType.RegExp]);
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 });

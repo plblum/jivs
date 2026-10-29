@@ -192,7 +192,37 @@ describe('Warnings', () =>
     });
 });
 
-// Each new state replaces the previous one, so nothing stale remains on the editor or the aria-error element.
+// With several fields, each editor's aria-errormessage must point to its own field's error element.
+describe('ARIA on two fields', () =>
+{
+    test('Each editor\'s aria-errormessage points to its own aria-error element', () =>
+    {
+        let a = 'Text_Upper_Max5';
+        let b = 'Text_Upper_Max5_Optional';
+        let t = installWithAria([a, b], 'withAriaError');
+        let ariaErrorA = t.element('aria-error', a);
+        let ariaErrorB = t.element('aria-error', b);
+        expect(ariaErrorA.id).not.toBe(ariaErrorB.id);
+
+        userEdits(t, b, 'xy');
+
+        expect(t.element('editor', b).getAttribute('aria-errormessage')).toBe(ariaErrorB.id);
+        expect(ariaErrorB.textContent).toBe('UPPER-MSG');
+        expect(t.element('editor', a).hasAttribute('aria-invalid')).toBe(false);
+        expect(t.element('editor', a).hasAttribute('aria-errormessage')).toBe(false);
+        expect(ariaErrorA.textContent).toBe('');
+
+        userEdits(t, a, 'abcdefg');
+
+        expect(t.element('editor', a).getAttribute('aria-errormessage')).toBe(ariaErrorA.id);
+        expect(ariaErrorA.textContent).toBe('UPPER-MSG; LEN-MSG');
+        expect(t.element('editor', b).getAttribute('aria-errormessage')).toBe(ariaErrorB.id);
+        expect(ariaErrorB.textContent).toBe('UPPER-MSG');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+// A sequence of edits and a clear should leave nothing stale. Each new state replaces the previous one.
 describe('ARIA through a sequence of edits and a clear', () =>
 {
     const field = 'Text_Upper_Max5';
