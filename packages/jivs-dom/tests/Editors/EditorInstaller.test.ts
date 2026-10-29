@@ -155,6 +155,7 @@ function setup(): ITestSetup
     let loggingService = new RecordingLoggingService();
     let domServices = createMockJivsDomServices({
         editorAdapterDefinitionFactory: factory,
+        getInstallerCounter: () => 7,
         fieldPresentationInstaller: {
             install: (valueHost, element, role, options) => {
                 eventOrder.push('presentation');
@@ -344,6 +345,33 @@ describe('EditorInstaller.install', () => {
         expect(jivsElement.jivsTextValueAdapter).toBe(existingTextAdapter);
         expect(definition.calls.map(call => call.method)).toEqual(['identifyJivsElement', 'identifyEditor']);
         expect(presentationCalls).toHaveLength(0);
+    });
+
+    test('Stamps a newly installed element with the current installer counter', () => {
+        let { testItem, valueHost, suppliedElement, jivsElement } = setup();
+
+        testItem.install(valueHost, suppliedElement);
+
+        expect(jivsElement.jivsInstallCounter).toBe(7);
+    });
+
+    test('Leaves the installer counter of an already installed element unchanged', () => {
+        let { testItem, valueHost, suppliedElement, jivsElement } = setup();
+        jivsElement.jivsEditorAdapterDefinition = new RecordingDefinition();
+        jivsElement.jivsInstallCounter = 3;
+
+        testItem.install(valueHost, suppliedElement);
+
+        expect(jivsElement.jivsInstallCounter).toBe(3);
+    });
+
+    test('Does not stamp the counter when installation fails before completing', () => {
+        let { testItem, domServices, valueHost, suppliedElement, jivsElement } = setup();
+        domServices.fieldPresentationInstaller.install = () => { throw new Error('presentation failure'); };
+
+        expect(() => testItem.install(valueHost, suppliedElement)).toThrow('presentation failure');
+
+        expect(jivsElement.jivsInstallCounter).toBeUndefined();
     });
 
     test('Does not mark installation complete when the presentation installer throws', () => {

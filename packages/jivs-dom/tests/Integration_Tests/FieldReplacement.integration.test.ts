@@ -326,4 +326,23 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(summary.textContent).toContain('EXISTING-UPPER');
         expect(t.services.loggingService.entryCount).toBe(0);
     });
+
+    test('Only the replaced editor gets the newest install counter, which lets a Reader tell them apart', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const domServices = t.services.domServices;
+        const oldInjectedEditor = t.element('editor', injectedField);
+        const existingEditor = t.element('editor', existingField);
+        const firstCounter = domServices.getInstallerCounter(t.vhm);
+        expect(oldInjectedEditor.jivsInstallCounter).toBe(firstCounter);
+        expect(existingEditor.jivsInstallCounter).toBe(firstCounter);
+
+        replaceInjectedFieldElements(t);
+
+        const secondCounter = domServices.getInstallerCounter(t.vhm);
+        expect(secondCounter).toBe(firstCounter + 1);
+        expect(t.element('editor', injectedField).jivsInstallCounter).toBe(secondCounter);
+        expect(t.element('editor', existingField).jivsInstallCounter).toBe(firstCounter);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
 });

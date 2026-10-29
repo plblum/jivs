@@ -373,6 +373,62 @@ describe('JivsDomServices manager-scoped services', () => {
     });
 });
 
+// The install counter lives in ValueHostsManager metadata so each manager counts its own FormInstaller runs.
+describe('JivsDomServices install counter', () => {
+    test('getInstallerCounter seeds the metadata with 1 when it is not there yet', () => {
+        let testItem = new JivsDomServices();
+        let manager = createManager();
+
+        expect(manager.getMetadata('installCounter')).toBeUndefined();
+        expect(testItem.getInstallerCounter(manager)).toBe(1);
+        expect(manager.getMetadata('installCounter')).toBe(1);
+    });
+
+    test('getInstallerCounter returns the stored value without changing it', () => {
+        let testItem = new JivsDomServices();
+        let manager = createManager();
+        manager.setMetadata('installCounter', 5);
+
+        expect(testItem.getInstallerCounter(manager)).toBe(5);
+        expect(testItem.getInstallerCounter(manager)).toBe(5);
+        expect(manager.getMetadata('installCounter')).toBe(5);
+    });
+
+    test('incrementInstallerCounter initializes to 1 without incrementing when the metadata is missing', () => {
+        let testItem = new JivsDomServices();
+        let manager = createManager();
+
+        testItem.incrementInstallerCounter(manager);
+
+        expect(manager.getMetadata('installCounter')).toBe(1);
+    });
+
+    test('incrementInstallerCounter adds 1 each call, and getInstallerCounter reflects it', () => {
+        let testItem = new JivsDomServices();
+        let manager = createManager();
+        manager.setMetadata('installCounter', 1);
+
+        testItem.incrementInstallerCounter(manager);
+        expect(testItem.getInstallerCounter(manager)).toBe(2);
+        testItem.incrementInstallerCounter(manager);
+        expect(testItem.getInstallerCounter(manager)).toBe(3);
+        expect(manager.getMetadata('installCounter')).toBe(3);
+    });
+
+    test('Each manager keeps its own counter', () => {
+        let testItem = new JivsDomServices();
+        let first = createManager();
+        let second = createManager();
+
+        testItem.incrementInstallerCounter(first);
+        testItem.incrementInstallerCounter(first);
+        testItem.incrementInstallerCounter(second);
+
+        expect(testItem.getInstallerCounter(first)).toBe(2);
+        expect(testItem.getInstallerCounter(second)).toBe(1);
+    });
+});
+
 // A configured popup mechanism owns global resources and is disposed once by the service container.
 describe('JivsDomServices.dispose', () => {
     test('Disposes and clears a configured popup mechanism', () => {

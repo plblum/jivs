@@ -103,7 +103,8 @@ function setup(): ISetup
     let presentation = new RecordingFieldPresentation();
     let factory = new RecordingFieldPresentationFactory(presentation);
     let domServices = createMockJivsDomServices({
-        fieldPresentationFactory: factory
+        fieldPresentationFactory: factory,
+        getInstallerCounter: () => 4
     });
     let valueHostsManager = {} as IValueHostsManager;
     let currentValidationState = {} as ValueHostValidationState;
@@ -170,6 +171,33 @@ describe('FieldPresentationInstaller.install validation and creation', () => {
         expect(lifecycle).toEqual(['init', 'apply']);
         expect(element.jivsFieldPresentation).toBe(presentation);
         expect(result).toBe(presentation);
+    });
+
+    test('Stamps the element with the current installer counter when a presentation is created', () => {
+        let { installer, valueHost, element } = setup();
+
+        installer.install(valueHost, element, ElementRole.error);
+
+        expect(element.jivsInstallCounter).toBe(4);
+    });
+
+    test('Does not stamp the counter on an element that already has a presentation', () => {
+        let { installer, valueHost, element } = setup();
+        element.jivsFieldPresentation = new RecordingFieldPresentation();
+        element.jivsInstallCounter = 2;
+
+        installer.install(valueHost, element, ElementRole.error);
+
+        expect(element.jivsInstallCounter).toBe(2);
+    });
+
+    test('Does not stamp the counter when initialization throws', () => {
+        let { installer, presentation, valueHost, element } = setup();
+        presentation.init = () => { throw new Error('Initialization failed'); };
+
+        expect(() => installer.install(valueHost, element, ElementRole.editor)).toThrow('Initialization failed');
+
+        expect(element.jivsInstallCounter).toBeUndefined();
     });
 
     test('Passes a custom role and explicit presentation name to the factory', () => {

@@ -10,6 +10,8 @@
  * - jivsAriaValidationStateUpdater: AriaService's own updater for the validation state of the element.
  * - jivsFormPresentation: Handles the presentation of the form containing this element.
  * - jivsFormPresentationGroup: Allows a form element to be dedicated to a specific validation group.
+ * - jivsInstallCounter: Keeps track of the installation count for this element, updated by the EditorInstaller and FieldPresentationInstaller.
+ * - jivsErrorMessageId: Stores the ID of the error message element associated with this field, used for linking error messages to the field for accessibility and display purposes.
  * 
  * @module jivs-dom/Types/IJivsElement
  */
@@ -106,4 +108,13 @@ export interface IJivsElement extends HTMLElement
      * element has a usable ID.
      */
     jivsErrorMessageId?: string;
+
+    /**
+     * Keeps track of the installation count for this element.
+     * It is updated by the EditorInstaller and FieldPresentationInstaller
+     * using the value from IJivsDomServices.getInstallerCounter().
+     * It targets Readers, giving them a way to include only FieldValueHosts associated
+     * with replaced editors.
+     */
+    jivsInstallCounter?: number;
 }

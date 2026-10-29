@@ -175,6 +175,25 @@ export interface IJivsDomServices
      * @param valueHostsManager The ValueHostsManager instance for which to retrieve the popup service.
      */
     getPopupService(valueHostsManager: IValueHostsManager): IPopupService;
+
+    /**
+     * The Install Counter keeps track of invocations of FormInstaller, and its value is assigned
+     * to the IJivsElement.jivsInstallCounter property each time the editor is installed.
+     * It allows FormInstaller and Readers to know which elements were replaced during installation 
+     * that occurs due to replacement of elements. Its intended to ensure that Readers can skip updating
+     * values on editors that didn't get replaced.
+     * Gets the current value of the 'installCounter' metadata element.
+     * If not available, it gets assigned to 1.
+     * @param valueHostsManager The ValueHostsManager instance for which to retrieve the installer counter.
+     */
+    getInstallerCounter(valueHostsManager: IValueHostsManager): number;
+
+    /**
+     * Increments the installer counter for the specified ValueHostsManager instance in 'installCounter' metadata.
+     * If not available, it gets initialized to 1, without incrementing.
+     * @param valueHostsManager The ValueHostsManager instance for which to increment the installer counter.
+     */
+    incrementInstallerCounter(valueHostsManager: IValueHostsManager): void;
     
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.

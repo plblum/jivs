@@ -117,6 +117,7 @@ interface IInstallTrace
     fieldCalls: Array<{ valueHost: IFieldValueHost; element: IJivsElement; role: string; options: object }>;
     formCalls: Array<{ manager: IValueHostsManager; element: IJivsElement; role: string; options: object }>;
     ariaCalls: IElementRegistry[];
+    counter: { increments: number; incrementsWhenRegistryRequested: number | null };
 }
 
 /**
@@ -144,10 +145,16 @@ function setup(
     let fieldCalls: IInstallTrace['fieldCalls'] = [];
     let formCalls: IInstallTrace['formCalls'] = [];
     let ariaCalls: IElementRegistry[] = [];
+    let counter: IInstallTrace['counter'] = { increments: 0, incrementsWhenRegistryRequested: null };
     domServices = createMockJivsDomServices({
         services: { loggingService: logger } as unknown as IJivsServices,
+        incrementInstallerCounter: (valueHostsManager) => {
+            expect(valueHostsManager).toBe(manager);
+            counter.increments++;
+        },
         getElementRegistry: (valueHostsManager) => {
             eventOrder.push('getElementRegistry');
+            counter.incrementsWhenRegistryRequested ??= counter.increments;
             expect(valueHostsManager).toBe(manager);
             return registry;
         },
@@ -186,7 +193,7 @@ function setup(
     let testItem = new FormInstaller(manager, collector);
     return {
         testItem, valueHostsManager: manager, domServices, collector, registry, root, logger,
-        eventOrder, editorCalls, fieldCalls, formCalls, ariaCalls
+        eventOrder, editorCalls, fieldCalls, formCalls, ariaCalls, counter
     };
 }
 
@@ -234,6 +241,17 @@ describe('FormInstaller constructor', () => {
 
 // Installation clears stale records, collects from the resolved root, installs entries in order, and runs ARIA last.
 describe('FormInstaller.install', () => {
+    test('Increments the installer counter once per install, before the registry is requested', () => {
+        let trace = setup();
+
+        trace.testItem.install();
+        expect(trace.counter.increments).toBe(1);
+        expect(trace.counter.incrementsWhenRegistryRequested).toBe(1);
+
+        trace.testItem.install();
+        expect(trace.counter.increments).toBe(2);
+    });
+
     test('Clears stale records, collects once, installs each role, records editor anchors, and installs ARIA last', () => {
         let field = createStubFieldValueHost('Email', 'email');
         let trace = setup(registry => addDefaultMixedRecords(registry), {

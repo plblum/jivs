@@ -91,6 +91,8 @@ export class FormInstaller
     public install(): void
     {
         let domServices = this.domServices;
+        domServices.incrementInstallerCounter(this.valueHostsManager);
+
         // will create ElementRegistry if it doesn't exist yet
         let registry = domServices.getElementRegistry(this.valueHostsManager);
         registry.clear();   // if it did exist, start fresh

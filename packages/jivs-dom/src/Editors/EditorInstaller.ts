@@ -78,6 +78,7 @@ export class EditorInstaller extends DomServiceBase
             }
         );  // may throw
 
+        jivsElement.jivsInstallCounter = this.domServices.getInstallerCounter(valueHost.valueHostsManager);
         // declare it as installed to prevent multiple installations
         jivsElement.jivsEditorAdapterDefinition = definition;
         return jivsElement;
