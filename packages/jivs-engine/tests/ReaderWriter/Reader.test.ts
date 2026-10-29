@@ -432,6 +432,77 @@ describe('ModelReader', () =>
         });
     });
 
+    // ReaderOptions.readerFilter lets read() skip ValueHosts. It does not apply to readField().
+    describe('readerFilter', () =>
+    {
+        function setupTwoFields(options?: ReaderOptions): { valueHostsManager: IValueHostsManager, reader: PublicifyModelReader }
+        {
+            let services = new MockJivsServices(false, false);
+            services.valueAdapterService = new ValueAdapterService();
+            let config: ValueHostsManagerConfig = {
+                services: services,
+                valueHostConfigs: [
+                    <FieldValueHostConfig>{ valueHostType: 'Field', name: 'prop1', dataType: LookupKey.Number },
+                    <FieldValueHostConfig>{ valueHostType: 'Field', name: 'prop2', dataType: LookupKey.Number }
+                ],
+            };
+            let valueHostsManager = new ValueHostsManager(config);
+            let reader = new PublicifyModelReader(valueHostsManager, { prop1: 1, prop2: 2 }, options);
+            return { valueHostsManager, reader };
+        }
+
+        test('Without a filter, read() reads every field', () =>
+        {
+            let { valueHostsManager, reader } = setupTwoFields();
+            reader.read();
+            expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBe(1);
+            expect(valueHostsManager.getFieldValueHost('prop2')!.getValue()).toBe(2);
+        });
+
+        test('A filter returning false skips that field, and the filter receives each field ValueHost', () =>
+        {
+            let received: string[] = [];
+            let { valueHostsManager, reader } = setupTwoFields({
+                readerFilter: (valueHost) =>
+                {
+                    received.push(valueHost.getName());
+                    return valueHost.getName() === 'prop2';
+                }
+            });
+            reader.read();
+            expect(received).toEqual(['prop1', 'prop2']);
+            expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBeUndefined();
+            expect(valueHostsManager.getFieldValueHost('prop2')!.getValue()).toBe(2);
+        });
+
+        test('A filter returning false for every field leaves every value alone', () =>
+        {
+            let { valueHostsManager, reader } = setupTwoFields({ readerFilter: () => false });
+            reader.read();
+            expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBeUndefined();
+            expect(valueHostsManager.getFieldValueHost('prop2')!.getValue()).toBeUndefined();
+        });
+
+        test('A skipped field keeps its enabled state even with alignEnabled', () =>
+        {
+            let { valueHostsManager, reader } = setupTwoFields({
+                alignEnabled: true,
+                readerFilter: (valueHost) => valueHost.getName() === 'prop2'
+            });
+            valueHostsManager.getFieldValueHost('prop1')!.setEnabled(false);
+            reader.read();
+            expect(valueHostsManager.getFieldValueHost('prop1')!.isEnabled()).toBe(false);
+            expect(valueHostsManager.getFieldValueHost('prop2')!.isEnabled()).toBe(true);
+        });
+
+        test('readField ignores the filter', () =>
+        {
+            let { valueHostsManager, reader } = setupTwoFields({ readerFilter: () => false });
+            reader.readField(valueHostsManager.getFieldValueHost('prop1')!);
+            expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBe(1);
+        });
+    });
+
     describe('read with limited tests around the functions already tested above', () =>
     {
         test('read with a valueHost that has a rule that adjusts the value. Expect the adjusted value to be set into the valueHost', () =>

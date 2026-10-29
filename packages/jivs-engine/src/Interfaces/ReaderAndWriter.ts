@@ -46,6 +46,8 @@
  * @module jivs-engine/ReaderWriter/Types
  */
 
+import { IFieldValueHost } from './FieldValueHost';
+
 /**
  * The Reader is responsible for reading data from an external source and populating the ValueHostsManager with the data. 
  * It uses the FieldValueHostConfig to determine how to read the data and convert it to the correct type.
@@ -136,7 +138,19 @@ export interface ReaderOptions
      * and not disabled by other means.
      */
     alignEnabled?: boolean;
+
+    /**
+     * A filter function that determines which ValueHosts should be included in the reading process.
+     * Used on read() but not readField().
+     */
+    readerFilter?: ReaderFilterHandler;
 }
+
+/**
+ * For ReaderOptions.readerFilter, a function that determines whether a given ValueHost should be included in the reading process.
+ * It receives an IFieldValueHost as an argument and returns a boolean indicating inclusion (true) or exclusion (false).
+ */
+export type ReaderFilterHandler = (valueHost: IFieldValueHost) => boolean;
 
 /**
  * The WriterBase is responsible for writing data from the ValueHostsManager to an external source.

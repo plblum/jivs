@@ -50,6 +50,8 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
      * 
      * The option.preliminaryValidation controls whether validation is invoked on all fields after reading.
      * It defaults to true if not specified.
+     * 
+     * The option.readerFilter determines which ValueHosts are included in the reading process. If not specified, all ValueHosts are included.
      */
     public read(): void
     {
@@ -57,7 +59,11 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
         for (let vh of generator)
         {
             let valueHost = vh as IFieldValueHost;
-            this.readOne(valueHost);
+            if (!this.options.readerFilter || this.options.readerFilter(valueHost))
+            {
+                this.readOne(valueHost);
+            }
+            
         }
         if (this.options.preliminaryValidation !== false)
         {
