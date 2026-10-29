@@ -11,6 +11,8 @@ import { IElementCollector } from '../Interfaces/ElementCollector';
 import { IEditorElementRegistryRecord, IElementRegistry, IFieldElementRegistryRecord, IFormElementRegistryRecord } from '../Interfaces/ElementRegistry';
 import { IJivsDomServices } from '../Interfaces/JivsDomServices';
 import { ElementRole } from '../Interfaces/Types';
+import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { FieldValueHost } from '@plblum/jivs-engine/build/ValueHosts/FieldValueHost';
 
 
 /**
@@ -91,7 +93,7 @@ export class FormInstaller
     public install(): void
     {
         let domServices = this.domServices;
-        domServices.incrementInstallerCounter(this.valueHostsManager);
+        domServices.incrementInstallCounter(this.valueHostsManager);
 
         // will create ElementRegistry if it doesn't exist yet
         let registry = domServices.getElementRegistry(this.valueHostsManager);
@@ -106,6 +108,13 @@ export class FormInstaller
     protected installFromRegistry(registry: IElementRegistry): void
     {
         let domServices = this.domServices;
+
+        // retain a list of FieldValueHosts, to eliminate those that are found in our registry
+        let fvhWithEditors = new Map<IFieldValueHost, string>();
+        for (let item of this.valueHostsManager.enumerateValueHosts((item)=> item instanceof FieldValueHost))
+        {
+            fvhWithEditors.set(item as IFieldValueHost, item.getName());
+        }
 
         // enumerate through Iterable registry class
         for (let entry of registry)
@@ -124,6 +133,8 @@ export class FormInstaller
                         entry.element,
                         (<IEditorElementRegistryRecord> entry).editorOptions ?? {});
                     registry.setEditorJivsElement((<IEditorElementRegistryRecord> entry), jivsElement);
+
+                    fvhWithEditors.delete(entry.fieldValueHost);
                 }
                 else
                     domServices.loggingFacade.log(LoggingLevel.Warn,
@@ -164,6 +175,8 @@ export class FormInstaller
                 continue;
             }
         }        
+        for (let item of fvhWithEditors)
+            item[0].setEnabled(false);
     }
 
     /**

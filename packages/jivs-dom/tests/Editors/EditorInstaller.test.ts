@@ -20,7 +20,25 @@ import { ElementRole } from '../../src/Interfaces/Types';
 import { JivsDomServices } from '../../src/Services/JivsDomServices';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
-import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import { createStubFieldValueHost as createBaseStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+
+interface IRecordingFieldValueHost extends IFieldValueHost
+{
+    enabledCalls: boolean[];
+}
+
+/**
+ * The shared stub plus setEnabled(), which EditorInstaller calls after a successful install.
+ * enabledCalls records each value passed to setEnabled().
+ */
+function createStubFieldValueHost(name: string, elementIdentifier?: string): IRecordingFieldValueHost
+{
+    let enabledCalls: boolean[] = [];
+    return Object.assign(createBaseStubFieldValueHost(name, elementIdentifier), {
+        enabledCalls,
+        setEnabled: (enabled: boolean) => { enabledCalls.push(enabled); }
+    }) as IRecordingFieldValueHost;
+}
 
 // This ensures that references to JivsServices include the domServices property
 // for the VSCode environment. Not needed for compiling or runtime
@@ -155,7 +173,7 @@ function setup(): ITestSetup
     let loggingService = new RecordingLoggingService();
     let domServices = createMockJivsDomServices({
         editorAdapterDefinitionFactory: factory,
-        getInstallerCounter: () => 7,
+        getInstallCounter: () => 7,
         fieldPresentationInstaller: {
             install: (valueHost, element, role, options) => {
                 eventOrder.push('presentation');
@@ -372,6 +390,32 @@ describe('EditorInstaller.install', () => {
         expect(() => testItem.install(valueHost, suppliedElement)).toThrow('presentation failure');
 
         expect(jivsElement.jivsInstallCounter).toBeUndefined();
+    });
+
+    test('Enables the field of a newly installed editor', () => {
+        let { testItem, valueHost, suppliedElement } = setup();
+
+        testItem.install(valueHost, suppliedElement);
+
+        expect((valueHost as IRecordingFieldValueHost).enabledCalls).toEqual([true]);
+    });
+
+    test('Leaves the enabled state alone for an already installed element', () => {
+        let { testItem, valueHost, suppliedElement, jivsElement } = setup();
+        jivsElement.jivsEditorAdapterDefinition = new RecordingDefinition();
+
+        testItem.install(valueHost, suppliedElement);
+
+        expect((valueHost as IRecordingFieldValueHost).enabledCalls).toEqual([]);
+    });
+
+    test('Does not enable the field when installation fails before completing', () => {
+        let { testItem, domServices, valueHost, suppliedElement } = setup();
+        domServices.fieldPresentationInstaller.install = () => { throw new Error('presentation failure'); };
+
+        expect(() => testItem.install(valueHost, suppliedElement)).toThrow('presentation failure');
+
+        expect((valueHost as IRecordingFieldValueHost).enabledCalls).toEqual([]);
     });
 
     test('Does not mark installation complete when the presentation installer throws', () => {

@@ -573,7 +573,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      */    
     public getIssueFound(errorCode: string): IssueFound | null {
         if (!this.isEnabled()) {
-            this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);
+            this.logger.message(LoggingLevel.Debug, () => `Issues not available on disabled ValueHost "${this.getName()}"`);
             return null;
         }
 
@@ -620,7 +620,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public getIssuesFound(group?: string): Array<IssueFound> | null {
         if (!this.isEnabled())
         {
-            this.logger.message(LoggingLevel.Warn, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
+            this.logger.message(LoggingLevel.Debug, () => `Issues not available on disabled ValueHost "${this.getName()}"`);            
             return null;
         }        
         const list: Array<IssueFound> = [];

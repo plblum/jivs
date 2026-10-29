@@ -330,7 +330,7 @@ export class JivsDomServices extends ServiceWithAccessorBase
      * If not available, it gets assigned to 1.
      * @param valueHostsManager The ValueHostsManager instance for which to retrieve the installer counter.
      */
-    public getInstallerCounter(valueHostsManager: IValueHostsManager): number
+    public getInstallCounter(valueHostsManager: IValueHostsManager): number
     {
         let counter = valueHostsManager.getMetadata('installCounter') as number | null;
         if (!counter) {
@@ -346,7 +346,7 @@ export class JivsDomServices extends ServiceWithAccessorBase
      * If not available, it gets initialized to 1, without incrementing.
      * @param valueHostsManager The ValueHostsManager instance for which to increment the installer counter.
      */
-    public incrementInstallerCounter(valueHostsManager: IValueHostsManager): void
+    public incrementInstallCounter(valueHostsManager: IValueHostsManager): void
     {
         let counter = valueHostsManager.getMetadata('installCounter') as number | null;
         if (!counter) {

@@ -375,43 +375,43 @@ describe('JivsDomServices manager-scoped services', () => {
 
 // The install counter lives in ValueHostsManager metadata so each manager counts its own FormInstaller runs.
 describe('JivsDomServices install counter', () => {
-    test('getInstallerCounter seeds the metadata with 1 when it is not there yet', () => {
+    test('getInstallCounter seeds the metadata with 1 when it is not there yet', () => {
         let testItem = new JivsDomServices();
         let manager = createManager();
 
         expect(manager.getMetadata('installCounter')).toBeUndefined();
-        expect(testItem.getInstallerCounter(manager)).toBe(1);
+        expect(testItem.getInstallCounter(manager)).toBe(1);
         expect(manager.getMetadata('installCounter')).toBe(1);
     });
 
-    test('getInstallerCounter returns the stored value without changing it', () => {
+    test('getInstallCounter returns the stored value without changing it', () => {
         let testItem = new JivsDomServices();
         let manager = createManager();
         manager.setMetadata('installCounter', 5);
 
-        expect(testItem.getInstallerCounter(manager)).toBe(5);
-        expect(testItem.getInstallerCounter(manager)).toBe(5);
+        expect(testItem.getInstallCounter(manager)).toBe(5);
+        expect(testItem.getInstallCounter(manager)).toBe(5);
         expect(manager.getMetadata('installCounter')).toBe(5);
     });
 
-    test('incrementInstallerCounter initializes to 1 without incrementing when the metadata is missing', () => {
+    test('incrementInstallCounter initializes to 1 without incrementing when the metadata is missing', () => {
         let testItem = new JivsDomServices();
         let manager = createManager();
 
-        testItem.incrementInstallerCounter(manager);
+        testItem.incrementInstallCounter(manager);
 
         expect(manager.getMetadata('installCounter')).toBe(1);
     });
 
-    test('incrementInstallerCounter adds 1 each call, and getInstallerCounter reflects it', () => {
+    test('incrementInstallCounter adds 1 each call, and getInstallCounter reflects it', () => {
         let testItem = new JivsDomServices();
         let manager = createManager();
         manager.setMetadata('installCounter', 1);
 
-        testItem.incrementInstallerCounter(manager);
-        expect(testItem.getInstallerCounter(manager)).toBe(2);
-        testItem.incrementInstallerCounter(manager);
-        expect(testItem.getInstallerCounter(manager)).toBe(3);
+        testItem.incrementInstallCounter(manager);
+        expect(testItem.getInstallCounter(manager)).toBe(2);
+        testItem.incrementInstallCounter(manager);
+        expect(testItem.getInstallCounter(manager)).toBe(3);
         expect(manager.getMetadata('installCounter')).toBe(3);
     });
 
@@ -420,12 +420,12 @@ describe('JivsDomServices install counter', () => {
         let first = createManager();
         let second = createManager();
 
-        testItem.incrementInstallerCounter(first);
-        testItem.incrementInstallerCounter(first);
-        testItem.incrementInstallerCounter(second);
+        testItem.incrementInstallCounter(first);
+        testItem.incrementInstallCounter(first);
+        testItem.incrementInstallCounter(second);
 
-        expect(testItem.getInstallerCounter(first)).toBe(2);
-        expect(testItem.getInstallerCounter(second)).toBe(1);
+        expect(testItem.getInstallCounter(first)).toBe(2);
+        expect(testItem.getInstallCounter(second)).toBe(1);
     });
 });
 

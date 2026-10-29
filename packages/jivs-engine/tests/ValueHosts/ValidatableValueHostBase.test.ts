@@ -1413,21 +1413,23 @@ describe('getIssueFound only checking without calls to validate', () => {
     });            
     test('When ValueHost.isEnabled=false, always return null and create log entry', () => {
         let setup = setupValidatableValueHostBase(null, null);
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         setup.valueHost.setEnabled(false);
         let issueFound = setup.valueHost.getIssueFound('Field1');
         expect(issueFound).toBeNull();
         let logger = setup.services.loggingService as TestingLoggingService;
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Debug, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();
         issueFound = setup.valueHost.getIssueFound('Field1')
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeNull();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Debug, null)).toBeNull();
     });                
 
 });
 describe('getIssueFound various', () => {
     test('Returns null when disabled even if validator-managed issue exists', () => {
         let setup = setupValidatableValueHostBase();
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
 
         let setResult = setup.valueHost.exposed_setIssueFound({
             valueHostName: 'Field1',
@@ -1446,7 +1448,7 @@ describe('getIssueFound various', () => {
 
         expect(result).toBeNull();
         let logger = setup.services.loggingService as TestingLoggingService;
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Debug, null)).toBeTruthy();
 
     });
 
@@ -1683,15 +1685,16 @@ describe('getIssuesFound without calling validate', () => {
     });
     test('When ValueHost.isEnabled=false, always return null and create log entry', () => {
         let setup = setupValidatableValueHostBase(null, null);
+        setup.services.loggingService.minLevel = LoggingLevel.Debug;
         setup.valueHost.setEnabled(false);
         let issuesFound = setup.valueHost.getIssuesFound();
         expect(issuesFound).toBeNull();
         let logger = setup.services.loggingService as TestingLoggingService;
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Debug, null)).toBeTruthy();
         setup.valueHost.setEnabled(true);
         logger.clearAll();
         issuesFound = setup.valueHost.getIssuesFound()
-        expect(logger.findMessage('Issues not available', LoggingLevel.Warn, null)).toBeNull();
+        expect(logger.findMessage('Issues not available', LoggingLevel.Debug, null)).toBeNull();
     });         
 
     test('Returns validator-managed issues when they exist and there are no external issues', () => {

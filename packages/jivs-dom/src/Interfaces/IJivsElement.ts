@@ -112,7 +112,7 @@ export interface IJivsElement extends HTMLElement
     /**
      * Keeps track of the installation count for this element.
      * It is updated by the EditorInstaller and FieldPresentationInstaller
-     * using the value from IJivsDomServices.getInstallerCounter().
+     * using the value from IJivsDomServices.getInstallCounter().
      * It targets Readers, giving them a way to include only FieldValueHosts associated
      * with replaced editors.
      */

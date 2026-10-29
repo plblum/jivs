@@ -3,7 +3,9 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValidationSeverity, ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { FormInstaller } from '../../src/FormInstaller/FormInstaller';
-import { TestForm } from './TestingSupport/CreateTestForm';
+import { EditorReader } from '../../src/Editors/EditorReader';
+import { onlyReplacedEditors } from '../../src/Editors/ReaderAssistance';
+import { TestForm, createTestForm } from './TestingSupport/CreateTestForm';
 import { expectElementsMatchValidationState, expectIssueCodes, installForm } from './TestingSupport/FieldFeedbackExpectations';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
 import { useCleanDocument } from './TestingSupport/TestFileSupport';
@@ -19,13 +21,28 @@ useCleanDocument();
 
 const injectedField = 'InjectedText';
 const existingField = 'ExistingText';
+const addedField = 'AddedText';
 
 /**
- * Creates two text fields and a form-level summary to verify preliminary validation reaches form feedback.
+ * Creates the repository with the three fixtures and the form templates.
  */
-function createFieldReplacementForm(ariaService: boolean = false)
+function createFieldReplacementRepository()
 {
     const repository = createDefaultTestFieldRepository();
+    repository.registerIdentity({
+        name: addedField,
+        description: 'Required uppercase text that the page adds later',
+        addConfig: (builder, name) =>
+        {
+            builder.field(name, LookupKey.String)
+                .requireText('ADDED-REQUIRED')
+                .regExp(/^[A-Z]*$/, { errorMessage: 'ADDED-UPPER', severity: ValidationSeverity.Error });
+        },
+        addEditor: (page, name, options) =>
+        {
+            page.inputEditor(name, 'text', options.presentationName, options.adapterKey, options.additionalAttributes);
+        }
+    });
     repository.registerIdentity({
         name: injectedField,
         description: 'Required uppercase text',
@@ -62,14 +79,54 @@ function createFieldReplacementForm(ariaService: boolean = false)
         form.field(existingField, 'withRequired');
         form.validationSummary();
     });
+    // The same form with a third field in a container. Tests empty that container before the first install,
+    // so the field has a FieldValueHost but no elements, as when a page plans a field it adds later.
+    repository.registerFormTemplate('fieldReplacementSummaryWithPlannedField', (page) =>
+    {
+        const form = page.form('field-replacement-form');
+        form.field(injectedField, 'inContainer');
+        form.field(existingField, 'withRequired');
+        form.field(addedField, 'inContainer');
+        form.validationSummary();
+    });
+    return repository;
+}
 
+/**
+ * Creates two text fields and a form-level summary to verify preliminary validation reaches form feedback.
+ */
+function createFieldReplacementForm(ariaService: boolean = false)
+{
     const t = installForm({
-        repository,
+        repository: createFieldReplacementRepository(),
         formTemplate: 'fieldReplacementSummary',
         servicesConfigOptions: { ariaService: ariaService },
         verbose
     });
     t.vhm.notifyValidationStateChangedDelay = 0;
+    return t;
+}
+
+/**
+ * Like createFieldReplacementForm, with a third field whose FieldValueHost exists but whose elements are
+ * removed before the first install. The user then edits the first two fields.
+ */
+function createFormWithPlannedField()
+{
+    const t = createTestForm({
+        repository: createFieldReplacementRepository(),
+        formTemplate: 'fieldReplacementSummaryWithPlannedField',
+        fieldTemplate: 'withRequired',
+        servicesConfigOptions: { ariaService: false },
+        install: false,
+        verbose
+    });
+    t.page.assign();
+    t.replace(t.element('container', addedField), () => { /* nothing */ });
+    FormInstaller.install(t.vhm, t.collector);
+    t.vhm.notifyValidationStateChangedDelay = 0;
+    userEdits(t, injectedField, 'lower');
+    userEdits(t, existingField, 'lower');
     return t;
 }
 
@@ -327,19 +384,269 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
+    test('EditorReader with onlyReplacedEditors reads only the replaced editor, then validates preliminary', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const summary = t.element('summary');
+        const existingEditor = t.element('editor', existingField) as unknown as HTMLInputElement;
+
+        replaceInjectedFieldElements(t);
+
+        // Values step: the new editor arrives holding the correct value.
+        // The untouched editor is changed in the DOM only (no event), so reading it would visibly change its ValueHost.
+        (t.element('editor', injectedField) as unknown as HTMLInputElement).value = 'ABC';
+        existingEditor.value = 'XYZ';
+        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+
+        expect(t.vhm.getFieldValueHost(injectedField)!.getTextValue()).toBe('ABC');
+        expect(t.vhm.getFieldValueHost(existingField)!.getTextValue()).toBe('lower');
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
+        expectElementsMatchValidationState(t, existingField, ValidationStatus.Invalid);
+        expect(summary.textContent).not.toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Without the filter, EditorReader also reads the untouched editor', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+
+        replaceInjectedFieldElements(t);
+        (t.element('editor', injectedField) as unknown as HTMLInputElement).value = 'ABC';
+        (t.element('editor', existingField) as unknown as HTMLInputElement).value = 'XYZ';
+        new EditorReader(t.vhm).read();
+
+        expect(t.vhm.getFieldValueHost(existingField)!.getTextValue()).toBe('XYZ');
+        expectElementsMatchValidationState(t, existingField, ValidationStatus.Valid);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('A field whose editor was removed is disabled, drops out of validation and the summary, and returns when its editor does', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const summary = t.element('summary');
+        const injectedHost = t.vhm.getFieldValueHost(injectedField)!;
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(injectedHost.isEnabled()).toBe(true);
+
+        // The page rebuilds the container without any elements for the field.
+        const container = t.element('container', injectedField);
+        t.replace(container, () => { /* nothing */ });
+        FormInstaller.install(t.vhm, t.collector);
+        t.vhm.validate({ preliminary: true });
+
+        expect(injectedHost.isEnabled()).toBe(false);
+        expect(t.vhm.getFieldValueHost(existingField)!.isEnabled()).toBe(true);
+        expect(summary.textContent).not.toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+
+        // The editor comes back: install enables the field, and the Reader's values step can set it.
+        t.replace(container, page => page.field(injectedField, 'withRequired'));
+        FormInstaller.install(t.vhm, t.collector);
+        (t.element('editor', injectedField) as unknown as HTMLInputElement).value = 'lower';
+        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+
+        expect(injectedHost.isEnabled()).toBe(true);
+        expect(injectedHost.getTextValue()).toBe('lower');
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Invalid);
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Reinstalling with nothing changed keeps every element, counter and state, and the Reader skips every field', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const domServices = t.services.domServices;
+        const summary = t.element('summary');
+        const names = [injectedField, existingField];
+        const editors = names.map(name => t.element('editor', name));
+        const errors = names.map(name => t.element('error', name));
+        const summaryPresentation = summary.jivsFormPresentation;
+        const firstCounter = domServices.getInstallCounter(t.vhm);
+        expect(summaryPresentation).toBeDefined();
+
+        FormInstaller.install(t.vhm, t.collector);
+        // The values step would normally follow. The DOM values below differ from the ValueHosts,
+        // so a Reader that did not skip these fields would visibly change them.
+        names.forEach(name => (t.element('editor', name) as unknown as HTMLInputElement).value = 'ABC');
+        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+
+        expect(domServices.getInstallCounter(t.vhm)).toBe(firstCounter + 1);
+        names.forEach((name, index) =>
+        {
+            expect(t.element('editor', name)).toBe(editors[index]);
+            expect(t.element('error', name)).toBe(errors[index]);
+            expect(editors[index].jivsInstallCounter).toBe(firstCounter);
+            expect(t.vhm.getFieldValueHost(name)!.isEnabled()).toBe(true);
+            expect(t.vhm.getFieldValueHost(name)!.getTextValue()).toBe('lower');
+            expectElementsMatchValidationState(t, name, ValidationStatus.Invalid);
+        });
+        expect(t.element('summary')).toBe(summary);
+        expect(summary.jivsFormPresentation).toBe(summaryPresentation);
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Reinstalling with nothing changed does not double the dispatchers, so one ValueHost change writes the editor once', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const editor = t.element('editor', existingField);
+        const originalAdapter = editor.jivsTextValueAdapter!;
+        const writes: Array<string | undefined> = [];
+        // Counting wrapper: the TextValueDispatcher writes through this adapter each time it runs.
+        editor.jivsTextValueAdapter = {
+            readTextValue: () => originalAdapter.readTextValue(),
+            writeTextValue: (value?: string) => { writes.push(value); originalAdapter.writeTextValue(value); }
+        };
+
+        FormInstaller.install(t.vhm, t.collector);
+        t.vhm.getFieldValueHost(existingField)!.setValue('ABC');
+
+        expect(writes).toEqual(['ABC']);
+        expect((editor as unknown as HTMLInputElement).value).toBe('ABC');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('A field a Reader disabled earlier stays disabled when the form is reinstalled with its editor untouched', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        t.vhm.getFieldValueHost(existingField)!.setEnabled(false);
+
+        FormInstaller.install(t.vhm, t.collector);
+
+        expect(t.vhm.getFieldValueHost(existingField)!.isEnabled()).toBe(false);
+        expect(t.vhm.getFieldValueHost(injectedField)!.isEnabled()).toBe(true);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('A field left with only its label is treated as having no editor, so it is disabled and out of the summary', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const summary = t.element('summary');
+        const injectedHost = t.vhm.getFieldValueHost(injectedField)!;
+
+        t.replace(t.element('container', injectedField), page => page.label(injectedField, injectedField));
+        FormInstaller.install(t.vhm, t.collector);
+        t.vhm.validate({ preliminary: true });
+
+        expect(injectedHost.isEnabled()).toBe(false);
+        expect(summary.textContent).not.toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+        expectElementsMatchValidationState(t, existingField, ValidationStatus.Invalid);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('With ARIA on, removing one field keeps the untouched field\'s aria-invalid and aria-errormessage, and it still updates', () =>
+    {
+        const t = installWithUserEditedInvalidFields(true);
+        const editor = t.element('editor', existingField);
+        const errorId = editor.getAttribute('aria-errormessage');
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(errorId).toBeTruthy();
+
+        t.replace(t.element('container', injectedField), () => { /* nothing */ });
+        FormInstaller.install(t.vhm, t.collector);
+        t.vhm.validate({ preliminary: true });
+
+        expect(editor.getAttribute('aria-invalid')).toBe('true');
+        expect(editor.getAttribute('aria-errormessage')).toBe(errorId);
+
+        userEdits(t, existingField, 'XYZ');
+
+        expect(editor.hasAttribute('aria-invalid')).toBe(false);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('A planned field with no elements is disabled by the first install and stays out of validation and the summary', () =>
+    {
+        const t = createFormWithPlannedField();
+        const summary = t.element('summary');
+        const addedHost = t.vhm.getFieldValueHost(addedField)!;
+
+        expect(addedHost).not.toBeNull();
+        expect(addedHost.isEnabled()).toBe(false);
+        expect(t.vhm.getFieldValueHost(injectedField)!.isEnabled()).toBe(true);
+        expect(t.vhm.getFieldValueHost(existingField)!.isEnabled()).toBe(true);
+        t.vhm.validate({ preliminary: true });
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+        expect(summary.textContent).not.toContain('ADDED');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Adding the planned field\'s elements and installing again enables it, installs it fresh and leaves the other fields alone', () =>
+    {
+        const t = createFormWithPlannedField();
+        const summary = t.element('summary');
+        const domServices = t.services.domServices;
+        const addedHost = t.vhm.getFieldValueHost(addedField)!;
+        const otherEditors = [injectedField, existingField].map(name => t.element('editor', name));
+        const firstCounter = domServices.getInstallCounter(t.vhm);
+
+        t.replace(t.element('container', addedField), page => page.field(addedField, 'withRequired'));
+        FormInstaller.install(t.vhm, t.collector);
+
+        const addedEditor = t.element('editor', addedField);
+        expect(addedHost.isEnabled()).toBe(true);
+        expect(addedEditor.jivsEditorAdapterDefinition).toBeDefined();
+        expect(addedEditor.jivsInstallCounter).toBe(firstCounter + 1);
+        [injectedField, existingField].forEach((name, index) =>
+        {
+            expect(t.element('editor', name)).toBe(otherEditors[index]);
+            expect(otherEditors[index].jivsInstallCounter).toBe(firstCounter);
+            expectElementsMatchValidationState(t, name, ValidationStatus.Invalid);
+        });
+
+        // Values step: the new editor arrives with a value, the Reader sends only that editor, then validate preliminary.
+        (addedEditor as unknown as HTMLInputElement).value = 'lower';
+        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+
+        expect(addedHost.getTextValue()).toBe('lower');
+        expectElementsMatchValidationState(t, addedField, ValidationStatus.Invalid);
+        expect(t.element('error', addedField).classList.contains('jivs-has-issues')).toBe(true);
+        expect(summary.textContent).toContain('ADDED-UPPER');
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+
+        // The handler on the new editor sends the user's edit.
+        userEdits(t, addedField, 'ABC');
+
+        expectElementsMatchValidationState(t, addedField, ValidationStatus.Valid);
+        expect(summary.textContent).not.toContain('ADDED-UPPER');
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('A required planned field added with an empty editor gets no required issue from the preliminary pass', () =>
+    {
+        const t = createFormWithPlannedField();
+        const summary = t.element('summary');
+
+        t.replace(t.element('container', addedField), page => page.field(addedField, 'withRequired'));
+        FormInstaller.install(t.vhm, t.collector);
+        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+
+        expect(t.vhm.getFieldValueHost(addedField)!.isEnabled()).toBe(true);
+        expect(summary.textContent).not.toContain('ADDED-REQUIRED');
+        expect(t.element('error', addedField).classList.contains('jivs-has-issues')).toBe(false);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
     test('Only the replaced editor gets the newest install counter, which lets a Reader tell them apart', () =>
     {
         const t = installWithUserEditedInvalidFields();
         const domServices = t.services.domServices;
         const oldInjectedEditor = t.element('editor', injectedField);
         const existingEditor = t.element('editor', existingField);
-        const firstCounter = domServices.getInstallerCounter(t.vhm);
+        const firstCounter = domServices.getInstallCounter(t.vhm);
         expect(oldInjectedEditor.jivsInstallCounter).toBe(firstCounter);
         expect(existingEditor.jivsInstallCounter).toBe(firstCounter);
 
         replaceInjectedFieldElements(t);
 
-        const secondCounter = domServices.getInstallerCounter(t.vhm);
+        const secondCounter = domServices.getInstallCounter(t.vhm);
         expect(secondCounter).toBe(firstCounter + 1);
         expect(t.element('editor', injectedField).jivsInstallCounter).toBe(secondCounter);
         expect(t.element('editor', existingField).jivsInstallCounter).toBe(firstCounter);

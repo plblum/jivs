@@ -104,7 +104,7 @@ function setup(): ISetup
     let factory = new RecordingFieldPresentationFactory(presentation);
     let domServices = createMockJivsDomServices({
         fieldPresentationFactory: factory,
-        getInstallerCounter: () => 4
+        getInstallCounter: () => 4
     });
     let valueHostsManager = {} as IValueHostsManager;
     let currentValidationState = {} as ValueHostValidationState;

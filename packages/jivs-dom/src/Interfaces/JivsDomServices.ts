@@ -186,14 +186,14 @@ export interface IJivsDomServices
      * If not available, it gets assigned to 1.
      * @param valueHostsManager The ValueHostsManager instance for which to retrieve the installer counter.
      */
-    getInstallerCounter(valueHostsManager: IValueHostsManager): number;
+    getInstallCounter(valueHostsManager: IValueHostsManager): number;
 
     /**
-     * Increments the installer counter for the specified ValueHostsManager instance in 'installCounter' metadata.
+     * Increments the Install Counter for the specified ValueHostsManager instance in 'installCounter' metadata.
      * If not available, it gets initialized to 1, without incrementing.
      * @param valueHostsManager The ValueHostsManager instance for which to increment the installer counter.
      */
-    incrementInstallerCounter(valueHostsManager: IValueHostsManager): void;
+    incrementInstallCounter(valueHostsManager: IValueHostsManager): void;
     
     /**
      * Gets the factory responsible for creating IEditorAdapterDefinitions.

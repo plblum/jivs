@@ -73,7 +73,7 @@ export class FieldPresentationInstaller extends DomServiceBase
             fieldPresentation.init(valueHost.valueHostsManager);
             fieldPresentation.apply(valueHost, valueHost.currentValidationState);
             // jivsInstallCounter is also updated in EditorInstall. Expect the same value there.
-            element.jivsInstallCounter = this.domServices.getInstallerCounter(valueHost.valueHostsManager);
+            element.jivsInstallCounter = this.domServices.getInstallCounter(valueHost.valueHostsManager);
             element.jivsFieldPresentation = fieldPresentation;
         }
 

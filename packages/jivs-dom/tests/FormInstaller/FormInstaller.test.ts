@@ -48,7 +48,25 @@ import { ValidationSummaryPresentation } from '../../src/FormPresentations/Valid
 import { MessageFrame } from '../../src/Presentations_common/MessageFrame';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { setupFieldValueHostForTesting } from '../TestSupport/FieldValueHostTestFunctions';
-import { createStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+import { createStubFieldValueHost as createBaseStubFieldValueHost, RecordingLoggingService } from '../TestSupport/mocks';
+
+interface IRecordingFieldValueHost extends IFieldValueHost
+{
+    enabledCalls: boolean[];
+}
+
+/**
+ * The shared stub plus setEnabled(), which FormInstaller calls on fields that have no editor.
+ * enabledCalls records each value passed to setEnabled().
+ */
+function createStubFieldValueHost(name: string, elementIdentifier?: string): IRecordingFieldValueHost
+{
+    let enabledCalls: boolean[] = [];
+    return Object.assign(createBaseStubFieldValueHost(name, elementIdentifier), {
+        enabledCalls,
+        setEnabled: (enabled: boolean) => { enabledCalls.push(enabled); }
+    }) as IRecordingFieldValueHost;
+}
 import { InputAdapterDefinition } from '../../src/EditorAdapterDefinitions/InputAdapterDefinition';
 import { CheckboxAdapterDefinition } from '../../src/EditorAdapterDefinitions/CheckboxAdapterDefinition';
 import { TextAreaAdapterDefinition } from '../../src/EditorAdapterDefinitions/TextAreaAdapterDefinition';
@@ -136,7 +154,9 @@ function setup(
             return { domServices } as unknown as IJivsServices;
         },
         getFieldByElementIdentifier: (identifier: string): IFieldValueHost | null =>
-            fields[identifier.toLowerCase()] ?? null
+            fields[identifier.toLowerCase()] ?? null,
+        // The real manager applies the filter (FieldValueHost instances). This fake supplies only field stubs.
+        enumerateValueHosts: function* () { yield* Object.values(fields); }
     } as unknown as IValueHostsManager;
     let registry = new RecordingElementRegistry(manager);
     let root = document.createElement('main');
@@ -148,7 +168,7 @@ function setup(
     let counter: IInstallTrace['counter'] = { increments: 0, incrementsWhenRegistryRequested: null };
     domServices = createMockJivsDomServices({
         services: { loggingService: logger } as unknown as IJivsServices,
-        incrementInstallerCounter: (valueHostsManager) => {
+        incrementInstallCounter: (valueHostsManager) => {
             expect(valueHostsManager).toBe(manager);
             counter.increments++;
         },
@@ -241,6 +261,33 @@ describe('FormInstaller constructor', () => {
 
 // Installation clears stale records, collects from the resolved root, installs entries in order, and runs ARIA last.
 describe('FormInstaller.install', () => {
+    test('Disables fields that have no editor, and leaves fields with an editor alone', () => {
+        let withEditor = createStubFieldValueHost('Email', 'email');
+        let withoutEditor = createStubFieldValueHost('Phone', 'phone');
+        let labelOnly = createStubFieldValueHost('Notes', 'notes');
+        let trace = setup(registry => {
+            addDefaultMixedRecords(registry, 'email');
+            // A label for a field is not an editor, so Notes still counts as having none.
+            registry.addField(document.createElement('label') as IJivsElement, 'notes', ElementRole.label);
+        }, { fields: { email: withEditor, phone: withoutEditor, notes: labelOnly } });
+
+        trace.testItem.install();
+
+        expect(withEditor.enabledCalls).toEqual([]);
+        expect(withoutEditor.enabledCalls).toEqual([false]);
+        expect(labelOnly.enabledCalls).toEqual([false]);
+    });
+
+    test('Disables the field again on each install while it has no editor', () => {
+        let withoutEditor = createStubFieldValueHost('Phone', 'phone');
+        let trace = setup(() => undefined, { fields: { phone: withoutEditor } });
+
+        trace.testItem.install();
+        trace.testItem.install();
+
+        expect(withoutEditor.enabledCalls).toEqual([false, false]);
+    });
+
     test('Increments the installer counter once per install, before the registry is requested', () => {
         let trace = setup();
 

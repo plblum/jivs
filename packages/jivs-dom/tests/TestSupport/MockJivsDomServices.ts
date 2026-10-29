@@ -75,8 +75,8 @@ export function createMockJivsDomServices(
         getElementRegistry: unexpectedUse('getElementRegistry'),
         getPopupService: unexpectedUse('getPopupService'),
 
-        getInstallerCounter: unexpectedUse('getInstallerCounter'),
-        incrementInstallerCounter: unexpectedUse('incrementInstallerCounter'),        
+        getInstallCounter: unexpectedUse('getInstallCounter'),
+        incrementInstallCounter: unexpectedUse('incrementInstallCounter'),        
         editorAdapterDefinitionFactory: createUnexpectedUseMock<IEditorAdapterDefinitionFactory>(
             'IJivsDomServices.editorAdapterDefinitionFactory'),
         fieldPresentationFactory: createUnexpectedUseMock<IPresentationFactory<IFieldPresentation>>(
