@@ -14,32 +14,24 @@
  * - ModelReader/Writer - handle the reading and writing of model data to and from ValueHostsManager.
  * - DictionaryReader/Writer - handle the reading and writing of dictionary data to and from ValueHostsManager.
  * - FormReader - handle the reading HTML form data passed into the server side validation phase from an HTTP post request.
+ * Jivs-Dom adds:
+ * - EditorReader/Writer - transfer values with the editors in HTML
  * 
  * # ReaderBase (IReader interface)
  * Native value from external source -> FieldValueHost native value -> (optionally) FieldValueHost text value
  * See {@link jivs-engine/ReaderWriter/Types!IReader} for details.
  * 
- * ReaderBase has a rule on each FieldValueHostConfig to determine how to read the data and 
- * convert it to the correct type. Mostly it is used to detect values in the source that represent
- * "unassigned", and to convert them to undefined in the FieldValueHost. 
- * 
- * The rule is assigned to FieldValueHostConfig.readerRule. It is an object with two required string properties: when and then.
- * 
- * Rules are defined in the ValueAdapterService. 
+ * # ValueRulesReaderBase (extends ReaderBase)
+ * Connects the ValueAdapterService to readers to follow value transition rules 
+ * found on FieldValueHostConfig.readerRule.
  * 
  * # WriterBase (IWriter interface)
  * FieldValueHost native value -> Native value on external source
  * See {@link jivs-engine/ReaderWriter/Types!IWriter} for details.
  * 
- * WriterBase has a rule on each FieldValueHostConfig to determine how to write the data and 
- * convert it to the correct type. Mostly it is used to detect values in the FieldValueHost that are undefined
- * and give them the correct representation in the external source. However, it can create other values
- * and be used when there are non-undefined values. For example, when 'null' then 'zero' would 
- * convert a null value to 0 in the external source.
- * 
- * The rule is assigned to FieldValueHostConfig.writerRule. It is an object with two required string properties: when and then.
- * 
- * Rules are defined in the ValueAdapterService.
+ * # ValueRulesWriterBase (extends WriterBase)
+ * Connects the ValueAdapterService to writers to follow value transition rules 
+ * found on FieldValueHostConfig.writerRule.
  * 
  * See {@link jivs-engine/Services/Types/ValueAdapterService} for details.
  * 
@@ -56,7 +48,7 @@ import { IFieldValueHost } from './FieldValueHost';
  * Actual class is expected to take in services so it has access to the logService,
  * and an instance of the external source to read from.
  * 
- * constructor(valueHostsManager: IValueHostsManager, externalSource: TSource)
+ * constructor(valueHostsManager: IValueHostsManager, externalSource: TSource, options: ReaderOptions)
  * 
  * Implementation:
  * - ReaderBase only reads fields defined as FieldValueHosts in ValueHostsManager. 
@@ -143,14 +135,14 @@ export interface ReaderOptions
      * A filter function that determines which ValueHosts should be included in the reading process.
      * Used on read() but not readField().
      */
-    readerFilter?: ReaderFilterHandler;
+    filter?: ReaderWriterFilterHandler;
 }
 
 /**
- * For ReaderOptions.readerFilter, a function that determines whether a given ValueHost should be included in the reading process.
+ * For ReaderOptions.filter and WriterOptions.filter, a function that determines whether a given ValueHost should be included in the reading/writing process.
  * It receives an IFieldValueHost as an argument and returns a boolean indicating inclusion (true) or exclusion (false).
  */
-export type ReaderFilterHandler = (valueHost: IFieldValueHost) => boolean;
+export type ReaderWriterFilterHandler = (valueHost: IFieldValueHost) => boolean;
 
 /**
  * The WriterBase is responsible for writing data from the ValueHostsManager to an external source.
@@ -161,7 +153,7 @@ export type ReaderFilterHandler = (valueHost: IFieldValueHost) => boolean;
  * and an instance of the external object to write to.
  * The instance can be prepopulated with data, and the WriterBase will update the fields that are defined as FieldValueHosts in the ValueHostsManager.
  * 
- * constructor(valueHostsManager: IValueHostsManager, externalDestination: TDestination)
+ * constructor(valueHostsManager: IValueHostsManager, externalDestination: TDestination, options: WriterOptions)
  * 
  * Implementation:
  * - Writing does not use the text value in any way. It only uses the native value. The text value is only used for display purposes.
@@ -214,4 +206,16 @@ export interface IWriter
      * They do not throw errors, but log them and continue writing the rest of the fields.
      */
     write(): void;
+}
+
+/**
+ * Configures options for the WriterBase, controlling how it interacts with ValueHostsManager during the writing process.
+ */
+export interface WriterOptions
+{
+    /**
+     * A filter function that determines which ValueHosts should be included in the writing process.
+     * Used on write() but not writeField().
+     */
+    filter?: ReaderWriterFilterHandler;
 }

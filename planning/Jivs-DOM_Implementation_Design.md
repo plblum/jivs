@@ -249,12 +249,12 @@ flowchart TB
 `IValueHostsManager` and `ValueHostsManager` provide a string-keyed metadata dictionary:
 
 ```ts
-getMetadataValue(key: string): unknown;
+getMetadata(key: string): unknown;
 
-setMetadataValue(key: string, value: unknown): void;
+setMetadata(key: string, value: unknown): void;
 ```
 
-DOM services use metadata for the manager's `ElementRegistry` and the standard dispatcher-attachment flag.
+DOM services use metadata for the manager's `ElementRegistry`, the standard dispatcher-attachment flag, and the `installCounter` number (see [Replacing Part of the DOM](#replacing-part-of-the-dom)). A missing key returns `undefined`.
 
 During `ValueHostsManager.dispose()`, each metadata value that exposes a `dispose()` method is disposed. Other metadata values require no disposal behavior.
 
@@ -442,8 +442,12 @@ interface IJivsElement extends HTMLElement {
     jivsElementRole?: ElementRole | string;
 
     jivsErrorMessageId?: string;
+
+    jivsInstallCounter?: number;
 }
 ```
+
+`jivsInstallCounter` records which `FormInstaller` run last installed the element. See [Replacing Part of the DOM](#replacing-part-of-the-dom).
 
 ### Adapter Definition State
 
@@ -540,6 +544,8 @@ Adapter and presentation instances belong to the element on which they are insta
 Replacing an installation jivsElement removes its installed Jivs behavior with it. The replacement element must be installed before dispatchers can use it.
 
 Replacing any installed element also removes its ARIA completion state. Static ARIA work and validation-state updater selection must be performed for the replacement element.
+
+A replacement element also lacks `jivsInstallCounter` until the next `FormInstaller` run stamps it. That is how Readers tell replaced editors from untouched ones. See [Replacing Part of the DOM](#replacing-part-of-the-dom).
 
 Dispatchers and the ARIA service read these public properties but never create missing capabilities during dispatch. Presentation and adapter properties are skipped when `undefined` or `null`. ARIA validation-state processing skips `jivsAriaValidationStateUpdater` only when it is `undefined`; `null` still permits the registered role updater to run.
 
@@ -1262,10 +1268,21 @@ public install(
         }
     );
 
+    valueHost.setEnabled(true);
+    jivsElement.jivsInstallCounter =
+        this.domServices.getInstallCounter(valueHost.valueHostsManager);
+
     jivsElement.jivsEditorAdapterDefinition = definition;
     return jivsElement;
 }
 ```
+
+After a successful (non-guarded) install, the editor installer does two more things:
+
+- It calls `valueHost.setEnabled(true)`. This intentionally overrides any earlier setting, including `enabled` from the user's ValueHost configuration. A field with an editor starts enabled. A Reader with `alignEnabled` may disable it afterward.
+- It stamps `jivsInstallCounter` with the manager's current install counter.
+
+Both happen only for editors installed by this run. An editor that already has `jivsEditorAdapterDefinition` returns early, so it keeps its old counter and its FieldValueHost's enabled state is not touched. `FieldPresentationInstaller` also stamps the counter on each element it creates a presentation for. That is harmless, because the Reader filter looks only at editor elements.
 
 #### Installation Sequence
 
@@ -4629,14 +4646,16 @@ The installer obtains DOM services from `valueHostsManager.services.domServices`
 
 `install()`:
 
-1. Obtains or creates the manager's Registry.
-2. Clears the Registry.
-3. Resolves the container.
-4. Invokes the Collector.
-5. Enumerates the Registry once for editor and presentation installation.
-6. Records each returned editor jivsElement.
-7. Asks `AriaService` to enumerate the completed Registry and install ARIA.
-8. Applies initial dynamic ARIA once per resolved field.
+1. Increments the manager's install counter.
+2. Obtains or creates the manager's Registry.
+3. Clears the Registry.
+4. Resolves the container.
+5. Invokes the Collector.
+6. Enumerates the Registry once for editor and presentation installation.
+7. Records each returned editor jivsElement.
+8. Disables every `FieldValueHost` that has no editor in the Registry.
+9. Asks `AriaService` to enumerate the completed Registry and install ARIA.
+10. Applies initial dynamic ARIA once per resolved field.
 
 The editor and presentation work uses one insertion-order pass. ARIA installation is a separate operation after anchors and presentations are ready.
 
@@ -4677,7 +4696,100 @@ Later, `FieldValidationDispatcher` applies Field Presentations and calls `AriaSe
 
 Collector, installer, or ARIA installation failures are logged and rethrown. Installation stops without rollback, and the Registry is not cleared a second time.
 
-A later `install()` clears and completely recollects the Registry, reprocesses all records through idempotent installers, reinstalls incomplete ARIA behavior, and reapplies initial dynamic ARIA. No separate `refresh()` operation is defined.
+A later `install()` clears and completely recollects the Registry, reprocesses all records through idempotent installers, reinstalls incomplete ARIA behavior, and reapplies initial dynamic ARIA. No separate `refresh()` operation is defined. Installed editors are detected by `jivsEditorAdapterDefinition` and skipped, so a repeat install over unchanged markup adds no dispatchers and changes no counters. The next section builds on this.
+
+### Replacing Part of the DOM
+
+Scenario: the browser replaces part of the DOM tree, such as a fragment returned by an AJAX call. Elements outside the replacement keep their values, attributes, handlers and `IJivsElement` extensions. Elements inside are new and need everything `FormInstaller` does on a first load. The design reuses the first-load code path rather than adding a second one.
+
+#### The Four Steps
+
+1. Create the `ElementCollector`.
+2. Run `FormInstaller.install(valueHostsManager, collector)`. It recollects a fresh Registry. Untouched editors are skipped as already installed. New editors are installed in full.
+3. Initialize values, in whichever direction the application needs (see below).
+4. Run `validate({ preliminary: true })`. A Reader does this when it finishes.
+
+Steps 1, 2 and 4 are the same as for the initial form. Only step 3 differs. The initial form usually reads a model. A replaced fragment may read the new editors, read the model, or have the application call `setValue()`.
+
+A field whose elements must be added later needs its `FieldValueHost` in the manager before the install. That means the ValueHost configuration exists even though the page has no markup for it yet.
+
+#### The Install Counter
+
+`FormInstaller.install()` increments an `installCounter` number kept in the manager's metadata. `EditorInstaller` stamps the new value on each editor it installs as `IJivsElement.jivsInstallCounter`. An editor that was not installed this run keeps its old value. So after any install, the editors that were replaced are exactly those whose `jivsInstallCounter` equals the manager's current counter. On the initial load every editor gets the current value, so every editor counts as replaced.
+
+The counter lives on `IJivsElement`, not in the `ElementRegistry`, because the Registry is rebuilt on every install. Only the element itself survives or is replaced with its markup.
+
+Access goes through `JivsDomServices`:
+
+```ts
+getInstallCounter(valueHostsManager: IValueHostsManager): number;   // seeds the metadata to 1 when missing
+incrementInstallCounter(valueHostsManager: IValueHostsManager): void;
+```
+
+Only equality matters. A first install after a call to `getInstallCounter()` reports 2, not 1.
+
+#### Enabled State
+
+`FormInstaller` establishes `FieldValueHost.enabled` for every FieldValueHost, overriding earlier settings including those from user configuration:
+
+- A field with an editor in the Registry is enabled by `EditorInstaller`.
+- During `installFromRegistry`, the installer lists all `FieldValueHost`s, removes each one that has an editor, and calls `setEnabled(false)` on the remainder. Other kinds, such as `ModelValidatorsValueHost`, are not touched.
+- A field left with only a label or other non-editor elements counts as having no editor.
+
+A disabled field refuses `setValue`, is skipped by validation, and drops out of the summary. When the editor returns and the install runs again, the field is enabled again.
+
+A Reader may then override the flag. A Reader based on `ValueRulesReaderBase` with `alignEnabled` calls `setEnabled(false)` for a field the `ValueAdapterService` skips. Because `EditorReader` extends `ReaderBase`, it does not align enabled state.
+
+#### Reading Only Replaced Editors
+
+Readers must work without jivs-dom, so `ReaderBase` knows nothing about `IJivsElement`. It has an optional callback, `ReaderOptions.filter`:
+
+```ts
+type ReaderWriterFilterHandler = (valueHost: IFieldValueHost) => boolean;
+```
+
+`read()` skips each field when the filter returns false. `readField()` ignores the filter, because the caller named the field.
+
+jivs-dom supplies `onlyReplacedEditors` in `Editors/ReaderAssistance.ts`:
+
+```ts
+export function onlyReplacedEditors(valueHost: IFieldValueHost): boolean
+{
+    const valueHostsManager = valueHost.valueHostsManager;
+    const domServices = valueHostsManager.services.domServices;
+    const registry = domServices.getElementRegistry(valueHostsManager);
+    const elements = Array.from(
+        registry.getTextValueAdapterElements(valueHost.getElementIdentifier()));
+    if (elements.length === 0)
+        return true;    // no editor: let the Reader run so alignEnabled can disable the field
+
+    const currentCounter = domServices.getInstallCounter(valueHostsManager);
+    return elements.some(element => element.jivsInstallCounter === currentCounter);
+}
+```
+
+Usage:
+
+```ts
+FormInstaller.install(valueHostsManager, collector);
+new EditorReader(valueHostsManager, { filter: onlyReplacedEditors }).read();
+```
+
+The function reads the Registry and counter at call time, so one instance serves any number of installs. Fields with no editor pass the filter so that a Reader with `alignEnabled` still reaches them.
+
+The filter is not wired in automatically. The user passes it.
+
+#### Choosing How to Initialize Values
+
+- **New editors hold the correct value.** Use `EditorReader` with `onlyReplacedEditors`. The untouched editors keep their state, and validating them again would give the same result, but skipping them is cleaner.
+- **The ValueHosts hold the correct value and the new editors must show it.** The planned `EditorWriter` (ValueHost to editor) covers this. It is not built yet, and it would be the counterpart a user picks instead of a Reader.
+- **The application sets values after install.** Call `setValue()` on the FieldValueHost, then `validate({ preliminary: true })`. This is the application's choice, so no filter applies.
+
+Same-value caution: `FieldValueHost.setTextValue()` does nothing when the text equals the current Text Value, so `onTextValueChanged` never fires and the `TextValueDispatcher` never writes the new editor. A `setValue()` with the value the ValueHost already holds therefore leaves a replaced editor blank. `EditorReader` avoids this by reading editor to ValueHost, and `EditorWriter` is intended to bypass it. Applications that use `setValue()` for a replaced editor must change the value or write the editor directly.
+
+#### Test Coverage
+
+`tests/Integration_Tests/FieldReplacement.integration.test.ts` covers injected values, replaced elements with and without ARIA, a removed field, a field left with only its label, a planned field added later, an unchanged reinstall, and the Reader filter with and without `onlyReplacedEditors`. Unit tests cover the counter in `JivsDomServices`, `EditorInstaller`, `FieldPresentationInstaller` and `FormInstaller`, `onlyReplacedEditors` in `ReaderAssistance.test.ts`, and `filter` in the engine's `Reader.test.ts`.
 
 ### Consolidated Static Installation
 

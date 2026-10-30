@@ -1,3 +1,5 @@
+/** @jest-environment jsdom */
+
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import type { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import type { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
@@ -46,7 +48,7 @@ function createEditor(counter?: number): IJivsElement
     return editor;
 }
 
-// onlyReplacedEditors is a ReaderOptions.readerFilter: true when the field has no editor or an editor stamped with the current counter.
+// onlyReplacedEditors is a ReaderOptions.filter: true when the field has no editor or an editor stamped with the current counter.
 describe('onlyReplacedEditors', () => {
     test('Returns true when the editor carries the current install counter', () => {
         const { valueHost } = setup(3, [createEditor(3)]);

@@ -148,7 +148,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
     
     /**
      * Supports external data Readers to get the rule for how to handle unassigned values in the external source.
-     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ReaderWithRulesBase
+     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ValueRulesReaderBase
      * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
     getReaderRule(): ValueAdapterRule | undefined;
@@ -289,7 +289,7 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
 
     /**
      * Supports external data Readers to determine how to handle unassigned values in the external source.
-     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ReaderWithRulesBase
+     * Supported by ModelReader, DictionaryReader, FormReader and other subclasses of ValueRulesReaderBase
      * See {@link jivs-engine/ReaderWriter/Types} for details.
      */
     readerRule?: ValueAdapterRule;

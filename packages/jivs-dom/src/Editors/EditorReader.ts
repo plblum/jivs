@@ -8,7 +8,8 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
 import type { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 
 /**
- * A reader class that uses editors established by the ElementCollector, thus found in ElementRegistry.
+ * A reader class that transfers values from editors to FieldValueHosts.
+ * EditorReader uses editors established by the ElementCollector, thus found in ElementRegistry.
  * Its "external data" is the actual ElementRegistry. 
  * Unlike many readers, it does not support the ValueAdapterService and rules found on FieldValueHostConfig.
  * It goes through FieldValueHosts, gets each EditorAdapterDefinition, and executes its sendValue() method,
@@ -19,10 +20,14 @@ import type { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/In
  * - skipValueChangedCallback = true
  * - disableFormatter = true (but we may change this to allow for reformatTextValue. TDB)
  * - validate = false
+ * 
+ * We recommend using options.filter = onlyReplacedEditors when you replace editors
+ * that were previously initialized. It will ensure those editors that were replaced
+ * have their values transferred into the associated FieldValueHosts, 
+ * while leaving the rest of the FieldValueHosts alone.
  */
 export class EditorReader extends ReaderBase<IElementRegistry>
 {
-
     /**
      * Creates an instance of the EditorReader.
      * @param valueHostsManager - The manager for the ValueHosts.
@@ -35,10 +40,11 @@ export class EditorReader extends ReaderBase<IElementRegistry>
 
     protected readOne(destination: IFieldValueHost): boolean
     {
-        let elements = this.externalData.getElementsByRole(ElementRole.editor, destination.getElementIdentifier());
+        let elementId = destination.getElementIdentifier();
+        let elements = this.externalData.getElementsByRole(ElementRole.editor, elementId);
         if (elements.length === 0)
         {
-            this.logger.message(LoggingLevel.Warn, ()=> `No editor elements found for element identifier: '${destination.getElementIdentifier()}'`);
+            this.logger.message(LoggingLevel.Warn, () => `No editor elements found for element identifier: '${ elementId}'`);
             return false;
         }
         // even if there are multiple editor elements, we only consider the first one for reading because we can only use a single value
@@ -46,7 +52,7 @@ export class EditorReader extends ReaderBase<IElementRegistry>
         let editorAdapterDefinition = jivsElement.jivsEditorAdapterDefinition;
         if (!editorAdapterDefinition)
         {
-            this.logger.message(LoggingLevel.Warn, ()=> `No editor adapter definition found for element identifier: '${destination.getElementIdentifier()}'`);
+            this.logger.message(LoggingLevel.Warn, () => `No editor adapter definition found for element identifier: '${ elementId}'`);
             return false;
         }
         let editor = editorAdapterDefinition.identifyEditor(destination, jivsElement);

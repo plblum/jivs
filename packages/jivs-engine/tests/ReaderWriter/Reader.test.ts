@@ -432,8 +432,8 @@ describe('ModelReader', () =>
         });
     });
 
-    // ReaderOptions.readerFilter lets read() skip ValueHosts. It does not apply to readField().
-    describe('readerFilter', () =>
+    // ReaderOptions.filter lets read() skip ValueHosts. It does not apply to readField().
+    describe('filter', () =>
     {
         function setupTwoFields(options?: ReaderOptions): { valueHostsManager: IValueHostsManager, reader: PublicifyModelReader }
         {
@@ -463,7 +463,7 @@ describe('ModelReader', () =>
         {
             let received: string[] = [];
             let { valueHostsManager, reader } = setupTwoFields({
-                readerFilter: (valueHost) =>
+                filter: (valueHost) =>
                 {
                     received.push(valueHost.getName());
                     return valueHost.getName() === 'prop2';
@@ -477,7 +477,7 @@ describe('ModelReader', () =>
 
         test('A filter returning false for every field leaves every value alone', () =>
         {
-            let { valueHostsManager, reader } = setupTwoFields({ readerFilter: () => false });
+            let { valueHostsManager, reader } = setupTwoFields({ filter: () => false });
             reader.read();
             expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBeUndefined();
             expect(valueHostsManager.getFieldValueHost('prop2')!.getValue()).toBeUndefined();
@@ -487,7 +487,7 @@ describe('ModelReader', () =>
         {
             let { valueHostsManager, reader } = setupTwoFields({
                 alignEnabled: true,
-                readerFilter: (valueHost) => valueHost.getName() === 'prop2'
+                filter: (valueHost) => valueHost.getName() === 'prop2'
             });
             valueHostsManager.getFieldValueHost('prop1')!.setEnabled(false);
             reader.read();
@@ -497,7 +497,7 @@ describe('ModelReader', () =>
 
         test('readField ignores the filter', () =>
         {
-            let { valueHostsManager, reader } = setupTwoFields({ readerFilter: () => false });
+            let { valueHostsManager, reader } = setupTwoFields({ filter: () => false });
             reader.readField(valueHostsManager.getFieldValueHost('prop1')!);
             expect(valueHostsManager.getFieldValueHost('prop1')!.getValue()).toBe(1);
         });

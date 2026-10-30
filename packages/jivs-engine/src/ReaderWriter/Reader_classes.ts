@@ -6,7 +6,7 @@
 import { FieldValueHostSetValueOptions, IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { ReaderOptions } from '../Interfaces/ReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
-import { ReaderWithRulesBase } from './ReaderBase';
+import { ValueRulesReaderBase } from './ReaderBase';
 
 /**
  * Concrete implementation of ReaderBase for reading from a model object.
@@ -14,7 +14,7 @@ import { ReaderWithRulesBase } from './ReaderBase';
  * @template TExternalData - The type of the model object. Can be a class instance or a plain object.
  */
 export class ModelReader<TExternalData extends object = object, TOptions extends ReaderOptions = ReaderOptions>
-    extends ReaderWithRulesBase<TExternalData, TOptions>
+    extends ValueRulesReaderBase<TExternalData, TOptions>
 {
     constructor(valueHostsManager: IValueHostsManager, model: TExternalData, options?: TOptions)
     {
@@ -30,7 +30,7 @@ export class ModelReader<TExternalData extends object = object, TOptions extends
  */
 export class DictionaryReader<TExternalData extends { [key: string]: any; } = { [key: string]: any; },
     TOptions extends ReaderOptions = ReaderOptions>
-    extends ReaderWithRulesBase<TExternalData, TOptions>
+    extends ValueRulesReaderBase<TExternalData, TOptions>
 {
     constructor(valueHostsManager: IValueHostsManager, dictionary: TExternalData, options?: TOptions)
     {
@@ -78,7 +78,7 @@ export interface FormReaderOptions extends ReaderOptions
  * - disableFormatter - It will always be treated as false, regardless of the value passed in the options.
  */
 export class FormReader<TOptions extends FormReaderOptions = FormReaderOptions>
-    extends ReaderWithRulesBase<{ [key: string]: string; }, TOptions>
+    extends ValueRulesReaderBase<{ [key: string]: string; }, TOptions>
 {
     /**
      * 

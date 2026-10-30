@@ -4,6 +4,7 @@ import { ValidationSeverity, ValidationStatus } from '@plblum/jivs-engine/build/
 import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
 import { FormInstaller } from '../../src/FormInstaller/FormInstaller';
 import { EditorReader } from '../../src/Editors/EditorReader';
+import { EditorWriter } from '../../src/Editors/EditorWriter';
 import { onlyReplacedEditors } from '../../src/Editors/ReaderAssistance';
 import { TestForm, createTestForm } from './TestingSupport/CreateTestForm';
 import { expectElementsMatchValidationState, expectIssueCodes, installForm } from './TestingSupport/FieldFeedbackExpectations';
@@ -396,7 +397,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         // The untouched editor is changed in the DOM only (no event), so reading it would visibly change its ValueHost.
         (t.element('editor', injectedField) as unknown as HTMLInputElement).value = 'ABC';
         existingEditor.value = 'XYZ';
-        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+        new EditorReader(t.vhm, { filter: onlyReplacedEditors }).read();
 
         expect(t.vhm.getFieldValueHost(injectedField)!.getTextValue()).toBe('ABC');
         expect(t.vhm.getFieldValueHost(existingField)!.getTextValue()).toBe('lower');
@@ -404,6 +405,74 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expectElementsMatchValidationState(t, existingField, ValidationStatus.Invalid);
         expect(summary.textContent).not.toContain('INJECTED-UPPER');
         expect(summary.textContent).toContain('EXISTING-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    // The ValueHosts hold the user's values and the replaced editor arrives blank. EditorWriter moves ValueHost -> editor,
+    // using the editor's adapter directly, so it works even though the ValueHost value does not change.
+    test('EditorWriter with onlyReplacedEditors fills only the replaced editor from its ValueHost, then validate preliminary restores the feedback', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const summary = t.element('summary');
+        const existingEditor = t.element('editor', existingField) as unknown as HTMLInputElement;
+
+        replaceInjectedFieldElements(t);
+
+        const newEditor = t.element('editor', injectedField) as unknown as HTMLInputElement;
+        expect(newEditor.value).toBe('');
+        // Changed in the DOM only (no event), so a write to this editor would be visible.
+        existingEditor.value = 'typed but not yet sent';
+
+        new EditorWriter(t.vhm, { filter: onlyReplacedEditors }).write();
+        t.vhm.validate({ preliminary: true });
+
+        expect(newEditor.value).toBe('lower');
+        expect(existingEditor.value).toBe('typed but not yet sent');
+        expect(t.vhm.getFieldValueHost(injectedField)!.getTextValue()).toBe('lower');
+        expect(t.vhm.getFieldValueHost(existingField)!.getTextValue()).toBe('lower');
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Invalid);
+        expect(t.element('error', injectedField).classList.contains('jivs-has-issues')).toBe(true);
+        expect(summary.textContent).toContain('INJECTED-UPPER');
+        expect(summary.textContent).toContain('EXISTING-UPPER');
+
+        // The handler on the new editor sends the user's edit.
+        userEdits(t, injectedField, 'ABC');
+
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
+        expect(summary.textContent).not.toContain('INJECTED-UPPER');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Without the filter, EditorWriter also rewrites the untouched editor from its ValueHost', () =>
+    {
+        const t = installWithUserEditedInvalidFields();
+        const existingEditor = t.element('editor', existingField) as unknown as HTMLInputElement;
+
+        replaceInjectedFieldElements(t);
+        existingEditor.value = 'typed but not yet sent';
+        new EditorWriter(t.vhm).write();
+
+        expect((t.element('editor', injectedField) as unknown as HTMLInputElement).value).toBe('lower');
+        expect(existingEditor.value).toBe('lower');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('EditorWriter reaches a planned field added later, and the field is enabled and shows its value', () =>
+    {
+        const t = createFormWithPlannedField();
+        const addedHost = t.vhm.getFieldValueHost(addedField)!;
+
+        t.replace(t.element('container', addedField), page => page.field(addedField, 'withRequired'));
+        FormInstaller.install(t.vhm, t.collector);
+        // skipValueChangedCallback keeps the TextValueDispatcher from writing the editor, so only EditorWriter can.
+        addedHost.setValue('lower', { reset: true, skipValueChangedCallback: true });
+        expect((t.element('editor', addedField) as unknown as HTMLInputElement).value).toBe('');
+        new EditorWriter(t.vhm, { filter: onlyReplacedEditors }).write();
+        t.vhm.validate({ preliminary: true });
+
+        expect((t.element('editor', addedField) as unknown as HTMLInputElement).value).toBe('lower');
+        expect(addedHost.isEnabled()).toBe(true);
+        expect(t.element('summary').textContent).toContain('ADDED-UPPER');
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
@@ -444,7 +513,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         t.replace(container, page => page.field(injectedField, 'withRequired'));
         FormInstaller.install(t.vhm, t.collector);
         (t.element('editor', injectedField) as unknown as HTMLInputElement).value = 'lower';
-        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+        new EditorReader(t.vhm, { filter: onlyReplacedEditors }).read();
 
         expect(injectedHost.isEnabled()).toBe(true);
         expect(injectedHost.getTextValue()).toBe('lower');
@@ -470,7 +539,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         // The values step would normally follow. The DOM values below differ from the ValueHosts,
         // so a Reader that did not skip these fields would visibly change them.
         names.forEach(name => (t.element('editor', name) as unknown as HTMLInputElement).value = 'ABC');
-        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+        new EditorReader(t.vhm, { filter: onlyReplacedEditors }).read();
 
         expect(domServices.getInstallCounter(t.vhm)).toBe(firstCounter + 1);
         names.forEach((name, index) =>
@@ -601,7 +670,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
         // Values step: the new editor arrives with a value, the Reader sends only that editor, then validate preliminary.
         (addedEditor as unknown as HTMLInputElement).value = 'lower';
-        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+        new EditorReader(t.vhm, { filter: onlyReplacedEditors }).read();
 
         expect(addedHost.getTextValue()).toBe('lower');
         expectElementsMatchValidationState(t, addedField, ValidationStatus.Invalid);
@@ -626,7 +695,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
         t.replace(t.element('container', addedField), page => page.field(addedField, 'withRequired'));
         FormInstaller.install(t.vhm, t.collector);
-        new EditorReader(t.vhm, { readerFilter: onlyReplacedEditors }).read();
+        new EditorReader(t.vhm, { filter: onlyReplacedEditors }).read();
 
         expect(t.vhm.getFieldValueHost(addedField)!.isEnabled()).toBe(true);
         expect(summary.textContent).not.toContain('ADDED-REQUIRED');

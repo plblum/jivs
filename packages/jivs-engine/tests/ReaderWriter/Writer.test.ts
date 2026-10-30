@@ -1,28 +1,35 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { CalcValueHostConfig } from '../../src/Interfaces/CalcValueHost';
 import { ValueAdapterResolution, ValueAdapterRule } from '../../src/Interfaces/ValueAdapterService';
-import { IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
+import { FieldValueHostConfig, IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { LoggingLevel } from '../../src/Interfaces/LoggingService';
 
 import { StaticValueHostConfig } from '../../src/Interfaces/StaticValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
-import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
+import { IValueHostsManager, ValueHostsManagerConfig } from '../../src/Interfaces/ValueHostsManager';
 import { ValueAdapterService } from '../../src/Services/ValueAdapterService';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
+import { ValueRulesWriterBase, WriterBase } from '../../src/ReaderWriter/WriterBase';
 import { ModelWriter } from '../../src/ReaderWriter/Writer_classes';
+import {  WriterOptions } from '../../src/Interfaces/ReaderAndWriter';
+import { ValueHostsManager } from '../../src/Validation/ValueHostsManager';
 
 /**
- * This class is used to expose the protected members of ModelWriter for testing purposes.
+ * This class is used to expose the protected members of ValueRulesWriterBase for testing purposes.
  */
-class PublicifyModelWriter extends ModelWriter<object>
+class PublicifyValueRulesWriter extends ValueRulesWriterBase<object>
 {
-    constructor(valueHostsManager: IValueHostsManager, model: object
-    )
+    constructor(valueHostsManager: IValueHostsManager, model: object, options?: WriterOptions)
     {
-        super(valueHostsManager, model);
+        super(valueHostsManager, model, options);
+    }
+
+    public get publicify_options(): WriterOptions
+    {
+        return this.options;
     }
 
     public get publicify_valueHostsManager(): IValueHostsManager
@@ -48,7 +55,7 @@ class PublicifyModelWriter extends ModelWriter<object>
     // create 'publicify_name' versions of protected methods for testing
     public publicify_adjustValueByRule(
         modelPropertyValue: any, rule: ValueAdapterRule, valueHost: IFieldValueHost): ValueAdapterResolution
-{
+    {
         return this.adjustValueByRule(modelPropertyValue, rule, valueHost);
     }
 
@@ -67,7 +74,7 @@ function setup(model: object, propertyName: string,
     whenRule: string, thenRule: string):
     {
         services: IJivsServices, logger: TestingLoggingService,
-        writer: PublicifyModelWriter,
+        writer: PublicifyValueRulesWriter,
         valueHostsManager: IValueHostsManager,
         valueHost: IFieldValueHost;
     }
@@ -84,7 +91,7 @@ function setup(model: object, propertyName: string,
             propertyName: propertyName,
             writerRule: { when: whenRule, then: thenRule },
         }, 1), null) as IFieldValueHost;
-    let writer = new PublicifyModelWriter(valueHostsManager, model);
+    let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
     return { services, logger, writer, valueHostsManager, valueHost };
 }
 
@@ -109,9 +116,9 @@ function createFieldValueHostWithRule(valueHostsManager: IValueHostsManager,
     return valueHost as IFieldValueHost;
 }
 
-describe('ModelWriter', () =>
+describe('ValueRulesWriterBase', () =>
 {
-    // mostly a concrete tester of WriterBase, but also tests the ModelWriter class itself
+    // mostly a concrete tester of ValueRulesWriterBase
     // Tests are setup similarly to FieldValueHost.test.ts and consume functions
     // from TestSupport/FieldValueHostTestFunctions.ts.
     // They can use the MockJivsServices and MockValueHostsManager
@@ -124,18 +131,33 @@ describe('ModelWriter', () =>
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
 
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             expect(writer.publicify_valueHostsManager).toBe(valueHostsManager);
             expect(writer.publicify_externalData).toBe(model);
             expect(writer.publicify_services).toBe(services);
             expect(writer.publicify_logger).toBeDefined();
+            expect(writer.publicify_options).toEqual({});
+        });
+
+        test('Create with options assigned', () =>
+        {
+            let model = { prop1: 'value1', prop2: 42 };
+            let services = new MockJivsServices(false, false);
+            let valueHostsManager = new MockValueHostsManager(services);
+            let options: WriterOptions = {
+                filter: (valueHost: IFieldValueHost) => true
+            };
+
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model, options);
+            expect(writer.publicify_options).toBe(options);
+            expect(writer.publicify_options.filter).toBe(options.filter);
         });
 
         test('Create with null valueHostsManager. Expect error', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let valueHostsManager = null as unknown as IValueHostsManager;
-            expect(() => new PublicifyModelWriter(valueHostsManager, model)).toThrow(/valueHostsManager/);
+            expect(() => new PublicifyValueRulesWriter(valueHostsManager, model)).toThrow(/valueHostsManager/);
 
         });
         test('Create with null model. Expect error', () =>
@@ -143,23 +165,23 @@ describe('ModelWriter', () =>
             let model = null as unknown as object;
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
-            expect(() => new PublicifyModelWriter(valueHostsManager, model)).toThrow(/externalData/);
+            expect(() => new PublicifyValueRulesWriter(valueHostsManager, model)).toThrow(/externalData/);
         });
         test('confirm logger is created and has correct feature name', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             expect(writer.publicify_logger).toBeDefined();
-            expect(writer.publicify_logger.feature).toBe('PublicifyModelWriter');
+            expect(writer.publicify_logger.feature).toBe('PublicifyValueRulesWriter');
         });
         test('confirm 2 calls to logger return the same instance', () =>
         {
             let model = { prop1: 'value1', prop2: 42 };
             let services = new MockJivsServices(false, false);
             let valueHostsManager = new MockValueHostsManager(services);
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             let logger1 = writer.publicify_logger;
             let logger2 = writer.publicify_logger;
             expect(logger1).toBe(logger2);
@@ -255,7 +277,7 @@ describe('ModelWriter', () =>
             let valueHostsManager = new MockValueHostsManager(services);
             // not writerRule is set on this valueHost
             let valueHostNoRule = valueHostsManager.addValueHost(finishPartialFieldValueHostConfig({}), null) as IFieldValueHost;
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
 
             let rule = writer.publicify_getRule(valueHostNoRule);
             expect(rule).toBeUndefined();
@@ -424,13 +446,13 @@ describe('ModelWriter', () =>
             let propName2 = valueHost2.getPropertyName();
             let propName3 = valueHost3.getPropertyName();
             valueHost1.setValue('value1-changed');
-            valueHost2.setValue(2); 
+            valueHost2.setValue(2);
             valueHost3.setValue(false);
             let model = {};
             (model as any)[propName1] = 'value1';
             (model as any)[propName2] = 42;
             (model as any)[propName3] = true;
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(2);
@@ -453,7 +475,7 @@ describe('ModelWriter', () =>
             (model as any)[propName1] = 0; // this will be adjusted to null
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 'hello';
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBeNull();
             expect((model as any)[propName2]).toBe(4);
@@ -476,7 +498,7 @@ describe('ModelWriter', () =>
             (model as any)[propName1] = 'value1';
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 0;  // this will be adjusted to null
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
@@ -500,7 +522,7 @@ describe('ModelWriter', () =>
             (model as any)[propName1] = 'value1';
             (model as any)[propName2] = 42;
             // valueHost3 does not have a corresponding property in the model
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBe('value1-changed');
             expect((model as any)[propName2]).toBe(4);
@@ -532,7 +554,7 @@ describe('ModelWriter', () =>
             (model as any)[propName1] = 0;
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
@@ -567,7 +589,7 @@ describe('ModelWriter', () =>
             (model as any)[propName1] = 0;
             (model as any)[propName2] = 42;
             (model as any)[propName3] = 100;
-            let writer = new PublicifyModelWriter(valueHostsManager, model);
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model);
             writer.write();
             expect((model as any)[propName1]).toBe(10);
             expect((model as any)[propName2]).toBe(20);
@@ -576,5 +598,153 @@ describe('ModelWriter', () =>
             expect(logger.findMessage(`Preparing to move value from ValueHost '${ valueHost3.getName() }' to field '${ propName3 }'.`, LoggingLevel.Debug)).toBeFalsy();
 
         });
+    });
+    describe('filter', () =>
+    {
+        // Each ValueHost holds 10 and 20. The model starts with 1 and 2, so a changed model value proves the field was written.
+        function setupTwoFields(options?: WriterOptions):
+            { valueHostsManager: IValueHostsManager, writer: PublicifyValueRulesWriter, model: { prop1: number, prop2: number; }; }
+        {
+            let services = new MockJivsServices(false, false);
+            services.valueAdapterService = new ValueAdapterService();
+            let config: ValueHostsManagerConfig = {
+                services: services,
+                valueHostConfigs: [
+                    <FieldValueHostConfig> { valueHostType: 'Field', name: 'prop1', dataType: LookupKey.Number },
+                    <FieldValueHostConfig> { valueHostType: 'Field', name: 'prop2', dataType: LookupKey.Number }
+                ],
+            };
+            let valueHostsManager = new ValueHostsManager(config);
+            (valueHostsManager.getFieldValueHost('prop1') as IFieldValueHost).setValue(10);
+            (valueHostsManager.getFieldValueHost('prop2') as IFieldValueHost).setValue(20);
+            let model = { prop1: 1, prop2: 2 };
+            let writer = new PublicifyValueRulesWriter(valueHostsManager, model, options);
+            return { valueHostsManager, writer, model };
+        }
+
+        test('Without a filter, write() writes every field', () =>
+        {
+            let { writer, model } = setupTwoFields();
+            writer.write();
+            expect(model).toEqual({ prop1: 10, prop2: 20 });
+        });
+
+        test('A filter returning false skips that field, and the filter receives each field ValueHost', () =>
+        {
+            let received: string[] = [];
+            let { writer, model, valueHostsManager } = setupTwoFields({
+                filter: (valueHost) =>
+                {
+                    received.push(valueHost.getName());
+                    return valueHost.getName() === 'prop2';
+                }
+            });
+            writer.write();
+            expect(received).toEqual(['prop1', 'prop2']);
+            expect(model).toEqual({ prop1: 1, prop2: 20 });
+            expect((valueHostsManager.services.loggingService as TestingLoggingService).entryCount).toBe(0);
+        });
+
+        test('A filter returning false for every field leaves the model unchanged', () =>
+        {
+            let { writer, model } = setupTwoFields({ filter: () => false });
+            writer.write();
+            expect(model).toEqual({ prop1: 1, prop2: 2 });
+        });
+
+        test('writeField ignores the filter because the caller named the field', () =>
+        {
+            let { writer, model, valueHostsManager } = setupTwoFields({ filter: () => false });
+            let result = writer.writeField(valueHostsManager.getFieldValueHost('prop1') as IFieldValueHost, 'prop1');
+            expect(result).toBe(true);
+            expect(model).toEqual({ prop1: 10, prop2: 2 });
+        });
+    });
+
+    describe('WriterBase through a direct subclass', () =>
+    {
+        class RecordingWriter extends WriterBase<object>
+        {
+            public written: string[] = [];
+            protected override writeOne(source: IFieldValueHost): boolean
+            {
+                this.written.push(source.getName());
+                return false;   // write() ignores the result, so a failed write does not stop later fields
+            }
+        }
+
+        function setupRecorder(options?: WriterOptions): RecordingWriter
+        {
+            let services = new MockJivsServices(false, false);
+            let config: ValueHostsManagerConfig = {
+                services: services,
+                valueHostConfigs: [
+                    <FieldValueHostConfig> { valueHostType: 'Field', name: 'prop1', dataType: LookupKey.Number },
+                    <FieldValueHostConfig> { valueHostType: 'Field', name: 'prop2', dataType: LookupKey.Number },
+                    <StaticValueHostConfig> { valueHostType: 'Static', name: 'static1', dataType: LookupKey.Number }
+                ],
+            };
+            return new RecordingWriter(new ValueHostsManager(config), {}, options);
+        }
+
+        test('write() calls writeOne for each FieldValueHost only, and keeps going when it returns false', () =>
+        {
+            let writer = setupRecorder();
+            writer.write();
+            expect(writer.written).toEqual(['prop1', 'prop2']);
+        });
+
+        test('write() calls writeOne only for the fields the filter includes', () =>
+        {
+            let writer = setupRecorder({ filter: (valueHost) => valueHost.getName() === 'prop1' });
+            writer.write();
+            expect(writer.written).toEqual(['prop1']);
+        });
+    });
+});
+
+class PublicifyModelWriter extends ModelWriter<object>
+{
+    constructor(valueHostsManager: IValueHostsManager, model: object, options?: WriterOptions)
+    {
+        super(valueHostsManager, model, options);
+    }
+
+    public get publicify_valueHostsManager(): IValueHostsManager
+    {
+        return super.valueHostsManager;
+    }
+
+    public get publicify_externalData(): object
+    {
+        return super.externalData;
+    }
+    public get publicify_services(): IJivsServices
+    {
+        return super.services;
+    }
+
+    public get publicify_logger(): any
+    {
+        return super.logger;
+    }
+}
+describe('ModelWriter', () =>
+{
+    // As of this coding, ModelWriter is a pure subclass of ValueRulesWriterBase
+    // which means it does not introduce code of its own.
+    // As a result, the testing is limited to ensure the constructor executes.
+
+    test('constructor with valid parameters', () =>
+    {
+        let model = { prop1: 'value1', prop2: 42 };
+        let services = new MockJivsServices(false, false);
+        let valueHostsManager = new MockValueHostsManager(services);
+
+        let writer = new PublicifyModelWriter(valueHostsManager, model);
+        expect(writer.publicify_valueHostsManager).toBe(valueHostsManager);
+        expect(writer.publicify_externalData).toBe(model);
+        expect(writer.publicify_services).toBe(services);
+        expect(writer.publicify_logger).toBeDefined();            
     });
 });

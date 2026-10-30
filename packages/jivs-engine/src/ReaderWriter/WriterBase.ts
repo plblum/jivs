@@ -6,24 +6,21 @@
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
 import { IFieldValueHost } from '../Interfaces/FieldValueHost';
 import { LoggingLevel } from '../Interfaces/LoggingService';
-import { IWriter } from '../Interfaces/ReaderAndWriter';
+import { IWriter, WriterOptions } from '../Interfaces/ReaderAndWriter';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { FieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ReaderWriterBase } from './ReaderWriterBase';
 
 /**
  * Base class for writers. Reads from the ValueHosts and writes to the external data's fields.
+ * At this level, it does not incorporate any of the ValueAdapterService.
  *
  * See {@link jivs-engine/ReaderWriter/Types!IWriter} for details.
- *
- * - Supports objects and arrays as the model.
- * - Uses the ValueAdapterService to determine if a value should be adjusted or skipped when writing to the external data.
- * - Uses the ObjectFinder to find the value of a model property using a path syntax.
  * 
  * @typeParam TExternalData - The type of the external data object that this writer will write to.
  */
 
-export abstract class WriterBase<TExternalData extends object>
+export abstract class WriterBase<TExternalData extends object, TOptions extends WriterOptions = WriterOptions>
     extends ReaderWriterBase<TExternalData>
     implements IWriter
 {
@@ -31,10 +28,17 @@ export abstract class WriterBase<TExternalData extends object>
      * @param valueHostsManager - The manager for the ValueHosts.
      * @param model
      */
-    constructor(valueHostsManager: IValueHostsManager, model: TExternalData)
+    constructor(valueHostsManager: IValueHostsManager, model: TExternalData, options?: TOptions)
     {
         super(valueHostsManager, model);
+        this._options = options ?? {} as TOptions;
     }
+
+    protected get options(): TOptions
+    {
+        return this._options;
+    }
+    private _options: TOptions;
 
     /**
      * Writes the data from the ValueHostsManager to the external source.
@@ -49,9 +53,45 @@ export abstract class WriterBase<TExternalData extends object>
         let generator = this.valueHostsManager.enumerateValueHosts((valueHost) => valueHost instanceof FieldValueHost);
         for (let vh of generator)
         {
-            let valueHost = vh as IFieldValueHost;
-            this.writeField(valueHost);
+            let source = vh as IFieldValueHost;
+            if (!this.options.filter || this.options.filter(source))
+                this.writeOne(source);
         }
+
+    }
+
+    /**
+     * Writes a value to a destination. Value comes from the source FieldValueHost.
+     * @param source 
+     */
+    protected abstract writeOne(source: IFieldValueHost): boolean;
+
+}
+
+/**
+ * Expands the WriterBase to use the ValueAdapterService rules.
+ * The ValueAdapterService determines if a value should be adjusted or 
+ * skipped before being set into the editor.
+ * 
+ * @typeParam TExternalData - The type of the external data object that this writer will write to.
+ * @typeParam TOptions
+ */
+export abstract class ValueRulesWriterBase<TExternalData extends object, TOptions extends WriterOptions = WriterOptions>
+    extends WriterBase<TExternalData, TOptions>
+{
+    /**
+     * @param valueHostsManager - The manager for the ValueHosts.
+     * @param model
+     * @param options
+     */
+    constructor(valueHostsManager: IValueHostsManager, model: TExternalData, options?: TOptions)
+    {
+        super(valueHostsManager, model, options);
+    }
+
+    protected override writeOne(source: IFieldValueHost): boolean
+    {
+        return this.writeField(source);
     }
 
     /**
@@ -64,9 +104,10 @@ export abstract class WriterBase<TExternalData extends object>
      */
     public writeField(source: IFieldValueHost, fieldName?: string): boolean 
     {
-        if (!fieldName) {
+        if (!fieldName)
+        {
             fieldName = source.getPropertyName();
-            if (!fieldName) 
+            if (!fieldName)
                 return false;   // rare case: no property name to write to
         }
         let valueHostName = source.getName();
