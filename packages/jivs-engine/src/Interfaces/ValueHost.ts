@@ -175,8 +175,10 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      * that state does not cause the usual events to be fired automatically.
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
+     * @param validationState - When true, broadcast the current validation state.
+     * @param values - When true, broadcast the current values of the ValueHost.
      */
-    broadcastState(): void;
+    broadcastState(validationState?: boolean, values?: boolean): void;
 
     /**
      * Returns the internal state of the ValueHost, which includes all the instance-specific data.

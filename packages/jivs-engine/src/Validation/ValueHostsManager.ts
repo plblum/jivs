@@ -685,7 +685,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
             vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
         }
         const snapshot = this.createValidationState(options);
-        this.notifyValidationStateChanged(snapshot, options, true);
+        options = { ...options, disableValidationStateChangedDelay: true };
+        this.notifyValidationStateChanged(snapshot, options);
         return snapshot;
     }
 
@@ -751,15 +752,14 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * ValueHostsManager.notifyValidationStateChangedDelay
      * @param validationState
      * @param options
-     * @param force - when true, override the debouncer and execute immediately.
      */
-    public notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void {
+    public notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions): void {
         if (options && options.skipCallback)
             return;
 
+        const delay = !options || !options.disableValidationStateChangedDelay ? this.notifyValidationStateChangedDelay : 0;
         if (!this._debounceVHValidated) {
-            const delay = this.notifyValidationStateChangedDelay;
-            if (delay && !force)
+            if (delay)
                 this._debounceVHValidated = new Debouncer<notifyValidationStateChangedWorkerHandler>(
                     this.notifyValidationStateChangedWorker.bind(this), delay);
             else {
@@ -767,7 +767,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
                 return;
             }
         }
-        force ? this._debounceVHValidated!.forceRun(validationState, options) : this._debounceVHValidated!.run(validationState, options);
+        delay ? this._debounceVHValidated!.run(validationState, options) : this._debounceVHValidated!.forceRun(validationState, options);
     }
 
     protected notifyValidationStateChangedWorker(validationState: ValidationState | null, options?: ValidateOptions): void {
@@ -882,7 +882,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
                     changed = true;
             }
         if (changed)
-            this.notifyValidationStateChanged(null, options, true);
+        {
+            options = { ...options, disableValidationStateChangedDelay: true };
+            this.notifyValidationStateChanged(null, options);
+        }
         return changed;
     }
     /**
@@ -898,7 +901,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         }
 
         if (changed)
-            this.notifyValidationStateChanged(null, options, true);
+        {
+            options = { ...options, disableValidationStateChangedDelay: true };
+            this.notifyValidationStateChanged(null, options);
+        }
         return changed;
     }
     /**
@@ -1068,17 +1074,21 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * that state does not cause the usual events to be fired automatically.
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
+     * @param validationState - When true, broadcast the current validation state.
+     * @param values - When true, broadcast the current values of the ValueHosts.
      */
-    public broadcastState(): void
+    public broadcastState(validationState: boolean = true, values: boolean = true): void
     {
-        if (this.onValidationStateChanged) {
+        if (validationState && this.onValidationStateChanged) {
             const snapshot = this.createValidationState();
-            this.notifyValidationStateChanged(snapshot, {}, true);
+            this.notifyValidationStateChanged(snapshot, { disableValidationStateChangedDelay: true });
         }
+
         if (this.onTextValueChanged || this.onValueHostValidationStateChanged) {
             for (const [name, vh] of this.valueHosts)
             {
-                vh.broadcastState();
+                if (vh.isEnabled())
+                    vh.broadcastState(validationState, values);
             }
         }
     }

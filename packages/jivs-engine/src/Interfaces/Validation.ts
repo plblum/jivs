@@ -48,6 +48,13 @@ export interface ValidateOptions
      * In that case, set this to true.
      */
     skipCallback?: boolean;
+
+    /**
+     * A series of rapid validation calls can be debounced to avoid excessive processing.
+     * The feature can be disabled by setting this to true.
+     * When enabled, debounce timing is set with ValueHostsManager.notifyValidationStateChangedDelay.
+     */
+    disableValidationStateChangedDelay?: boolean;
 }
 
 /**

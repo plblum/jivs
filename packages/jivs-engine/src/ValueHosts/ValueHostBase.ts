@@ -350,8 +350,10 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
      * that state does not cause the usual events to be fired automatically.
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
+     * @param validationState - Whether to broadcast the validation state.
+     * @param values - Whether to broadcast the current values of the ValueHost.
      */
-    public broadcastState(): void
+    public broadcastState(validationState: boolean = true, values: boolean = true): void
     {
 
     }

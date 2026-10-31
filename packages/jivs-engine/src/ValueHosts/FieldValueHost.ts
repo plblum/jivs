@@ -632,11 +632,12 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
      */
-    public override broadcastState(): void
+    public override broadcastState(validationState: boolean = true, values: boolean = true): void
     {
-        super.broadcastState();
+        super.broadcastState(validationState, values);
         // Notify listeners that the text value has potentially changed.
-        this.useOnTextValueChanged(true, undefined, {} as TOptions);
+        if (values)
+            this.useOnTextValueChanged(true, undefined, {} as TOptions);
     }    
 }
 

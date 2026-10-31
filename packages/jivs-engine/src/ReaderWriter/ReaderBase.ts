@@ -79,6 +79,31 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
      * @returns True if the value was successfully read, false otherwise.
      */
     protected abstract readOne(destination: IFieldValueHost): boolean;
+
+    /**
+     * While setting the value may seem obvious: use valueHost.setValue(value, options),
+     * this method is provided to allow subclasses to override the behavior.
+     * In particular, if the source is string-based values from a form, they should come through
+     * valueHost.setTextValue(textValue, options) instead of valueHost.setValue(value, options).
+     * @param valueHost
+     * @param value
+     * @param setValueOptions
+     */
+    protected setValueIntoValueHost(valueHost: IFieldValueHost, value: any,
+        setValueOptions: FieldValueHostSetValueOptions): void
+    {
+        valueHost.setValue(value, setValueOptions);
+    }
+
+    protected getSetValueOptions(): FieldValueHostSetValueOptions
+    {
+        return <FieldValueHostSetValueOptions> {
+            disableFormatter: this.options.disableFormatter ?? false,
+            skipValueChangedCallback: this.options.skipValueChangedCallback ?? false,
+            validate: false,
+            reset: true
+        };
+    }    
 }
 
 /**
@@ -267,30 +292,5 @@ export abstract class ValueRulesReaderBase<TExternalData extends object, TOption
     protected getRule(valueHost: IFieldValueHost): ValueAdapterRule | undefined
     {
         return valueHost.getReaderRule();
-    }
-
-    /**
-     * While setting the value may seem obvious: use valueHost.setValue(value, options),
-     * this method is provided to allow subclasses to override the behavior.
-     * In particular, if the source is string-based values from a form, they should come through
-     * valueHost.setTextValue(textValue, options) instead of valueHost.setValue(value, options).
-     * @param valueHost
-     * @param value
-     * @param setValueOptions
-     */
-    protected setValueIntoValueHost(valueHost: IFieldValueHost, value: any,
-        setValueOptions: FieldValueHostSetValueOptions): void
-    {
-        valueHost.setValue(value, setValueOptions);
-    }
-
-    protected getSetValueOptions(): FieldValueHostSetValueOptions
-    {
-        return <FieldValueHostSetValueOptions> {
-            disableFormatter: this.options.disableFormatter ?? false,
-            skipValueChangedCallback: this.options.skipValueChangedCallback ?? false,
-            validate: false,
-            reset: true
-        };
     }
 }

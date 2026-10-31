@@ -263,7 +263,20 @@ describe('EditorReader.read fields without an installed editor', () => {
             `No editor elements found for element identifier: 'Field1'`, LoggingLevel.Warn)).toBe(true);
     });
 
-    test('An editor element without an installed definition logs a Warn and does not stop the other fields', () => {
+    test('A disabled field with no editor element is skipped without logging, because disabled fields are expected to have no editor', () => {
+         let { services, valueHostsManager, registry, field1, field2 } = setup();
+         let definition = new RecordingDefinition();
+         addEditor(registry, field2, definition);
+         field1.setEnabled(false);
+
+         new EditorReader(valueHostsManager).read();
+
+         expect(definition.sendValueCalls.length).toBe(1);
+         expect(field1.getTextValue()).toBeUndefined();
+         expect(readerLogs(services).length).toBe(0);
+     });
+
+     test('An editor element without an installed definition logs a Warn and does not stop the other fields', () => {
         let { services, valueHostsManager, registry, field1, field2 } = setup();
         let definition = new RecordingDefinition();
         addEditor(registry, field1, null);   // EditorInstaller has not run on it

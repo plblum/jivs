@@ -1973,7 +1973,7 @@ describe('toIValidatableValueHost', () => {
             _captureState(stateContainer: StateContainer): void {
                 throw new Error("Method not implemented.");
             },
-            broadcastState(): void
+            broadcastState(validationState: boolean = true, values: boolean = true): void
             {
                 throw new Error("Method not implemented.");
             }            
@@ -2294,7 +2294,7 @@ describe('toIValidatableValueHost function', () => {
         {
             throw new Error("Method not implemented.");
         }
-        broadcastState(): void
+        broadcastState(validationState: boolean = true, values: boolean = true): void
         {
             throw new Error("Method not implemented.");
         }        

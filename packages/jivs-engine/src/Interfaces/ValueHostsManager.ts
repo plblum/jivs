@@ -316,8 +316,10 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * that state does not cause the usual events to be fired automatically.
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
+     * @param validationState - When true, broadcast the current validation state.
+     * @param values - When true, broadcast the current values of the ValueHosts.
      */
-    broadcastState(): void;
+    broadcastState(validationState?: boolean, values?: boolean): void
 
     /**
      * ValueHosts that validate should try to fire onValidationStateChanged, even though they also 
@@ -327,9 +329,8 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * ValueHostsManager.notifyValidationStateChangedDelay
      * @param validationState
      * @param options
-     * @param force - when true, override the debouncer and execute immediately.
      */
-    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void;   
+    notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions): void;   
     
     
     /**

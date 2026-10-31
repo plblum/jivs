@@ -3773,6 +3773,83 @@ describe('broadcastState', () =>
         expect(managerState.asyncProcessing).toBe(false);
 
     });
+
+    // Builds a manager with an enabled Field1 and a disabled Field2, both with text,
+    // and hooks all three callbacks. Returns what each callback saw.
+    // notifyValidationStateChangedDelay is deliberately non-zero so the test proves
+    // broadcastState does not wait on the debouncer.
+    function setupBroadcast(): {
+        vhm: Publicify_ValueHostsManager,
+        textNames: string[],
+        validationNames: string[],
+        formLevel: number
+    }
+    {
+        let services = new MockJivsServices(true, false);
+        let vhm = new Publicify_ValueHostsManager({
+            services: services,
+            valueHostConfigs: [
+                finishPartialFieldValueHostConfig({ name: 'Field1', dataType: LookupKey.String }),
+                finishPartialFieldValueHostConfig({ name: 'Field2', dataType: LookupKey.String })
+            ]
+        });
+        vhm.vh.field('Field1').setValues('ABC', 'ABC');
+        vhm.vh.field('Field2').setValues('DEF', 'DEF');
+        vhm.vh.field('Field2').setEnabled(false);
+        vhm.notifyValidationStateChangedDelay = 1000;
+        let result = {
+            vhm: vhm,
+            textNames: <string[]> [],
+            validationNames: <string[]> [],
+            formLevel: 0
+        };
+        vhm.onTextValueChanged = (valueHost) => { result.textNames.push(valueHost.getName()); };
+        vhm.onValueHostValidationStateChanged = (valueHost) => { result.validationNames.push(valueHost.getName()); };
+        vhm.onValidationStateChanged = () => { result.formLevel++; };
+        return result;
+    }
+
+    test('Disabled ValueHosts are skipped by both field-level callbacks', () =>
+    {
+        let setup = setupBroadcast();
+        setup.vhm.broadcastState();
+        expect(setup.textNames).toEqual(['Field1']);
+        expect(setup.validationNames).toEqual(['Field1']);
+    });
+
+    test('Form-level notification is immediate even with a non-zero notifyValidationStateChangedDelay', () =>
+    {
+        let setup = setupBroadcast();
+        setup.vhm.broadcastState();
+        expect(setup.formLevel).toBe(1);
+    });
+
+    test('validationState=true, values=false sends form and field validation state but no text', () =>
+    {
+        let setup = setupBroadcast();
+        setup.vhm.broadcastState(true, false);
+        expect(setup.formLevel).toBe(1);
+        expect(setup.validationNames).toEqual(['Field1']);
+        expect(setup.textNames).toEqual([]);
+    });
+
+    test('validationState=false, values=true sends only text', () =>
+    {
+        let setup = setupBroadcast();
+        setup.vhm.broadcastState(false, true);
+        expect(setup.formLevel).toBe(0);
+        expect(setup.validationNames).toEqual([]);
+        expect(setup.textNames).toEqual(['Field1']);
+    });
+
+    test('validationState=false, values=false sends nothing', () =>
+    {
+        let setup = setupBroadcast();
+        setup.vhm.broadcastState(false, false);
+        expect(setup.formLevel).toBe(0);
+        expect(setup.validationNames).toEqual([]);
+        expect(setup.textNames).toEqual([]);
+    });
 });
 describe('dispose', () => {
     test('dispose kills all expected properties', () => {
@@ -3964,7 +4041,7 @@ describe('toIValueHostsManager function', () => {
                 throw new Error("Function not implemented.");
             },
 
-            notifyValidationStateChanged: function (validationState: ValidationState | null, options?: ValidateOptions | undefined, force?: boolean | undefined): void
+            notifyValidationStateChanged: function (validationState: ValidationState | null, options?: ValidateOptions | undefined): void
             {
                 throw new Error("Function not implemented.");
             },
@@ -4179,7 +4256,7 @@ describe('toIValueHostsManagerAccessor function', () => {
                 {
                     throw new Error("Function not implemented.");
                 },
-                notifyValidationStateChanged: function (validationState: ValidationState | null, options?: ValidateOptions | undefined, force?: boolean | undefined): void
+                notifyValidationStateChanged: function (validationState: ValidationState | null, options?: ValidateOptions | undefined): void
                 {
                     throw new Error("Function not implemented.");
                 },

@@ -283,6 +283,7 @@ Use the real Jivs components for lifecycle behavior rather than adding it to the
 - `valueHostsManager.services.domServices.dispatchers.attachTextValueChanged(valueHostsManager)` connects manager text changes back to installed editors. `FormInstaller.install(valueHostsManager, collector)` is the convenience form that also attaches the dispatcher.
 - Engine `ModelReader` writes native values and invokes `onValueChanged`. Engine `FormReader` writes text values and invokes `onTextValueChanged`; use `FormReader` when the test specifically exercises that callback.
 - After replacing DOM nodes, call `runner.removeDescriptorsIn(oldSubtree)` before discarding the old subtree, build the replacement with the same context, rerun `FormInstaller.install()` against the manager's full container, then assert the installation again. This refreshes the registry's element references while retaining expectations for untouched nodes.
+- A server page round trip builds a new manager with `createTestForm({ configure: c => c.capturedState = ... })`. Set `vhm.notifyValidationStateChangedDelay = 0` so the summary is not debounced, write the server's values into the editors, run `FormInstaller.install()`, then run `ServerPageValuesReader`. Application callbacks such as `onValueHostValidationStateChanged` are properties on the manager, so assign them before install. See `RoundTrip.integration.test.ts`.
 
 ## Failure reporting
 

@@ -4368,6 +4368,7 @@ valueHostsManager.services.domServices.dispatchers.attach(
     - From a model, use the `ModelReader`.
     - From an HTTP post request containing an HTML form's data, use the `FormReader`.
     - From the editors within the HTML itself, use the `EditorReader`.
+    - From the editors of a page the server regenerated after a round trip, where the new `ValueHostsManager` was built with `config.capturedState`, use the `ServerPageValuesReader`. See "Server page round trip" below.
     - From a dictionary with native values, use the `DictionaryReader`.
     - Otherwise, use the `setValue()`, `setTextValue()`, or `setValues()` functions on each `FieldValueHost`.
 
@@ -4421,6 +4422,54 @@ The following are prequisites if you intend to just add the setup code.
 
 End result: The user could feel overwhelmed with the work involved and we have to make this process seem easier. We do this with jivs-simpledom, the readers, and good default service configuration.
 
+### Form Reinstallation after DOM has changed
+The user is expected to modify the DOM as needed on the client side, after running the installation process.
+That is impactful and the user is expected to coordinate those changes with jivs-dom.
+
+1. We expect that `ValueHostsManager` itself remains the same. Note that it should have been configured with all possible editors, not those that were offered at the time.
+2. Most of the work involves: Rerunning FormInstaller, initializing values - this time on both editor and `ValueHostsManager` side, and using `ValueHostsManager.validate({preliminary: true})`
+
+The design allows `ValueHostsManager` to establish connections and values associated the replaced editors only. Yet, FormInstaller and the Readers all enumerate through all existing editors and FieldValueHosts.
+To ensure this works:
+- `FormInstaller`, `EditorInstaller`, and `PresentationInstallers` all know to skip installation when they find the `IJivsElement` properties they need to setup already established. Those immediate become existing editors. The rest are replaced.
+- Those three installers mark replaced elements by assigning the Install Counter value to `IJivsElement.jivsInstallCounter`. The Install Counter is stored in `ValueHostsManager` metadata and is incremented each time `FormInstaller` runs.
+- Readers and Writers have a filter option. We supply the function `onlyReplacedEditors()` to use on that option during form reinstallation. It knows how to use `IJivsElement.jivsInstallCounter` to include only those that are up-to-date.
+
+This is what the user should execute after updating the DOM.
+```ts
+FormInstaller.install(valueHostsManager, new YourElementCollector());   // In Jivs-simpleDom, SimpleDomElementCollector
+
+const reader = new SomeReader(valueHostsManager, model, {
+    filter: onlyReplacedEditors
+});   // any Reader: FormReader, DictionaryReader, EditorReader. Also EditorWriter. See below.
+reader.read();
+```
+A Reader is intended initialize values of FieldValueHosts, and in this case, only those where the editor was replaced.
+The EditorWriter is intended to assign values from FieldValueHosts to the editors, because FieldValueHost is still holding the last value.
+
+- Use `EditorReader` to transfer values from the editor. Use it when your fresh DOM editors already have the correct values.
+    ```ts
+    FormInstaller.install(valueHostsManager, new YourElementCollector());   // In Jivs-simpleDom, SimpleDomElementCollector
+
+    const reader = new EditorReader(valueHostsManager,  { filter: onlyReplacedEditors });
+    reader.read();  // automatically reruns preliminary validation to align validation state in the UI
+    ```
+- Use `EditorWriter` to transfer values to the editor. Use it when you want fresh DOM editors to reflect values retained in their FieldValueHosts.
+    ```ts
+    FormInstaller.install(valueHostsManager, new YourElementCollector());   // In Jivs-simpleDom, SimpleDomElementCollector
+
+    const writer = new EditorWriter(valueHostsManager,  { filter: onlyReplacedEditors });
+    writer.write();
+    valueHostsManager.validate({preliminary: true});
+    ```
+- Use `ModelReader`, `DictionaryReader`, or `FormReader` if you have values that need to be assigned to both the editor and `FieldValueHost`. They send data first to `FieldValueHost`, and through callbacks, the value is sent to the editor too.
+    ```ts
+    FormInstaller.install(valueHostsManager, new YourElementCollector());   // In Jivs-simpleDom, SimpleDomElementCollector
+
+    const model = getModel();
+    const reader = new ModelReader(valueHostsManager, model,  { filter: onlyReplacedEditors });
+    reader.read();  // automatically reruns preliminary validation to align validation state in the UI
+    ```
 
 ### ElementRegistry
 
@@ -4782,7 +4831,7 @@ The filter is not wired in automatically. The user passes it.
 #### Choosing How to Initialize Values
 
 - **New editors hold the correct value.** Use `EditorReader` with `onlyReplacedEditors`. The untouched editors keep their state, and validating them again would give the same result, but skipping them is cleaner.
-- **The ValueHosts hold the correct value and the new editors must show it.** The planned `EditorWriter` (ValueHost to editor) covers this. It is not built yet, and it would be the counterpart a user picks instead of a Reader.
+- **The ValueHosts hold the correct value and the new editors must show it.** The `EditorWriter` (ValueHost to editor) covers this. It is the counterpart a user picks instead of a Reader.
 - **The application sets values after install.** Call `setValue()` on the FieldValueHost, then `validate({ preliminary: true })`. This is the application's choice, so no filter applies.
 
 Same-value caution: `FieldValueHost.setTextValue()` does nothing when the text equals the current Text Value, so `onTextValueChanged` never fires and the `TextValueDispatcher` never writes the new editor. A `setValue()` with the value the ValueHost already holds therefore leaves a replaced editor blank. `EditorReader` avoids this by reading editor to ValueHost, and `EditorWriter` is intended to bypass it. Applications that use `setValue()` for a replaced editor must change the value or write the editor directly.
@@ -4790,6 +4839,35 @@ Same-value caution: `FieldValueHost.setTextValue()` does nothing when the text e
 #### Test Coverage
 
 `tests/Integration_Tests/FieldReplacement.integration.test.ts` covers injected values, replaced elements with and without ARIA, a removed field, a field left with only its label, a planned field added later, an unchanged reinstall, and the Reader filter with and without `onlyReplacedEditors`. Unit tests cover the counter in `JivsDomServices`, `EditorInstaller`, `FieldPresentationInstaller` and `FormInstaller`, `onlyReplacedEditors` in `ReaderAssistance.test.ts`, and `filter` in the engine's `Reader.test.ts`.
+
+### Server page round trip
+
+The server regenerates the whole page, so the browser builds a **new** `ValueHostsManager` with `config.capturedState` (the string saved from `vhm.captureState()` in a hidden input). The editors hold the values, so they are the source and must not be overwritten. The steps are the ones in Form Installation Coordination, with `ServerPageValuesReader` as the Reader (step 9):
+
+```ts
+const vhm = new ValueHostsManager({ ...rules.configure(), capturedState: hiddenInput.value });
+FormInstaller.install(vhm, new SimpleDomElementCollector());
+new ServerPageValuesReader(vhm).read();
+```
+
+What each part contributes:
+- **Restoring `capturedState`** gives every FieldValueHost its previous value, text and validation state. It fires no callbacks.
+- **`FormInstaller.install()`** draws that restored state into the DOM, because the presentation installers apply `currentValidationState` when they install. Fields with no editor are disabled. Fields with an editor are enabled.
+- **`ServerPageValuesReader`** extends `EditorReader`.
+  - It reads every editor, with no filter, using `setTextValue` and `skipIfUnchanged`, `skipValueChangedCallback`, `validate: false` and `reset: true`.
+  - A field with unchanged text and enabled state keeps its captured state. A field whose text changed, or that became enabled, is reset to NotAttempted and then validated by the preliminary validation.
+  - A parse error from the parser (`injectedError`) survives the reset, because `reset` and `injectedError` are mutually exclusive.
+  - It then calls `broadcastState(true, false)`: the validation state of the form and of each enabled field reaches the application's `onValidationStateChanged` and `onValueHostValidationStateChanged` callbacks. Text values are not broadcast, so no editor is written.
+  - `preliminaryValidation: false` skips both the validation and the broadcast.
+- **Why `EditorReader` alone is not enough.** It skips unchanged fields, so the application's validation-state callbacks never hear about them. The DOM looks the same with either reader. The difference is only in the application's own callbacks, for example one that enables a submit button.
+
+A callback may be called more than once for the same state, because install draws it and the broadcast reports it again. Drawing is idempotent.
+
+Design note: a user-settable `ValueHostConfig.enabled` conflicts with `FormInstaller` and the Readers, which now set it. This may need to be revisited.
+
+#### Server page round trip test coverage
+
+`tests/Integration_Tests/RoundTrip.integration.test.ts` covers unchanged values, a removed editor (with and without ARIA), revised values, an added editor for a planned field, unparseable text surviving, revised malformed text keeping its parser error, a field coming back enabled with unchanged text, a captured state that does not match the page, the application callbacks, and a user edit after the restore. Unit tests cover `ServerPageValuesReader.test.ts`, the `EditorReader` disabled-field branch, `broadcastState` in the engine's `ValueHostsManager.test.ts` and `FieldValueHost.test.ts`, and `reset` with `injectedError` in `ValidatorsValueHostBase.test.ts`.
 
 ### Consolidated Static Installation
 

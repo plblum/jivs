@@ -14,6 +14,7 @@ import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerCallbacks
 import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { CodingError, assertNotNull } from '../Utilities/ErrorHandling';
+import { FieldValueHostSetValueOptions } from '../Interfaces/FieldValueHost';
 
 
 /**
@@ -125,7 +126,9 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             if (this.instanceState.status === ValidationStatus.NeedsValidation)
                 this.validate({ duringEdit: options.duringEdit }); // Result isn't ignored. Its automatically updates state and notifies parent
         }
-        else if (options.reset)
+        else if (options.reset &&
+            // reset and injectedError are mutually exclusive; only clear validation if no injected error is present
+            (<FieldValueHostSetValueOptions> options).injectedError == null) // null or undefined
             this.clearValidation();
         else if (valStateChanged)
             this.invokeOnValueHostValidationStateChanged(options);
@@ -720,10 +723,13 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * that state does not cause the usual events to be fired automatically.
      * Calling broadcastState() ensures that the current state is communicated to all relevant listeners.
      * This mostly targets pages generated on the server side, like MVC.
+     * @param validationState - Whether to broadcast the validation state.
+     * @param values - Whether to broadcast the current values.
      */
-    public override broadcastState(): void {
-        super.broadcastState();
-        this.invokeOnValueHostValidationStateChanged({});
+    public override broadcastState(validationState: boolean = true, values: boolean = true): void {
+        super.broadcastState(validationState, values);
+        if (validationState)
+            this.invokeOnValueHostValidationStateChanged({});
     }
 }
 

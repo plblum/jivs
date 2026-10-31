@@ -4,8 +4,8 @@ import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValue
  * Used with ReaderOptions.filter to include only replaced elements.
  * It uses these, already prepared by the time this runs:
  * - domService.getInstallCounter()
- * - IJivsElement.jivInstallCounter
- * To return true, both must match: the install counter from the DOM service and the jivInstallCounter from the element.
+ * - IJivsElement.jivsInstallCounter
+ * To return true, both must match: the install counter from the DOM service and the jivsInstallCounter from the element.
  * @param valueHost 
  * @returns true when both match.
  */

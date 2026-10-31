@@ -1,3 +1,9 @@
+/**
+ * Transfers values from FieldValueHosts to editors.
+ * 
+ * @module jivs-dom/Editors/ConcreteClasses/EditorWriter
+ */
+
 import { ElementRole } from '../Interfaces/Types';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { WriterBase } from '@plblum/jivs-engine/build/ReaderWriter/WriterBase';

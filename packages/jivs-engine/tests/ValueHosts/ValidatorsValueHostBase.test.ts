@@ -1309,15 +1309,16 @@ describe('injectedErrors', () =>
             expect(setup.valueHost.getValue()).toBe(20);
             expect(setup.valueHost.getInjectedError()).toBeNull();
         });
-        test('Use both injectedError and Reset options will setup the error message and IsChanged is false', () =>
+        test('Use both injectedError and Reset options will setup the error message and IsChanged is false because the value did not change', () =>
         {
             let setup = setupValidatorsValueHostBase();
 
+            // reset and injectedError are mutually exclusive: the injectedError wins and reset does not clear it
             expect(() => setup.valueHost.setValue(undefined, {
                 injectedError: { errorMessage: 'ERROR' },
                 reset: true
             })).not.toThrow();
-            expect(setup.valueHost.getInjectedError()).toBeNull();
+            expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
             expect(setup.valueHost.isChanged).toBe(false);
         });
     });
@@ -3290,7 +3291,7 @@ describe('toIValidatorsValueHost function', () => {
         _captureState(stateContainer: StateContainer): void {
             throw new Error('Method not implemented.');
         }
-        broadcastState(): void
+        broadcastState(validationState: boolean = true, values: boolean = true): void
         {
             throw new Error("Method not implemented.");
         }

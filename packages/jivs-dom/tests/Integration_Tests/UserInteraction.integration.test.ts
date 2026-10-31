@@ -41,7 +41,7 @@ import { TextInputPresentation } from '../../src/FieldPresentations/TextInputPre
  * - D-3 Template variations (`labelAfter`, `inContainer`, `editorOnly`)
  * 
  * **E. ARIA**
- * - E-1 aria-error display, `aria-invalid`, `aria-describedby`
+ * - E-1 aria-error display, `aria-invalid`, `aria-errormessage`
  * - E-2 ARIA with the popup display
  * 
  * **F. Multi-event sequences**

@@ -179,7 +179,7 @@ export class MockValueHost implements IValueHost
     _captureState(stateContainer: StateContainer): void {
         // Implement the logic to capture the state if needed
     }
-    broadcastState(): void
+    broadcastState(validationState: boolean = true, values: boolean = true): void
     {
         
     }
@@ -670,7 +670,7 @@ export class MockValueHostsManager extends ValueHostsManager<ValueHostsManagerIn
         return vh;
     }
 
-    public override notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions, force?: boolean): void
+    public override notifyValidationStateChanged(validationState: ValidationState | null, options?: ValidateOptions): void
     {
 
     }

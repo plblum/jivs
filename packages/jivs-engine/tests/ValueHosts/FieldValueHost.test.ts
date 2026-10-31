@@ -1332,10 +1332,19 @@ describe('FieldValueHost.setValues with getTextValue and getValue to check resul
         setup.valueHost.setValues(10, "10", { injectedError: { errorMessage: 'ERROR2' } });
         expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR2' });
     });    
-    test('injectedError and Reset supplied; reset clears the error and marks as unchanged', () => {
+    test('injectedError and Reset supplied; injectedError wins because they are mutually exclusive, while reset still marks as unchanged', () => {
         let setup = setupFieldValueHost();
 
         setup.valueHost.setValues(10, "10", { injectedError: { errorMessage: 'ERROR' }, reset: true });
+        expect(setup.valueHost.getInjectedError()).toEqual({ errorMessage: 'ERROR' });
+        expect(setup.valueHost.isChanged).toBe(false);
+    });
+    test('Reset without injectedError clears a previously stored injectedError and marks as unchanged', () => {
+        let setup = setupFieldValueHost();
+
+        setup.valueHost.setValues(10, "10", { injectedError: { errorMessage: 'ERROR' } });
+        expect(setup.valueHost.getInjectedError()).not.toBeNull();
+        setup.valueHost.setValues(10, "10", { reset: true });
         expect(setup.valueHost.getInjectedError()).toBeNull();
         expect(setup.valueHost.isChanged).toBe(false);
     });
@@ -2370,6 +2379,49 @@ describe('broadcastState', () =>
         expect(replacedStatus).toBe(ValidationStatus.Valid);
 
     });
+
+    // The two flags are independent. Each case counts which callback fired.
+    function broadcastWith(validationState?: boolean, values?: boolean): { text: number, validation: number, loggingEntries: number }
+    {
+        let fvhConfig = finishPartialFieldValueHostConfig({
+            dataType: LookupKey.String,
+            initialValue: undefined
+        });
+        let fvhState = createFieldValueHostInstanceState(1);
+        fvhState.textValue = 'ABC';
+        fvhState.status = ValidationStatus.Valid;
+        let setup = setupFieldValueHost(fvhConfig, fvhState);
+        let result = { text: 0, validation: 0, loggingEntries: 0 };
+        setup.valueHostsManager.onTextValueChanged = () => { result.text++; };
+        setup.valueHostsManager.onValueHostValidationStateChanged = () => { result.validation++; };
+        setup.valueHost.broadcastState(validationState, values);
+        result.loggingEntries = setup.logger.entryCount;
+        return result;
+    }
+
+    test('validationState=true, values=false sends only the validation state', () =>
+    {
+        let result = broadcastWith(true, false);
+        expect(result.validation).toBe(1);
+        expect(result.text).toBe(0);
+        expect(result.loggingEntries).toBe(0);
+    });
+
+    test('validationState=false, values=true sends only the text value', () =>
+    {
+        let result = broadcastWith(false, true);
+        expect(result.validation).toBe(0);
+        expect(result.text).toBe(1);
+        expect(result.loggingEntries).toBe(0);
+    });
+
+    test('validationState=false, values=false sends nothing', () =>
+    {
+        let result = broadcastWith(false, false);
+        expect(result.validation).toBe(0);
+        expect(result.text).toBe(0);
+        expect(result.loggingEntries).toBe(0);
+    });
 });
 describe('toIFieldValueHost function', () => {
     test('Passing actual FieldValueHost matches interface returns same object.', () => {
@@ -2532,7 +2584,7 @@ describe('toIFieldValueHost function', () => {
         _captureState(stateContainer: StateContainer): void {
             throw new Error("Method not implemented.");
         }        
-        broadcastState(): void
+        broadcastState(validationState: boolean = true, values: boolean = true): void
         {
             throw new Error("Method not implemented.");
         }        
