@@ -5,12 +5,12 @@
 This document is the implementation blueprint for adding DOM support to the Jivs repository. It defines the architecture, public API, concrete types, and package responsibilities needed to implement:
 
 * `@plblum/jivs-dom`
-* `@plblum/jivs-simpledom`
-* demonstration websites that exercise and explain those packages
+* optional `@plblum/jivs-dom-tippy`
+* a demonstration website that exercises and explains the DOM package
 
-`jivs-dom` provides reusable integration between Jivs and browser DOM elements. It supplies editor adapters, installation services, dispatchers, validation presentations, accessibility support, error-message formatting, and related CSS without imposing a particular HTML markup convention.
+`jivs-dom` provides reusable integration between Jivs and browser DOM elements. It supplies editor adapters, installation services, dispatchers, validation presentations, accessibility support, error-message formatting, and related CSS. It also includes SimpleDom, Jivs's standard attribute-based markup convention and ready-to-use DOM installation, alongside the lower-level APIs for applications using different markup.
 
-`jivs-simpledom` is a concrete implementation built on `jivs-dom`. It uses a defined set of HTML attributes to discover elements, associate them with Jivs objects, select presentations, and install the required DOM behavior.
+`jivs-dom-tippy` is an optional integration package that implements `IPopupMechanism` with Tippy.js. Keeping it separate prevents an optional third-party popup dependency and its configuration from becoming a dependency of the core DOM package.
 
 The document also identifies changes required in `jivs-engine` to support these packages.
 
@@ -241,7 +241,7 @@ flowchart TB
 
 * Public behavior is replaceable through interfaces, service properties, factories, and registration methods. Applications can supply custom widgets, presentations, dispatchers, discovery conventions, accessibility behavior, and message formatting without changing `jivs-dom` internals.
 
-* Where reusable behavior requires markup-specific element discovery, `jivs-dom` exposes protected abstract methods for a concrete DOM convention to implement. `jivs-simpledom` supplies the standard implementation delivered with Jivs, while `jivs-dom` remains independent of SimpleDom attributes and selectors.
+* Where reusable behavior requires markup-specific element discovery, `jivs-dom` exposes extension points for a DOM convention to implement. The same package supplies SimpleDom as Jivs's standard convention; applications with different markup can implement their own discovery without making the reusable contracts depend on SimpleDom selectors.
 
 ## Required Jivs Engine Support
 ### Manager Metadata
@@ -2976,7 +2976,7 @@ The dispatcher does not call `IAriaService`. Form roles use static ARIA only, wh
 
 ### SimpleDom Form Presentation Selection
 
-`jivs-simpledom` discovers both `data-jivs-role="summary"` and `data-jivs-role="submit"` elements whether or not they declare `data-jivs-presentation`.
+The `SimpleDomElementCollector` in `jivs-dom` discovers both `data-jivs-role="summary"` and `data-jivs-role="submit"` elements whether or not they declare `data-jivs-presentation`.
 
 When `data-jivs-presentation` is present, its value supplies `FormPresentationInstallOptions.presentationName`. When it is absent, SimpleDom leaves that option `undefined` so the form presentation factory can use the role-specific default.
 
@@ -4211,7 +4211,7 @@ Omit it to use just one.
 domServices.dispatchers
 ```
 
-`JivsDomServiceBase` registers creators for the standard Registry-backed dispatchers. Applications may replace those registrations.
+`JivsDomServices` registers creators for the standard Registry-backed dispatchers. Applications may replace those registrations.
 
 ### Missing Creator
 
@@ -4420,7 +4420,7 @@ The following are prequisites if you intend to just add the setup code.
     - installed placeholder tags for error message display, required indicator, aria errors (if error message display will popup its messages), and validation summary. - each page
 6. Determined how you will establish initial values in ValueHostsManager (pick a reader or write code to use FieldValueHost.setValue/Values/TextValue) - each page
 
-End result: The user could feel overwhelmed with the work involved and we have to make this process seem easier. We do this with jivs-simpledom, the readers, and good default service configuration.
+End result: The user could feel overwhelmed with the work involved and we have to make this process seem easier. We do this with the SimpleDom convention in `jivs-dom`, the readers, and good default service configuration.
 
 ### Form Reinstallation after DOM has changed
 The user is expected to modify the DOM as needed on the client side, after running the installation process.
@@ -4646,7 +4646,7 @@ getResolvedElementIdentifiers(): ElementIdentifierRegistryEntry[];
 getElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
 ```
 
-`JivsDomServiceBase` provides:
+`JivsDomServices` provides:
 
 ```ts
 protected createElementRegistry(valueHostsManager: IValueHostsManager): IElementRegistry;
@@ -4672,7 +4672,7 @@ Subclasses call `registry.addEditor()`, `addField()`, and `addForm()` directly. 
 
 Constructor dependencies may describe discovery policy, but a Collector must not retain the root, manager, Registry, or collected elements after returning. Normal usage creates it with the installation operation and does not retain it.
 
-`jivs-simpledom` supplies a Collector that screen-scrapes the complete resolved container and interprets SimpleDom attributes. It may add both a visible `error` element and a dedicated `aria-error` element.
+The `SimpleDomElementCollector` supplied by `jivs-dom` screen-scrapes the complete resolved container and interprets SimpleDom attributes. It may add both a visible `error` element and a dedicated `aria-error` element.
 
 The Collector has no logging dependency. It may throw; `FormInstaller` logs and rethrows. An unmatched identifier is not a Collector failure.
 
@@ -4905,25 +4905,26 @@ Individual attachment methods remain public. Mixing them with standard `attach()
 
 The service object belongs to one `IJivsServices` instance. It does not belong to a `ValueHostsManager` or form and does not retain managers, fields, DOM elements, element collections, or DOM subtrees.
 
-Applications do not construct a concrete service supplied by `jivs-dom`. Instead:
+Applications use the standard `JivsDomServices` collection. SimpleDom applications pair it with `SimpleDomElementCollector`; applications using another markup convention can provide a different collector.
 
-* `jivs-dom` supplies `IJivsDomServices` and `JivsDomService`;
-* `jivs-simpledom` supplies `SimpleDomServices` which is a subclass of JivsDomService;
+* `jivs-dom` supplies `IJivsDomServices`, `JivsDomServices`, and the `SimpleDomElementCollector`;
+* applications may replace child services through the `IJivsDomServices` properties or supply a custom `IElementCollector`;
 
 
 ```mermaid
 classDiagram
-    class IJivsDomServices
-    class JivsDomServiceBase
-    class SimpleDomServices
-    class ApplicationDomServices
+    class JivsDomServices
+    class IElementCollector
+    class SimpleDomElementCollector
+    class CustomElementCollector
+    class FormInstaller
 
-    IJivsDomServices <|.. JivsDomServiceBase
-    JivsDomServiceBase <|-- SimpleDomServices
-    JivsDomServiceBase <|-- ApplicationDomServices
+    IElementCollector <|.. SimpleDomElementCollector
+    IElementCollector <|.. CustomElementCollector
+    FormInstaller --> IElementCollector
 ```
 
-`SimpleDomServices` is the ready-to-use implementation supplied with Jivs. An application-defined subclass uses the reusable `jivs-dom` implementations while supplying the behavior that depends on its own markup and discovery convention.
+`JivsDomServices` is the standard concrete service collection supplied with Jivs and used with SimpleDom. Markup discovery belongs to the `IElementCollector` supplied to `FormInstaller`, not to a separate DOM services subclass.
 
 ### Relationship with JivsServices
 
@@ -4937,7 +4938,7 @@ interface IJivsDomServices
     // DOM child services and element-resolution methods.
 }
 
-abstract class JivsDomServiceBase
+class JivsDomServices
     extends ServiceWithAccessorBase
     implements IJivsDomServices {
 }
@@ -4953,7 +4954,7 @@ There is no separate `jivsServices` property.
 
 The DOM service object may be created before its associated `JivsServices`. Assigning it to the `domServices` property of `JivsServices` supplies the inherited `services` reference using the established `IServicesAccessor` behavior.
 
-`JivsDomServiceBase` does not accept an `IJivsServices` constructor parameter. Its constructor establishes no form-specific or element-specific state.
+`JivsDomServices` does not accept an `IJivsServices` constructor parameter. Its constructor establishes no form-specific or element-specific state.
 
 #### Hooking JivsDomServices as a property on JivsServices
 Uses the ModuleServicesInstaller and its guidance to expose a new property on IJivsServices interface:
@@ -5039,7 +5040,7 @@ Applications construct the appropriate Collector and call `FormInstaller` explic
 
 ### Lazy Child-Service Construction
 
-The `JivsDomServiceBase` instance is the installed DOM service object. Its child-service properties are created lazily.
+The `JivsDomServices` instance is the installed DOM service object. Its child-service properties are created lazily.
 
 Each property getter:
 
@@ -5065,24 +5066,24 @@ Replacing a factory affects later creations. It does not replace objects already
 
 ### Protected Creation Methods
 
-`JivsDomServiceBase` supplies a protected creation method for each lazy child property.
+`JivsDomServices` supplies a protected creation method for each lazy child property.
 
-When `jivs-dom` has a complete markup-independent implementation, the base class provides a concrete creation method. When the required implementation depends on a DOM convention, the base class requires the concrete service subclass to supply it.
+The standard class provides the default implementations. Applications may replace public child-service properties or subclass the service to customize a protected creation method; SimpleDom itself does not require a separate service subclass.
 
 The intended ownership is:
 
 | Property                     | Default ownership                                                                                                    |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `dispatchers`                | `JivsDomServiceBase` creates `DispatcherService` and registers the standard Registry-backed Dispatcher Creators. |
-| `editorAdapterFactory`       | `JivsDomServiceBase` creates and populates the standard factory from the editor definitions supplied by `jivs-dom`.  |
-| `fieldPresentationFactory`   | `JivsDomServiceBase` creates and populates the standard factory from the field presentations supplied by `jivs-dom`. |
-| `formPresentationFactory`    | `JivsDomServiceBase` creates and populates the standard factory from the form presentations supplied by `jivs-dom`.  |
-| `editorInstaller`            | `JivsDomServiceBase` creates the concrete `EditorInstaller`.                                                         |
-| `fieldPresentationInstaller` | `JivsDomServiceBase` creates the concrete `FieldPresentationInstaller`.                                              |
-| `formPresentationInstaller`  | `JivsDomServiceBase` creates the concrete `FormPresentationInstaller`.                                               |
-| `ariaService`                | The concrete service subclass supplies the discovery-aware implementation.                                           |
-| `issuesFoundFormatter`       | `JivsDomServiceBase` creates `IssuesFoundFormatterService`.                                                          |
-| Element Registry             | `getElementRegistry()` creates the default Registry through `createDefaultElementRegistry()` and stores it in manager metadata. |
+| `dispatchers`                | `JivsDomServices` creates `DispatcherService` and registers the standard Registry-backed Dispatcher Creators. |
+| `editorAdapterFactory`       | `JivsDomServices` creates and populates the standard factory from the editor definitions supplied by `jivs-dom`. |
+| `fieldPresentationFactory`   | `JivsDomServices` creates and populates the standard factory from the field presentations supplied by `jivs-dom`. |
+| `formPresentationFactory`    | `JivsDomServices` creates and populates the standard factory from the form presentations supplied by `jivs-dom`. |
+| `editorInstaller`            | `JivsDomServices` creates the concrete `EditorInstaller`. |
+| `fieldPresentationInstaller` | `JivsDomServices` creates the concrete `FieldPresentationInstaller`. |
+| `formPresentationInstaller`  | `JivsDomServices` creates the concrete `FormPresentationInstaller`. |
+| `ariaService`                | `JivsDomServices` returns `null` by default; applications may opt into an ARIA service. |
+| `issuesFoundFormatter`       | `JivsDomServices` creates `IssuesFoundFormatterService`. |
+| Element Registry             | `getElementRegistry()` creates the default `ElementRegistry` and stores it in manager metadata. |
 
 The protected methods remain override points even when the base class supplies a standard implementation. Applications may alternatively replace the resulting public property.
 
@@ -5090,7 +5091,7 @@ The protected methods remain override points even when the base class supplies a
 
 `DispatcherService` is markup-independent. It owns Dispatcher Creator registration, callback composition, missing-creator handling, and creation of one dispatcher for each callback attachment.
 
-`JivsDomServiceBase` therefore creates the standard `DispatcherService` and registers creators for:
+`JivsDomServices` therefore creates the standard `DispatcherService` and registers creators for:
 
 * Text Value dispatch;
 * Native Value dispatch;
@@ -5178,7 +5179,7 @@ Applications may add or replace registrations after retrieving the factory.
 
 ### Installer Ownership and Construction
 
-The three specialized element installers have complete, markup-independent implementations in `jivs-dom`. `JivsDomServiceBase` therefore creates their concrete implementations.
+The three specialized element installers have complete, markup-independent implementations in `jivs-dom`. `JivsDomServices` therefore creates their concrete implementations.
 
 #### Field Presentation Installer
 
@@ -5208,7 +5209,7 @@ It does not retain a manager, element, presentation, or validation state between
 
 The default property value is a concrete `EditorInstaller`.
 
-`JivsDomServiceBase` owns its construction because all editor-installation coordination is defined by `jivs-dom`. The concrete DOM convention discovers the editor and supplies its installation options; it does not replace the coordination algorithm.
+`JivsDomServices` owns its construction because all editor-installation coordination is defined by `jivs-dom`. The `IElementCollector` discovers the editor and supplies its installation options; it does not replace the coordination algorithm.
 
 `EditorInstaller` uses the current DOM service collection to obtain:
 
@@ -5237,7 +5238,7 @@ It starts out null and requires the user to assign new AriaService to domService
 
 ### Issues Found Formatter Construction
 
-`JivsDomServiceBase` creates `IssuesFoundFormatterService` as the default `issuesFoundFormatter`.
+`JivsDomServices` creates `IssuesFoundFormatterService` as the default `issuesFoundFormatter`.
 
 The formatter is markup-independent and requires no SimpleDom behavior. Presentations, ARIA updaters, and applications obtain it through the DOM service collection.
 
@@ -5251,16 +5252,16 @@ Element resolution belongs directly to `IJivsDomServices`:
 interface IJivsDomServices {
     resolveContainerElement(
         valueHostsManager: IValueHostsManager
-    ): HTMLElement | null;
+    ): HTMLElement;
 
     resolveFieldElement(
         valueHost: IFieldValueHost,
         role: ElementRole | string
-    ): HTMLElement | null;
+    ): HTMLElement[];
 }
 ```
 
-These methods are implemented by `JivsDomServiceBase`. A subclass overrides them when its markup convention requires different resolution.
+These methods are implemented by `JivsDomServices`. Applications with different markup conventions customize element discovery through their `IElementCollector`.
 
 #### Container Resolution
 
@@ -5272,56 +5273,28 @@ When no Container Identifier is configured, it returns:
 document.body
 ```
 
-Otherwise, the Container Identifier is passed to `document.querySelector()`. It must therefore be a valid selector that identifies an `HTMLElement`.
+Otherwise, the Container Identifier is passed to `document.querySelector()`. It must therefore be a valid selector. If the first match is an `HTMLElement`, that element is returned.
 
-A valid selector with no match returns `null`. An invalid selector throws normally. When multiple elements match, the first match is returned without duplicate detection.
-
-The method does not fall back to `document.body` when a configured selector has no match.
+If there is no match, or the first match is not an `HTMLElement`, the service logs a warning and returns `document.body`. An invalid selector throws normally. When multiple elements match, the first match is considered.
 
 #### Field Element Resolution
 
-When `root` is `null`, `resolveFieldElement()` obtains the field’s manager through `valueHost.valueHostsManager` and calls `resolveContainerElement()`.
-
-If container resolution returns `null`, field resolution also returns `null`.
-
-The `JivsDomServiceBase` implementation uses the supplied `elementIdentifierTemplate`, or the role-independent `{0}` template when none is supplied:
+`resolveFieldElement()` obtains the field’s Element Identifier and retrieves all matching elements from the Registry associated with the field’s `ValueHostsManager`:
 
 ```ts
-const selector =
-    valueHost.getElementIdentifier(
-        elementIdentifierTemplate ?? "{0}"
-    );
+const elementIdentifier = valueHost.getElementIdentifier();
+const registry = this.getElementRegistry(valueHost.valueHostsManager);
+return registry.getElementsByRole(role, elementIdentifier);
 ```
 
-The resulting Element Identifier must be a valid selector.
+No matching elements produces an empty array. A custom markup convention populates the Registry through its `IElementCollector`; it does not require a service subclass.
 
-The supplied root participates in resolution. The method first tests the root itself and then searches its descendants:
+### SimpleDom Integration
 
-```ts
-if (root.matches(selector)) {
-    return root;
-}
 
-return root.querySelector<HTMLElement>(
-    selector
-);
-```
+SimpleDom's markup-specific discovery belongs to `SimpleDomElementCollector`, which interprets SimpleDom attributes and populates the supplied Registry. It is passed to `FormInstaller`; it is not owned by or retained in `JivsDomServices`.
 
-A valid selector with no match returns `null` without logging. Individual field roles are optional, and a partial root may legitimately exclude most fields.
-
-When multiple elements match, the first match is returned without duplicate detection. Selector uniqueness is the developer’s responsibility.
-
-The base implementation does not interpret `role`. A subclass may use it to select a role-specific identifier template or selector convention.
-
-An explicitly supplied `elementIdentifierTemplate` overrides the subclass’s normal role-derived template and is passed to `valueHost.getElementIdentifier()`.
-
-### SimpleDomServices
-
-`SimpleDomServices` extends `JivsDomServiceBase` and remains the ready-to-use DOM service collection installed by `jivs-simpledom`.
-
-Registry-backed dispatchers and ARIA processing are markup-independent and are inherited from `jivs-dom`. SimpleDom's markup-specific discovery belongs to its exported Element Collector, which interprets SimpleDom attributes and populates the supplied Registry.
-
-`SimpleDomServices` does not create or retain a Collector or FormInstaller.
+`JivsDomServices` does not create or retain an `IElementCollector` or `FormInstaller`.
 
 ### Installation into JivsServices
 
@@ -5335,9 +5308,7 @@ interface IJivsServices {
 
 The service is installed using the existing Jivs module-service mechanism. Assignment of the service to `JivsServices` also assigns its inherited `services` accessor.
 
-Because `JivsDomServiceBase` is abstract, `@plblum/jivs-dom` does not install an instance of that class.
-
-`@plblum/jivs-simpledom` installs `SimpleDomServices` as the standard concrete `domServices` implementation. An application using another convention installs its own `JivsDomServiceBase` descendant instead.
+`@plblum/jivs-dom` supplies and installs `JivsDomServices` as the standard concrete `domServices` implementation. SimpleDom applications use this same service collection.
 
 The installed DOM service object is available through:
 
@@ -5354,27 +5325,24 @@ Its child services remain lazy and are created when their properties are first r
 
 * declaring the `IJivsServices.domServices` module augmentation;
 * exporting `IJivsDomServices`;
-* exporting `JivsDomServiceBase`;
+* exporting `JivsDomServices`;
 * exporting the reusable module-service installation support;
 * exporting the standard child-service, factory, installer, dispatcher, adapter, presentation, formatter, and ARIA types;
 * supplying all markup-independent default construction.
 
-`@plblum/jivs-simpledom` is responsible for:
+`@plblum/jivs-dom` also supplies the standard SimpleDom convention:
 
-* exporting `SimpleDomServices`;
-* installing `SimpleDomServices` as the standard concrete DOM service;
-* exporting the SimpleDom Element Collector;
+* exporting the `SimpleDomElementCollector`;
 * interpreting SimpleDom attributes during complete form collection.
 
-An application using `jivs-dom` without SimpleDom is responsible for:
+An application using `jivs-dom` without the SimpleDom convention is responsible for:
 
-* deriving a concrete service from `JivsDomServiceBase`;
 * supplying an Element Collector for each form;
 * calling `FormInstaller`.
 
 ### Disposal
 
-`JivsDomServiceBase` participates in the existing `ServiceBase.dispose()` lifecycle.
+`JivsDomServices` participates in the existing `ServiceBase.dispose()` lifecycle.
 
 Its disposal implementation releases references to child services and factories that were created or assigned. It does not search the DOM, remove event handlers from installed elements, or dispose form-specific state.
 
@@ -5388,9 +5356,9 @@ The exact child-disposal policy should follow the established Jivs service conve
 
 The following settled sections require narrow terminology changes after this section is approved:
 
-* references to `DomServices` as the concrete root type become `IJivsDomServices` or `JivsDomServiceBase`, according to context;
+* references to `DomServices` as the concrete root type become `IJivsDomServices` or `JivsDomServices`, according to context;
 * `domServices.jivsServices.loggingService` becomes `domServices.services.loggingService`;
-* references to default `DomServices` construction are replaced by the abstract-base and concrete-service model;
+* references to default `DomServices` construction use the standard concrete `JivsDomServices` model;
 * the provisional service-retrieval line in Section 11 becomes `jivsServices.domServices`.
 
 No installer, dispatcher, presentation, ARIA, or form-installation behavior changes as a result.
@@ -5399,42 +5367,45 @@ No installer, dispatcher, presentation, ARIA, or form-installation behavior chan
 
 ### Package Responsibilities
 
-The first implementation introduces three workspaces:
+The workspace boundaries are:
 
-| Workspace                   | Published | Responsibility                                                                                                                               |
-| --------------------------- | --------: | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/jivs-dom`         |       Yes | Reusable DOM contracts, services, adapters, installers, dispatchers, presentations, ARIA support, formatting, and framework-independent CSS. |
-| `packages/jivs-simpledom`   |       Yes | SimpleDom attributes, its screen-scraping Element Collector, concrete services, and SimpleDom-specific CSS.                                  |
-| `packages/jivs-dom-website` |        No | Runnable demonstrations, manual browser verification, learning examples, and package integration coverage.                                   |
+| Workspace                    | Published | Responsibility                                                                                                                                                                                      |
+| ---------------------------- | --------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/jivs-dom`          |       Yes | Reusable DOM APIs and CSS, plus SimpleDom's attribute conventions, Element Collector, concrete services, and SimpleDom-specific CSS.                                                                |
+| `packages/jivs-dom-tippy`    |       Yes | Optional Tippy.js implementation of `IPopupMechanism` for applications that choose Tippy.js.                                                                                                       |
+| `packages/jivs-dom-website`  |        No | Runnable demonstrations, manual browser verification, learning examples, and package integration coverage.                                                                                         |
+
+SimpleDom is part of `jivs-dom`, not a separate package. Its small footprint and high profile as Jivs's ready-to-use DOM convention make it appropriate to ship alongside the reusable DOM APIs. `jivs-dom-tippy` remains separate and optional: this keeps the third-party Tippy.js dependency and its library-specific options and styling out of `jivs-dom`, while allowing applications to select another `IPopupMechanism` or none at all.
 
 The dependency direction is:
 
 ```mermaid
 flowchart TB
     WEBSITE["jivs-dom-website"]
-    SIMPLEDOM["jivs-simpledom"]
+    TIPPY["jivs-dom-tippy"]
     DOM["jivs-dom"]
     ENGINE["jivs-engine"]
+    TIPPYJS["tippy.js"]
 
-    WEBSITE --> SIMPLEDOM
     WEBSITE --> DOM
-    SIMPLEDOM --> DOM
+    WEBSITE --> TIPPY
+    TIPPY --> DOM
+    TIPPY --> ENGINE
+    TIPPY --> TIPPYJS
     DOM --> ENGINE
 ```
-
-`jivs-dom` must not depend on `jivs-simpledom`.
 
 The website consumes the published package surfaces. It must not import sibling-package source files through relative paths. This makes the website an integration check for package exports, generated JavaScript, declaration files, and published CSS assets.
 
 ### Website Strategy
 
-The initial implementation should use one website rather than separate websites for `jivs-dom` and `jivs-simpledom`.
+The implementation should use one website for `jivs-dom`, its built-in SimpleDom convention, and optional popup integrations.
 
 The website should contain:
 
 * a home page linking to the demonstrations;
 * SimpleDom demonstrations representing the normal developer experience;
-* selected direct `jivs-dom` demonstrations showing customization without SimpleDom;
+* selected low-level `jivs-dom` demonstrations showing customization without SimpleDom;
 * pages focused on editors, field presentation, form presentation, ARIA, DOM replacement, and multiple managers.
 
 A second website should be introduced only when a future framework integration requires its own build system or runtime. Angular, React, and Vue examples should not determine the architecture of the initial DOM website.
@@ -5476,14 +5447,13 @@ Its scripts should provide the equivalent of:
 
 The exact TypeScript command should follow the repository’s existing project-reference or package-build convention.
 
-The website’s internal package dependencies should use the same version and workspace-linking convention already used elsewhere in the repository:
+The website's core internal package dependencies should use the same version and workspace-linking convention already used elsewhere in the repository:
 
 ```json
 {
     "dependencies": {
         "@plblum/jivs-engine": "...",
-        "@plblum/jivs-dom": "...",
-        "@plblum/jivs-simpledom": "..."
+        "@plblum/jivs-dom": "..."
     },
     "devDependencies": {
         "typescript": "...",
@@ -5491,6 +5461,8 @@ The website’s internal package dependencies should use the same version and wo
     }
 }
 ```
+
+Add `@plblum/jivs-dom-tippy` and `tippy.js` only if a website demonstration exercises that optional integration.
 
 Version values should not introduce a new workspace dependency convention solely for the website.
 
@@ -5531,15 +5503,16 @@ import {
 
 import {
     SimpleDomElementCollector
-} from "@plblum/jivs-simpledom";
+} from "@plblum/jivs-dom";
 ```
 
 CSS should also use explicit public exports when possible:
 
 ```ts
 import "@plblum/jivs-dom/styles.css";
-import "@plblum/jivs-simpledom/styles.css";
 ```
+
+A demonstration of the optional Tippy integration may import `TippyPopupMechanism` from `@plblum/jivs-dom-tippy` and the application's Tippy CSS from `tippy.js`.
 
 The corresponding package `exports` maps must expose those CSS files.
 
@@ -5559,11 +5532,11 @@ Node.js runs:
 
 The generated site is static and can later be hosted by GitHub Pages or another static host.
 
-A custom Node server should be added only when a demonstration genuinely requires server behavior, such as server-side validation or round-trip examples. That server should remain demonstration infrastructure and should not become a runtime dependency of `jivs-dom` or `jivs-simpledom`.
+A custom Node server should be added only when a demonstration genuinely requires server behavior, such as server-side validation or round-trip examples. That server should remain demonstration infrastructure and should not become a runtime dependency of `jivs-dom` or `jivs-dom-tippy`.
 
 ### TypeScript DOM Configuration
 
-The TypeScript configurations for `jivs-dom`, `jivs-simpledom`, and the website must include browser declarations.
+The TypeScript configurations for `jivs-dom` and the website must include browser declarations.
 
 Their effective compiler options must include the appropriate ECMAScript library together with:
 
@@ -5583,7 +5556,7 @@ Node-only packages should not acquire DOM declarations through the root configur
 
 ### Jest DOM Environment
 
-`jivs-dom` and `jivs-simpledom` should continue using Jest and the repository’s existing TypeScript transformation.
+`jivs-dom` should continue using Jest and the repository's existing TypeScript transformation. The website is verified through its build and browser demonstrations rather than a second library-package test suite.
 
 Each DOM package adds a development dependency on:
 
@@ -5609,7 +5582,7 @@ testEnvironmentOptions: {
 
 The existing Node test environment should remain in effect for `jivs-engine` and other packages that do not require browser globals.
 
-Do not change the entire monorepo to JSDOM merely because the new packages require it.
+Do not change the entire monorepo to JSDOM merely because `jivs-dom` requires it.
 
 ### Jest Configuration Reuse
 
@@ -5754,27 +5727,26 @@ Recommended `jivs-dom` test areas include:
 * Element Registry;
 * Element Collector base;
 * Form Installer;
-* `JivsDomServiceBase`.
+* `JivsDomServices`.
 
-Recommended `jivs-simpledom` test areas include:
+SimpleDom-specific tests belong in the `jivs-dom` suite and should cover:
 
 * attribute parsing;
 * role discovery;
 * `SimpleDomElementCollector` population;
-* `SimpleDomServices`;
+* standard `JivsDomServices` behavior when used with `SimpleDomElementCollector`;
 * repeated complete installation;
 * installation after DOM replacement.
 
-Tests for `jivs-dom` must not use SimpleDom attributes unless the test is verifying that generic behavior ignores them.
+Keep generic DOM behavior tests separate from SimpleDom-specific tests. Tests of generic behavior should not use SimpleDom attributes unless verifying that the generic behavior ignores them.
 
 ### Public Exports
 
 `@plblum/jivs-dom` should export its public contracts, abstract bases, concrete reusable implementations, option and Registry-record interfaces, `ElementRegistry`, `ElementCollectorBase`, `FormInstaller`, standard editor definitions, presentations, ARIA updaters, formatter, and CSS entry point.
 
-`@plblum/jivs-simpledom` should export:
+`@plblum/jivs-dom` should also export the SimpleDom convention:
 
 * SimpleDom attribute-name constants;
-* `SimpleDomServices`;
 * `SimpleDomElementCollector`;
 * public SimpleDom option types;
 * its CSS entry point.
@@ -5793,11 +5765,11 @@ The website exports nothing.
 * Field Error Display classes;
 * `jivs-visually-hidden`.
 
-`@plblum/jivs-simpledom` publishes CSS that depends on its attributes or markup convention.
+`@plblum/jivs-dom` also publishes CSS that depends on SimpleDom attributes or markup convention.
 
-Both packages must:
+The `jivs-dom` package must:
 
-* copy their CSS into the package output;
+* copy its CSS into the package output;
 * include the CSS in the NPM `files` list;
 * expose stable CSS subpaths through `package.json`;
 * verify the packed package rather than relying only on repository-local imports.
@@ -5810,14 +5782,14 @@ The root package should provide convenient commands using the repository’s exi
 
 The intended capabilities are:
 
-| Command capability | Result                                                      |
-| ------------------ | ----------------------------------------------------------- |
-| Build DOM packages | Builds `jivs-dom` and `jivs-simpledom` in dependency order. |
-| Test DOM packages  | Runs their JSDOM Jest suites.                               |
-| Start DOM website  | Builds or watches dependencies and starts Vite.             |
-| Build DOM website  | Builds dependencies and then produces the static website.   |
-| Test all           | Includes both new package test suites.                      |
-| Build all          | Includes both libraries and the website.                    |
+| Command capability | Result                                                             |
+| ------------------ | ------------------------------------------------------------------ |
+| Build DOM packages | Builds `jivs-dom` and, when needed, `jivs-dom-tippy`.               |
+| Test DOM packages  | Runs the `jivs-dom` JSDOM suite and optional integration tests.     |
+| Start DOM website  | Builds or watches dependencies and starts Vite.                     |
+| Build DOM website  | Builds dependencies and then produces the static website.           |
+| Test all           | Includes the DOM suite and tests for any optional integration.      |
+| Build all          | Includes the DOM package, optional integrations, and the website.   |
 
 Exact command text should be based on the current root scripts and task orchestration rather than introducing a second monorepo command style.
 
@@ -5827,11 +5799,11 @@ When engine changes are required, the publishing order is:
 
 1. `@plblum/jivs-engine`
 2. `@plblum/jivs-dom`
-3. `@plblum/jivs-simpledom`
+3. `@plblum/jivs-dom-tippy` when publishing that optional integration
 
 The website is not published to NPM. Its static build is deployed separately.
 
-`jivs-dom` declares its engine dependency according to the repository’s existing dependency policy. `jivs-simpledom` declares dependencies on both `jivs-engine` and `jivs-dom` when it imports their public APIs directly.
+`jivs-dom` declares its engine dependency according to the repository’s existing dependency policy. The Tippy integration declares `jivs-dom` as a peer dependency and Tippy.js as its popup-library peer dependency.
 
 ### Starter-Code and Documentation Migration
 
@@ -5840,9 +5812,9 @@ Reusable DOM behavior moves from starter code into the published packages.
 The migration must identify:
 
 * starter code replaced by `jivs-dom`;
-* starter code replaced by `jivs-simpledom`;
-* submission-related code that remains outside both packages;
-* Learning Jivs examples that should import the new packages;
+* starter code replaced by the SimpleDom convention now included in `jivs-dom`;
+* submission-related code that remains outside the DOM package;
+* Learning Jivs examples that should import `jivs-dom`;
 * CSS references that must use the published assets;
 * obsolete SimpleDom initialization functions.
 
@@ -5858,9 +5830,9 @@ The demonstration website becomes the executable source for current examples. Do
 6. Implement and test presentations, formatting, and ARIA updaters.
 7. Implement and test Element Registry queries.
 8. Implement and test Element Collector and Form Installer coordination.
-9. Create `packages/jivs-simpledom`.
-10. Implement and test SimpleDom services and its screen-scraping Element Collector.
-11. Publish and test CSS package assets.
+9. Implement and test SimpleDom services and its screen-scraping Element Collector within `packages/jivs-dom`.
+10. Publish and test CSS package assets.
+11. Create the optional `packages/jivs-dom-tippy` popup integration.
 12. Create the private `packages/jivs-dom-website` Vite workspace.
 13. Add the demonstration index and focused example pages.
 14. Build the website exclusively through public package exports.
