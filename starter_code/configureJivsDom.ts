@@ -379,8 +379,15 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
         const popupMechanismOptions = {
             // each PopupMechanism defines options for how the popup should behave, such as positioning, triggers, and animations.
             // This object is where you set it up.
-            // You should have an interface defining the shape of this object, such as TippyPopupMechanismOptions.
-            // and can strongly type it: const popupOptions: TippyPopupMechanismOptions = { } 
+            // You should have an interface defining the shape of this object, such as TippyPopupOptions.
+            // and can strongly type it: 
+            /*
+            const popupMechanismOptions: TippyPopupOptions = {
+                placement: 'right',
+                hideOnClick: true,
+                theme: 'jivs-validation'            
+            }
+            */
         };
 
         const popupEMDOptions: PopupErrorMessageDisplayPresentationOptions = {

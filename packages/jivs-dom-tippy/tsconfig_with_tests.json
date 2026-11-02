@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig_common.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./temp/",
+    "rootDir": "./",
+    "declaration": false,
+    "paths": {
+      "@plblum/jivs-dom/*": ["../jivs-dom/*"],
+      "@plblum/jivs-engine/*": ["../jivs-engine/*"]
+    }
+  },
+  "include": ["src", "tests"],
+  "exclude": ["./*.js", "./*.mjs", "coverage", "docs", "build", "temp"]
+}

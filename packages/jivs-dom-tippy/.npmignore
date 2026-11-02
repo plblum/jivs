@@ -1,0 +1,8 @@
+tests/
+temp/
+coverage/
+src/
+node_modules/
+tsconfig*.json
+gulpfile.mjs
+jest.config.json

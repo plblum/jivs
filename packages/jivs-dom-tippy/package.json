@@ -1,0 +1,40 @@
+{
+  "name": "@plblum/jivs-dom-tippy",
+  "type": "module",
+  "version": "0.23.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plblum/jivs.git"
+  },
+  "description": "Tippy.js popup mechanism for Jivs-DOM",
+  "displayName": "Jivs DOM Tippy",
+  "license": "MIT",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "compile": "tsc",
+    "test": "jest --silent",
+    "clean": "gulp clean"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true,
+      "jest": true
+    }
+  },
+  "peerDependencies": {
+    "@plblum/jivs-dom": "^0.23.0",
+    "tippy.js": "^6.3.7"
+  },
+  "dependencies": {
+    "@plblum/jivs-engine": "^0.23.0"
+  },
+  "devDependencies": {
+    "@plblum/jivs-dom": "file:../jivs-dom",
+    "tippy.js": "^6.3.7"
+  }
+}

@@ -19,6 +19,9 @@
 			"path": "packages/jivs-dom"
 		},
 		{
+			"path": "packages/jivs-dom-tippy"
+		},
+		{
 			"path": "packages/jivs-angular"
 		},
 		{
