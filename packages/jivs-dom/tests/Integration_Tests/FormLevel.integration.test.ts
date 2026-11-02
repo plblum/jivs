@@ -1,9 +1,11 @@
 /** @jest-environment jsdom */
+import { jest } from '@jest/globals';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { ValidationSeverity, ValidationStatus } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { DefaultNotifyValidationStateChangedDelay } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { TestForm, TestFormOptions } from './TestingSupport/CreateTestForm';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
-import { installForm } from './TestingSupport/FieldFeedbackExpectations';
+import { expectElementsMatchValidationState, installForm } from './TestingSupport/FieldFeedbackExpectations';
 import { registerTestSubmitPresentation } from './TestingSupport/TestSubmitPresentation';
 import { useCleanDocument } from './TestingSupport/TestFileSupport';
 
@@ -138,6 +140,115 @@ function userEdits(t: TestForm, field: string, value: string): void
 // The summary lists the issues of every field, and the submit element follows whether any blocking issue exists.
 describe('A form with two fields, a summary and a submit', () =>
 {
+    test('Field feedback updates immediately while form feedback waits for the default notification delay', () =>
+    {
+        jest.useFakeTimers();
+        try
+        {
+            let t = installForm({
+                repository: createRepository(),
+                formTemplate: 'summaryAndSubmit',
+                verbose: verbose,
+                configureServices: registerTestSubmitPresentation
+            });
+            let summary = t.element('summary');
+            let submit = t.element('submit');
+
+            expect(t.vhm.notifyValidationStateChangedDelay).toBe(DefaultNotifyValidationStateChangedDelay);
+            userEdits(t, nameField, 'lower');
+
+            expectElementsMatchValidationState(t, nameField, ValidationStatus.Invalid);
+            expect(summary.classList.contains('jivs-has-issues')).toBe(false);
+            expect(summary.textContent).toBe('');
+            expect(submit.hasAttribute('disabled')).toBe(false);
+
+            jest.advanceTimersByTime(DefaultNotifyValidationStateChangedDelay - 1);
+            expect(summary.classList.contains('jivs-has-issues')).toBe(false);
+            expect(submit.hasAttribute('disabled')).toBe(false);
+
+            jest.advanceTimersByTime(1);
+            expect(summary.classList.contains('jivs-has-issues')).toBe(true);
+            expect(summary.textContent).toContain('UPPER-MSG');
+            expect(submit.hasAttribute('disabled')).toBe(true);
+            expect(t.services.loggingService.entryCount).toBe(0);
+        }
+        finally
+        {
+            jest.useRealTimers();
+        }
+    });
+
+    test('Rapid invalid edits to both fields appear together after the default notification delay', () =>
+    {
+        jest.useFakeTimers();
+        try
+        {
+            let t = installForm({
+                repository: createRepository(),
+                formTemplate: 'summaryAndSubmit',
+                verbose: verbose,
+                configureServices: registerTestSubmitPresentation
+            });
+            let summary = t.element('summary');
+            let submit = t.element('submit');
+
+            userEdits(t, nameField, 'lower');
+            userEdits(t, codeField, 'xyz');
+
+            expectElementsMatchValidationState(t, nameField, ValidationStatus.Invalid);
+            expectElementsMatchValidationState(t, codeField, ValidationStatus.Invalid);
+            expect(summary.textContent).toBe('');
+            expect(submit.hasAttribute('disabled')).toBe(false);
+
+            jest.advanceTimersByTime(DefaultNotifyValidationStateChangedDelay);
+            expect(summary.textContent).toContain('UPPER-MSG');
+            expect(summary.textContent).toContain('CODE-UPPER-MSG');
+            expect(submit.hasAttribute('disabled')).toBe(true);
+            expect(t.services.loggingService.entryCount).toBe(0);
+        }
+        finally
+        {
+            jest.useRealTimers();
+        }
+    });
+
+    test('clearValidation cancels pending form feedback from an invalid edit', () =>
+    {
+        jest.useFakeTimers();
+        try
+        {
+            let t = installForm({
+                repository: createRepository(),
+                formTemplate: 'summaryAndSubmit',
+                verbose: verbose,
+                configureServices: registerTestSubmitPresentation
+            });
+            let summary = t.element('summary');
+            let submit = t.element('submit');
+
+            userEdits(t, nameField, 'lower');
+            expectElementsMatchValidationState(t, nameField, ValidationStatus.Invalid);
+            expect(summary.textContent).toBe('');
+            expect(submit.hasAttribute('disabled')).toBe(false);
+
+            t.vhm.clearValidation();
+            expectElementsMatchValidationState(t, nameField, ValidationStatus.NotAttempted);
+            expect(summary.classList.contains('jivs-has-issues')).toBe(false);
+            expect(summary.textContent).toBe('');
+            expect(submit.hasAttribute('disabled')).toBe(false);
+
+            jest.advanceTimersByTime(DefaultNotifyValidationStateChangedDelay);
+            expect(summary.classList.contains('jivs-has-issues')).toBe(false);
+            expect(summary.textContent).toBe('');
+            expect(submit.hasAttribute('disabled')).toBe(false);
+            expect(t.services.loggingService.entryCount).toBe(0);
+        }
+        finally
+        {
+            jest.useRealTimers();
+        }
+    });
+
     test('validate() lists the messages of both fields, and each valid edit removes that field\'s messages', () =>
     {
         let t = installFormLevel('summaryAndSubmit');
@@ -189,6 +300,42 @@ describe('A form with two fields, a summary and a submit', () =>
         expect(submit.hasAttribute('disabled')).toBe(false);
         expect(t.services.loggingService.entryCount).toBe(0);
     });
+
+    test('validate() updates form feedback immediately while the default delay is enabled', () =>
+    {
+        jest.useFakeTimers();
+        try
+        {
+            let t = installForm({
+                repository: createRepository(),
+                formTemplate: 'summaryAndSubmit',
+                verbose: verbose,
+                configureServices: registerTestSubmitPresentation
+            });
+            let summary = t.element('summary');
+            let submit = t.element('submit');
+
+            expect(t.vhm.notifyValidationStateChangedDelay).toBe(DefaultNotifyValidationStateChangedDelay);
+            t.vhm.getFieldValueHost(nameField)!.setTextValue('', { reset: true });
+            t.vhm.getFieldValueHost(codeField)!.setTextValue('abc', { reset: true });
+            t.vhm.validate();
+
+            expect(summary.classList.contains('jivs-has-issues')).toBe(true);
+            expect(summary.textContent).toContain('REQ-MSG');
+            expect(summary.textContent).toContain('CODE-UPPER-MSG');
+            expect(submit.hasAttribute('disabled')).toBe(true);
+
+            jest.advanceTimersByTime(DefaultNotifyValidationStateChangedDelay);
+            expect(summary.textContent).toContain('REQ-MSG');
+            expect(summary.textContent).toContain('CODE-UPPER-MSG');
+            expect(submit.hasAttribute('disabled')).toBe(true);
+            expect(t.services.loggingService.entryCount).toBe(0);
+        }
+        finally
+        {
+            jest.useRealTimers();
+        }
+    });
 });
 
 // Each summary and submit is dedicated to a validation group through data-jivs-group.
@@ -196,13 +343,13 @@ describe('A form with two fields, a summary and a submit', () =>
 describe('Two summaries and submits, one per validation group', () =>
 {
     /** The name field is in GroupA and the code field is in GroupB. Both start with invalid values, not yet validated. */
-    function installTwoGroups(): TestForm
+    function installTwoGroups(respondToWildcardGroup: boolean = false): TestForm
     {
         let t = installFormLevel('twoGroups', (config) =>
         {
             for (let vhc of config.valueHostConfigs)
                 (vhc as any).group = vhc.name === nameField ? 'GroupA' : 'GroupB';
-        });
+        }, respondToWildcardGroup);
         t.vhm.getFieldValueHost(nameField)!.setTextValue('', { reset: true });
         t.vhm.getFieldValueHost(codeField)!.setTextValue('abc', { reset: true });
         return t;
@@ -230,6 +377,30 @@ describe('Two summaries and submits, one per validation group', () =>
         expect(groupElement('submit', 'GroupB').hasAttribute('disabled')).toBe(true);
         expect(groupElement('summary', 'GroupA').textContent).toContain('REQ-MSG');
         expect(groupElement('summary', 'GroupA').classList.contains('jivs-has-issues')).toBe(true);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('User edits update only the summary and submit for the edited field group', () =>
+    {
+        // Editor validation notifies the form as a wildcard; grouped presentations then resolve their own group state.
+        let t = installTwoGroups(true);
+
+        userEdits(t, nameField, 'lower');
+
+        expect(groupElement('summary', 'GroupA').textContent).toContain('UPPER-MSG');
+        expect(groupElement('summary', 'GroupA').textContent).not.toContain('CODE-UPPER-MSG');
+        expect(groupElement('submit', 'GroupA').hasAttribute('disabled')).toBe(true);
+        expect(groupElement('summary', 'GroupB').textContent).toBe('');
+        expect(groupElement('submit', 'GroupB').hasAttribute('disabled')).toBe(false);
+
+        userEdits(t, codeField, 'xyz');
+
+        expect(groupElement('summary', 'GroupA').textContent).toContain('UPPER-MSG');
+        expect(groupElement('summary', 'GroupA').textContent).not.toContain('CODE-UPPER-MSG');
+        expect(groupElement('submit', 'GroupA').hasAttribute('disabled')).toBe(true);
+        expect(t.vhm.getFieldValueHost(codeField)!.currentValidationState.status).toBe(ValidationStatus.Invalid);
+        expect(groupElement('summary', 'GroupB').textContent).toBe('CODE-UPPER-MSG');
+        expect(groupElement('submit', 'GroupB').hasAttribute('disabled')).toBe(true);
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 });

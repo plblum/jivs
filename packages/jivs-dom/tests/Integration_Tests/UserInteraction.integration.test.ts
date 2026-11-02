@@ -120,6 +120,20 @@ function createRepository()
         }
     });
     repository.registerIdentity({
+        name: 'Text_Upper_Warning_Max5',
+        description: 'Text input where lowercase letters are an Error and more than 5 characters is only a Warning',
+        addConfig: (builder, name) =>
+        {
+            builder.field(name, LookupKey.String)
+                .regExp(/^[A-Z]*$/, { errorMessage: 'UPPER-MSG', severity: ValidationSeverity.Error })
+                .stringLength(5, { errorMessage: 'LEN-WARN', severity: ValidationSeverity.Warning });
+        },
+        addEditor: (page, name, o) =>
+        {
+            page.inputEditor(name, 'text', o.presentationName, o.adapterKey, o.additionalAttributes);
+        }
+    });
+    repository.registerIdentity({
         name: 'Number_Parse_Format',
         description: 'Text input that parses numbers and reformats them with grouping separators',
         addConfig: (builder, name) =>
@@ -602,6 +616,94 @@ describe('DataTypeCheck versus a value validator', () =>
         userEdits(t, c.valid);
         expectElementsMatchValidationState(t, c.identity, ValidationStatus.Valid);
         expect(issues(t, c.identity)).toEqual([]);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+/**
+ * A Warning does not make the field invalid, so the field moves between Invalid, a state that still lists a
+ * warning, and Valid as the user edits. Each step must fully replace the previous one:
+ * no jivs-invalid left behind from the Error, and the warning message gone once the value is fine.
+ */
+describe('Severity transitions across a sequence of edits', () =>
+{
+    test('Error, then Warning only, then valid, then Error with a Warning', () =>
+    {
+        let identity = 'Text_Upper_Warning_Max5';
+        let t = installField(identity);
+        let editor = t.element('editor');
+        let error = t.element('error');
+        let state = () => t.vhm.getFieldValueHost(identity)!.currentValidationState;
+
+        userEdits(t, 'abc');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
+        expectIssueCodes(t, identity, [ConditionType.RegExp]);
+        expect(error.textContent).toBe('UPPER-MSG');
+
+        userEdits(t, 'ABCDEFG');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
+        expectIssueCodes(t, identity, [ConditionType.StringLength]);
+        expect(state().isValid).toBe(true);
+        expect(state().issuesFound![0].severity).toBe(ValidationSeverity.Warning);
+        expect(editor.classList.contains('jivs-invalid')).toBe(false);
+        expect(error.classList.contains('jivs-has-issues')).toBe(true);
+        expect(error.textContent).toBe('LEN-WARN');
+
+        userEdits(t, 'ABC');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
+        expect(state().issuesFound ?? []).toEqual([]);
+        expect(error.classList.contains('jivs-has-issues')).toBe(false);
+        expect(error.textContent).toBe('');
+
+        userEdits(t, 'abcdefg');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
+        expectIssueCodes(t, identity, [ConditionType.RegExp, ConditionType.StringLength]);
+        expect(editor.classList.contains('jivs-invalid')).toBe(true);
+        expect(error.textContent).toContain('UPPER-MSG');
+        expect(error.textContent).toContain('LEN-WARN');
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+});
+
+/**
+ * A parse failure stores an InjectedError from the parser. It must disappear once the text parses, and come
+ * back when the user types unparseable text again, with the Severe DataTypeCheck replacing any Error.
+ */
+describe('Unparseable text across a sequence of edits', () =>
+{
+    test('Unparseable, out of range, valid, then unparseable again', () =>
+    {
+        let identity = 'Number_Text_Range';
+        let t = installField(identity);
+        let editor = t.element('editor');
+        let error = t.element('error');
+        let severities = () => (t.vhm.getFieldValueHost(identity)!.currentValidationState.issuesFound ?? [])
+            .map(i => i.severity);
+
+        userEdits(t, 'abc');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
+        expectIssueCodes(t, identity, [ConditionType.DataTypeCheck]);
+        expect(severities()).toEqual([ValidationSeverity.Severe]);
+        expect(error.textContent).toBe('TYPE-MSG');
+
+        userEdits(t, '150');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
+        expectIssueCodes(t, identity, [ConditionType.Range]);
+        expect(severities()).toEqual([ValidationSeverity.Error]);
+        expect(error.textContent).toBe('RANGE-MSG');
+
+        userEdits(t, '50');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
+        expect(severities()).toEqual([]);
+        expect(editor.classList.contains('jivs-invalid')).toBe(false);
+        expect(error.classList.contains('jivs-has-issues')).toBe(false);
+        expect(error.textContent).toBe('');
+
+        userEdits(t, 'xyz');
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
+        expectIssueCodes(t, identity, [ConditionType.DataTypeCheck]);
+        expect(severities()).toEqual([ValidationSeverity.Severe]);
+        expect(error.textContent).toBe('TYPE-MSG');
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 });
