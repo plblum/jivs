@@ -23,6 +23,8 @@
  * - Many services support lazy loading
  * 
  */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 
 
 import
@@ -48,7 +50,7 @@ import
         RequireTextConditionConfig,
         StringLengthCondition,
         StringLengthConditionConfig
-} from "@plblum/jivs-engine/build/Conditions/ConcreteConditions";
+} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import
 {
     EqualToCondition, EqualToConditionConfig,
@@ -58,11 +60,11 @@ import
     LessThanCondition, LessThanConditionConfig,
     NotEqualToCondition, NotEqualToConditionConfig,
 
-} from "@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes";    
-import { ConditionFactory } from "@plblum/jivs-engine/build/Conditions/ConditionFactory";
-import { ConditionType } from "@plblum/jivs-engine/build/Conditions/ConditionTypes";
-import { NotCondition, NotConditionConfig } from "@plblum/jivs-engine/build/Conditions/NotCondition";
-import { WhenCondition, WhenConditionConfig } from "@plblum/jivs-engine/build/Conditions/WhenCondition";
+} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';    
+import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
+import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTypes';
+import { NotCondition, NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
+import { WhenCondition, WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { IntegerDataTypeCheckGenerator } from '@plblum/jivs-engine/build/DataTypes/DataTypeCheckGenerators';
 import
     {
@@ -73,7 +75,7 @@ import
         TimeOfDayHMSOnlyConverter,
         TimeOfDayOnlyConverter,
         UTCDateOnlyConverter
-    } from "@plblum/jivs-engine/build/DataTypes/DataTypeConverters";
+    } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import
     {
         AbbrevDateFormatter,
@@ -92,32 +94,32 @@ import
         StringFormatter,
         TimeofDayFormatter, TimeofDayHMSFormatter,
         UppercaseStringFormatter
-    } from "@plblum/jivs-engine/build/DataTypes/DataTypeFormatters";
+    } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatters';
 import { DataTypeParserBase, DateTimeCultureInfo, NumberCultureInfo, DatePatternParserBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import
     {
         BooleanParser, CleanUpStringParser, CurrencyParser, EmptyStringIsFalseParser,
         NumberParser, Percentage100Parser, PercentageParser, ShortDatePatternParser
     } from '@plblum/jivs-engine/build/DataTypes/DataTypeParsers';
-import { LookupKey } from "@plblum/jivs-engine/build/DataTypes/LookupKeys";
-import { CultureIdWithFallback, ICultureService } from "@plblum/jivs-engine/build/Interfaces/CultureService";
-import { LoggingLevel } from "@plblum/jivs-engine/build/Interfaces/LoggingService";
-import { ILookupKeyFallbackService } from "@plblum/jivs-engine/build/Interfaces/LookupKeyFallbackService";
-import { IErrorMessagesService } from "@plblum/jivs-engine/build/Interfaces/ErrorMessagesService";
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { CultureIdWithFallback, ICultureService } from '@plblum/jivs-engine/build/Interfaces/CultureService';
+import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
+import { ILookupKeyFallbackService } from '@plblum/jivs-engine/build/Interfaces/LookupKeyFallbackService';
+import { IErrorMessagesService } from '@plblum/jivs-engine/build/Interfaces/ErrorMessagesService';
 import { DataTypeCheckGeneratorService } from '@plblum/jivs-engine/build/Services/DataTypeCheckGeneratorService';
 import { ValidatorConfigMergeService, ValueHostConfigMergeService } from '@plblum/jivs-engine/build/Services/ConfigMergeService';
-import { ConsoleLoggingService } from "@plblum/jivs-engine/build/Services/ConsoleLoggingService";
-import { DataTypeComparerService } from "@plblum/jivs-engine/build/Services/DataTypeComparerService";
-import { DataTypeConverterService } from "@plblum/jivs-engine/build/Services/DataTypeConverterService";
-import { DataTypeFormatterService } from "@plblum/jivs-engine/build/Services/DataTypeFormatterService";
-import { DataTypeIdentifierService } from "@plblum/jivs-engine/build/Services/DataTypeIdentifierService";
+import { ConsoleLoggingService } from '@plblum/jivs-engine/build/Services/ConsoleLoggingService';
+import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { DataTypeFormatterService } from '@plblum/jivs-engine/build/Services/DataTypeFormatterService';
+import { DataTypeIdentifierService } from '@plblum/jivs-engine/build/Services/DataTypeIdentifierService';
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
-import { IJivsServices } from "@plblum/jivs-engine/build/Interfaces/JivsServices";
-import { JivsServices } from "@plblum/jivs-engine/build/Services/JivsServices";
-import { LookupKeyFallbackService } from "@plblum/jivs-engine/build/Services/LookupKeyFallbackService";
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
+import { JivsServices } from '@plblum/jivs-engine/build/Services/JivsServices';
+import { LookupKeyFallbackService } from '@plblum/jivs-engine/build/Services/LookupKeyFallbackService';
 import { MessageTokenResolverService } from '@plblum/jivs-engine/build/Services/MessageTokenResolverService';
 import { HtmlMessageTokenResolverService } from '@plblum/jivs-engine/build/Services/HtmlMessageTokenResolverService';
-import { ErrorMessagesService } from "@plblum/jivs-engine/build/Services/ErrorMessagesService";
+import { ErrorMessagesService } from '@plblum/jivs-engine/build/Services/ErrorMessagesService';
 import { registerStandardValueHostGenerators, ValueHostFactory } from '@plblum/jivs-engine/build/ValueHosts/ValueHostFactory';
 
 // If you need to omit the jivs-builder module later, comment out these next two lines.
@@ -319,16 +321,16 @@ export function createJivsServices(defaultCultureId: string,
             });
 
             service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
-                '*': 'Invalid value. Enter a number.',
+                '*': 'Invalid value. Enter a number.'
             });
             service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Number, {
-                '*': '{Label} has an invalid value. Enter a number.',
+                '*': '{Label} has an invalid value. Enter a number.'
             });
             service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
-                '*': 'Invalid value. Enter an integer.',
+                '*': 'Invalid value. Enter an integer.'
             });
             service.registerSummaryMessage(ConditionType.DataTypeCheck, LookupKey.Integer, {
-                '*': '{Label} has an invalid value. Enter an integer.',
+                '*': '{Label} has an invalid value. Enter an integer.'
             });
             service.registerErrorMessage(ConditionType.DataTypeCheck, LookupKey.Date, {
                 '*': 'Invalid value. Enter a date.',

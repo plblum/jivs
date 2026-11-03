@@ -16,6 +16,9 @@
 			"path": "packages/jivs-configanalysis"
 		},
 		{
+			"path": "packages/jivs-ui-demos"
+		},
+		{
 			"path": "packages/jivs-dom"
 		},
 		{

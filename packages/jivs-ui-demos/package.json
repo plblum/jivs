@@ -1,0 +1,25 @@
+{
+  "name": "@plblum/jivs-ui-demos",
+  "private": true,
+  "type": "module",
+  "version": "0.23.0",
+  "description": "Demo and playground website for Jivs UI packages. Not product documentation.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@plblum/jivs-builder": "file:../jivs-builder",
+    "@plblum/jivs-dom": "file:../jivs-dom",
+    "@plblum/jivs-dom-tippy": "file:../jivs-dom-tippy",
+    "@plblum/jivs-engine": "file:../jivs-engine",
+    "js-beautify": "^2.0.3",
+    "tippy.js": "^6.3.7"
+  },
+  "devDependencies": {
+    "@types/js-beautify": "^1.14.3",
+    "vite": "^6.3.5"
+  }
+}

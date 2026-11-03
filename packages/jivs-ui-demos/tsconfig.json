@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig_common.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "moduleResolution": "bundler",
+    "types": []
+  },
+  "include": ["src", "dom", "shared", "vite.config.ts"]
+}

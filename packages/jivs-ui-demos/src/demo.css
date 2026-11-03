@@ -1,0 +1,11 @@
+/* Demo-site-only styling. Never put jivs-dom styling here; edit packages/jivs-dom/assets/jivs-dom.css. */
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+}
+
+.demo-page {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+}

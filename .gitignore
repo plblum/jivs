@@ -32,3 +32,5 @@ npm-debug.log*
 .claude/worktrees
 .nx/polygraph
 .nx/self-healing
+# demo website output
+/packages/jivs-ui-demos/dist

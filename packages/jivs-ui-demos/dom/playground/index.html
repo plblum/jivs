@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jivs-DOM Error Message Display Playground</title>
+</head>
+<body>
+    <form class="preview-control-panel" aria-label="Playground controls" onsubmit="return false">
+        <label>
+            <strong>Example</strong>
+            <select id="preview-example"></select>
+        </label>
+
+        <label>
+            <strong>Editor</strong>
+            <select id="preview-editor">
+                <option value="text" selected>Text</option>
+                <option value="select">Select</option>
+                <option value="textarea">Textarea</option>
+                <option value="checkbox">Checkbox</option>
+                <option value="radio">Radio buttons</option>
+            </select>
+        </label>
+
+        <label><input id="preview-multiple" type="checkbox" checked> Allow multiple messages</label>
+
+        <fieldset>
+            <legend>Layout</legend>
+            <label><input type="radio" name="preview-orientation" value="side-by-side" checked> Side by side</label>
+            <label><input type="radio" name="preview-orientation" value="stacked"> Stacked</label>
+        </fieldset>
+
+        <fieldset>
+            <legend>Actions</legend>
+            <button type="button" id="preview-reset">Reset</button>
+            <button type="button" id="preview-fill-invalid">Enter invalid value</button>
+            <button type="button" id="preview-fill-valid">Enter valid value</button>
+            <button type="button" id="preview-validate">Validate</button>
+            <button type="button" id="preview-validate-preliminary">Preliminary validate</button>
+        </fieldset>
+    </form>
+
+    <main class="preview-page">
+        <details class="preview-introduction" open>
+            <summary>Jivs-DOM Error Message Display Playground</summary>
+            <p>
+                The example below is a live Jivs-DOM form: a real ValueHostsManager, the SimpleDom element
+                collector, FormInstaller, and the registered presentations. Use the actions to drive its
+                validation state, or type into the editor yourself. Entering an invalid value and then a valid one
+                shows the Corrected state. Popup examples use the Tippy popup mechanism,
+                so click an indicator to open its popup.
+            </p>
+            <p class="preview-note">
+                Styling comes from <code>packages/jivs-dom/assets/jivs-dom.css</code>, the single source of truth.
+                Edit it there and refresh. All <code>preview-*</code> styles belong only to this page.
+            </p>
+        </details>
+
+        <div id="preview-gallery" class="preview-gallery"></div>
+    </main>
+
+    <script type="module" src="./playground.ts"></script>
+</body>
+</html>

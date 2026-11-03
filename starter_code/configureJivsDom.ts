@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/no-confusing-void-expression */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /**
  * >> WHEN USING JIVS-DOM AND JIVS-SIMPLEDOM, ADD THIS ENTIRE FILE TO YOUR APP. <<
  * 

@@ -2,6 +2,34 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "msedge",
+            "request": "launch",
+            "name": "jivs-ui-demos: Playground (Edge)",
+            "url": "http://localhost:5173/dom/playground/",
+            "webRoot": "${workspaceFolder}/packages/jivs-ui-demos",
+            "preLaunchTask": "jivs-ui-demos: dev server",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/@fs/*": "*",
+                "/*": "${webRoot}/*"
+            },
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "jivs-ui-demos: Playground (Chrome)",
+            "url": "http://localhost:5173/dom/playground/",
+            "webRoot": "${workspaceFolder}/packages/jivs-ui-demos",
+            "preLaunchTask": "jivs-ui-demos: dev server",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "/@fs/*": "*",
+                "/*": "${webRoot}/*"
+            },
+            "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
