@@ -27,7 +27,7 @@ export abstract class RadioButtonsTextValueAdapterBase extends TextValueAdapterB
         super(element, jivsElement);
     }
 
-    public readTextValue(): string | undefined
+    public readTextValue(): string
     {
         for (const radio of this.getRadios())
         {
@@ -37,7 +37,7 @@ export abstract class RadioButtonsTextValueAdapterBase extends TextValueAdapterB
             }
         }
 
-        return undefined;
+        return '';
     }
 
     public writeTextValue(textValue: string | undefined): void

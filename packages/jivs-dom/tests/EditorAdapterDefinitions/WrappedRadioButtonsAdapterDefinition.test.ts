@@ -213,7 +213,7 @@ describe('WrappedRadioButtonsAdapterDefinition integration', () => {
         expect(testItem.identifyJivsElement(host, wrapper)).toBe(wrapper);
         let adapter = testItem.createTextValueAdapter(host, editor, jivsElement)!;
         jivsElement.jivsTextValueAdapter = adapter;
-        expect(adapter.readTextValue()).toBeUndefined();
+        expect(adapter.readTextValue()).toBe('');
         adapter.writeTextValue('green');
         expect(radios.map((r) => r.checked)).toEqual([false, true, false]);
 
@@ -247,6 +247,6 @@ describe('WrappedRadioButtonsAdapterDefinition integration', () => {
         radios[2].checked = true;
 
         expect(radios.map((r) => r.checked)).toEqual([false, false, true]);
-        expect(adapter.readTextValue()).toBeUndefined();
+        expect(adapter.readTextValue()).toBe('');
     });
 });

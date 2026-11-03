@@ -84,7 +84,7 @@ describe('RadioButtonsTextValueAdapterBase constructor', () => {
     });
 });
 
-// Reading returns the selected radio's value or undefined when no radio is selected.
+// Reading returns the selected radio's value, or an empty string when no radio is selected (the standard "no value" text).
 describe('RadioButtonsTextValueAdapterBase.readTextValue', () => {
     test('Returns the value of the selected radio button', () => {
         let { radios, testItem } = setup();
@@ -92,10 +92,10 @@ describe('RadioButtonsTextValueAdapterBase.readTextValue', () => {
 
         expect(testItem.readTextValue()).toBe('second');
     });
-    test('Returns undefined when no radio button is selected', () => {
+    test('Returns an empty string when no radio button is selected', () => {
         let { testItem } = setup();
 
-        expect(testItem.readTextValue()).toBeUndefined();
+        expect(testItem.readTextValue()).toBe('');
     });
     test('Returns the selected radio value when it occurs after unchecked members', () => {
         let { radios, testItem } = setup();
@@ -103,11 +103,11 @@ describe('RadioButtonsTextValueAdapterBase.readTextValue', () => {
 
         expect(testItem.readTextValue()).toBe('third');
     });
-    test('Returns undefined for an empty radio group', () => {
+    test('Returns an empty string for an empty radio group', () => {
         let { element } = setup([]);
         let testItem = new TestRadioButtonsTextValueAdapter(element, null, []);
 
-        expect(testItem.readTextValue()).toBeUndefined();
+        expect(testItem.readTextValue()).toBe('');
     });
 });
 
@@ -139,7 +139,7 @@ describe('RadioButtonsTextValueAdapterBase.writeTextValue', () => {
         testItem.writeTextValue('missing');
 
         expect(radios.map((radio) => radio.checked)).toEqual([false, false, false]);
-        expect(testItem.readTextValue()).toBeUndefined();
+        expect(testItem.readTextValue()).toBe('');
     });
     test('Clears all radio buttons when the written value is undefined', () => {
         let { radios, testItem } = setup();
@@ -148,14 +148,23 @@ describe('RadioButtonsTextValueAdapterBase.writeTextValue', () => {
         testItem.writeTextValue(undefined);
 
         expect(radios.map((radio) => radio.checked)).toEqual([false, false, false]);
-        expect(testItem.readTextValue()).toBeUndefined();
+        expect(testItem.readTextValue()).toBe('');
+    });
+    test('Clears all radio buttons when the written value is an empty string', () => {
+        let { radios, testItem } = setup();
+        radios[1].checked = true;
+
+        testItem.writeTextValue('');
+
+        expect(radios.map((radio) => radio.checked)).toEqual([false, false, false]);
+        expect(testItem.readTextValue()).toBe('');
     });
     test('Leaves an empty radio group unchanged when writing a value', () => {
         let { element } = setup([]);
         let testItem = new TestRadioButtonsTextValueAdapter(element, null, []);
 
         expect(() => testItem.writeTextValue('missing')).not.toThrow();
-        expect(testItem.readTextValue()).toBeUndefined();
+        expect(testItem.readTextValue()).toBe('');
     });
 });
 

@@ -85,7 +85,7 @@ describe('RadioButtonsAdapterDefinition.createTextValueAdapter', () => {
         let adapter = testItem.createTextValueAdapter(valueHost, radios[0], radios[0] as unknown as IJivsElement);
 
         expect(adapter).toBeInstanceOf(RadioButtonsTextValueAdapter);
-        expect(adapter.readTextValue()).toBeUndefined();
+        expect(adapter.readTextValue()).toBe('');
         radios[2].checked = true;
         expect(adapter.readTextValue()).toBe('blue');
         adapter.writeTextValue('green');
@@ -102,7 +102,7 @@ describe('RadioButtonsAdapterDefinition.createTextValueAdapter', () => {
         parent.appendChild(other);
         let adapter = testItem.createTextValueAdapter(valueHost, radios[0], radios[0] as unknown as IJivsElement);
 
-        expect(adapter.readTextValue()).toBeUndefined();
+        expect(adapter.readTextValue()).toBe('');
         adapter.writeTextValue('red');
         expect(radios[0].checked).toBe(true);
         expect(other.checked).toBe(true);
