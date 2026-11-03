@@ -158,7 +158,7 @@ export class DataTypeComparerService extends DataTypeConverterServiceBase<IDataT
      * @returns 
      */
     public find(value1: any, value2: any, lookupKey1: string | null, lookupKey2: string | null): IDataTypeComparer | null {
-        let result = this.getAll().find((dtc) => dtc.supportsValues(value1, value2, lookupKey1, lookupKey2)) ?? null;
+        let result = this.getAll(false).find((dtc) => dtc.supportsValues(value1, value2, lookupKey1, lookupKey2)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(value1, value2, lookupKey1, lookupKey2);
         return result;

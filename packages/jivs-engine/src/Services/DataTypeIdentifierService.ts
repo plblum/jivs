@@ -36,7 +36,7 @@ implements IDataTypeIdentifierService
     }
     protected indexOfExisting(item: IDataTypeIdentifier): number {
         const itemDTK = item.dataTypeLookupKey.toLowerCase();
-        return this.getAll().findIndex((idt) => idt.dataTypeLookupKey.toLowerCase() === itemDTK);
+        return this.getAll(false).findIndex((idt) => idt.dataTypeLookupKey.toLowerCase() === itemDTK);
     }
 
     /**
@@ -64,7 +64,7 @@ implements IDataTypeIdentifierService
      * @returns 
      */
     public find(value: any): IDataTypeIdentifier | null {
-        let result = this.getAll().find((idt) => idt.supportsValue(value)) ?? null;
+        let result = this.getAll(false).find((idt) => idt.supportsValue(value)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(value);
         return result;        

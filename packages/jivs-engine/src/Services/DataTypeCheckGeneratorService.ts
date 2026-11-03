@@ -97,7 +97,7 @@ export class DataTypeCheckGeneratorService extends DataTypeServiceBase<IDataType
      * @returns 
      */
     public find(dataTypeLookupKey: string): IDataTypeCheckGenerator | null {
-        let result = this.getAll().find((dtg) => dtg.supportsValue(dataTypeLookupKey)) ?? null;
+        let result = this.getAll(false).find((dtg) => dtg.supportsValue(dataTypeLookupKey)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(dataTypeLookupKey);
         return result;        

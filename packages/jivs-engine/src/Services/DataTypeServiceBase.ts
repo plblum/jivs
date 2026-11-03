@@ -40,7 +40,7 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
      */
     protected override updateServices(services: IJivsServices): void
     {
-        this.getAll().forEach((registered) => {
+        this.getAll(false).forEach((registered) => {
             const sa = toIServicesAccessor(registered);
             if (sa)
                 sa.services = services;
@@ -91,9 +91,13 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
 
     /**
      * Returns the full collection.
+     * @param allowLazyLoad If true, triggers lazy loading if necessary.
+     * Defaults to true.
      */
-    public getAll() : Array<T>
+    public getAll(allowLazyLoad: boolean = true) : Array<T>
     {
+        if (allowLazyLoad)
+            this.ensureLazyLoaded();
         return this._registeredClasses;
     }
 
@@ -112,6 +116,10 @@ export abstract class DataTypeServiceBase<T> extends ServiceWithAccessorBase imp
         this._lazyLoader = fn;
     }
     private _lazyLoader: null | ((service: IDataTypeService<T>) => void) = null;
+    protected hasLazyLoader(): boolean
+    {
+        return this._lazyLoader !== null;
+    }
 
     /**
      * Runs the lazyload function if setup and returns true if run.

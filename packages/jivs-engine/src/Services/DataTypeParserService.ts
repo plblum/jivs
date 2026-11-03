@@ -43,7 +43,10 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
      */
     public isActive(): boolean
     {
-        return this.enabled && this.getAll().length > 0;
+        if (!this.enabled)
+            return false;
+    // don't trigger lazy loaded. Assume no existing + hasLazyLoader() is sufficient.
+        return this.getAll(false).length > 0 || this.hasLazyLoader();
     }
     
     /**
@@ -130,7 +133,7 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
      * @param text
      */
     public find(lookupKey: string, cultureId: string, text: string): IDataTypeParser<any> | null {
-        let result = this.getAll().find((dtp) => dtp.supports(lookupKey, cultureId, text)) ?? null;
+        let result = this.getAll(false).find((dtp) => dtp.supports(lookupKey, cultureId, text)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(lookupKey, cultureId, text);
         return result;        
@@ -142,7 +145,6 @@ export class DataTypeParserService extends DataTypeServiceBase<IDataTypeParser<a
      */    
     public compatible(lookupKey: string, cultureId: string): Array<IDataTypeParser<any>> | null
     {
-        this.ensureLazyLoaded();
         const result = this.getAll().filter((dtp) => dtp.isCompatible(lookupKey, cultureId));
         return result.length > 0 ? result : null;
     }

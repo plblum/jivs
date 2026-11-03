@@ -29,8 +29,9 @@ export interface IDataTypeService<T> extends IServiceWithAccessor
   
     /**
      * Returns the full collection.
+     * @param allowLazyLoad If false, only returns items that have already been loaded, without triggering lazy loading.
      */
-    getAll() : Array<T>;  
+    getAll(allowLazyLoad?: boolean) : Array<T>; 
 }
 
 /**

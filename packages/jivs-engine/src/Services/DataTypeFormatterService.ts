@@ -57,7 +57,10 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
      */
     public isActive(): boolean
     {
-        return this.enabled && this.getAll().length > 0;
+        if (!this.enabled)
+            return false;
+        // don't trigger lazy loaded. Assume no existing + hasLazyLoader() is sufficient.
+        return this.getAll(false).length > 0 || this.hasLazyLoader();
     }
 
     /**
@@ -141,7 +144,7 @@ export class DataTypeFormatterService extends DataTypeServiceBase<IDataTypeForma
      * @returns A matching IDataTypeFormatter or null if none match.
      */
     public find(lookupKey: string, cultureId: string): IDataTypeFormatter | null {
-        let result = this.getAll().find((dtlf) => dtlf.supports(lookupKey, cultureId)) ?? null;
+        let result = this.getAll(false).find((dtlf) => dtlf.supports(lookupKey, cultureId)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(lookupKey, cultureId);
         return result;        

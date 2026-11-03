@@ -295,7 +295,7 @@ export class DataTypeConverterService extends DataTypeConverterServiceBase<IData
      * @returns 
      */
     public find(value: any, sourceLookupKey: string | null, resultLookupKey: string): IDataTypeConverter | null {
-        let result = this.getAll().find((dtc) => dtc.canConvert(value, sourceLookupKey, resultLookupKey)) ?? null;
+        let result = this.getAll(false).find((dtc) => dtc.canConvert(value, sourceLookupKey, resultLookupKey)) ?? null;
         if (result === null && this.ensureLazyLoaded())
             result = this.find(value, sourceLookupKey, resultLookupKey);
         return result;        
