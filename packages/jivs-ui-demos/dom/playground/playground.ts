@@ -28,6 +28,156 @@ import { RequiredIndicatorPresentation } from '@plblum/jivs-dom/build/FieldPrese
 import { createJivsServices } from '../../src/jivs-setup/create_JivsServices';
 import { configureJivsDom } from '../../src/jivs-setup/configureJivsDom';
 
+
+/**
+ * THE JIVS SETUP A TYPICAL FORM NEEDS. Everything else in this file exists only to drive the playground's controls.
+ *
+ * Order matters. Services must be fully configured (including the jivs-dom presentations) before they are
+ * handed to the rules, the ValueHostsManager and FormInstaller that use them:
+ *  1. Create the services (jivs-engine), then connect jivs-dom to them.
+ *  2. Describe the validation rules for the form and create the ValueHostsManager from them.
+ *  3. FormInstaller walks the HTML, finds elements tagged with data-jivs-role, and attaches editors,
+ *     presentations and dispatchers to the matching ValueHosts.
+ *  4. EditorReader copies whatever the editors already contain into the ValueHosts. Without it,
+ *     an untouched field has no value (undefined), so Require rules cannot tell it is empty.
+ *     It also performs a preliminary validation.
+ *
+ * @param settings The playground settings that choose which rules and presentations to use.
+ * @returns the ValueHostsManager, which is what you call validate() on when the user submits.
+ */
+function formalJivsSetupProcess(settings: PlaygroundSettings): ValueHostsManager
+{
+    // 1. Services. createJivsServices() and configureJivsDom() are normally one setup function in your app.
+    const services = createJivsServices('en-US');
+    configureJivsDom(services);
+    // Normally part of configureJivsDom(): the named presentations that elements pick with data-jivs-presentation.
+    registerExamplePresentations(services.domServices.fieldPresentationFactory);
+
+    // 2. Rules and the manager. containerIdentifier limits FormInstaller to this form's HTML.
+    const config = new PlaygroundFormRules(services, settings).configure();
+    config.containerIdentifier = '#preview-gallery';    // only needed if you have multiple forms on the page, but we are showing it here anyway.
+    const manager = new ValueHostsManager(config);
+
+    // 3. Connect the HTML to the ValueHosts.
+    FormInstaller.install(manager, new SimpleDomElementCollector());
+
+    // 4. Initialize values from the editors.
+    new EditorReader(manager).read();
+    return manager;
+}
+
+/**
+ * The rules for the form, written with the fluent builder. A real form lists its fields in configureRules().
+ * This one builds a single field whose editor and messages follow the playground controls.
+ */
+class PlaygroundFormRules extends ValueHostRulesBase
+{
+    constructor(services: IJivsServices, private readonly _settings: PlaygroundSettings)
+    {
+        super(services);
+    }
+
+    public override configure(options?: ValueHostRulesOptions): ValueHostsManagerConfig
+    {
+        if (!options)
+            options = {};
+        // ValueHostRulesBase caches the configuration after the first call. That suits a form whose rules never change.
+        // This one changes with the controls, so caching is turned off.
+        options.disableCache = true;
+        return super.configure(options);
+    }
+
+    protected override configureRules(builder: IValueHostsManagerConfigBuilder): void
+    {
+        const editor = editors[this._settings.editor];
+        const fieldName = fieldNameOf(this._settings.example);
+        // The field name ties the rules to the HTML: elements carry the same name in data-field.
+        const field = builder.field(fieldName, editor.lookupKey as LookupKey);
+        if (this._settings.editor === 'checkbox')
+        {
+            // A checkbox holds a Boolean, so the rule compares it to true.
+            field.equalTo(true, 'You must accept the terms.');
+            if (this._settings.allMessages)
+                field.equalTo(true, { errorMessage: 'Acceptance is required before continuing.', errorCode: 'AcceptRequired' });
+            return;
+        }
+        const rules = this._settings.allMessages ? editor.rules : editor.rules.slice(0, 1);
+        // requireText fails on an empty editor. It belongs to the Require category, which preliminary validation skips.
+        if (this._settings.editor === 'text' || this._settings.editor === 'textarea')
+            field.requireText();
+        else if (this._settings.editor === 'radio')
+            field.requireText({ errorMessage: 'Choose a contact method.' });
+        else if (this._settings.editor === 'select')
+            field.requireText({ errorMessage: 'Choose a country.' });
+        // Each validator on a field needs its own errorCode.
+        rules.forEach((rule, i) =>
+            field.regExp(rule.pattern, {
+                errorMessage: rule.message, errorCode: `PG_${ this._settings.editor }_${ i }`,
+                // regExp defaults to Severe, which stops evaluating later validators.
+                severity: ValidationSeverity.Error
+            }));
+    }
+}
+
+// The Required Indicator hosts the jivs-validated and jivs-corrected visuals through its ::after.
+// Editors cannot, because ::after does not render on input, select or textarea.
+const requiredIndicatorPresentationName = 'pgRequired';
+
+function registerRequiredIndicatorPresentations(factory: IPresentationFactory<IFieldPresentation>): void
+{
+    factory.register(requiredIndicatorPresentationName, (element) =>
+        new RequiredIndicatorPresentation(element, { validatedClassEnabled: true, correctedClassEnabled: true }));
+}
+
+function registerExamplePresentations(factory: IPresentationFactory<IFieldPresentation>): void
+{
+    registerRequiredIndicatorPresentations(factory);
+    const frames: Record<FrameKind, () => MessageFrame | IconMessageFrame | HeaderFooterMessageFrame> = {
+        message: () => new MessageFrame(),
+        headerFooter: () => new HeaderFooterMessageFrame({ headerHtml: 'Please fix:', footerHtml: 'Then try again.' }),
+        iconCss: () => new IconMessageFrame(),
+        iconContent: () => new IconMessageFrame({ iconContent: '&#9888;', headerHtml: 'Check this field' })
+    };
+    const indicators: Record<IndicatorKind, object> = {
+        icon: { column2Html: '', column3Html: '', column2Htmll10n: '', column3Htmll10n: '' },
+        text: { column3Html: '', column3Htmll10n: '' },
+        arrow: {}
+    };
+    const popupMechanismOptions = {
+        placement: 'bottom-start' as const,
+        interactive: true,
+        appendTo: () => document.body
+    };
+
+    for (const example of examples)
+    {
+        if (example.frame)
+        {
+            const frame = example.frame;
+            factory.register(example.presentationName, (element) =>
+                new InlineErrorMessageDisplayPresentation(element, frames[frame](), { variationClasses: example.variations }));
+        }
+        else if (example.popupIndicator)
+        {
+            const indicator = example.popupIndicator;
+            factory.register(example.presentationName, (element) =>
+                new PopupErrorMessageDisplayPresentation(
+                    element,
+                    new ColumnarErrorIndicatorContent(indicators[indicator]),
+                    new MessageFrame(),
+                    popupMechanismOptions,
+                    {
+                        variationClasses: example.variations,
+                        popupOnMouseOver: true
+                     }));
+        }
+    }
+}
+
+/*
+ * Everything below only builds this page's form and wires its controls. It is not part of a typical Jivs setup.
+ */
+
 type EditorKind = 'text' | 'select' | 'textarea' | 'checkbox' | 'radio';
 
 interface PlaygroundSettings
@@ -188,101 +338,9 @@ const editors: Record<EditorKind, EditorDefinition> = {
     }
 };
 
-class PlaygroundRules extends ValueHostRulesBase
-{
-    constructor(services: IJivsServices, private readonly _settings: PlaygroundSettings)
-    {
-        super(services);
-    }
-
-    public override configure(options?: ValueHostRulesOptions): ValueHostsManagerConfig
-    {
-        if (!options)
-            options = {};
-        options.disableCache = true;
-        return super.configure(options);
-    }
-
-    protected override configureRules(builder: IValueHostsManagerConfigBuilder): void
-    {
-        const editor = editors[this._settings.editor];
-        const fieldName = fieldNameOf(this._settings.example);
-        const field = builder.field(fieldName, editor.lookupKey as LookupKey);
-        if (this._settings.editor === 'checkbox')
-        {
-            field.equalTo(true, 'You must accept the terms.');
-            if (this._settings.allMessages)
-                field.equalTo(true, { errorMessage: 'Acceptance is required before continuing.', errorCode: 'AcceptRequired' });
-            return;
-        }
-        const rules = this._settings.allMessages ? editor.rules : editor.rules.slice(0, 1);
-        if (this._settings.editor === 'text' || this._settings.editor === 'textarea')
-            field.requireText();
-        else if (this._settings.editor === 'radio')
-            field.requireText({ errorMessage: 'Choose a contact method.' });
-        else if (this._settings.editor === 'select')
-            field.requireText({ errorMessage: 'Choose a country.' });
-        // Each validator on a field needs its own errorCode.
-        rules.forEach((rule, i) =>
-            field.regExp(rule.pattern, {
-                errorMessage: rule.message, errorCode: `PG_${ this._settings.editor }_${ i }`,
-                // regExp defaults to Severe, which stops evaluating later validators.
-                severity: ValidationSeverity.Error
-            }));
-    }
-}
-
 function fieldNameOf(example: Example): string
 {
     return 'pg_' + example.id.replace(/-/g, '_');
-}
-
-// The Required Indicator hosts the jivs-validated and jivs-corrected visuals through its ::after.
-// Editors cannot, because ::after does not render on input, select or textarea.
-const requiredIndicatorPresentationName = 'pgRequired';
-
-function registerRequiredIndicatorPresentations(factory: IPresentationFactory<IFieldPresentation>): void
-{
-    factory.register(requiredIndicatorPresentationName, (element) =>
-        new RequiredIndicatorPresentation(element, { validatedClassEnabled: true, correctedClassEnabled: true }));
-}
-
-function registerExamplePresentations(factory: IPresentationFactory<IFieldPresentation>): void
-{
-    registerRequiredIndicatorPresentations(factory);
-    const frames: Record<FrameKind, () => MessageFrame | IconMessageFrame | HeaderFooterMessageFrame> = {
-        message: () => new MessageFrame(),
-        headerFooter: () => new HeaderFooterMessageFrame({ headerHtml: 'Please fix:', footerHtml: 'Then try again.' }),
-        iconCss: () => new IconMessageFrame(),
-        iconContent: () => new IconMessageFrame({ iconContent: '&#9888;', headerHtml: 'Check this field' })
-    };
-    const indicators: Record<IndicatorKind, object> = {
-        icon: { column2Html: '', column3Html: '', column2Htmll10n: '', column3Htmll10n: '' },
-        text: { column3Html: '', column3Htmll10n: '' },
-        arrow: {}
-    };
-    const popupMechanismOptions = { placement: 'bottom-start' as const, interactive: true, appendTo: () => document.body };
-
-    for (const example of examples)
-    {
-        if (example.frame)
-        {
-            const frame = example.frame;
-            factory.register(example.presentationName, (element) =>
-                new InlineErrorMessageDisplayPresentation(element, frames[frame](), { variationClasses: example.variations }));
-        }
-        else if (example.popupIndicator)
-        {
-            const indicator = example.popupIndicator;
-            factory.register(example.presentationName, (element) =>
-                new PopupErrorMessageDisplayPresentation(
-                    element,
-                    new ColumnarErrorIndicatorContent(indicators[indicator]),
-                    new MessageFrame(),
-                    popupMechanismOptions,
-                    { variationClasses: example.variations }));
-        }
-    }
 }
 
 function getSettings(): PlaygroundSettings
@@ -360,20 +418,8 @@ function describeClasses(article: HTMLElement): void
             { indent_size: 2, wrap_line_length: 100, inline: [] });
 }
 
-let services: IJivsServices | null = null;
-let currentVhm: ValueHostsManager | null = null;
+let vhm: ValueHostsManager | null = null;
 let specimenObserver: MutationObserver | null = null;
-
-function ensureServices(): IJivsServices
-{
-    if (!services)
-    {
-        services = createJivsServices('en-US');
-        configureJivsDom(services);
-        registerExamplePresentations(services.domServices.fieldPresentationFactory);
-    }
-    return services;
-}
 
 function rebuild(): void
 {
@@ -385,13 +431,7 @@ function rebuild(): void
     const gallery = document.getElementById('preview-gallery')!;
     gallery.innerHTML = buildGalleryMarkup(settings);
 
-    const jivs = ensureServices();
-    const config = new PlaygroundRules(jivs, settings).configure();
-    config.containerIdentifier = '#preview-gallery';
-    currentVhm = new ValueHostsManager(config);
-    FormInstaller.install(currentVhm, new SimpleDomElementCollector());
-    // Reads the editors' initial content into the ValueHosts, so untouched fields hold '' instead of undefined.
-    new EditorReader(currentVhm).read();
+    vhm = formalJivsSetupProcess(settings);
 
     // Validation changes classes and content in the specimen; keep the reports current.
     const article = gallery.querySelector<HTMLElement>('.preview-example')!;
@@ -400,6 +440,7 @@ function rebuild(): void
         { subtree: true, childList: true, attributes: true, characterData: true });
     describeClasses(article);
 }
+
 
 // The editor's change event validates, so entering values drives the same path as a real user.
 function enterSample(valid: boolean): void
@@ -438,8 +479,8 @@ document.getElementById('preview-fill-invalid')!.addEventListener('click', () =>
 document.getElementById('preview-fill-valid')!.addEventListener('click', () =>
     enterSample(true));
 document.getElementById('preview-validate')!.addEventListener('click', () =>
-    currentVhm?.validate());
+    vhm?.validate());
 document.getElementById('preview-validate-preliminary')!.addEventListener('click', () =>
-    currentVhm?.validate({ preliminary: true }));
+    vhm?.validate({ preliminary: true }));
 rebuild();
 enterSample(false);

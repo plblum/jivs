@@ -23,6 +23,7 @@ import { ErrorMessageDisplayKeyAsClickTrigger } from '../Presentations_common/Er
 import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOutTrigger';
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
 import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
+import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBase';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -263,8 +264,11 @@ export class PopupErrorMessageDisplayPresentation<
 
         // create the content that will be injected by PopupMechanism into its own frame.
         popupContext.messageFrameContent = document.createElement('div');
+        if (this.popupContent.needsContainerUpdate())
+            popupContext.messageFrameContent.classList.add(jivsMessageContentClass); // jivs-messagecontent
         this.popupContent.apply(popupContext.messageFrameContent,
             this.triggerContext.issuesFound, this.triggerContext.valueHost.valueHostsManager, this.triggerContext.valueHost);
+
         
         this._popupContext = popupContext;
 

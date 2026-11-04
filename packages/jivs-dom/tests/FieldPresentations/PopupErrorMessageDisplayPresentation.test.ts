@@ -375,8 +375,39 @@ describe('PopupErrorMessageDisplayPresentation.open', () => {
         expect(popupContext.domServices).toBe(testData.domServices);
         expect(popupContext.anchorElement).toBe(testData.element);
         expect(popupContext.messageFrameContent?.textContent).toBe('Email is required');
+        expect(popupContext.messageFrameContent?.classList.contains('jivs-messagecontent')).toBe(true);
         expect(testData.presentation.publicify_popupContext).toBe(popupContext);
         expect(issuesFound).toEqual([{ errorCode: 'Validation', errorMessage: 'Email is required' }]);
+    });
+
+    // A frame whose template already supplies jivs-messagecontent reports needsContainerUpdate() false,
+    // so the popup container must not add the class a second time.
+    test('Does not add jivs-messagecontent when the message frame says its template already has it', () => {
+        class TemplateOwnsClassFrame extends MessageFrame
+        {
+            public override needsContainerUpdate(): boolean
+            {
+                return false;
+            }
+        }
+        let testData = setup();
+        let presentation = new Publicify_PopupErrorMessageDisplayPresentation(
+            document.createElement('button'),
+            new ColumnarErrorIndicatorContent({ column2Html: '{Count} issue(s)' }),
+            new TemplateOwnsClassFrame(),
+            { placement: 'bottom' }
+        );
+        presentation.init(testData.valueHostsManager);
+        presentation.apply(testData.valueHost, {
+            isValid: false,
+            issuesFound: [{ errorCode: 'Validation', errorMessage: 'Email is required' }]
+        } as ValueHostValidationState);
+
+        presentation.publicify_element.click();
+
+        let popupContext = testData.popupMechanism.contexts[0];
+        expect(popupContext.messageFrameContent?.classList.contains('jivs-messagecontent')).toBe(false);
+        expect(popupContext.messageFrameContent?.classList.contains('jivs-messageframe')).toBe(true);
     });
 
     test('Uses a matching anchor selector and falls back to the presentation element when not found', () => {

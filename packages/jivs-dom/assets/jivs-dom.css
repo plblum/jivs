@@ -719,6 +719,8 @@
  */
 :where(.jivs-popuperrormessagedisplay) {
     cursor: pointer;
+    /* Shrink to the indicator so popups anchor to it, not to the full width of its container. */
+    width: fit-content;
 }
 
 :where(.jivs-popuperrormessagedisplay:focus-visible) {
@@ -1069,4 +1071,12 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/**
+* Minor mods to the default styles from Tippy
+* This is specific to using jivs-dom-tippy.
+*/
+.tippy-box .jivs-messagecontent {
+    color: #ffaeae;
 }

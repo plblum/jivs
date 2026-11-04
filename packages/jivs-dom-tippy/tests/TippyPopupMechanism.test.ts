@@ -33,8 +33,11 @@ class RecordingController implements IErrorMessageDisplayController
     {
     }
 
+    public cancelCalls: number = 0;
+
     public cancelDelayedClose(): void
     {
+        this.cancelCalls++;
     }
 }
 
@@ -138,6 +141,98 @@ describe('TippyPopupMechanism', () =>
         expect(userHiddenCalls).toBe(3);
         expect(controller.closedCalls).toBe(1);
         context.dispose();
+    });
+
+    // Moving from the anchor onto the popup must stop the presentation's pending delayed close,
+    // otherwise the popup disappears while the user is reading or interacting with it.
+    test('mouseenter on the popup calls controller.cancelDelayedClose', () =>
+    {
+        let mechanism = new TippyPopupMechanism();
+        let anchor = document.createElement('button');
+        document.body.append(anchor);
+        let context = mechanism.createContext({ duration: 0 });
+        setPopupElements(context, anchor, document.createElement('div'));
+        let controller = context.controller as RecordingController;
+        expect(mechanism.open(context)).toBe(true);
+        let instance = (anchor as ReferenceElement)._tippy as Instance;
+
+        // mouseenter does not bubble, so it is dispatched directly on the element with the listener.
+        instance.popper.dispatchEvent(new MouseEvent('mouseenter'));
+
+        expect(controller.cancelCalls).toBe(1);
+        context.dispose();
+    });
+
+    // Once the mouse leaves the popup, the popup closes after popupMouseLeaveDelay unless the mouse returns.
+    test('mouseleave closes the popup after the delay and returning to the popup or anchor cancels it', async () =>
+    {
+        let mechanism = new TippyPopupMechanism();
+        let anchor = document.createElement('button');
+        document.body.append(anchor);
+        let context = mechanism.createContext({ duration: 0, popupMouseLeaveDelay: 30 });
+        setPopupElements(context, anchor, document.createElement('div'));
+        let controller = context.controller as RecordingController;
+        expect(mechanism.open(context)).toBe(true);
+        let instance = (anchor as ReferenceElement)._tippy as Instance;
+        let wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        instance.popper.dispatchEvent(new MouseEvent('mouseleave'));
+        instance.popper.dispatchEvent(new MouseEvent('mouseenter'));
+        await wait(60);
+        expect(instance.state.isVisible).toBe(true);
+
+        instance.popper.dispatchEvent(new MouseEvent('mouseleave'));
+        anchor.dispatchEvent(new MouseEvent('mouseenter'));
+        await wait(60);
+        expect(instance.state.isVisible).toBe(true);
+
+        instance.popper.dispatchEvent(new MouseEvent('mouseleave'));
+        await wait(60);
+        expect(instance.state.isVisible).toBe(false);
+        expect(controller.closedCalls).toBe(1);
+        context.dispose();
+    });
+
+    // A negative popupMouseLeaveDelay leaves closing to the presentation's triggers, and the option is not passed to Tippy.
+    test('a negative popupMouseLeaveDelay disables closing on mouseleave', async () =>
+    {
+        let mechanism = new TippyPopupMechanism();
+        let anchor = document.createElement('button');
+        document.body.append(anchor);
+        let context = mechanism.createContext({ duration: 0, popupMouseLeaveDelay: -1 });
+        setPopupElements(context, anchor, document.createElement('div'));
+        expect(mechanism.open(context)).toBe(true);
+        let instance = (anchor as ReferenceElement)._tippy as Instance;
+
+        instance.popper.dispatchEvent(new MouseEvent('mouseleave'));
+        await new Promise((resolve) => setTimeout(resolve, 30));
+
+        expect(instance.state.isVisible).toBe(true);
+        expect('popupMouseLeaveDelay' in instance.props).toBe(false);
+        context.dispose();
+    });
+
+    // keepOpen only suppresses the mouseleave close; close() from the presentation still hides the popup.
+    test('keepOpen ignores mouseleave but not close()', async () =>
+    {
+        let mechanism = new TippyPopupMechanism();
+        let anchor = document.createElement('button');
+        document.body.append(anchor);
+        let context = mechanism.createContext({ duration: 0, popupMouseLeaveDelay: 10, keepOpen: true });
+        setPopupElements(context, anchor, document.createElement('div'));
+        expect(mechanism.open(context)).toBe(true);
+        let instance = (anchor as ReferenceElement)._tippy as Instance;
+
+        instance.popper.dispatchEvent(new MouseEvent('mouseleave'));
+        await new Promise((resolve) => setTimeout(resolve, 40));
+
+        expect(instance.state.isVisible).toBe(true);
+        expect('keepOpen' in instance.props).toBe(false);
+
+        expect(mechanism.close(context)).toBe(true);
+        expect(instance.state.isVisible).toBe(false);
+        context.dispose();
+        expect(instance.state.isDestroyed).toBe(true);
     });
 
     // Bad context data and Tippy initialization errors must fail explicitly and be logged when services exist.

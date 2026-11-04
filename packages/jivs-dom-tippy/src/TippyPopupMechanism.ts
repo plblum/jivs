@@ -33,7 +33,23 @@ type AdapterOwnedOption = 'content' | 'trigger' | 'triggerTarget' | 'showOnCreat
  */
 export type TippyPopupOptions = Omit<Partial<Props>, AdapterOwnedOption> & {
     onHidden?: Props['onHidden'];
+    /**
+     * Milliseconds to wait before closing the popup after the mouse leaves it.
+     * Entering the popup always cancels the pending close that began when the mouse left the anchor,
+     * so the user can move onto the popup to read or interact with it.
+     * Use a negative value to leave closing entirely to the presentation's triggers.
+     * Default is 750.
+     */
+    popupMouseLeaveDelay?: number;
+    /**
+     * Diagnostic aid. When true, leaving the popup with the mouse does not close it, so you can
+     * move into DevTools to inspect it. Closing requested by the presentation still works.
+     * Default is false.
+     */
+    keepOpen?: boolean;
 };
+
+const defaultPopupMouseLeaveDelay = 750;
 
 class TippyPopupContext extends PopupContext
 {
@@ -42,6 +58,7 @@ class TippyPopupContext extends PopupContext
     private _openStarted: boolean = false;
     private _closedNotified: boolean = false;
     private _disposed: boolean = false;
+    private _leaveTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(
         options: TippyPopupOptions,
@@ -60,8 +77,48 @@ class TippyPopupContext extends PopupContext
         return true;
     }
 
+    /**
+     * Lets the user move from the anchor onto the popup. While the mouse is over the popup,
+     * the presentation's delayed close is canceled. When it leaves, the popup closes after a delay
+     * unless the mouse returns to the popup or the anchor.
+     */
+    public watchMouse(instance: Instance): void
+    {
+        let leaveDelay = this.options.popupMouseLeaveDelay ?? defaultPopupMouseLeaveDelay;
+        let popper = instance.popper;
+        popper.addEventListener('mouseenter', () =>
+        {
+            this.cancelLeaveTimer();
+            this.controller?.cancelDelayedClose();
+        });
+        if (leaveDelay < 0 || this.options.keepOpen)
+            return;
+        popper.addEventListener('mouseleave', () =>
+        {
+            this.cancelLeaveTimer();
+            this._leaveTimer = setTimeout(() =>
+            {
+                this._leaveTimer = null;
+                if (!this._disposed && this.instance && !this.instance.state.isDestroyed)
+                    this.instance.hide();
+            }, leaveDelay);
+        });
+        // Returning to the anchor keeps the popup open; the anchor's own triggers take over from there.
+        this.anchorElement?.addEventListener('mouseenter', () => this.cancelLeaveTimer());
+    }
+
+    private cancelLeaveTimer(): void
+    {
+        if (this._leaveTimer !== null)
+        {
+            clearTimeout(this._leaveTimer);
+            this._leaveTimer = null;
+        }
+    }
+
     public notifyClosed(): void
     {
+        this.cancelLeaveTimer();
         if (this._disposed || this._closedNotified)
             return;
         this._closedNotified = true;
@@ -74,6 +131,7 @@ class TippyPopupContext extends PopupContext
         if (this._disposed)
             return;
         this._disposed = true;
+        this.cancelLeaveTimer();
         let instance = this.instance;
         this.instance = null;
         try
@@ -138,11 +196,12 @@ export class TippyPopupMechanism implements IPopupMechanism
 
         let userOnCreate = context.options.onCreate;
         let userOnHidden = context.options.onHidden;
+        let { popupMouseLeaveDelay: _ignored, keepOpen: _ignoredKeepOpen, ...tippyOptions } = context.options;
         let createdInstance: Instance | null = null;
         try
         {
             let instance = tippy(context.anchorElement, {
-                ...context.options,
+                ...tippyOptions,
                 content: context.messageFrameContent,
                 trigger: 'manual',
                 triggerTarget: null,
@@ -171,6 +230,7 @@ export class TippyPopupMechanism implements IPopupMechanism
                 return false;
             }
             context.instance = instance;
+            context.watchMouse(instance);
             return true;
         }
         catch (error)
