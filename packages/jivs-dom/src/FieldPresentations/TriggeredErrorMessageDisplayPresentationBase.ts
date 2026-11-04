@@ -128,7 +128,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
         
     }
 
-    override apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void
+    public override apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void
     {
         // need to retain an open state.
         let wasOpen = this.triggerState === TriggerState.open ||

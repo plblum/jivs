@@ -110,6 +110,11 @@ class Publicify_PopupErrorMessageDisplayPresentation extends PopupErrorMessageDi
         return this.triggerContext;
     }
 
+    public publicify_resolveAnchorElement(): HTMLElement
+    {
+        return this.resolveAnchorElement();
+    }
+
 }
 
 interface ISetup
@@ -145,9 +150,9 @@ function setup(
         services: services,
         popupMechanism: popupMechanism,
         getPopupService: () => popupService,
-        getElementRegistry: () => elementRegistry
-    });
-    domServices.options.popupErrorMessageDisplay = globalOptions ?? {};
+        getElementRegistry: () => elementRegistry,
+        resolveContainerElement: () => document.body
+    });    domServices.options.popupErrorMessageDisplay = globalOptions ?? {};
     domServices.issuesFoundFormatterService = new IssuesFoundFormatterService(domServices);
     let valueHostsManager = {
         services: {
@@ -424,6 +429,92 @@ describe('PopupErrorMessageDisplayPresentation.open', () => {
 
         expect(fallback.popupMechanism.contexts[0].anchorElement).toBe(fallback.element);
         anchor.remove();
+    });
+
+    // anchorSelector may contain {FieldName}, replaced by the field's element identifier ('email' in this setup),
+    // letting one registration serve every field.
+    test('Replaces {FieldName} in anchorSelector, including every occurrence and special characters', () => {
+        let editor = document.createElement('input');
+        editor.setAttribute('data-jivs-role', 'editor');
+        editor.setAttribute('data-field', 'email');
+        let other = document.createElement('input');
+        other.setAttribute('data-jivs-role', 'editor');
+        other.setAttribute('data-field', 'phone');
+        document.body.append(other, editor);
+
+        let testData = setup({
+            anchorSelector: '[data-jivs-role=editor][data-field={FieldName}]',
+            keyboardPopupEnabled: false
+        });
+        openPopup(testData);
+        expect(testData.popupMechanism.contexts[0].anchorElement).toBe(editor);
+
+        let quoted = setup({
+            anchorSelector: '[data-field="{FieldName}"][data-field="{FieldName}"]',
+            keyboardPopupEnabled: false
+        });
+        openPopup(quoted);
+        expect(quoted.popupMechanism.contexts[0].anchorElement).toBe(editor);
+
+        let special = document.createElement('div');
+        special.setAttribute('data-field', 'a.b[0]');
+        document.body.append(special);
+        let specialData = setup({ anchorSelector: '[data-field={FieldName}]', keyboardPopupEnabled: false });
+        specialData.valueHost.getElementIdentifier = () => 'a.b[0]';
+        openPopup(specialData);
+        expect(specialData.popupMechanism.contexts[0].anchorElement).toBe(special);
+
+        other.remove();
+        editor.remove();
+        special.remove();
+    });
+
+    test('Falls back to the presentation element when the {FieldName} selector matches nothing', () => {
+        let testData = setup({ anchorSelector: '#nothing-for-{FieldName}', keyboardPopupEnabled: false });
+        openPopup(testData);
+
+        expect(testData.popupMechanism.contexts[0].anchorElement).toBe(testData.element);
+    });
+
+    // The lookup starts in the container supplied by resolveContainerElement and then tries the whole body,
+    // so shared elements like a banner outside the form still work.
+    test('Searches the container first, then the body', () => {
+        let form = document.createElement('form');
+        let insideForm = document.createElement('div');
+        insideForm.className = 'anchor-target';
+        form.appendChild(insideForm);
+        let outsideForm = document.createElement('div');
+        outsideForm.className = 'anchor-target';
+        let banner = document.createElement('div');
+        banner.id = 'banner';
+        document.body.append(outsideForm, form, banner);
+
+        let testData = setup({ anchorSelector: '.anchor-target', keyboardPopupEnabled: false });
+        testData.domServices.resolveContainerElement = () => form;
+        openPopup(testData);
+        expect(testData.popupMechanism.contexts[0].anchorElement).toBe(insideForm);
+
+        let outside = setup({ anchorSelector: '#banner', keyboardPopupEnabled: false });
+        outside.domServices.resolveContainerElement = () => form;
+        openPopup(outside);
+        expect(outside.popupMechanism.contexts[0].anchorElement).toBe(banner);
+
+        outsideForm.remove();
+        form.remove();
+        banner.remove();
+    });
+
+    test('Uses the container itself only through its descendants and falls back to the presentation element when nothing matches anywhere', () => {
+        let form = document.createElement('form');
+        form.id = 'the-form';
+        document.body.appendChild(form);
+
+        let testData = setup({ anchorSelector: '#the-form-missing', keyboardPopupEnabled: false });
+        testData.domServices.resolveContainerElement = () => form;
+        openPopup(testData);
+
+        expect(testData.popupMechanism.contexts[0].anchorElement).toBe(testData.element);
+        form.remove();
     });
 
     test('Falls back to the presentation element when the selector matches a non-HTML element', () => {

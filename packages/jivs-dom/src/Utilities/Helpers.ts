@@ -9,6 +9,36 @@ export function htmlToText(html: string): string
 }
 
 /**
+ * Escapes text so it is safe to place in a CSS selector as an identifier or inside a quoted attribute value.
+ * Uses CSS.escape when the environment has it, and otherwise (such as jsdom) applies the same rules.
+ */
+export function escapeCssIdentifier(value: string): string
+{
+    if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
+        return CSS.escape(value);
+
+    let result = '';
+    for (let i = 0; i < value.length; i++)
+    {
+        const char = value[i];
+        const code = value.charCodeAt(i);
+        if (code === 0)
+            result += '\uFFFD';
+        else if ((code >= 0x1 && code <= 0x1f) || code === 0x7f ||
+            (i === 0 && code >= 0x30 && code <= 0x39) ||
+            (i === 1 && code >= 0x30 && code <= 0x39 && value[0] === '-'))
+            result += `\\${ code.toString(16) } `;
+        else if (i === 0 && char === '-' && value.length === 1)
+            result += '\\-';
+        else if (code >= 0x80 || /[A-Za-z0-9_-]/.test(char))
+            result += char;
+        else
+            result += `\\${ char }`;
+    }
+    return result;
+}
+
+/**
  * Provides a way to show an error involving an element to the user.
  * Lets the user have enough info to connect this string to content in the page.
  * Shows the tag and all attributes including class, but not the content or closing tag.

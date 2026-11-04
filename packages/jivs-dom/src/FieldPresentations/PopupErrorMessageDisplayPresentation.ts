@@ -8,6 +8,7 @@ import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingServic
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
+import { escapeCssIdentifier } from '../Utilities/Helpers';
 import { defaultAriaPopupShowsValidationErrors, PopupErrorMessageDisplayStaticUpdater } from '../Aria/PopupErrorMessageDisplayStaticUpdater';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
@@ -205,7 +206,9 @@ export class PopupErrorMessageDisplayPresentation<
     {
         super.resolveOptions();
         this.reviseTriggers(this.options.triggers!);
+        this._hasFieldNameToken = this.options.anchorSelector?.includes('{FieldName}') ?? false;
     }
+    private _hasFieldNameToken: boolean = false;
 
     public override init(valueHostsManager: IValueHostsManager): void
     {
@@ -292,13 +295,33 @@ export class PopupErrorMessageDisplayPresentation<
         this.popupContext?.messageFrameContent?.classList.add(jivsPopupOpenClass);
     }
 
+    /**
+     * Uses options.anchorSelector to resolve the anchor element for the popup.
+     * If that is not supplied, or it cannot find a matching element, it falls back to using the presentation element.
+     * options.anchorSelector supports the token "{FieldName}" to be replaced with the field name.
+     * @returns 
+     */
     protected resolveAnchorElement(): HTMLElement
     {
-        if (this.options.anchorSelector)
+        let selector = this.options.anchorSelector;
+        if (selector)
         {
-            let anchorElement = document.querySelector(this.options.anchorSelector) as HTMLElement | null;
+            assertNotNull(this.triggerContext, 'triggerContext');
+            if (this._hasFieldNameToken)
+                selector = selector.split('{FieldName}').join(escapeCssIdentifier(this.triggerContext!.valueHost.getElementIdentifier()));
+            // The anchor may be narrowly within the form of the ValueHostsManager or
+            // a shared element outside.
+            // We'll try to find it first within the form, then in the body as a fallback.
+            let containerElement = this.triggerContext!.domServices.resolveContainerElement(this.triggerContext!.valueHost.valueHostsManager);
+            let anchorElement = containerElement?.querySelector(selector) as HTMLElement | null;
             if (anchorElement instanceof HTMLElement)
-                return anchorElement;
+                return anchorElement;            
+            if (containerElement !== document.body)
+            {
+                anchorElement = document.body.querySelector(selector) as HTMLElement | null;
+                if (anchorElement instanceof HTMLElement)
+                    return anchorElement;
+            }
         }
 
         return this.presentationElement;
@@ -437,6 +460,11 @@ export interface PopupErrorMessageDisplayPresentationOptions
     /**
      * The CSS selector for the element to which the popup should be anchored
      * if not using the presentation element itself as the Anchor element.
+     * Allows the {FieldName} token to be used and will be replaced with the value from FieldValueHost.getElementIdentifier()
+     * so it can be field-specific.
+     * ```ts
+     * options.anchorSelector = '#popup-anchor-{FieldName}';
+     * ```
      * Optional.
      */
     anchorSelector?: string;
