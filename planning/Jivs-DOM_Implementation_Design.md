@@ -2421,7 +2421,7 @@ Optional event triggers are controlled by presentation options:
 |---|---|---|---|
 | Click | Enabled | 0 ms | 0 ms |
 | `keyboardPopupEnabled` (Enter / Space) | `true` | Delegates to click | Delegates to click |
-| `popupOnMouseOver` | `false` | 250 ms | 750 ms |
+| `popupOnHover` | `false` | 250 ms | 750 ms |
 | `popupOnFocus` | `false` | 250 ms | 750 ms |
 
 When keyboard or focus interaction is enabled, initialization sets `tabindex` only when the installation element lacks that attribute. The instance-only `tabIndex` option supplies the value; its default is `0`. Existing authored `tabindex` is preserved. No element-tag detection is required for this rule. Trigger installation does not determine `role`, `aria-label`, or other accessibility naming, which are handled separately by ARIA updaters.
@@ -5461,7 +5461,7 @@ The workspace boundaries are:
 | ---------------------------- | --------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/jivs-dom`          |       Yes | Reusable DOM APIs and CSS, plus SimpleDom's attribute conventions, Element Collector, concrete services, and SimpleDom-specific CSS.                                                                |
 | `packages/jivs-dom-tippy`    |       Yes | Optional Tippy.js implementation of `IPopupMechanism` for applications that choose Tippy.js.                                                                                                       |
-| `packages/jivs-dom-website`  |        No | Runnable demonstrations, manual browser verification, learning examples, and package integration coverage.                                                                                         |
+| `packages/jivs-ui-demos`     |        No | Runnable demonstrations, manual browser verification, learning examples, and package integration coverage.                                                                                         |
 
 SimpleDom is part of `jivs-dom`, not a separate package. Its small footprint and high profile as Jivs's ready-to-use DOM convention make it appropriate to ship alongside the reusable DOM APIs. `jivs-dom-tippy` remains separate and optional: this keeps the third-party Tippy.js dependency and its library-specific options and styling out of `jivs-dom`, while allowing applications to select another `IPopupMechanism` or none at all.
 
@@ -5469,7 +5469,7 @@ The dependency direction is:
 
 ```mermaid
 flowchart TB
-    WEBSITE["jivs-dom-website"]
+    WEBSITE["jivs-ui-demos"]
     TIPPY["jivs-dom-tippy"]
     DOM["jivs-dom"]
     ENGINE["jivs-engine"]
@@ -5483,7 +5483,7 @@ flowchart TB
     DOM --> ENGINE
 ```
 
-The website consumes the published package surfaces. It must not import sibling-package source files through relative paths. This makes the website an integration check for package exports, generated JavaScript, declaration files, and published CSS assets.
+The website consumes the package build outputs. The current implementation deep-imports package `build/` paths rather than importing sibling-package source files. This makes the website an integration check for generated JavaScript, declaration files, and published CSS assets.
 
 ### Website Strategy
 
@@ -5498,9 +5498,34 @@ The website should contain:
 
 A second website should be introduced only when a future framework integration requires its own build system or runtime. Angular, React, and Vue examples should not determine the architecture of the initial DOM website.
 
+### Implemented Demo Package and Playground
+
+The demo site is implemented in the private Vite package `packages/jivs-ui-demos`. It is a multi-page site for exploring Jivs UI packages, not the product documentation. The current playground is at `dom/playground/`; its setup uses the real Jivs engine, SimpleDom element collection, `FormInstaller`, and the Tippy popup integration.
+
+The playground currently offers 11 error-message presentation examples (6 inline and 5 popup), five editor types (text, select, textarea, checkbox, and radio buttons), a multiple-message toggle, and side-by-side or stacked layout. Controls reset the form, enter sample valid or invalid values, run normal or preliminary validation, and let visitors type into the editor. The label, required indicator, and field container are independently optional destinations. A role that is not selected has no `data-jivs-role`, so Jivs ignores the element; a selected one gets SimpleDom markup and the demo's own presentation. Each example displays one Factory registration sample listing the error and selected role presentations, each preceded by a comment naming the presentation used by `data-jivs-presentation`, plus the live SimpleDom HTML and the Jivs CSS classes currently in use. The playground is a demonstration of the current examples, not a complete selector for every Jivs presentation option.
+
+The site's `README.md` documents the package layout and VS Code debugging setup. To prepare the workspace, run `npm install` and `npm run compile` from the repository root; compile again after changing a dependent package because the site imports package `build/` output. The site itself can then be started as follows.
+
+For a developer using VS Code, open the repository root and select **Run and Debug** → **jivs-ui-demos: Playground (Edge)** or **jivs-ui-demos: Playground (Chrome)**. The launch configuration starts the Vite task on port 5173 and opens `http://localhost:5173/dom/playground/`. Alternatively, in a PowerShell terminal:
+
+```powershell
+Set-Location packages/jivs-ui-demos
+npx vite --port 5199 --strictPort
+```
+
+Then open `http://localhost:5199/dom/playground/` in a browser. Use `--strictPort` so Vite exits instead of silently choosing another port when the requested one is occupied.
+
+For an assistant using the integrated browser, first reuse a playground tab shared by the user, if one is available. Otherwise start Vite from `packages/jivs-ui-demos` in a persistent terminal, for example:
+
+```powershell
+npx vite --host 0.0.0.0 --port 5199 --strictPort
+```
+
+Open the resulting URL in the browser tool and use the shared page for inspection and interaction. The integrated browser may run in a different environment from the Vite process: if it reports a connection error, verify the server from its own terminal (for example, request `http://localhost:5199/dom/playground/` and confirm HTTP 200) before restarting it. A successful local request confirms Vite is serving; it does not guarantee that an isolated browser can reach that loopback address. In that case, try the IPv6 loopback address `http://[::1]:5199/dom/playground/` (this is what worked when `localhost` and `127.0.0.1` were refused), or use a browser tab shared by the user rather than repeatedly changing the server port.
+
 ### Vite Website
 
-`packages/jivs-dom-website` should be a private Vite application using plain HTML, CSS, and TypeScript.
+The current implementation is `packages/jivs-ui-demos`, a private Vite application using plain HTML, CSS, and TypeScript. The following package and organization details describe the original website blueprint; consult the package's `README.md`, `planning.md`, and configuration for its current concrete commands and layout.
 
 Vite is appropriate because it provides:
 

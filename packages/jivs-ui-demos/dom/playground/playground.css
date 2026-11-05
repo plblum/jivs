@@ -72,7 +72,7 @@ body { margin: 0; line-height: 1.5; }
 }
 
 /* The surrounding field is application markup used only by this playground. */
-.preview-field { display: flex; gap: 0.5rem 1.25rem; min-width: 0; }
+.preview-field { display: flex; gap: 0.5rem 1.25rem; min-width: 0; padding: 0.2rem;  }
 .preview-field-stacked { flex-direction: column; }
 .preview-field-side-by-side { flex-direction: row; align-items: flex-start; }
 .preview-label-zone { display: flex; flex: 0 0 12rem; align-items: baseline; gap: 0.15rem; min-width: 0; }
@@ -80,6 +80,7 @@ body { margin: 0; line-height: 1.5; }
 .preview-control-zone { display: flex; flex: 1 1 auto; gap: 0.25rem 0.75rem; min-width: 0; }
 .preview-field-stacked .preview-control-zone { flex-direction: column; align-items: stretch; }
 .preview-field-side-by-side .preview-control-zone { flex-direction: row; align-items: flex-start; }
+.preview-input-row { display: flex; flex-direction: row; align-items: flex-start; gap: 0.25rem 0.75rem; min-width: 0; }
 .preview-editor-slot { flex: 0 1 22rem; min-width: 10rem; }
 .preview-required-slot { flex: 0 0 auto; }
 .preview-field-stacked .preview-editor-slot { flex-basis: auto; }
@@ -126,4 +127,14 @@ body { margin: 0; line-height: 1.5; }
     .preview-field-side-by-side .preview-label-zone { flex-basis: auto; }
     .preview-field-side-by-side .preview-control-zone { width: 100%; flex-direction: column; }
     .preview-editor-slot, .preview-field-side-by-side .preview-error-slot { width: 100%; min-width: 0; }
+}
+
+/* Same as in jivs-dom.css but uncomments the styles to opt-in for the playground */
+:where(.jivs-isvalidpresentation.jivs-invalid.jivs-label) {
+    color: var(--jivs-invalid-label-color);
+}
+
+:where(.jivs-isvalidpresentation.jivs-invalid.jivs-fieldcontainer) {
+    outline: 1px dotted var(--jivs-invalid-field-container-outline-color);
+    background-color: var(--jivs-invalid-field-container-background-color);
 }

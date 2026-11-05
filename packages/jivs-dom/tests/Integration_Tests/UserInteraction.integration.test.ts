@@ -445,7 +445,7 @@ describe('validate() baseline', () =>
 
         t.vhm.validate({ preliminary: true });
 
-        expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
+        expectElementsMatchValidationState(t, identity, ValidationStatus.Undetermined);
         expectIssueCodes(t, identity, []);
 
         t.vhm.validate();

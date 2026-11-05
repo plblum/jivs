@@ -135,7 +135,8 @@ function setup(
     options?: PopupErrorMessageDisplayPresentationOptions,
     globalOptions?: PopupErrorMessageDisplayPresentationOptions,
     loggingEnabled: boolean = true,
-    popupService: IPopupService = new PopupService()
+    popupService: IPopupService = new PopupService(),
+    editors?: IJivsElement[]
 ): ISetup
 {
     let element = document.createElement('button') as IJivsElement;
@@ -152,7 +153,9 @@ function setup(
         popupMechanism: popupMechanism,
         getPopupService: () => popupService,
         getElementRegistry: () => elementRegistry,
-        resolveContainerElement: () => document.body
+        resolveContainerElement: () => document.body,
+        // Editor triggers look up the editors through resolveFieldElement when they install.
+        ...(editors ? { resolveFieldElement: () => editors } : {})
     });    domServices.options.popupErrorMessageDisplay = globalOptions ?? {};
     domServices.issuesFoundFormatterService = new IssuesFoundFormatterService(domServices);
     let valueHostsManager = {
@@ -254,8 +257,10 @@ describe('PopupErrorMessageDisplayPresentation construction and options', () => 
             'jivs-errormessagedisplay jivs-triggerederrormessagedisplay jivs-popuperrormessagedisplay'
         );
         expect(testData.element.getAttribute('tabindex')).toBe('0');
-        expect(testData.presentation.publicify_options.popupOnMouseOver).toBe(false);
+        expect(testData.presentation.publicify_options.popupOnHover).toBe(false);
         expect(testData.presentation.publicify_options.popupOnFocus).toBe(false);
+        expect(testData.presentation.publicify_options.popupOnHoverOverEditor).toBe(false);
+        expect(testData.presentation.publicify_options.popupOnFocusInEditor).toBe(false);
         expect(testData.presentation.publicify_options.keyboardPopupEnabled).toBe(true);
         expect(testData.presentation.publicify_options.mouseoverDelay).toBe(defaultMouseoverDelay);
         expect(testData.presentation.publicify_options.mouseoutDelay).toBe(defaultMouseoutDelay);
@@ -281,18 +286,18 @@ describe('PopupErrorMessageDisplayPresentation construction and options', () => 
 
     test('Resolves instance behavior options ahead of global options', () => {
         let testData = setup({
-            popupOnMouseOver: false,
+            popupOnHover: false,
             popupOnFocus: true,
             focusInDelay: 15,
             keyboardPopupEnabled: false
         }, {
-            popupOnMouseOver: true,
+            popupOnHover: true,
             popupOnFocus: false,
             focusInDelay: 90,
             keyboardPopupEnabled: true
         });
 
-        expect(testData.presentation.publicify_options.popupOnMouseOver).toBe(false);
+        expect(testData.presentation.publicify_options.popupOnHover).toBe(false);
         expect(testData.presentation.publicify_options.popupOnFocus).toBe(true);
         expect(testData.presentation.publicify_options.focusInDelay).toBe(15);
         expect(testData.presentation.publicify_options.keyboardPopupEnabled).toBe(false);
@@ -301,14 +306,18 @@ describe('PopupErrorMessageDisplayPresentation construction and options', () => 
 
     test('Uses global popup options when there are no instance overrides', () => {
         let testData = setup(undefined, {
-            popupOnMouseOver: true,
+            popupOnHover: true,
             mouseoverDelay: 35,
-            keyboardPopupEnabled: false
+            keyboardPopupEnabled: false,
+            popupOnHoverOverEditor: true,
+            popupOnFocusInEditor: true
         });
 
-        expect(testData.presentation.publicify_options.popupOnMouseOver).toBe(true);
+        expect(testData.presentation.publicify_options.popupOnHover).toBe(true);
         expect(testData.presentation.publicify_options.mouseoverDelay).toBe(35);
         expect(testData.presentation.publicify_options.keyboardPopupEnabled).toBe(false);
+        expect(testData.presentation.publicify_options.popupOnHoverOverEditor).toBe(true);
+        expect(testData.presentation.publicify_options.popupOnFocusInEditor).toBe(true);
         expect(testData.element.hasAttribute('tabindex')).toBe(false);
     });
 });
@@ -634,7 +643,7 @@ describe('PopupErrorMessageDisplayPresentation optional triggers', () => {
     test('Opens on mouseover and closes on mouseout using configured delays', () => {
         jest.useFakeTimers();
         let testData = setup({
-            popupOnMouseOver: true,
+            popupOnHover: true,
             mouseoverDelay: 20,
             mouseoutDelay: 30,
             keyboardPopupEnabled: false
@@ -676,7 +685,7 @@ describe('PopupErrorMessageDisplayPresentation optional triggers', () => {
     test('Uses default delays when enabled triggers receive null delay options', () => {
         jest.useFakeTimers();
         let testData = setup({
-            popupOnMouseOver: true,
+            popupOnHover: true,
             mouseoverDelay: null as unknown as number,
             mouseoutDelay: null as unknown as number,
             popupOnFocus: true,
@@ -705,6 +714,204 @@ describe('PopupErrorMessageDisplayPresentation optional triggers', () => {
         let testData = setup({ popupOnFocus: false, keyboardPopupEnabled: false });
 
         expect(testData.element.hasAttribute('tabindex')).toBe(false);
+    });
+});
+
+// Editor triggers let the editor element itself open and close the popup. Both are off by default.
+describe('PopupErrorMessageDisplayPresentation editor triggers', () => {
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    // The editor adapter normally attaches handlers; this fake attaches them straight to the element.
+    function createEditor(): IJivsElement
+    {
+        let editor = document.createElement('input') as IJivsElement;
+        editor.jivsEditorAdapterDefinition = {
+            attachEventHandler: (target: IJivsElement, _valueHost: IFieldValueHost,
+                eventName: string, handler: EventListener) => target.addEventListener(eventName, handler)
+        } as unknown as IJivsElement['jivsEditorAdapterDefinition'];
+        return editor;
+    }
+
+    test('Does not look up editors or react to editor events by default', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ keyboardPopupEnabled: false }, undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.runAllTimers();
+
+        expect(testData.popupMechanism.openCalls).toHaveLength(0);
+    });
+
+    test('popupOnHoverOverEditor opens on editor mouseenter and closes on mouseleave', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ popupOnHoverOverEditor: true, keyboardPopupEnabled: false },
+            undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+
+        editor.dispatchEvent(new MouseEvent('mouseleave'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.closeCalls).toHaveLength(1);
+    });
+
+    test('popupOnHoverOverEditor does not react to focus on the editor', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ popupOnHoverOverEditor: true, keyboardPopupEnabled: false },
+            undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.runAllTimers();
+
+        expect(testData.popupMechanism.openCalls).toHaveLength(0);
+    });
+
+    test('popupOnFocusInEditor opens on editor focusin and closes on focusout', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ popupOnFocusInEditor: true, keyboardPopupEnabled: false },
+            undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+
+        editor.dispatchEvent(new FocusEvent('focusout'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.closeCalls).toHaveLength(1);
+    });
+
+    test('popupOnFocusInEditor does not react to hovering the editor', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ popupOnFocusInEditor: true, keyboardPopupEnabled: false },
+            undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        jest.runAllTimers();
+
+        expect(testData.popupMechanism.openCalls).toHaveLength(0);
+    });
+
+    test('Attaches to every editor of the field', () => {
+        jest.useFakeTimers();
+        let editors = [createEditor(), createEditor()];
+        let testData = setup({ popupOnFocusInEditor: true, keyboardPopupEnabled: false },
+            undefined, true, new PopupService(), editors);
+        addIssues(testData);
+
+        editors[1].dispatchEvent(new FocusEvent('focusin'));
+        jest.runAllTimers();
+
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+    });
+
+    test('Global options enable the editor triggers when there are no instance overrides', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({ keyboardPopupEnabled: false },
+            { popupOnHoverOverEditor: true, popupOnFocusInEditor: true },
+            true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+        editor.dispatchEvent(new MouseEvent('mouseleave'));
+        jest.runAllTimers();
+
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.runAllTimers();
+        expect(testData.popupMechanism.openCalls).toHaveLength(2);
+    });
+
+    test('Editor triggers use the configured delays', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({
+            popupOnHoverOverEditor: true,
+            popupOnFocusInEditor: true,
+            mouseoverDelay: 20,
+            mouseoutDelay: 30,
+            focusInDelay: 40,
+            focusOutDelay: 50,
+            keyboardPopupEnabled: false
+        }, undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        jest.advanceTimersByTime(19);
+        expect(testData.popupMechanism.openCalls).toHaveLength(0);
+        jest.advanceTimersByTime(1);
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+        editor.dispatchEvent(new MouseEvent('mouseleave'));
+        jest.advanceTimersByTime(29);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(0);
+        jest.advanceTimersByTime(1);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(1);
+
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.advanceTimersByTime(39);
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+        jest.advanceTimersByTime(1);
+        expect(testData.popupMechanism.openCalls).toHaveLength(2);
+        editor.dispatchEvent(new FocusEvent('focusout'));
+        jest.advanceTimersByTime(49);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(1);
+        jest.advanceTimersByTime(1);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(2);
+    });
+
+    test('Editor triggers use the default delays when the delay options are null', () => {
+        jest.useFakeTimers();
+        let editor = createEditor();
+        let testData = setup({
+            popupOnHoverOverEditor: true,
+            popupOnFocusInEditor: true,
+            mouseoverDelay: null as unknown as number,
+            mouseoutDelay: null as unknown as number,
+            focusInDelay: null as unknown as number,
+            focusOutDelay: null as unknown as number,
+            keyboardPopupEnabled: false
+        }, undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        editor.dispatchEvent(new MouseEvent('mouseenter'));
+        jest.advanceTimersByTime(defaultMouseoverDelay);
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
+        editor.dispatchEvent(new MouseEvent('mouseleave'));
+        jest.advanceTimersByTime(defaultMouseoutDelay);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(1);
+
+        editor.dispatchEvent(new FocusEvent('focusin'));
+        jest.advanceTimersByTime(defaultFocusInDelay);
+        expect(testData.popupMechanism.openCalls).toHaveLength(2);
+        editor.dispatchEvent(new FocusEvent('focusout'));
+        jest.advanceTimersByTime(defaultFocusOutDelay);
+        expect(testData.popupMechanism.closeCalls).toHaveLength(2);
+    });
+
+    test('Editor triggers work alongside the indicator click trigger', () => {
+        let editor = createEditor();
+        let testData = setup({ popupOnHoverOverEditor: true, popupOnFocusInEditor: true },
+            undefined, true, new PopupService(), [editor]);
+        addIssues(testData);
+
+        testData.element.click();
+
+        expect(testData.popupMechanism.openCalls).toHaveLength(1);
     });
 });
 

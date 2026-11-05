@@ -26,6 +26,13 @@
         <label><input id="preview-multiple" type="checkbox" checked> Allow multiple messages</label>
 
         <fieldset>
+            <legend>Validation-state role destinations</legend>
+            <label><input id="preview-role-label" type="checkbox"> Label</label>
+            <label><input id="preview-role-required" type="checkbox" checked> Required indicator</label>
+            <label><input id="preview-role-container" type="checkbox"> Field container</label>
+        </fieldset>
+
+        <fieldset>
             <legend>Layout</legend>
             <label><input type="radio" name="preview-orientation" value="side-by-side" checked> Side by side</label>
             <label><input type="radio" name="preview-orientation" value="stacked"> Stacked</label>
@@ -50,6 +57,13 @@
                 validation state, or type into the editor yourself. Entering an invalid value and then a valid one
                 shows the Corrected state. Popup examples use the Tippy popup mechanism,
                 so click an indicator to open its popup.
+            </p>
+            <p>
+                The label, required indicator, and field container are optional. Each one you select under
+                validation-state role destinations gets SimpleDom markup and one of the playground's own presentations,
+                which add the Jivs state classes (invalid, validated, corrected) your CSS can style. An unselected role has
+                no <code>data-jivs-role</code>, so Jivs ignores that element. The generated HTML and registration
+                examples show how each role is wired.
             </p>
             <p class="preview-note">
                 Styling comes from <code>packages/jivs-dom/assets/jivs-dom.css</code>, the single source of truth.

@@ -20,8 +20,11 @@ import { HeaderFooterMessageFrame } from '@plblum/jivs-dom/build/Presentations_c
 import { InlineErrorMessageDisplayPresentation } from '@plblum/jivs-dom/build/FieldPresentations/InlineErrorMessageDisplayPresentation';
 import { PopupErrorMessageDisplayPresentation } from '@plblum/jivs-dom/build/FieldPresentations/PopupErrorMessageDisplayPresentation';
 import { ColumnarErrorIndicatorContent } from '@plblum/jivs-dom/build/FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent';
+import { LabelPresentation } from '@plblum/jivs-dom/build/FieldPresentations/LabelPresentation';
+import { FieldContainerPresentation } from '@plblum/jivs-dom/build/FieldPresentations/FieldContainerPresentation';
 import { ValueHostRulesOptions } from '@plblum/jivs-builder/build/Interfaces/ValueHostRules';
 import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
+import { EditorFocusTrigger } from '@plblum/jivs-dom/build/Presentations_common/EditorFocusTrigger';
 
 import { RequiredIndicatorPresentation } from '@plblum/jivs-dom/build/FieldPresentations/RequiredIndicatorPresentation';
 
@@ -123,15 +126,22 @@ class PlaygroundFormRules extends ValueHostRulesBase
 // Editors cannot, because ::after does not render on input, select or textarea.
 const requiredIndicatorPresentationName = 'pgRequired';
 
-function registerRequiredIndicatorPresentations(factory: IPresentationFactory<IFieldPresentation>): void
+const labelPresentationName = 'pgLabel';
+const fieldContainerPresentationName = 'pgFieldContainer';
+
+function registerRolePresentations(factory: IPresentationFactory<IFieldPresentation>): void
 {
+    factory.register(labelPresentationName, (element) =>
+        new LabelPresentation(element));
     factory.register(requiredIndicatorPresentationName, (element) =>
         new RequiredIndicatorPresentation(element, { validatedClassEnabled: true, correctedClassEnabled: true }));
+    factory.register(fieldContainerPresentationName, (element) =>
+        new FieldContainerPresentation(element));
 }
 
 function registerExamplePresentations(factory: IPresentationFactory<IFieldPresentation>): void
 {
-    registerRequiredIndicatorPresentations(factory);
+    registerRolePresentations(factory);
     const frames: Record<FrameKind, () => MessageFrame | IconMessageFrame | HeaderFooterMessageFrame> = {
         message: () => new MessageFrame(),
         headerFooter: () => new HeaderFooterMessageFrame({ headerHtml: 'Please fix:', footerHtml: 'Then try again.' }),
@@ -168,7 +178,9 @@ function registerExamplePresentations(factory: IPresentationFactory<IFieldPresen
                     popupMechanismOptions,
                     {
                         variationClasses: example.variations,
-                        popupOnMouseOver: true
+                        popupOnHover: true,
+                        popupOnFocusInEditor: true,
+                        popupOnHoverOverEditor: true
                      }));
         }
     }
@@ -186,6 +198,11 @@ interface PlaygroundSettings
     allMessages: boolean;
     editor: EditorKind;
     sideBySide: boolean;
+    roleDestinations: {
+        label: boolean;
+        required: boolean;
+        container: boolean;
+    };
 }
 
 type FrameKind = 'message' | 'headerFooter' | 'iconCss' | 'iconContent';
@@ -208,21 +225,21 @@ const examples: Example[] = [
         id: 'basic', title: 'Basic MessageFrame',
         description: 'The Presentation Container is also the Message Frame and Message Content container.',
         presentationName: 'previewBasicErrors', frame: 'message', variations: [],
-        registrationCode: "factory.register('previewBasicErrors', (element) =>\n    new InlineErrorMessageDisplayPresentation(element, new MessageFrame()));"
+        registrationCode: "new InlineErrorMessageDisplayPresentation(element, new MessageFrame())"
     },
     {
         id: 'accent', title: 'Accent appearance',
         description: 'Adds the supplied accent variation to the Inline Error Message Display container.',
         presentationName: 'previewAccentErrors', frame: 'message',
         variations: ['jivs-inlineerrormessagedisplay-variant-accent'],
-        registrationCode: "factory.register('previewAccentErrors', (element) =>\n    new InlineErrorMessageDisplayPresentation(element, new MessageFrame(),\n        { variationClasses: ['jivs-inlineerrormessagedisplay-variant-accent'] }));"
+        registrationCode: "new InlineErrorMessageDisplayPresentation(element, new MessageFrame(),\n    { variationClasses: ['jivs-inlineerrormessagedisplay-variant-accent'] })"
     },
     {
         id: 'panel', title: 'Panel appearance',
         description: 'Adds the supplied panel variation to the Inline Error Message Display container.',
         presentationName: 'previewPanelErrors', frame: 'message',
         variations: ['jivs-inlineerrormessagedisplay-variant-panel'],
-        registrationCode: "factory.register('previewPanelErrors', (element) =>\n    new InlineErrorMessageDisplayPresentation(element, new MessageFrame(),\n        { variationClasses: ['jivs-inlineerrormessagedisplay-variant-panel'] }));"
+        registrationCode: "new InlineErrorMessageDisplayPresentation(element, new MessageFrame(),\n    { variationClasses: ['jivs-inlineerrormessagedisplay-variant-panel'] })"
     },
     {
         id: 'header-footer', title: 'HeaderFooterMessageFrame',
@@ -249,33 +266,33 @@ const examples: Example[] = [
         id: 'popup-icon', title: 'Popup: warning icon only',
         description: 'ColumnarErrorIndicatorContent with just the icon. Click the indicator to open the Tippy popup.',
         presentationName: 'previewPopupIcon', popupIndicator: 'icon', variations: [],
-        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column2Html: '', column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions, {})"
+        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column2Html: '', column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { popupOnHover: true, popupOnFocusInEditor: true})"
     },
     {
         id: 'popup-text', title: 'Popup: icon and text',
         description: 'Adds descriptive text in column 2. Test typography, alignment, hover, and keyboard focus.',
         presentationName: 'previewPopupText', popupIndicator: 'text', variations: [],
-        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions, {})"
+        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { popupOnHover: true, popupOnFocusInEditor: true })"
     },
     {
         id: 'popup-arrow', title: 'Popup: icon, text, and arrow',
         description: 'Populates all three columns, with independent typography and hover styling.',
         presentationName: 'previewPopupArrow', popupIndicator: 'arrow', variations: [],
-        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({}),\n    new MessageFrame(), popupMechanismOptions, {})"
+        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({}),\n    new MessageFrame(), popupMechanismOptions,\n    { popupOnHover: true, popupOnFocusInEditor: true })"
     },
     {
         id: 'popup-button', title: 'Popup: Button variation',
         description: 'Rounded-rectangle appearance with border, padding, tinted background, and hover background.',
         presentationName: 'previewPopupButton', popupIndicator: 'text',
         variations: ['jivs-popuperrormessagedisplay-variant-button'],
-        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { variationClasses: ['jivs-popuperrormessagedisplay-variant-button'] })"
+        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { variationClasses: ['jivs-popuperrormessagedisplay-variant-button'], popupOnHover: true, popupOnFocusInEditor: true })"
     },
     {
         id: 'popup-pill', title: 'Popup: Pill variation',
         description: 'Fully rounded appearance with the same shared treatment as Button, with a trailing arrow.',
         presentationName: 'previewPopupPill', popupIndicator: 'arrow',
         variations: ['jivs-popuperrormessagedisplay-variant-pill'],
-        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({}),\n    new MessageFrame(), popupMechanismOptions,\n    { variationClasses: ['jivs-popuperrormessagedisplay-variant-pill'] })"
+        registrationCode: "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({}),\n    new MessageFrame(), popupMechanismOptions,\n    { variationClasses: ['jivs-popuperrormessagedisplay-variant-pill'], popupOnHover: true, popupOnFocusInEditor: true })"
     }
 ];
 
@@ -350,7 +367,12 @@ function getSettings(): PlaygroundSettings
         example: examples.find((e) => e.id === exampleId) ?? examples[0],
         allMessages: (document.getElementById('preview-multiple') as HTMLInputElement).checked,
         editor: (document.getElementById('preview-editor') as HTMLSelectElement).value as EditorKind,
-        sideBySide: document.querySelector<HTMLInputElement>('input[name="preview-orientation"]:checked')!.value === 'side-by-side'
+        sideBySide: document.querySelector<HTMLInputElement>('input[name="preview-orientation"]:checked')!.value === 'side-by-side',
+        roleDestinations: {
+            label: (document.getElementById('preview-role-label') as HTMLInputElement).checked,
+            required: (document.getElementById('preview-role-required') as HTMLInputElement).checked,
+            container: (document.getElementById('preview-role-container') as HTMLInputElement).checked
+        }
     };
 }
 
@@ -368,19 +390,37 @@ function buildGalleryMarkup(settings: PlaygroundSettings): string
     const example = settings.example;
     const f = fieldNameOf(example);
     const attrs = `data-field="${ f }"`;
+    // An element that is not opted in has no data-jivs-role, so Jivs ignores it completely.
+    const roleAttribute = (optedIn: boolean, role: string, presentationName: string) =>
+        optedIn ? `data-jivs-role="${ role }" ${ attrs } data-jivs-presentation="${ presentationName }"` : '';
+    // Each sample is only the instantiation; the comment ties it to the HTML attributes.
+    const sample = (role: string, presentationName: string, code: string) =>
+        `// data-jivs-role="${ role }" data-jivs-presentation="${ presentationName }"\n${ code }`;
+    const registrationCode = [
+        sample('error', example.presentationName, example.registrationCode),
+        settings.roleDestinations.label
+            ? sample('label', labelPresentationName, 'new LabelPresentation(element)')
+            : null,
+        settings.roleDestinations.required
+            ? sample('required', requiredIndicatorPresentationName, 'new RequiredIndicatorPresentation(element,\n    { validatedClassEnabled: true, correctedClassEnabled: true })')
+            : null,
+        settings.roleDestinations.container
+            ? sample('container', fieldContainerPresentationName, 'new FieldContainerPresentation(element)')
+            : null
+    ].filter((code): code is string => code !== null).join('\n\n');
     return `<article id="example-${ example.id }" class="preview-example" data-example-id="${ example.id }">
 <div class="preview-example-heading"><h2>${ escapeHtml(example.title) }</h2><p>${ escapeHtml(example.description) }</p></div>
 <div class="preview-specimen">
-<div data-jivs-role="container" ${ attrs } class="preview-field ${ orientation }">
-<div class="preview-label-zone"><label data-jivs-role="label" ${ attrs } for="${ f }_editor">${ escapeHtml(editor.label) }</label></div>
+<div ${ roleAttribute(settings.roleDestinations.container, 'container', fieldContainerPresentationName) } class="preview-field ${ orientation }">
+<div class="preview-label-zone"><label ${ roleAttribute(settings.roleDestinations.label, 'label', labelPresentationName) } for="${ f }_editor">${ escapeHtml(editor.label) }</label></div>
 <div class="preview-control-zone">
-<div class="preview-editor-slot">${ editor.markup(f) }</div>
-<div class="preview-required-slot"><span data-jivs-role="required" ${ attrs } data-jivs-presentation="${ requiredIndicatorPresentationName }"></span></div>
+<div class="preview-input-row"><div class="preview-editor-slot">${ editor.markup(f) }</div>
+<div class="preview-required-slot"><span ${ roleAttribute(settings.roleDestinations.required, 'required', requiredIndicatorPresentationName) }></span></div></div>
 <div class="preview-error-slot"><div data-jivs-role="error" ${ attrs } data-jivs-presentation="${ example.presentationName }"></div></div>
 </div></div></div>
 <div class="preview-docs">
-<details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Registered with the field presentation factory before FormInstaller runs.</p><pre><code>${ escapeHtml(example.registrationCode) }</code></pre></div></details>
-<details><summary>Current Jivs-SimpleDOM HTML</summary><div class="preview-code-wrap"><p>Serialized from the live field.</p><pre><code data-html-code></code></pre></div></details>
+<details open><summary>Current Jivs-SimpleDOM HTML</summary><div class="preview-code-wrap"><pre><code data-html-code></code></pre></div></details>
+<details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Registered with the field presentation factory before FormInstaller runs. Each comment is the name used by data-jivs-presentation.</p><pre><code>${ escapeHtml(registrationCode) }</code></pre></div></details>
 <details><summary>CSS classes in use</summary><div class="preview-code-wrap"><p>Locate these names in jivs-dom.css.</p><ul class="preview-class-list" data-class-list></ul></div></details>
 </div></article>`;
 }
@@ -396,12 +436,13 @@ function userSetsEditor(fieldName: string, kind: EditorKind, value: string): voi
     {
         const radio = root.querySelector<HTMLInputElement>(`input[name="${ fieldName }_group"][value="${ value }"]`)!;
         radio.checked = true;
-        radio.dispatchEvent(new Event('change', { bubbles: true }));
-        return;
+        // radio.dispatchEvent(new Event('change', { bubbles: true }));
+        // return;
     }
     else
         editor.value = value;
-    editor.dispatchEvent(new Event('change', { bubbles: true }));
+//    editor.dispatchEvent(new Event('change', { bubbles: true }));
+    vhm?.getFieldValueHost(fieldName)?.setTextValue(value, { reset: true });
 }
 
 function describeClasses(article: HTMLElement): void
@@ -468,10 +509,15 @@ function buildExampleSelector(): void
 }
 
 buildExampleSelector();
-for (const id of ['preview-example', 'preview-editor', 'preview-multiple'])
+for (const id of ['preview-example', 'preview-editor', 'preview-multiple',
+    'preview-role-label', 'preview-role-required', 'preview-role-container'])
     document.getElementById(id)!.addEventListener('change', () =>
     { rebuild(); enterSample(false); });
-document.getElementById('preview-reset')!.addEventListener('click', rebuild);
+document.getElementById('preview-reset')!.addEventListener('click', () =>
+{
+    vhm?.clearValidation();
+    userSetsEditor(fieldNameOf(getSettings().example), getSettings().editor, '');
+});
 document.querySelectorAll('input[name="preview-orientation"]').forEach((el) =>
     el.addEventListener('change', applyOrientation));
 document.getElementById('preview-fill-invalid')!.addEventListener('click', () =>
@@ -481,6 +527,9 @@ document.getElementById('preview-fill-valid')!.addEventListener('click', () =>
 document.getElementById('preview-validate')!.addEventListener('click', () =>
     vhm?.validate());
 document.getElementById('preview-validate-preliminary')!.addEventListener('click', () =>
-    vhm?.validate({ preliminary: true }));
+{
+    vhm?.clearValidation(); // because prelim intentionally skips trying anything on fields that have existing validation issues
+    vhm?.validate({ preliminary: true });
+});
 rebuild();
 enterSample(false);

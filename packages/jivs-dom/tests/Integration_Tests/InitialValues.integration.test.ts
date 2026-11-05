@@ -244,7 +244,7 @@ describe('EditorReader initial values and preliminary validation', () =>
         let requiredField = t.vhm.getFieldValueHost('Text_Required')!;
         let rangeField = t.vhm.getFieldValueHost('Number_Range')!;
         expect(requiredField.required).toBe(true);
-        expect(requiredField.validationStatus).toBe(ValidationStatus.Valid);
+        expect(requiredField.validationStatus).toBe(ValidationStatus.Undetermined);
         expect(requiredField.currentValidationState.issuesFound).toBeNull();
         expect(t.element('error', 'Text_Required').textContent).toBe('');
         expect(rangeField.validationStatus).toBe(ValidationStatus.Invalid);

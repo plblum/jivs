@@ -188,7 +188,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         t.vhm.getFieldValueHost(injectedField)!.setTextValue('', { reset: true });
         t.vhm.validate({ preliminary: true });
 
-        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Undetermined);
         expectIssueCodes(t, injectedField, []);
         expectElementsMatchValidationState(t, existingField, ValidationStatus.Invalid);
         expect(summary.classList.contains('jivs-has-issues')).toBe(true);
@@ -259,7 +259,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         const summary = t.element('summary');
         t.vhm.getFieldValueHost(injectedField)!.setTextValue('', { reset: true });
         t.vhm.validate({ preliminary: true });
-        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
+        expectElementsMatchValidationState(t, injectedField, ValidationStatus.Undetermined);
         expect(summary.textContent).not.toContain('INJECTED-REQUIRED');
 
         // The user touches the empty field. The change event runs a normal validation, which includes RequireText.

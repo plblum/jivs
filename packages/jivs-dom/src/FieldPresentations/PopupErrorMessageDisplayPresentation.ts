@@ -26,6 +26,8 @@ import { ErrorMessageDisplayMouseOutTrigger } from '../Presentations_common/Erro
 import { ErrorMessageDisplayMouseOverTrigger } from '../Presentations_common/ErrorMessageDisplayMouseOverTrigger';
 import { TriggeredErrorMessageDisplayPresentationBase, TriggeredErrorMessageDisplayPresentationBaseGlobalOptions, TriggeredErrorMessageDisplayPresentationBaseOptions } from './TriggeredErrorMessageDisplayPresentationBase';
 import { jivsMessageContentClass } from '../Presentations_common/MessageFrameBase';
+import { EditorFocusTrigger } from '../Presentations_common/EditorFocusTrigger';
+import { EditorHoverTrigger } from '../Presentations_common/EditorHoverTrigger';
 
 /**
  * A presentation class for displaying error messages in a popup.
@@ -119,12 +121,14 @@ export class PopupErrorMessageDisplayPresentation<
         let superDefaults = super.getOptionDefaults();
         return {
             ...superDefaults,
-            popupOnMouseOver: false,
+            popupOnHover: false,
             mouseoverDelay: defaultMouseoverDelay,
             mouseoutDelay: defaultMouseoutDelay,
             popupOnFocus: false,
             focusInDelay: defaultFocusInDelay,
             focusOutDelay: defaultFocusOutDelay,
+            popupOnHoverOverEditor: false,
+            popupOnFocusInEditor: false,
             keyboardPopupEnabled: true,
             ariaPopupMessage: defaultAriaPopupShowsValidationErrors
         };
@@ -181,7 +185,7 @@ export class PopupErrorMessageDisplayPresentation<
     {
         // Implementation for revising triggers based on the provided options.
         triggers.push(new ErrorMessageDisplayClickTrigger());
-        if (this.options.popupOnMouseOver)
+        if (this.options.popupOnHover)
         {
             triggers.push(new ErrorMessageDisplayMouseOverTrigger(this.options.mouseoverDelay ?? defaultMouseoverDelay));
             triggers.push(new ErrorMessageDisplayMouseOutTrigger(this.options.mouseoutDelay ?? defaultMouseoutDelay));
@@ -194,6 +198,18 @@ export class PopupErrorMessageDisplayPresentation<
         if (this.options.keyboardPopupEnabled)
         {
             triggers.push(new ErrorMessageDisplayKeyAsClickTrigger());
+        }
+        if (this.options.popupOnHoverOverEditor)
+        {
+            triggers.push(new EditorHoverTrigger(
+                this.options.mouseoverDelay ?? defaultMouseoverDelay,
+                this.options.mouseoutDelay ?? defaultMouseoutDelay));
+        }
+        if (this.options.popupOnFocusInEditor)
+        {
+            triggers.push(new EditorFocusTrigger(
+                this.options.focusInDelay ?? defaultFocusInDelay,
+                this.options.focusOutDelay ?? defaultFocusOutDelay));
         }
     }
 
@@ -427,7 +443,7 @@ export interface PopupErrorMessageDisplayPresentationGlobalOptions
      * If enabled, it mouseout is also setup. Both use delays specified by mouseoverDelay and mouseoutDelay.
      * Optional. Defaults to false.
      */
-    popupOnMouseOver?: boolean;
+    popupOnHover?: boolean;
     /**
      * The delay in milliseconds before showing the popup on mouseover.
      * When 0, there is no delay before showing the popup.
@@ -459,6 +475,20 @@ export interface PopupErrorMessageDisplayPresentationGlobalOptions
      * Optional. Defaults to 750ms.
      */
     focusOutDelay?: number;
+
+    /**
+     * Trigger the popup when the user hovers over the editor element.
+     * Optional. Defaults to false.
+     * Uses the mouseoverDelay and mouseoutDelay for the hover behavior.
+     */
+    popupOnHoverOverEditor?: boolean;
+
+    /**
+     * Trigger the popup when the user focuses on the editor element.
+     * Optional. Defaults to false.
+     * Uses the focusInDelay and focusOutDelay for the focus behavior.
+     */
+    popupOnFocusInEditor?: boolean;
 
     /**
      * Whether the popup can be activated using the keyboard.
