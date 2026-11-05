@@ -12,7 +12,7 @@ import type {
     IErrorMessageDisplayTriggerContext
 } from '../../src/Interfaces/ErrorMessageDisplayPresentation';
 import type { IJivsDomServices } from '../../src/Interfaces/JivsDomServices';
-import type { IPopupContext } from '../../src/Interfaces/PopupErrorMessageDisplays';
+import type { IPopupContext, IPopupService } from '../../src/Interfaces/PopupErrorMessageDisplays';
 import type { IAriaStaticUpdater } from '../../src/Interfaces/AriaUpdaters';
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { defaultAriaPopupShowsValidationErrors } from '../../src/Aria/PopupErrorMessageDisplayStaticUpdater';
@@ -31,6 +31,7 @@ import { IssuesFoundFormatterService } from '../../src/Services/IssuesFoundForma
 import { PopupService } from '../../src/Services/PopupService';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { RecordingLoggingService } from '../TestSupport/mocks';
+import { RecordingPopupService } from '../TestSupport/RecordingPopupService';
 import {
     RecordingPopupContext,
     RecordingPopupMechanism
@@ -122,7 +123,7 @@ interface ISetup
     presentation: Publicify_PopupErrorMessageDisplayPresentation;
     element: IJivsElement;
     domServices: IJivsDomServices;
-    popupService: PopupService;
+    popupService: IPopupService;
     popupMechanism: RecordingPopupMechanism;
     elementRegistry: RecordingElementRegistry;
     valueHostsManager: IValueHostsManager;
@@ -133,11 +134,11 @@ interface ISetup
 function setup(
     options?: PopupErrorMessageDisplayPresentationOptions,
     globalOptions?: PopupErrorMessageDisplayPresentationOptions,
-    loggingEnabled: boolean = true
+    loggingEnabled: boolean = true,
+    popupService: IPopupService = new PopupService()
 ): ISetup
 {
     let element = document.createElement('button') as IJivsElement;
-    let popupService = new PopupService();
     let popupMechanism = new RecordingPopupMechanism();
     let elementRegistry = new RecordingElementRegistry();
     let loggingService = new RecordingLoggingService();
@@ -365,7 +366,47 @@ describe('PopupErrorMessageDisplayPresentation.apply', () => {
     });
 });
 
-// Opening creates a popup context, renders the message frame, and marks every participating element as open.
+// A popup the user opened survives validation: it is closed and reopened with fresh content,
+// unless the issues cleared. Validation never opens a popup that was not already open.
+describe('PopupErrorMessageDisplayPresentation.apply keeps an open popup in sync', () => {
+    test('Closes and reopens an open popup with the latest issues', () => {
+        let testData = setup();
+        openPopup(testData);
+        let firstContext = testData.popupMechanism.contexts[0];
+
+        addIssues(testData, ['Updated issue']);
+
+        expect(testData.popupMechanism.contexts).toHaveLength(2);
+        expect(firstContext.disposeCalls).toBe(1);
+        let secondContext = testData.popupMechanism.contexts[1];
+        expect(secondContext.messageFrameContent?.textContent).toBe('Updated issue');
+        expect(testData.presentation.publicify_popupContext).toBe(secondContext);
+        expect(testData.element.classList.contains('jivs-open')).toBe(true);
+    });
+
+    test('Closes an open popup without reopening when the issues clear', () => {
+        let testData = setup();
+        openPopup(testData);
+        let firstContext = testData.popupMechanism.contexts[0];
+
+        applyIssues(testData, []);
+
+        expect(firstContext.disposeCalls).toBe(1);
+        expect(testData.popupMechanism.contexts).toHaveLength(1);
+        expect(testData.presentation.publicify_popupContext).toBeUndefined();
+        expect(testData.element.classList.contains('jivs-open')).toBe(false);
+    });
+
+    test('Does not open a popup that was closed when issues appear or change', () => {
+        let testData = setup();
+
+        addIssues(testData);
+        addIssues(testData, ['Changed']);
+
+        expect(testData.popupMechanism.contexts).toHaveLength(0);
+        expect(testData.element.classList.contains('jivs-open')).toBe(false);
+    });
+});
 describe('PopupErrorMessageDisplayPresentation.open', () => {
     test('Passes popup options, content, and presentation context to the popup mechanism', () => {
         let testData = setup();
@@ -784,7 +825,7 @@ describe('PopupErrorMessageDisplayPresentation.close', () => {
     });
 });
 
-// Static ARIA setup honors configured accessible names, and disposal releases an active popup context.
+// Static ARIA setup honors configured names, while disposal releases popup resources and service registration.
 describe('PopupErrorMessageDisplayPresentation ARIA and disposal', () => {
     test('Returns a static updater configured with the resolved accessible name', () => {
         let testData = setup({ ariaPopupMessage: 'Review email errors' });
@@ -806,5 +847,22 @@ describe('PopupErrorMessageDisplayPresentation ARIA and disposal', () => {
         expect(popupContext.messageFrameContent).toBeNull();
         expect(testData.popupMechanism.closeCalls).toHaveLength(0);
         expect(testData.presentation.publicify_popupContext).toBeUndefined();
+    });
+
+    test('Registers with PopupService after trigger initialization and unregisters on disposal', () => {
+        let popupService = new RecordingPopupService();
+        let testData = setup(undefined, undefined, true, popupService);
+
+        addIssues(testData);
+        addIssues(testData, ['Updated']);
+
+        expect(popupService.registerCalls).toHaveLength(1);
+        expect(popupService.registerCalls[0].controller).toBe(testData.presentation);
+        expect(popupService.registerCalls[0].contextFactory()).toBe(
+            testData.presentation.publicify_triggerContext);
+
+        testData.presentation.dispose();
+
+        expect(popupService.unregisterCalls).toEqual([testData.presentation]);
     });
 });

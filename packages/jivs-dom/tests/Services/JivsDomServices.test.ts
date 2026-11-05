@@ -119,6 +119,7 @@ describe('JivsDomServices.options', () => {
         expect(options).toEqual(<JivsDomGlobalOptions>{
             inlineErrorMessageDisplay: {},
             popupErrorMessageDisplay: {},
+            targetErrorMessageDisplay: {},
             editor: {},
             radioButtons: {},
             wrappedEditor: {},

@@ -71,7 +71,8 @@ import { WrappedRadioButtonsAriaStaticUpdater } from '@plblum/jivs-dom/build/Ari
 import { HiddenErrorMessagesAriaValidationStateUpdater } from '@plblum/jivs-dom/build/Aria/HiddenErrorMessagesAriaValidationStateUpdater';
 import { EditorAriaValidationStateUpdater } from '@plblum/jivs-dom/build/Aria/EditorAriaValidationStateUpdater';
 import { HiddenErrorMessagesAriaStaticUpdater } from '@plblum/jivs-dom/build/Aria/HiddenErrorMessagesAriaStaticUpdater';
-
+import { TargetErrorMessageDisplayPresentation, TargetErrorMessageDisplayPresentationOptions } from '@plblum/jivs-dom/build/FieldPresentations/TargetErrorMessageDisplayPresentation';
+import { CompositeFieldPresentation } from '@plblum/jivs-dom/build/FieldPresentations/CompositeFieldPresentation';  
 
 new JivsDomServicesInstaller();  // install the domServices service property on JivsServices
 
@@ -428,6 +429,62 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
                 popupEMDOptionsBelow
             ));
     }          
+    /**
+     * TargetErrorMessageDisplayPresentation lets you use a single shared element 
+     * to display error messages for multiple fields in a single target element, 
+     * such as a status bar or notification area.
+     * It is often used together with InlineErrorMessageDisplayPresentation to provide both inline and target error displays.
+     * That requires using a CompositeFieldPresentation to combine both presentations on the same element.
+     * 
+     * Your target element will be passed two events:
+     * - 'jivs-message-show': dispatched when a field has validation errors.
+     *      Event type: CustomEvent. detail property is an object with the following properties:
+     *          - content: HTMLElement representing the message content to be inserted into the target.
+     *          - issuesFound: an array of IssueFound objects representing the validation errors for the field.
+     *          - valueHost: the IFieldValueHost instance associated with the field.
+     * 
+     *    ```ts
+     *    element.addEventListener('jivs-message-show', (event: CustomEvent<TargetMessageShowDetail>) => {
+     *        element.textContent = '';
+     *        element.appendChild(event.detail.content);
+     *    });
+     *    ```
+     * - 'jivs-message-clear': dispatched when a field's validation errors are cleared.
+     *      Event type: CustomEvent. detail property is an object with the following properties:
+     *          - valueHost: the IFieldValueHost instance associated with the field.
+     *
+     *    ```ts
+     *    element.addEventListener('jivs-message-clear', (event: CustomEvent<TargetMessageClearDetail>) => {
+     *        element.textContent = ''; // or whatever content you want to display when errors are cleared
+     *    });
+     *    ```
+     * You determine how to display the error messages in the target element based on these events.
+     */
+    const targetEMDOptions: TargetErrorMessageDisplayPresentationOptions = {
+        showOnFocus: true,  // when editor gains or loses focus
+        showOnHover: false, // when hovering over the editor
+        targetSelector: '#target-error-messages' // CSS selector for the target element
+    };  
+    factory.register('TargetElementError', 
+        (element) => new TargetErrorMessageDisplayPresentation(
+            element,
+            new MessageFrame(),
+            targetEMDOptions
+        ));
+    
+    /**
+     * CompositeFieldPresentation allows combining several field presentations
+     * under one element. Its primary use case is to support error message displays
+     * that need both Inline and Target error message displays.
+     */
+    factory.register('InlineAndTargetErrors', 
+        (element) => new CompositeFieldPresentation(
+            element,
+            [ // list of registered presentation keys
+                'InlineError',
+                'TargetElementError'
+            ]
+        ));
 }
 
 /**

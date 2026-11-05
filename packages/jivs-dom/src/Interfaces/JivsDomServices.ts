@@ -24,6 +24,7 @@ import { IElementRegistry } from './ElementRegistry';
 import { IPopupMechanism, IPopupService } from './PopupErrorMessageDisplays';
 import type { PopupErrorMessageDisplayPresentationGlobalOptions } from '../FieldPresentations/PopupErrorMessageDisplayPresentation';
 import type { InlineErrorMessageDisplayPresentationGlobalOptions } from '../FieldPresentations/InlineErrorMessageDisplayPresentation';
+import type { TargetErrorMessageDisplayPresentationGlobalOptions } from '../FieldPresentations/TargetErrorMessageDisplayPresentation';
 import { EditorFieldPresentationBaseGlobalOptions } from '../FieldPresentations/EditorFieldPresentationBase';
 import { RequiredIndicatorPresentationGlobalOptions } from '../FieldPresentations/RequiredIndicatorPresentation';
 import { FieldContainerPresentationGlobalOptions } from '../FieldPresentations/FieldContainerPresentation';
@@ -250,6 +251,7 @@ export interface JivsDomGlobalOptions
 {
     inlineErrorMessageDisplay: InlineErrorMessageDisplayPresentationGlobalOptions,
     popupErrorMessageDisplay: PopupErrorMessageDisplayPresentationGlobalOptions,
+    targetErrorMessageDisplay: TargetErrorMessageDisplayPresentationGlobalOptions,
     editor: EditorFieldPresentationBaseGlobalOptions,  
     radioButtons: RadioButtonsFieldPresentationGlobalOptions,
     wrappedEditor: WrappedEditorFieldPresentationBaseGlobalOptions,
@@ -271,6 +273,7 @@ export function initJivsDomGlobalOptions(): JivsDomGlobalOptions
     return <JivsDomGlobalOptions>{
         inlineErrorMessageDisplay: {},
         popupErrorMessageDisplay: {},
+        targetErrorMessageDisplay: {},
         editor: {},
         radioButtons: {},
         wrappedEditor: {},

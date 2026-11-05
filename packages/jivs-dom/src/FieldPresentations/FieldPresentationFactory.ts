@@ -86,7 +86,7 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         factory.register(defaultFieldContainerPresentationName, (element) => new FieldContainerPresentation(element));
 
         // due to complexity of setup, error message display presentations are not registered here.
-        // Find them in prepareJivsDomServices().
+        // Find them in configureJivsDom().
 
         // fallbacks for when no specific presentation is registered for an element role
         factory.setDefaultPresentationName(ElementRole.editor, defaultTextInputPresentationName);

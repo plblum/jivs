@@ -39,6 +39,31 @@ export function escapeCssIdentifier(value: string): string
 }
 
 /**
+ * Resolves a field-specific selector within the form container, then the document body.
+ * The {FieldName} token is escaped before it is substituted into the selector.
+ */
+export function resolveElementBySelector(
+    selector: string,
+    fieldName: string,
+    containerElement: HTMLElement
+): HTMLElement | null
+{
+    const resolvedSelector = selector.split('{FieldName}').join(escapeCssIdentifier(fieldName));
+    let element = containerElement.querySelector(resolvedSelector);
+    if (element instanceof HTMLElement)
+        return element;
+
+    if (containerElement !== document.body)
+    {
+        element = document.body.querySelector(resolvedSelector);
+        if (element instanceof HTMLElement)
+            return element;
+    }
+
+    return null;
+}
+
+/**
  * Provides a way to show an error involving an element to the user.
  * Lets the user have enough info to connect this string to content in the page.
  * Shows the tag and all attributes including class, but not the content or closing tag.

@@ -6,16 +6,17 @@
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-import { escapeCssIdentifier } from '../Utilities/Helpers';
+import { resolveElementBySelector } from '../Utilities/Helpers';
 import { defaultAriaPopupShowsValidationErrors, PopupErrorMessageDisplayStaticUpdater } from '../Aria/PopupErrorMessageDisplayStaticUpdater';
 import { IAriaStaticUpdater } from '../Interfaces/AriaUpdaters';
 import { IElementRegistry } from '../Interfaces/ElementRegistry';
-import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext } from '../Interfaces/ErrorMessageDisplayPresentation';
+import { IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
 import { IErrorIndicatorContent } from '../Interfaces/IErrorIndicatorContent';
 import { IMessageFrame } from '../Interfaces/IMessageFrame';
-import { IPopupContext, IPopupMechanism } from '../Interfaces/PopupErrorMessageDisplays';
+import { IPopupContext, IPopupMechanism, IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 import { ElementRole } from '../Interfaces/Types';
 import { ErrorMessageDisplayClickTrigger } from '../Presentations_common/ErrorMessageDisplayClickTrigger';
 import { ErrorMessageDisplayFocusInTrigger } from '../Presentations_common/ErrorMessageDisplayFocusInTrigger';
@@ -138,7 +139,13 @@ export class PopupErrorMessageDisplayPresentation<
         return this._popupMechanism;
     }
     private _popupMechanism?: IPopupMechanism;
-    
+
+    protected get popupService(): IPopupService | undefined
+    {
+        return this._popupService;
+    }
+    private _popupService?: IPopupService;
+
     /**
      * Gets the indicator content for the presentation element.
      */
@@ -206,10 +213,14 @@ export class PopupErrorMessageDisplayPresentation<
     {
         super.resolveOptions();
         this.reviseTriggers(this.options.triggers!);
-        this._hasFieldNameToken = this.options.anchorSelector?.includes('{FieldName}') ?? false;
     }
-    private _hasFieldNameToken: boolean = false;
-
+    protected override ensureValueHostInitializedWorker(valueHost: IFieldValueHost): void
+    {
+        super.ensureValueHostInitializedWorker(valueHost);
+        this._popupService = this.triggerContext!.domServices.getPopupService(
+            this.triggerContext!.valueHost.valueHostsManager);
+        this._popupService?.register(this, () => this.triggerContext!);
+    }
     public override init(valueHostsManager: IValueHostsManager): void
     {
         super.init(valueHostsManager);
@@ -235,6 +246,26 @@ export class PopupErrorMessageDisplayPresentation<
             issuesFound, valueHost.valueHostsManager, valueHost);
 
         super.applyIssuesFound(valueHost, issuesFound);
+    }
+
+    /**
+     * Updates the indicator and trigger context with the latest validation state.
+     * A popup the user opened stays open across validation: it is closed and reopened
+     * so it shows fresh content from the MessageFrame, unless the issues cleared.
+     * A popup that was not open is never opened by validation.
+     */
+    public override apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void
+    {
+        let wasOpen = this.triggerState === TriggerState.open ||
+            this.triggerState === TriggerState.closing;
+        super.apply(valueHost, state);
+
+        if (this.triggerContext)
+        {
+            this.close(this.triggerContext, 0);
+            if (wasOpen && this.triggerContext.issuesFound && this.triggerContext.issuesFound.length > 0)
+                this.open(this.triggerContext, 0);
+        }
     }
 
     protected override removeIssuesFound(): void
@@ -295,6 +326,13 @@ export class PopupErrorMessageDisplayPresentation<
         this.popupContext?.messageFrameContent?.classList.add(jivsPopupOpenClass);
     }
 
+    protected override tryToOpen(context: IErrorMessageDisplayTriggerContext): void
+    {
+        // defensive checks in case external actions change the environment
+        if (this.triggerState !== TriggerState.opening) return;
+        this.popupService?.prepareToOpen(this);
+        super.tryToOpen(context);
+    }
     /**
      * Uses options.anchorSelector to resolve the anchor element for the popup.
      * If that is not supplied, or it cannot find a matching element, it falls back to using the presentation element.
@@ -303,25 +341,19 @@ export class PopupErrorMessageDisplayPresentation<
      */
     protected resolveAnchorElement(): HTMLElement
     {
-        let selector = this.options.anchorSelector;
-        if (selector)
+        if (this.options.anchorSelector)
         {
-            assertNotNull(this.triggerContext, 'triggerContext');
-            if (this._hasFieldNameToken)
-                selector = selector.split('{FieldName}').join(escapeCssIdentifier(this.triggerContext!.valueHost.getElementIdentifier()));
-            // The anchor may be narrowly within the form of the ValueHostsManager or
-            // a shared element outside.
-            // We'll try to find it first within the form, then in the body as a fallback.
-            let containerElement = this.triggerContext!.domServices.resolveContainerElement(this.triggerContext!.valueHost.valueHostsManager);
-            let anchorElement = containerElement?.querySelector(selector) as HTMLElement | null;
-            if (anchorElement instanceof HTMLElement)
-                return anchorElement;            
-            if (containerElement !== document.body)
-            {
-                anchorElement = document.body.querySelector(selector) as HTMLElement | null;
-                if (anchorElement instanceof HTMLElement)
-                    return anchorElement;
-            }
+            let triggerContext = this.triggerContext;
+            if (!triggerContext)
+                throw new Error('triggerContext is not set before resolving the popup anchor.');
+            let containerElement = triggerContext.domServices.resolveContainerElement(
+                triggerContext.valueHost.valueHostsManager);
+            let anchorElement = resolveElementBySelector(
+                this.options.anchorSelector,
+                triggerContext.valueHost.getElementIdentifier(),
+                containerElement);
+            if (anchorElement)
+                return anchorElement;
         }
 
         return this.presentationElement;
@@ -369,8 +401,10 @@ export class PopupErrorMessageDisplayPresentation<
         // does not try to close first. That operation could fail, and its too late to worry about
         this._popupContext?.dispose();
         this._popupContext = undefined;
-        
+
         super.dispose();
+        this._popupService?.unregister(this);
+        this._popupService = undefined;
 
         this._popupMechanism = undefined as any;
         this._elementRegistry = undefined as any;

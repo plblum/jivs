@@ -26,7 +26,6 @@ import {
 } from '../../src/FieldPresentations/TriggeredErrorMessageDisplayPresentationBase';
 import { createMockJivsDomServices } from '../TestSupport/MockJivsDomServices';
 import { RecordingErrorMessageDisplayTrigger } from '../TestSupport/RecordingErrorMessageDisplayTrigger';
-import { RecordingPopupService } from '../TestSupport/RecordingPopupService';
 import { RecordingPopupMechanism } from '../TestSupport/RecordingPopupMechanism';
 
 afterEach(() => {
@@ -93,7 +92,6 @@ interface ISetup
     presentation: TestTriggeredErrorMessageDisplayPresentation;
     element: HTMLElement;
     domServices: IJivsDomServices;
-    popupService: RecordingPopupService;
     valueHostsManager: IValueHostsManager;
     valueHost: IFieldValueHost;
 }
@@ -104,10 +102,7 @@ function setup(
 ): ISetup
 {
     let element = document.createElement('div');
-    let popupService = new RecordingPopupService();
-    let domServices = createMockJivsDomServices({
-        getPopupService: () => popupService
-    });
+    let domServices = createMockJivsDomServices();
     domServices.options.popupErrorMessageDisplay = globalOptions ?? {};
     let valueHostsManager = {
         services: { domServices: domServices }
@@ -126,7 +121,6 @@ function setup(
         presentation: presentation,
         element: element,
         domServices: domServices,
-        popupService: popupService,
         valueHostsManager: valueHostsManager,
         valueHost: valueHost
     };
@@ -174,7 +168,6 @@ describe('TriggeredErrorMessageDisplayPresentationBase identity and options', ()
         });
 
         expect(() => initializeWithIssues(testData)).not.toThrow();
-        expect(testData.popupService.registerCalls).toHaveLength(1);
     });
 
     test('Uses global triggers by default and lets instance triggers override them', () => {
@@ -194,9 +187,9 @@ describe('TriggeredErrorMessageDisplayPresentationBase identity and options', ()
     });
 });
 
-// The first validation update creates one trigger context, installs each trigger, and registers with popup management.
+// The first validation update creates one trigger context and installs each trigger only once.
 describe('TriggeredErrorMessageDisplayPresentationBase trigger initialization', () => {
-    test('Installs triggers once and registers a context factory with the popup service', () => {
+    test('Installs triggers once and retains the latest validation issues in its context', () => {
         let trigger = new RecordingErrorMessageDisplayTrigger();
         let testData = setup({ triggers: [trigger] });
 
@@ -205,9 +198,6 @@ describe('TriggeredErrorMessageDisplayPresentationBase trigger initialization', 
 
         let context = testData.presentation.publicify_triggerContext!;
         expect(trigger.installCalls).toEqual([context]);
-        expect(testData.popupService.registerCalls).toHaveLength(1);
-        expect(testData.popupService.registerCalls[0].controller).toBe(testData.presentation);
-        expect(testData.popupService.registerCalls[0].contextFactory()).toBe(context);
         expect(context.jivsElement).toBe(testData.element);
         expect(context.domServices).toBe(testData.domServices);
         expect(context.valueHost).toBe(testData.valueHost);
@@ -226,9 +216,9 @@ describe('TriggeredErrorMessageDisplayPresentationBase trigger initialization', 
     });
 });
 
-// Opening requires issues, prepares popup coordination, and reflects successful or failed core transitions.
+// Opening requires issues and reflects successful or failed core transitions without popup coordination.
 describe('TriggeredErrorMessageDisplayPresentationBase.open', () => {
-    test('Does not open or prepare popup coordination when there are no issues', () => {
+    test('Does not open when there are no issues', () => {
         let testData = setup();
         applyIssues(testData, []);
         let context = testData.presentation.publicify_triggerContext!;
@@ -236,18 +226,16 @@ describe('TriggeredErrorMessageDisplayPresentationBase.open', () => {
         testData.presentation.open(context, 0);
 
         expect(testData.presentation.openCalls).toHaveLength(0);
-        expect(testData.popupService.prepareToOpenCalls).toHaveLength(0);
         expect(testData.presentation.publicify_triggerState).toBe(TriggerState.closed);
     });
 
-    test('Prepares popup management and adds open state after a successful immediate open', () => {
+    test('Opens immediately without accessing popup management', () => {
         let testData = setup();
         initializeWithIssues(testData);
         let context = testData.presentation.publicify_triggerContext!;
 
         testData.presentation.open(context, 0);
 
-        expect(testData.popupService.prepareToOpenCalls).toEqual([testData.presentation]);
         expect(testData.presentation.openCalls).toEqual([{ context: context }]);
         expect(testData.presentation.publicify_triggerState).toBe(TriggerState.open);
         expect(testData.element.classList.contains('jivs-open')).toBe(true);
@@ -262,18 +250,6 @@ describe('TriggeredErrorMessageDisplayPresentationBase.open', () => {
 
         expect(testData.presentation.publicify_triggerState).toBe(TriggerState.closed);
         expect(testData.element.classList.contains('jivs-open')).toBe(false);
-    });
-
-    test('Stops opening if popup preparation changes the transition state', () => {
-        let testData = setup();
-        initializeWithIssues(testData);
-        testData.popupService.prepareToOpenAction = controller => controller.closed();
-
-        testData.presentation.open(testData.presentation.publicify_triggerContext!, 0);
-
-        expect(testData.popupService.prepareToOpenCalls).toEqual([testData.presentation]);
-        expect(testData.presentation.openCalls).toHaveLength(0);
-        expect(testData.presentation.publicify_triggerState).toBe(TriggerState.closed);
     });
 
     test('Keeps a state change made by openCore instead of applying a stale open result', () => {
@@ -447,9 +423,10 @@ describe('TriggeredErrorMessageDisplayPresentationBase.toggle', () => {
     });
 });
 
-// Validation refreshes trigger context and reopens only if the display was open and issues remain.
-describe('TriggeredErrorMessageDisplayPresentationBase.apply refresh', () => {
-    test('Closes and reopens a previously open display with the latest issues', () => {
+// The base class does not override apply(), so validation only updates the issues on the trigger context
+// and never opens or closes the display. Subclasses own that policy.
+describe('TriggeredErrorMessageDisplayPresentationBase.apply', () => {
+    test('Updates context issues without opening or closing the display', () => {
         let testData = setup();
         initializeWithIssues(testData, [{ errorMessage: 'Old issue' }] as IssueFound[]);
         let context = testData.presentation.publicify_triggerContext!;
@@ -457,44 +434,20 @@ describe('TriggeredErrorMessageDisplayPresentationBase.apply refresh', () => {
 
         applyIssues(testData, [{ errorMessage: 'Updated issue' }] as IssueFound[]);
 
-        expect(testData.presentation.closeCalls).toEqual([{ context: context }]);
-        expect(testData.presentation.openCalls).toEqual([
-            { context: context },
-            { context: context }
-        ]);
         expect(context.issuesFound).toEqual([{ errorMessage: 'Updated issue' }]);
+        expect(testData.presentation.openCalls).toHaveLength(1);
+        expect(testData.presentation.closeCalls).toHaveLength(0);
         expect(testData.presentation.publicify_triggerState).toBe(TriggerState.open);
     });
 
-    test('Closes a previously open display without reopening when the issues clear', () => {
+    test('Does not open a closed display when issues appear', () => {
         let testData = setup();
-        initializeWithIssues(testData);
-        let context = testData.presentation.publicify_triggerContext!;
-        testData.presentation.open(context, 0);
-
         applyIssues(testData, []);
 
-        expect(testData.presentation.closeCalls).toEqual([{ context: context }]);
-        expect(testData.presentation.openCalls).toHaveLength(1);
+        applyIssues(testData, [{ errorMessage: 'New issue' }] as IssueFound[]);
+
+        expect(testData.presentation.openCalls).toHaveLength(0);
         expect(testData.presentation.publicify_triggerState).toBe(TriggerState.closed);
-        expect(context.issuesFound).toBeNull();
-    });
-
-    test('Reopens after validation refresh when the display was in a closing transition', () => {
-        let testData = setup();
-        initializeWithIssues(testData, [{ errorMessage: 'Old issue' }] as IssueFound[]);
-        let context = testData.presentation.publicify_triggerContext!;
-        testData.presentation.open(context, 0);
-        testData.presentation.close(context, 100);
-
-        applyIssues(testData, [{ errorMessage: 'Updated issue' }] as IssueFound[]);
-
-        expect(testData.presentation.closeCalls).toEqual([{ context: context }]);
-        expect(testData.presentation.openCalls).toEqual([
-            { context: context },
-            { context: context }
-        ]);
-        expect(testData.presentation.publicify_triggerState).toBe(TriggerState.open);
     });
 });
 
@@ -574,7 +527,6 @@ describe('TriggeredErrorMessageDisplayPresentationBase delayed transitions', () 
         jest.advanceTimersByTime(50);
 
         expect(testData.presentation.openCalls).toHaveLength(0);
-        expect(testData.popupService.prepareToOpenCalls).toHaveLength(0);
     });
 
     test('Ignores an expired delayed close if another action already changed its state', () => {
@@ -617,16 +569,15 @@ describe('TriggeredErrorMessageDisplayPresentationBase delayed transitions', () 
     });
 });
 
-// Disposal unregisters popup coordination, releases the trigger context, and cancels pending timers.
+// Disposal releases the trigger context and cancels pending timers without involving popup management.
 describe('TriggeredErrorMessageDisplayPresentationBase.dispose', () => {
-    test('Unregisters and disposes its trigger context', () => {
+    test('Disposes its trigger context', () => {
         let testData = setup();
         initializeWithIssues(testData);
         let context = testData.presentation.publicify_triggerContext!;
 
         testData.presentation.dispose();
 
-        expect(testData.popupService.unregisterCalls).toEqual([testData.presentation]);
         expect(testData.presentation.publicify_triggerContext).toBeUndefined();
         expect(context.issuesFound).toBeNull();
         expect(context.valueHost).toBeUndefined();
@@ -658,7 +609,6 @@ describe('TriggeredErrorMessageDisplayPresentationBase.dispose', () => {
         jest.runOnlyPendingTimers();
 
         expect(testData.presentation.closeCalls).toHaveLength(0);
-        expect(testData.popupService.unregisterCalls).toEqual([testData.presentation]);
     });
 });
 

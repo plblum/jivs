@@ -6,10 +6,8 @@
  * @module jivs-dom/FieldPresentations/AbstractClasses/TriggeredErrorMessageDisplayPresentationBase
  */
 import type { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
 import type { IssueFound } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { IErrorMessageDisplayController, IErrorMessageDisplayTrigger, IErrorMessageDisplayTriggerContext, TriggerState } from '../Interfaces/ErrorMessageDisplayPresentation';
-import { IPopupService } from '../Interfaces/PopupErrorMessageDisplays';
 import { ErrorMessageDisplayPresentationBase, ErrorMessageDisplayPresentationBaseGlobalOptions, ErrorMessageDisplayPresentationBaseOptions } from './ErrorMessageDisplayPresentationBase';
 import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerContext';
 
@@ -17,7 +15,7 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * A base class for error message display presentations that are triggered by specific events or conditions,
  * rather than being always visible. Subclasses should implement the logic for showing and hiding the error
  * messages based on the triggering events.
- * 
+ *
  * This class represents trigger actions in these methods: open(), close(), and toggle().
  * It handles timer-based delays for showing and hiding the error messages.
  * 
@@ -27,10 +25,13 @@ import { ErrorMessageDisplayTriggerContext } from './ErrorMessageDisplayTriggerC
  * found in options.triggers.
  * Each installs event handlers that invoke any of the functions found on this class
  * through IErrorMessageDisplayController: open(), close(), and toggle().
- * 
+ *
  * Trigger installation only happens once, during the first call to apply() on the presentation.
  * (Not using the init function because it doesn't have the necessary parameters to fully realize an installation.)
  * 
+ * Subclasses decide what happens when validation changes by overriding apply().
+ * This class does not override it, so by default it only updates the issues on the trigger context.
+ *
  * ## CSS Classes
  * - persistent classes: 'jivs-triggered-error-message-display', 'jivs-errormessagedisplay'
  *   Add your own permanent classes within the options.variationClasses property.
@@ -86,10 +87,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
         {
             trigger.install(this._triggerContext);
         }
-        this._popupService = this._triggerContext.domServices.getPopupService(
-            this._triggerContext.valueHost.valueHostsManager);
-        this._popupService?.register(
-            this, () => this.triggerContext!);  
     }
 
     /**
@@ -101,8 +98,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
         return this._triggerContext;
     }
     private _triggerContext?: IErrorMessageDisplayTriggerContext;
-
-    private _popupService?: IPopupService;
 
 
     protected createTriggerContext(valueHost: IFieldValueHost): IErrorMessageDisplayTriggerContext
@@ -126,22 +121,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
         super.removeIssuesFound();
         this.triggerContext!.issuesFound = null;
         
-    }
-
-    public override apply(valueHost: IFieldValueHost, state: ValueHostValidationState): void
-    {
-        // need to retain an open state.
-        let wasOpen = this.triggerState === TriggerState.open ||
-            this.triggerState === TriggerState.closing;
-        super.apply(valueHost, state);
-
-        if (this.triggerContext)
-        {
-                // close and reopen forces fresh content from MessageFrame to be available
-            this.close(this.triggerContext, 0); // no delay!
-            if (wasOpen && this.triggerContext.issuesFound && this.triggerContext.issuesFound?.length > 0)
-                this.open(this.triggerContext, 0); // no delay!
-        }
     }
 
 //#region IErrorMessageDisplayController Implementation
@@ -179,26 +158,13 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
      */
     public open(context: IErrorMessageDisplayTriggerContext, delay: number): void
     {
-        function tryToOpen()
-        {
-            // defensive checks in case external actions change the environment
-            if (self.triggerState !== TriggerState.opening) return;
-            context.domServices.getPopupService(context.valueHost.valueHostsManager).prepareToOpen(self);
-            if (self.triggerState !== TriggerState.opening) return;
-            let success = self.openCore(context);
-            if (self.triggerState !== TriggerState.opening) return;
-            if (success)
-                self.opened();
-            else
-                self.failedToOpen();
-        }
         function execute()
         {
             self.cancelScheduledTransition();
             if (delay === 0)
             {
                 self.triggerState = TriggerState.opening;
-                tryToOpen();
+                self.tryToOpen(context);
             }
             else
             {
@@ -206,7 +172,7 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
                 self.delayTimer = setTimeout(() =>
                 {
                     self.delayTimer = null;
-                    tryToOpen();
+                    self.tryToOpen(context);
                 }, delay);
             }
         }
@@ -237,6 +203,18 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
      * providing access to the container element, content element, DOM services, value host, and controller.
      */
     protected abstract openCore(context: IErrorMessageDisplayTriggerContext): boolean;
+
+    protected tryToOpen(context: IErrorMessageDisplayTriggerContext): void
+    {
+        // defensive checks in case external actions change the environment
+        if (this.triggerState !== TriggerState.opening) return;
+        let success = this.openCore(context);
+        if (this.triggerState !== TriggerState.opening) return;
+        if (success)
+            this.opened();
+        else
+            this.failedToOpen();
+    }
 
     /**
      * Final action of opening that is invoked after the presentation has completed its opening transition.
@@ -394,8 +372,6 @@ export abstract class TriggeredErrorMessageDisplayPresentationBase
     public override dispose(): void
     {
         this.cancelScheduledTransition();
-        this._popupService?.unregister(this);
-        this._popupService = undefined;
         super.dispose();
         this._triggerContext?.dispose();
         this._triggerContext = undefined;
