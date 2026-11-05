@@ -100,10 +100,7 @@ export interface ReaderOptions
 {
     /**
      * Once finished, invoke validation on all fields using the preliminary option.
-     * This will ensure that all fields are validated, except:
-     *  - Required validators because the user doesn't need to notifications about fields they haven't edited
-     *  - Fields that already show signs of validation. This will let you replace (reinitialize) 
-     *    a few values and run validation without getting other fields involved.
+     * It reports problems with the data that is present, but not missing input the user hasn't had a chance to supply.
      * Defaults to true if not specified.
      */
     preliminaryValidation?: boolean;

@@ -169,11 +169,14 @@ interface ValidateOptions
         group: 'groupName'
     })
     ```
-- `preliminary` - Set to true when running a validation after initially setting values from the source.
-    It establishes validation errors only where a field has data to validate, except for required value errors.
-    When set, the `RequireTextCondition` is not checked as the user doesn't need
-    the noise complaining about missing input when they haven't had a chance to address it.
-    It also ensures that previously validated fields don't get changed.
+- `preliminary` - Set to true when running a validation after initially setting values from the source, such as just after loading a form.
+    It reports problems with the data that is present, but not those missing input to avoid reporting required field errors prematurely.
+
+    - Each validator with the `Require` category (such as `RequireTextCondition`) still runs. But if it finds the value missing,
+    its error is discarded and no further validators run on that `ValueHost`. The field is left without errors, so the user isn't shown noise about empty fields.
+    - If the `Require` validator passes, the remaining validators run normally and their errors are reported.
+    - Only `ValueHosts` that have not yet been validated are included. Those already validated keep their existing results.
+
     When undefined, it is the same as false.
 - `duringEdit` - Set to true when handling an intermediate change activity, such as a keystroke
     changed a textbox but the user remains in the textbox. For example, on the 

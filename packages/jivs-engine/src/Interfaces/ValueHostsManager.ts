@@ -151,7 +151,8 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * match the validation group supplied in options.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * @param options - Provides guidance on which validators to include.
-     * Important to set options.preliminary to true if invoking validate() prior to submitting.
+     * Recommend setting options.preliminary to true if invoking validate() prior to submitting
+     * to avoid reporting required field errors prematurely.
      * @returns The ValidationState object, which packages several key
      * pieces of information: isValid, doNotSave, and issues found.
      */
@@ -191,7 +192,8 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * Returns the current validation state of the ValueHost.
      * Does not invoke the validate() method; it only returns the current state.
      * @param options - Provides guidance on which validators to include.
-     * Important to set options.preliminary to true if invoking validate() prior to submitting.
+     * Recommend setting options.preliminary to true if invoking validate() prior to submitting
+     * to avoid reporting required field errors prematurely.
      * @returns The current ValidationState object. Its value is calculated to get all of its properties.
      */
     currentValidationState(options?: ValidateOptions | null): ValidationState;

@@ -2101,7 +2101,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
         expect(callbackValue).toBeNull();
 
     });
-    test('With 1 fieldValueHost and a condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because Require should be skipped, leaving NO validators', () => {
+    test('With 1 fieldValueHost and a Require condition that will evaluate as NoMatch, use option Preliminary=true, expect ValidationStatus.Undetermined because the Require issue is discarded', () => {
         const conditionType = 'TEST';
         let config = setupFieldValueHostConfig(0, [conditionType]);
         let setup = setupValueHostsManager([config]);

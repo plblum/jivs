@@ -1241,6 +1241,84 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
         issuesFound.push(createIssueFound('DTC', ValidationSeverity.Severe));
         expect(vr!.issuesFound).toEqual(issuesFound);
     });
+
+    describe('options.preliminary with Category=Require', () => {
+        function requireConfig(result: ConditionEvaluateResult, severity?: ValidationSeverity): Partial<ValidatorConfig> {
+            const config: Partial<ValidatorConfig> = {
+                conditionConfig: <UserSuppliedResultConditionConfig>{
+                    conditionType: UserSuppliedResultConditionType,
+                    category: ConditionCategory.Require,
+                    result: result
+                },
+                errorCode: 'RT'
+            };
+            if (severity !== undefined)
+                config.severity = severity;
+            return config;
+        }
+        const otherConfig: Partial<ValidatorConfig> = {
+            conditionConfig: {
+                conditionType: NeverMatchesConditionType
+            }
+        };
+
+        test('Require is NoMatch: its issue is not reported and later validators do not run. Result is null (nothing to report)', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.NoMatch), otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr).toBeNull();
+            expect(setup.valueHost.isValid).toBe(true);
+            expect(setup.valueHost.getIssuesFound()).toBeNull();
+        });
+        test('Require is NoMatch with severity Warning: still stops processing and reports nothing', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.NoMatch, ValidationSeverity.Warning), otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr).toBeNull();
+            expect(setup.valueHost.getIssuesFound()).toBeNull();
+        });
+        test('Require is Match: it is evaluated, so later validators run and their issues are reported', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.Match), otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([createIssueFound(NeverMatchesConditionType)]);
+        });
+        test('Require is Match and no other validators: status is Valid', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.Match)], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr!.status).toBe(ValidationStatus.Valid);
+            expect(vr!.issuesFound).toBeNull();
+        });
+        test('Require is Undetermined: later validators run and their issues are reported', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.Undetermined), otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([createIssueFound(NeverMatchesConditionType)]);
+        });
+        test('A non-Require validator that is NoMatch is still reported with preliminary', () => {
+            let setup = setupValidatorsValueHostBaseForValidate([otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: true })).not.toThrow();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([createIssueFound(NeverMatchesConditionType)]);
+        });
+        test('Without preliminary, Require NoMatch is reported (Severe) and stops later validators', () => {
+            let setup = setupValidatorsValueHostBaseForValidate(
+                [requireConfig(ConditionEvaluateResult.NoMatch), otherConfig], {});
+            let vr: ValueHostValidateResult | null = null;
+            expect(() => vr = setup.valueHost.validate({ preliminary: false })).not.toThrow();
+            expect(vr!.status).toBe(ValidationStatus.Invalid);
+            expect(vr!.issuesFound).toEqual([createIssueFound('RT', ValidationSeverity.Severe)]);
+        });
+    });
 });
 
 describe('injectedErrors', () =>

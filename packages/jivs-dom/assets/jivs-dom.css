@@ -394,7 +394,7 @@
  * appropriate to their layout. The outline example does not affect layout.
  */
 :where(.jivs-isvalidpresentation.jivs-invalid.jivs-fieldcontainer) {
-    /* outline: 2px solid var(--jivs-invalid-field-container-outline-color); */
+    /* outline: 1px dotted var(--jivs-invalid-field-container-outline-color); */
     /* background-color: var(--jivs-invalid-field-container-background-color); */
 }
 

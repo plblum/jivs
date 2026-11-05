@@ -338,9 +338,6 @@ export class Validator implements IValidator {
         };
         try {
             // options that may bail out
-            if (options.preliminary && this.condition.category === ConditionCategory.Require)
-                return bailout('Preliminary option skips Category=Require conditions');
-
             if (options.duringEdit && !this.supportsDuringEdit())
                 return bailout('DuringEdit option limited to conditions that implement IEvaluateConditionDuringEdits');
 

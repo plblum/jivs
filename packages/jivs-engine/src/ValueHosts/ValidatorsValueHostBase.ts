@@ -198,7 +198,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     if (fieldValResult.skipped)
                         continue;
                     validatorsInUse++;    // eslint-disable-line @typescript-eslint/no-unused-vars
-                    if (fieldValResult.issueFound) {
+                    if (fieldValResult.issueFound)
+                    {
+                        // options.preliminary focuses on stopping processing early for required conditions that are invalid
+                        // to avoid reporting required field errors prematurely.
+                        if (options.preliminary && iv.condition.category === ConditionCategory.Require)
+                        {
+                            stop = true;
+                            continue; // don't let it add its issueFound to the result.                        
+                        }
                         fieldValResult.issueFound.doNotSave = true;
                         switch (fieldValResult.issueFound.severity) {
                             case ValidationSeverity.Error:

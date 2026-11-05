@@ -709,7 +709,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * Does not invoke the validate() method; it only returns the current state.
      * Will return the cached validation state if it matches the requested options; otherwise, it recalculates the validation state.
      * @param options - Provides guidance on which validators to include.
-     * Important to set options.preliminary to true if invoking validate() prior to submitting.
+     * Recommend setting options.preliminary to true if invoking validate() prior to submitting
+     * to avoid reporting required field errors prematurely.
      * @returns The current ValidationState object. Its value is calculated to get all of its properties.
      */
     public currentValidationState(options?: ValidateOptions | null): ValidationState

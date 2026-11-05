@@ -931,9 +931,9 @@ describe('Validator.validate', () => {
             }            
         }, {}, null, null);
     });
-    test('Issue exists but Require is skipped because IValidateOption.Preliminary = true.', () => {
+    test('Issue exists and Require is still evaluated by Validator when IValidateOption.Preliminary = true. ValidatorsValueHostBase decides whether to keep it.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({
-        }, { preliminary: true }, 'Preliminary option', LoggingLevel.Info, false);
+        }, { preliminary: true }, null, null, true);
     });
     test('Issue exists and Require is evaluated (as NoMatch) because IValidateOption.Preliminary = false.', () => {
         testConditionHasIssueAndBlockingCheckPermitsValidation({

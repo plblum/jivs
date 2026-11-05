@@ -100,11 +100,13 @@ These properties are all related to `ValueHostsManager` validation:
     For example, the `ValueHostsManager` handles two forms at once. Give the `ValueHostConfig.group` a name for each form. Then make their submit command
     pass in the same group name.
   
-- `preliminary` - Set to true when running a validation after initially setting values from the source.
-    It establishes validation errors only where a field has data to validate, except for required value errors.
-    When set, the `RequireTextCondition` is not checked as the user doesn't need
-    the noise complaining about missing input when they haven't had a chance to address it.
-    It also ensures that previously validated fields don't get changed.
+- `preliminary` - Set to true when running a validation after initially setting values from the source, such as just after loading a form.
+    It reports problems with the data that is present, but not those missing input to avoid reporting required field errors prematurely.
+
+    - Each validator with the `Require` category (such as `RequireTextCondition`) still runs. But if it finds the value missing,
+    its error is discarded and no further validators run on that `ValueHost`. The field is left without errors, so the user isn't shown noise about empty fields.
+    - If the `Require` validator passes, the remaining validators run normally and their errors are reported.
+    - Only `ValueHosts` that have not yet been validated are included. Those already validated keep their existing results.
 - `skipCallback` - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
 
 ## API Reference
