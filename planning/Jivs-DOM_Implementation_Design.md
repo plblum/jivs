@@ -3077,19 +3077,41 @@ Both Validation Summaries and submit-role elements use the same selection rules:
 * when the role has no default, installation records `jivsFormPresentation = null`; registered static ARIA for the role may still modify the element.
 
 ## Built-in Form Presentations
-> PENDING: Detailed implementation design for the built-in Validation Summary and submit presentations is deferred.
+
+Both classes live in `packages/jivs-dom/src/FormPresentations/`, derive from `FormPresentationBase`, and inherit its group routing. Their global options are read from `domServices.options.validationSummary` and `domServices.options.submitButton`. Each has a test file of the same name in `packages/jivs-dom/tests/FormPresentations/` with full statement and branch coverage.
+
+### ValidationSummaryPresentation
+
+`ValidationSummaryPresentation(element, messageFrame, options)` (`messageFrame` is required) displays the issues of the supplied `ValidationState` in the container element it is installed on.
+
+* Persistent classes: `jivs-validationsummary`, then `jivs-messagecontent` when `messageFrame.needsContainerUpdate()`, then `options.variationClasses`.
+* Stateful class: `jivs-has-issues` while `state.issuesFound` is not empty.
+* `applyCore()` first clears the earlier state (class and `textContent`), then asks the `IMessageFrame` to render the issues into the element.
+* A click on any descendant with a `data-identifier` attribute dispatches an `IssueClickedEvent` (`'IssueClicked'`, property `elementIdentifier`) from the container element so application code can focus the field. Clicks without an identifier, or with an empty one, raise nothing. `dispose()` removes the listener.
+* Options: `ValidationSummaryPresentationOptions`; adds nothing beyond `FormPresentationBaseOptions` (`variationClasses`, `respondToWildcardGroup`).
+
+### SubmitButtonPresentation
+
+`SubmitButtonPresentation(element, options)` disables a submit control while `ValidationState.doNotSave` is true. It supports `<button>`, `<input type="submit">` and `<input type="button">`.
+
+* Persistent classes: `jivs-submitbutton`, then `options.variationClasses`.
+* Stateful class: `jivs-do-not-save` while `doNotSave` is true. It is added and removed together with the `disabled` property.
+* `applyCore()` always clears the earlier state first, then reapplies when `doNotSave` is true. Because of this, a button disabled in the markup becomes enabled when `doNotSave` is false. Pages that manage `disabled` themselves set `allowDisable: false`, which maintains only the class.
+* `allowDisable` (`SubmitButtonPresentationGlobalOptions`, default behavior is `true`) can be set globally or per instance; the instance wins.
+* An unsupported element (for example a `div` or `<input type="text">`) logs a `Warn` through `DomLoggingFacade` during `init()` and is ignored by `apply()`.
+
+### Registration
 
 The built-in configuration:
 
-* registers `validationSummary` and assigns it as the default presentation for `ElementRole.summary`;
-* registers `disableSubmit` as an available presentation;
-* does not assign a default presentation for `ElementRole.submit`.
+* registers `ValidationSummary` and assigns it as the default presentation for `ElementRole.summary`
+* registers `SubmitButton` and assigns it as the default presentation for `ElementRole.submit`
 
 Consequently, a Validation Summary receives the standard summary presentation unless it requests another one. A submit-role element without an explicit or application-configured default receives no presentation; it changes only when applicable static ARIA behavior has been registered. Submit-role elements are not limited to buttons, and additional submit presentations may implement other approaches.
 
 The built-in `validationSummary` registration leaves `respondToWildcardGroup` at its default value of `false`. Applications that want a group-specific summary to respond when wildcard validation occurs can register another presentation name whose creator enables the property.
 
-Applications may register additional form presentations and may assign their own default for either role. The detailed HTML, interaction, group-display policy, and CSS design of the initial Validation Summary and submit presentations remain part of the focused presentation-design work.
+Applications may register additional form presentations and may assign their own default for either role. The detailed HTML, group-display policy, and CSS design of the initial presentations remain part of the focused presentation-design work. The submit class is currently not registered under `disableSubmit` anywhere in `src`; wiring it into the built-in configuration is still to do.
 
 
 ## Issues Found Formatter Service

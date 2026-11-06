@@ -68,14 +68,13 @@ export class ValidationSummaryPresentation
     }
     /**
      * A CSS class that is applied when issues are found.
-     * Defaults to 'jivs-has-issues' if not provided in the constructor.
      */
     public get hasIssuesClass(): string[]
     {
         return ['jivs-has-issues'];
     }
     /**
-     * @param list - adds 'jivs-errormessagedisplay' to the list of persistent classes.
+     * @param list - adds 'jivs-validationsummary' to the list of persistent classes.
      */
     protected override gatherPersistentClasses(list: string[]): void
     {

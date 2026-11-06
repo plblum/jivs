@@ -1097,3 +1097,9 @@
 .tippy-box .jivs-messagecontent {
     color: #ffaeae;
 }
+
+/** SUBMIT BUTTON ROLES **/
+.jivs-submitbutton.jivs-do-not-save {
+    /* The HTML input or button element will have been styled based on setting its disabled attribute
+    Use this when option.allowDisable is set to false or you prefer to style the button differently when it is in the do-not-save state */
+}

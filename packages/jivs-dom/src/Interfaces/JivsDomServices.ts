@@ -37,6 +37,7 @@ import { HeaderFooterMessageFrameGlobalOptions } from '../Presentations_common/H
 import { IconMessageFrameGlobalOptions } from '../Presentations_common/IconMessageFrame';
 import { ColumnarErrorIndicatorContentGlobalOptions } from '../FieldPresentations/ErrorIndicatorContent/ColumnarErrorIndicatorContent';
 import { ValidationSummaryPresentationGlobalOptions, ValidationSummaryPresentationOptions } from '../FormPresentations/ValidationSummaryPresentation';
+import { SubmitButtonPresentationGlobalOptions } from '../FormPresentations/SubmitButtonPresentation';
 
 
 /**
@@ -264,6 +265,7 @@ export interface JivsDomGlobalOptions
     iconMessageFrame: IconMessageFrameGlobalOptions,
     columnarErrorIndicatorContent: ColumnarErrorIndicatorContentGlobalOptions,
     validationSummary: ValidationSummaryPresentationGlobalOptions,
+    submitButton: SubmitButtonPresentationGlobalOptions,
     validationBehaviors: ValidationBehaviors
     
     // when adding here, also add to initJivsDomGlobalOptions() below
@@ -286,6 +288,7 @@ export function initJivsDomGlobalOptions(): JivsDomGlobalOptions
         iconMessageFrame: {},
         columnarErrorIndicatorContent: {},
         validationSummary: {},
+        submitButton: {},
         validationBehaviors: {}
     };
 }

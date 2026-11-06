@@ -79,6 +79,7 @@ import { HiddenErrorMessagesAriaStaticUpdater } from '@plblum/jivs-dom/build/Ari
 import { TargetErrorMessageDisplayPresentation, TargetErrorMessageDisplayPresentationOptions } from '@plblum/jivs-dom/build/FieldPresentations/TargetErrorMessageDisplayPresentation';
 import { CompositeFieldPresentation } from '@plblum/jivs-dom/build/FieldPresentations/CompositeFieldPresentation';
 import { TippyPopupMechanism, type TippyPopupOptions } from '@plblum/jivs-dom-tippy/build/index';
+import { SubmitButtonPresentation, SubmitButtonPresentationOptions } from '@plblum/jivs-dom/build/FormPresentations/SubmitButtonPresentation';
 
 // eslint-disable @typescript-eslint/naming-convention
 
@@ -546,6 +547,7 @@ function registerFormPresentations(factory: IPresentationFactory<IFormPresentati
 
     // FYI: this function is lazy loaded.
     factory.setDefaultPresentationName(ElementRole.summary, 'ValidationSummary');
+    factory.setDefaultPresentationName(ElementRole.submit, 'SubmitButton');
 
     // VALIDATION SUMMARY
     /* Validation Summaries have several components,
@@ -619,6 +621,19 @@ function registerFormPresentations(factory: IPresentationFactory<IFormPresentati
         new ValidationSummaryPresentation(element,
             new MessageFrame(),
             validationSummaryOptions)); 
+    
+    // SUBMIT BUTTONS
+    /**
+     * The SubmitButtonPresentation changes two aspects of a button element:
+     *  - it applies CSS classes for styling: 'jivs-submitbutton' and when applicable 'jivs-doNotSave'
+     *  - it manages the disabled state based on the validation state
+     * It only works with button elements of type "submit" or "button", and input elements of type "submit" or "button".
+     */
+    let submitButtonOptions: SubmitButtonPresentationOptions = {
+        allowDisable: true
+    };
+    factory.register('SubmitButton', (element) =>
+        new SubmitButtonPresentation(element, submitButtonOptions));    
 }
 
 /**
