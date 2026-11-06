@@ -111,6 +111,8 @@ body { margin: 0; line-height: 1.5; }
 .preview-docs summary { padding: 0.75rem 1.25rem; cursor: pointer; font-weight: 700; }
 .preview-code-wrap { padding: 0 1.25rem 1.25rem; }
 .preview-code-wrap p { margin-top: 0; color: #555f6e; }
+.preview-html-view { display: flex; gap: 0.75rem; align-items: center; margin: 0 0 0.5rem; padding: 0; border: 0; }
+.preview-html-view legend { float: left; margin-inline-end: 0.75rem; font-weight: 600; }
 
 .preview-code-wrap pre {
     overflow: auto;

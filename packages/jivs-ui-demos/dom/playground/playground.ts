@@ -459,6 +459,8 @@ function escapeHtml(text: string): string
 }
 
 const targetGuidance = 'Focus a field with errors to see its messages here.';
+let htmlView: 'initial' | 'current' = 'current';
+let initialFieldMarkup: HTMLDivElement;
 const targetHandlerCode = `const target = document.querySelector('#preview-shared-target');
 const guidance = 'Focus a field with errors to see its messages here.';
 target.addEventListener('jivs-message-show', (event) => {
@@ -532,7 +534,11 @@ ${ secondField }
 ${ example.sharedTarget ? `<section class="preview-target"><h3>Shared target</h3><div id="preview-shared-target">${ targetGuidance }</div></section>` : '' }
 </div>
 <div class="preview-docs">
-<details open><summary>Current Jivs-SimpleDOM HTML</summary><div class="preview-code-wrap">${ settings.secondField ? '<p>First field only.</p>' : '' }<pre><code data-html-code></code></pre></div></details>
+<details open><summary>Jivs-SimpleDOM HTML</summary><div class="preview-code-wrap">${ settings.secondField ? '<p>First field only.</p>' : '' }
+<fieldset class="preview-html-view"><legend>View as</legend>
+<label><input type="radio" name="preview-html-view" value="initial" ${ htmlView === 'initial' ? 'checked' : '' }> Set up</label>
+<label><input type="radio" name="preview-html-view" value="current" ${ htmlView === 'current' ? 'checked' : '' }> Live</label>
+</fieldset><pre><code data-html-code></code></pre></div></details>
 <details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Register these presentations before FormInstaller runs. Comments show the role and registration name${ example.sharedTarget === 'composite' || example.sharedTarget === 'popup-composite' ? '; the Composite resolves its child names through the same factory' : '' }.</p><pre><code>${ escapeHtml(registrationCode) }</code></pre></div></details>
 ${ example.sharedTarget ? `<details><summary>Shared target and event handlers</summary><div class="preview-code-wrap"><p>The application owns the target and updates it in response to presentation events.</p><pre><code>${ escapeHtml(`<div id="preview-shared-target">${ targetGuidance }</div>\n\n${ targetHandlerCode }`) }</code></pre></div></details>` : '' }
 <details><summary>CSS classes in use</summary><div class="preview-code-wrap"><p>Locate these names in jivs-dom.css.</p><ul class="preview-class-list" data-class-list></ul></div></details>
@@ -559,6 +565,15 @@ function userSetsEditor(fieldName: string, kind: EditorKind, value: string): voi
     vhm?.getFieldValueHost(fieldName)?.setTextValue(value, { reset: true });
 }
 
+function describeHtml(article: HTMLElement): void
+{
+    const markup = htmlView === 'initial'
+        ? initialFieldMarkup.innerHTML
+        : article.querySelector<HTMLElement>('[data-primary-field]')!.innerHTML;
+    article.querySelector('[data-html-code]')!.textContent =
+        html_beautify(markup, { indent_size: 2, wrap_line_length: 100, inline: [] });
+}
+
 function describeClasses(article: HTMLElement): void
 {
     const classes = new Set<string>();
@@ -568,9 +583,7 @@ function describeClasses(article: HTMLElement): void
     list.innerHTML = classes.size
         ? Array.from(classes).sort().map((c) => `<li><code>.${ escapeHtml(c) }</code></li>`).join('')
         : '<li class="preview-class-empty">No Jivs CSS classes are present.</li>';
-    article.querySelector('[data-html-code]')!.textContent =
-        html_beautify(article.querySelector('[data-primary-field]')!.innerHTML,
-            { indent_size: 2, wrap_line_length: 100, inline: [] });
+    describeHtml(article);
 }
 
 let vhm: ValueHostsManager | null = null;
@@ -594,6 +607,8 @@ function rebuild(preserveEditorValues = false): void
         }))
         : [];
     gallery.innerHTML = buildGalleryMarkup(settings);
+    initialFieldMarkup = document.createElement('div');
+    initialFieldMarkup.innerHTML = gallery.querySelector<HTMLElement>('[data-primary-field]')!.innerHTML;
     for (const saved of savedEditors)
     {
         const editor = document.getElementById(saved.id);
@@ -624,6 +639,11 @@ function rebuild(preserveEditorValues = false): void
 
     // Validation changes classes and content in the specimen; keep the reports current.
     const article = gallery.querySelector<HTMLElement>('.preview-example')!;
+    article.querySelectorAll<HTMLInputElement>('input[name="preview-html-view"]').forEach((input) =>
+        input.addEventListener('change', () => {
+            htmlView = input.value === 'initial' ? 'initial' : 'current';
+            describeHtml(article);
+        }));
     specimenObserver = new MutationObserver(() => describeClasses(article));
     specimenObserver.observe(article.querySelector('.preview-specimen')!,
         { subtree: true, childList: true, attributes: true, characterData: true });
@@ -646,6 +666,10 @@ function applyOrientation(): void
         field.classList.toggle('preview-field-side-by-side', sideBySide);
         field.classList.toggle('preview-field-stacked', !sideBySide);
     });
+    const initialField = initialFieldMarkup.querySelector('.preview-field')!;
+    initialField.classList.toggle('preview-field-side-by-side', sideBySide);
+    initialField.classList.toggle('preview-field-stacked', !sideBySide);
+    describeHtml(document.querySelector<HTMLElement>('#preview-gallery .preview-example')!);
 }
 
 function buildExampleSelector(): void
