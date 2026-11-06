@@ -56,7 +56,7 @@ function formalJivsSetupProcess(settings: PlaygroundSettings): ValueHostsManager
     const services = createJivsServices('en-US');
     configureJivsDom(services);
     // Normally part of configureJivsDom(): the named presentations that elements pick with data-jivs-presentation.
-    registerExamplePresentations(services.domServices.fieldPresentationFactory);
+    registerExamplePresentations(services.domServices.fieldPresentationFactory, settings);
 
     // 2. Rules and the manager. containerIdentifier limits FormInstaller to this form's HTML.
     const config = new PlaygroundFormRules(services, settings).configure();
@@ -156,7 +156,7 @@ function registerRolePresentations(factory: IPresentationFactory<IFieldPresentat
         new FieldContainerPresentation(element));
 }
 
-function registerExamplePresentations(factory: IPresentationFactory<IFieldPresentation>): void
+function registerExamplePresentations(factory: IPresentationFactory<IFieldPresentation>, settings: PlaygroundSettings): void
 {
     registerRolePresentations(factory);
     const frames: Record<FrameKind, () => MessageFrame | IconMessageFrame | HeaderFooterMessageFrame> = {
@@ -175,6 +175,7 @@ function registerExamplePresentations(factory: IPresentationFactory<IFieldPresen
         interactive: true,
         appendTo: () => document.body
     };
+    const anchorSelector = popupAnchorSelectors[settings.popupAnchor];
 
     factory.register(targetChildName, (element) =>
         new TargetErrorMessageDisplayPresentation(element, new MessageFrame(), { targetSelector }));
@@ -184,7 +185,7 @@ function registerExamplePresentations(factory: IPresentationFactory<IFieldPresen
         new PopupErrorMessageDisplayPresentation(element,
             new ColumnarErrorIndicatorContent({ column3Html: '' }),
             new MessageFrame(), popupMechanismOptions,
-            { popupOnHover: true, popupOnFocusInEditor: true, popupOnHoverOverEditor: true }));
+            { anchorSelector, popupOnHover: true, popupOnFocusInEditor: true, popupOnHoverOverEditor: true }));
 
     for (const example of examples)
     {
@@ -220,6 +221,7 @@ function registerExamplePresentations(factory: IPresentationFactory<IFieldPresen
                     popupMechanismOptions,
                     {
                         variationClasses: example.variations,
+                        anchorSelector,
                         popupOnHover: true,
                         popupOnFocusInEditor: true,
                         popupOnHoverOverEditor: true
@@ -233,6 +235,14 @@ function registerExamplePresentations(factory: IPresentationFactory<IFieldPresen
  */
 
 type EditorKind = 'text' | 'select' | 'textarea' | 'checkbox' | 'radio';
+type PopupAnchor = 'self' | 'editor' | 'label' | 'container';
+
+const popupAnchorSelectors: Record<PopupAnchor, string | undefined> = {
+    self: undefined,
+    editor: '#{FieldName}_editor:not([type="radio"]), #{FieldName}_editor_group',
+    label: '#{FieldName}_label',
+    container: '#{FieldName}_container'
+};
 
 interface PlaygroundSettings
 {
@@ -241,6 +251,7 @@ interface PlaygroundSettings
     editor: EditorKind;
     sideBySide: boolean;
     secondField: boolean;
+    popupAnchor: PopupAnchor;
     roleDestinations: {
         label: boolean;
         required: boolean;
@@ -411,7 +422,7 @@ const editors: Record<EditorKind, EditorDefinition> = {
             { pattern: /^(?!email$)/, message: 'Email is not available.' }
         ],
         invalidValue: 'email', validValue: 'phone',
-        markup: (f) => '<div class="preview-choice-list">' +
+        markup: (f) => `<div id="${ f }_editor_group" class="preview-choice-list">` +
             `<input id="${ f }_editor" type="radio" name="${ f }_group" value="email" data-jivs-role="editor" data-field="${ f }"><label for="${ f }_editor">Email</label>` +
             `<input id="${ f }_phone" type="radio" name="${ f }_group" value="phone"><label for="${ f }_phone">Phone</label></div>`
     }
@@ -431,6 +442,7 @@ function getSettings(): PlaygroundSettings
         editor: (document.getElementById('preview-editor') as HTMLSelectElement).value as EditorKind,
         sideBySide: document.querySelector<HTMLInputElement>('input[name="preview-orientation"]:checked')!.value === 'side-by-side',
         secondField: (document.getElementById('preview-second-field') as HTMLInputElement).checked,
+        popupAnchor: (document.getElementById('preview-popup-anchor') as HTMLSelectElement).value as PopupAnchor,
         roleDestinations: {
             label: (document.getElementById('preview-role-label') as HTMLInputElement).checked,
             required: (document.getElementById('preview-role-required') as HTMLInputElement).checked,
@@ -466,8 +478,8 @@ function buildGalleryMarkup(settings: PlaygroundSettings): string
         const attrs = `data-field="${ f }"`;
         const roleAttribute = (optedIn: boolean, role: string, presentationName: string) =>
             optedIn ? `data-jivs-role="${ role }" ${ attrs } data-jivs-presentation="${ presentationName }"` : '';
-        return `<div ${ roleAttribute(settings.roleDestinations.container, 'container', fieldContainerPresentationName) } class="preview-field ${ orientation }">
-<div class="preview-label-zone"><label ${ roleAttribute(settings.roleDestinations.label, 'label', labelPresentationName) } for="${ f }_editor">${ escapeHtml(label) }</label></div>
+        return `<div id="${ f }_container" ${ roleAttribute(settings.roleDestinations.container, 'container', fieldContainerPresentationName) } class="preview-field ${ orientation }">
+<div class="preview-label-zone"><label id="${ f }_label" ${ roleAttribute(settings.roleDestinations.label, 'label', labelPresentationName) } for="${ f }_editor">${ escapeHtml(label) }</label></div>
 <div class="preview-control-zone">
 <div class="preview-input-row"><div class="preview-editor-slot">${ markup }</div>
 <div class="preview-required-slot"><span ${ roleAttribute(settings.roleDestinations.required, 'required', requiredIndicatorPresentationName) }></span></div></div>
@@ -484,13 +496,20 @@ function buildGalleryMarkup(settings: PlaygroundSettings): string
     // Each sample is only the instantiation; the comment ties it to the HTML attributes.
     const sample = (role: string, presentationName: string, code: string) =>
         `// data-jivs-role="${ role }" data-jivs-presentation="${ presentationName }"\n${ code }`;
+    const popupSample = (code: string) => {
+        const anchorSelector = popupAnchorSelectors[settings.popupAnchor];
+        return anchorSelector
+            ? code.replace('popupOnHover: true', `anchorSelector: '${ anchorSelector }', popupOnHover: true`)
+            : code;
+    };
     const registrationCode = [
-        sample('error', example.presentationName, example.registrationCode),
+        sample('error', example.presentationName,
+            example.popupIndicator ? popupSample(example.registrationCode) : example.registrationCode),
         example.sharedTarget === 'composite'
             ? sample('error', inlineChildName, 'new InlineErrorMessageDisplayPresentation(element, new MessageFrame())')
             : null,
         example.sharedTarget === 'popup-composite'
-            ? sample('error', popupChildName, "new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { popupOnHover: true, popupOnFocusInEditor: true, popupOnHoverOverEditor: true })")
+            ? sample('error', popupChildName, popupSample("new PopupErrorMessageDisplayPresentation(element,\n    new ColumnarErrorIndicatorContent({ column3Html: '' }),\n    new MessageFrame(), popupMechanismOptions,\n    { popupOnHover: true, popupOnFocusInEditor: true, popupOnHoverOverEditor: true })"))
             : null,
         example.sharedTarget === 'composite' || example.sharedTarget === 'popup-composite'
             ? sample('error', targetChildName, "new TargetErrorMessageDisplayPresentation(element, new MessageFrame(),\n    { targetSelector: '#preview-shared-target' })")
@@ -639,11 +658,20 @@ function buildExampleSelector(): void
         + group('Shared target', examples.filter((e) => e.sharedTarget));
 }
 
+function updatePopupAnchorControl(): void
+{
+    const example = getSettings().example;
+    document.getElementById('preview-popup-anchor-control')!.hidden =
+        !example.popupIndicator && example.sharedTarget !== 'popup-composite';
+}
+
 buildExampleSelector();
+updatePopupAnchorControl();
 document.getElementById('preview-example')!.addEventListener('change', () => {
     const exampleId = (document.getElementById('preview-example') as HTMLSelectElement).value;
     const example = examples.find((item) => item.id === exampleId);
     (document.getElementById('preview-second-field') as HTMLInputElement).checked = !!example?.sharedTarget;
+    updatePopupAnchorControl();
     rebuild();
     enterSample(false);
 });
@@ -652,6 +680,7 @@ for (const id of ['preview-editor', 'preview-multiple', 'preview-second-field'])
     { rebuild(); enterSample(false); });
 for (const id of ['preview-role-label', 'preview-role-required', 'preview-role-container'])
     document.getElementById(id)!.addEventListener('change', () => rebuild(true));
+document.getElementById('preview-popup-anchor')!.addEventListener('change', () => rebuild(true));
 document.getElementById('preview-reset')!.addEventListener('click', () =>
 {
     const gallery = document.getElementById('preview-gallery')!;

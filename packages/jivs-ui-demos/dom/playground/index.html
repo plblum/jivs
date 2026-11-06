@@ -23,6 +23,16 @@
             </select>
         </label>
 
+        <label id="preview-popup-anchor-control" hidden>
+            <strong>Popup anchor</strong>
+            <select id="preview-popup-anchor">
+                <option value="self">Self error message display</option>
+                <option value="editor">Editor</option>
+                <option value="label">Label</option>
+                <option value="container">Field container</option>
+            </select>
+        </label>
+
         <fieldset>
             <legend>Attach jivs-dom roles to</legend>
             <label><input id="preview-role-label" type="checkbox" checked> Label</label>
@@ -60,6 +70,11 @@
             </p>
             <p>
                 The Example dropdown provides numerous pre-configured scenarios to explore how different field setups and validation states behave.
+            </p>
+            <p>
+                Popup examples let you choose the anchor independently of the attached Jivs roles.
+                For radio buttons, the editor anchor is the group. Changing the anchor preserves editor values
+                while rebuilding the form and running preliminary validation.
             </p>
         </details>
 
