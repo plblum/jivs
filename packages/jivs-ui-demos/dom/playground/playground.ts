@@ -113,19 +113,28 @@ class PlaygroundFormRules extends ValueHostRulesBase
         if (this._settings.editor === 'checkbox')
         {
             // A checkbox holds a Boolean, so the rule compares it to true.
-            field.equalTo(true, 'You must accept the terms.');
+            field.requireText('You must accept the terms.');
             if (this._settings.allMessages)
                 field.equalTo(true, { errorMessage: 'Acceptance is required before continuing.', errorCode: 'AcceptRequired' });
             return;
         }
         const rules = this._settings.allMessages ? editor.rules : editor.rules.slice(0, 1);
         // Preliminary validation suppresses a failing Require condition and stops further validation.
-        if (this._settings.editor === 'text' || this._settings.editor === 'textarea')
-            field.requireText();
-        else if (this._settings.editor === 'radio')
-            field.requireText({ errorMessage: 'Choose a contact method.' });
-        else if (this._settings.editor === 'select')
-            field.requireText({ errorMessage: 'Choose a country.' });
+        switch (this._settings.editor)
+        {      
+            case 'text':
+            case 'textarea':
+                field.requireText();
+                break;
+            case 'radio':
+                field.requireText({ errorMessage: 'Choose a contact method.' });
+                break;
+            case 'select':
+                field.requireText({ errorMessage: 'Choose a country.' });
+                break;
+
+        }
+        // Removed the previous if-else block as it is now handled by the switch statement above.
         // Each validator on a field needs its own errorCode.
         rules.forEach((rule, i) =>
             field.regExp(rule.pattern, {
@@ -543,9 +552,9 @@ ${ example.sharedTarget ? `<section class="preview-target"><h3>Shared target</h3
 </fieldset><pre><code data-html-code></code></pre></div></details>
 <details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Register these presentations before FormInstaller runs. Comments show the role and registration name${ example.sharedTarget === 'composite' || example.sharedTarget === 'popup-composite' ? '; the Composite resolves its child names through the same factory' : '' }.</p><pre><code>${ Prism.highlight(registrationCode, Prism.languages.typescript, 'typescript') }</code></pre></div></details>
 ${ example.sharedTarget ? `<details><summary>Shared target and event handlers</summary><div class="preview-code-wrap"><p>The application owns the target and updates it in response to presentation events.</p><h3>HTML</h3><pre><code>${ Prism.highlight(`<div id="preview-shared-target">${ targetGuidance }</div>`, Prism.languages.markup, 'markup') }</code></pre><h3>TypeScript</h3><pre><code>${ Prism.highlight(targetHandlerCode, Prism.languages.typescript, 'typescript') }</code></pre></div></details>` : '' }
-<details><summary>CSS classes in use</summary><div class="preview-code-wrap"><p>Locate these names in jivs-dom.css.</p><ul class="preview-class-list" data-class-list></ul></div></details>
 </div></article>`;
 }
+// <details><summary>CSS classes in use</summary><div class="preview-code-wrap"><p>Locate these names in jivs-dom.css.</p><ul class="preview-class-list" data-class-list></ul></div></details>
 
 // Simulates the user so the real editor to ValueHost path runs.
 function userSetsEditor(fieldName: string, kind: EditorKind, value: string): void
@@ -581,10 +590,10 @@ function describeClasses(article: HTMLElement): void
     const classes = new Set<string>();
     article.querySelectorAll('.preview-specimen [class]').forEach((el) =>
         el.classList.forEach((c) => { if (c.startsWith('jivs-')) classes.add(c); }));
-    const list = article.querySelector('[data-class-list]')!;
-    list.innerHTML = classes.size
-        ? Array.from(classes).sort().map((c) => `<li><code>.${ escapeHtml(c) }</code></li>`).join('')
-        : '<li class="preview-class-empty">No Jivs CSS classes are present.</li>';
+    // const list = article.querySelector('[data-class-list]')!;
+    // list.innerHTML = classes.size
+    //     ? Array.from(classes).sort().map((c) => `<li><code>.${ escapeHtml(c) }</code></li>`).join('')
+    //     : '<li class="preview-class-empty">No Jivs CSS classes are present.</li>';
     describeHtml(article);
 }
 

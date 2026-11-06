@@ -101,7 +101,10 @@ body { margin: 0; line-height: 1.5; }
 .preview-editor-slot textarea { min-height: 5rem; resize: vertical; }
 /* A textarea's native baseline is at its bottom; align the surrounding text with its first line instead. */
 .preview-field-side-by-side .preview-editor-slot textarea { vertical-align: top; }
-.preview-choice-list { display: flex; flex-wrap: wrap; gap: 0.45rem 1rem; }
+.preview-choice-list { display: flex; flex-wrap: wrap; }
+.preview-choice-list>label:first-of-type {
+    margin-right: 1rem;
+}
 .preview-field-side-by-side .preview-error-slot { flex: 1 1 24rem; min-width: 12rem; }
 .preview-field-stacked .preview-error-slot { width: min(100%, 38rem); }
 
