@@ -998,6 +998,23 @@
     font-weight: var(--jivs-error-indicator-column3-font-weight);
 }
 
+/* There are two ways to fill columns: 
+ * 1. With content supplied within HTML by setting up the ColumnarErrorIndicatorContent component options.
+ * 2. With content supplied by the ::after pseudo-element in CSS.
+ * Our default is to fill columns with content supplied within HTML by setting up the ColumnarErrorIndicatorContent component options.
+ * If you want to use ::after, which is commented out below, 
+ * remove the selector :where(.jivs-columnarerrorindicatorcontent > :empty) from the CSS
+ * because it will hide the columns that are empty, preventing the ::after content from being displayed.
+ */
+:where(.jivs-columnarerrorindicatorcontent > :empty) {
+    display: none;
+}
+/*
+:where(.jivs-columnarerrorindicatorcontent > .jivs-column2::after) {
+    content: '\26A0'; 
+}
+*/
+
 :where(.jivs-popuperrormessagedisplay:hover .jivs-columnarerrorindicatorcontent > .jivs-column1) {
     color: var(--jivs-error-indicator-column1-hover-color);
 }

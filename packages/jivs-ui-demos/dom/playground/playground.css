@@ -69,18 +69,23 @@ body { margin: 0; line-height: 1.5; }
     border: 1px dashed #aeb7c4;
     border-radius: 0.4rem;
     background: #fcfdff;
+    line-height: 1;
 }
 
 /* The surrounding field is application markup used only by this playground. */
 .preview-field { display: flex; gap: 0.5rem 1.25rem; min-width: 0; padding: 0.2rem;  }
+.preview-specimen > .preview-field { margin-top: 1rem; }
+.preview-target { margin-top: 1rem; padding: 0.75rem; border: 1px solid #aeb7c4; border-radius: 0.35rem; }
+.preview-target h3 { margin: 0 0 0.5rem; }
+.preview-target #preview-shared-target > strong { display: block; }
 .preview-field-stacked { flex-direction: column; }
-.preview-field-side-by-side { flex-direction: row; align-items: flex-start; }
+.preview-field-side-by-side { flex-direction: row; align-items: baseline; }
 .preview-label-zone { display: flex; flex: 0 0 12rem; align-items: baseline; gap: 0.15rem; min-width: 0; }
 .preview-field-stacked .preview-label-zone { flex-basis: auto; }
 .preview-control-zone { display: flex; flex: 1 1 auto; gap: 0.25rem 0.75rem; min-width: 0; }
 .preview-field-stacked .preview-control-zone { flex-direction: column; align-items: stretch; }
-.preview-field-side-by-side .preview-control-zone { flex-direction: row; align-items: flex-start; }
-.preview-input-row { display: flex; flex-direction: row; align-items: flex-start; gap: 0.25rem 0.75rem; min-width: 0; }
+.preview-field-side-by-side .preview-control-zone { flex-direction: row; align-items: baseline; }
+.preview-input-row { display: flex; flex-direction: row; align-items: baseline; gap: 0.25rem 0.75rem; min-width: 0; }
 .preview-editor-slot { flex: 0 1 22rem; min-width: 10rem; }
 .preview-required-slot { flex: 0 0 auto; }
 .preview-field-stacked .preview-editor-slot { flex-basis: auto; }
@@ -90,11 +95,12 @@ body { margin: 0; line-height: 1.5; }
 .preview-editor-slot textarea {
     width: 100%;
     max-width: 24rem;
-    padding: 0.45rem 0.55rem;
     font: inherit;
 }
 
 .preview-editor-slot textarea { min-height: 5rem; resize: vertical; }
+/* A textarea's native baseline is at its bottom; align the surrounding text with its first line instead. */
+.preview-field-side-by-side .preview-editor-slot textarea { vertical-align: top; }
 .preview-choice-list { display: flex; flex-wrap: wrap; gap: 0.45rem 1rem; }
 .preview-field-side-by-side .preview-error-slot { flex: 1 1 24rem; min-width: 12rem; }
 .preview-field-stacked .preview-error-slot { width: min(100%, 38rem); }
@@ -123,9 +129,9 @@ body { margin: 0; line-height: 1.5; }
 .preview-class-empty { color: #697384; font-style: italic; }
 
 @media (max-width: 52rem) {
-    .preview-field-side-by-side { flex-direction: column; }
+    .preview-field-side-by-side { flex-direction: column; align-items: stretch; }
     .preview-field-side-by-side .preview-label-zone { flex-basis: auto; }
-    .preview-field-side-by-side .preview-control-zone { width: 100%; flex-direction: column; }
+    .preview-field-side-by-side .preview-control-zone { width: 100%; flex-direction: column; align-items: stretch; }
     .preview-editor-slot, .preview-field-side-by-side .preview-error-slot { width: 100%; min-width: 0; }
 }
 
