@@ -3,6 +3,8 @@ import 'tippy.js/dist/tippy.css';
 import './playground.css';
 
 import { html_beautify } from 'js-beautify';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-typescript';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
@@ -539,8 +541,8 @@ ${ example.sharedTarget ? `<section class="preview-target"><h3>Shared target</h3
 <label><input type="radio" name="preview-html-view" value="initial" ${ htmlView === 'initial' ? 'checked' : '' }> Set up</label>
 <label><input type="radio" name="preview-html-view" value="current" ${ htmlView === 'current' ? 'checked' : '' }> Live</label>
 </fieldset><pre><code data-html-code></code></pre></div></details>
-<details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Register these presentations before FormInstaller runs. Comments show the role and registration name${ example.sharedTarget === 'composite' || example.sharedTarget === 'popup-composite' ? '; the Composite resolves its child names through the same factory' : '' }.</p><pre><code>${ escapeHtml(registrationCode) }</code></pre></div></details>
-${ example.sharedTarget ? `<details><summary>Shared target and event handlers</summary><div class="preview-code-wrap"><p>The application owns the target and updates it in response to presentation events.</p><pre><code>${ escapeHtml(`<div id="preview-shared-target">${ targetGuidance }</div>\n\n${ targetHandlerCode }`) }</code></pre></div></details>` : '' }
+<details><summary>Factory registration</summary><div class="preview-code-wrap"><p>Register these presentations before FormInstaller runs. Comments show the role and registration name${ example.sharedTarget === 'composite' || example.sharedTarget === 'popup-composite' ? '; the Composite resolves its child names through the same factory' : '' }.</p><pre><code>${ Prism.highlight(registrationCode, Prism.languages.typescript, 'typescript') }</code></pre></div></details>
+${ example.sharedTarget ? `<details><summary>Shared target and event handlers</summary><div class="preview-code-wrap"><p>The application owns the target and updates it in response to presentation events.</p><h3>HTML</h3><pre><code>${ Prism.highlight(`<div id="preview-shared-target">${ targetGuidance }</div>`, Prism.languages.markup, 'markup') }</code></pre><h3>TypeScript</h3><pre><code>${ Prism.highlight(targetHandlerCode, Prism.languages.typescript, 'typescript') }</code></pre></div></details>` : '' }
 <details><summary>CSS classes in use</summary><div class="preview-code-wrap"><p>Locate these names in jivs-dom.css.</p><ul class="preview-class-list" data-class-list></ul></div></details>
 </div></article>`;
 }
@@ -570,8 +572,8 @@ function describeHtml(article: HTMLElement): void
     const markup = htmlView === 'initial'
         ? initialFieldMarkup.innerHTML
         : article.querySelector<HTMLElement>('[data-primary-field]')!.innerHTML;
-    article.querySelector('[data-html-code]')!.textContent =
-        html_beautify(markup, { indent_size: 2, wrap_line_length: 100, inline: [] });
+    const formatted = html_beautify(markup, { indent_size: 2, wrap_line_length: 100, inline: [] });
+    article.querySelector('[data-html-code]')!.innerHTML = Prism.highlight(formatted, Prism.languages.markup, 'markup');
 }
 
 function describeClasses(article: HTMLElement): void

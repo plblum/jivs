@@ -126,6 +126,20 @@ body { margin: 0; line-height: 1.5; }
     line-height: 1.45;
 }
 
+.preview-code-wrap h3 { margin: 1rem 0 0.5rem; font-size: 0.9rem; }
+.preview-code-wrap pre .token.comment { color: #a7b3c5; }
+.preview-code-wrap pre .token.punctuation { color: #c9d4e4; }
+.preview-code-wrap pre .token.tag,
+.preview-code-wrap pre .token.keyword { color: #ff9aaf; }
+.preview-code-wrap pre .token.attr-name,
+.preview-code-wrap pre .token.class-name,
+.preview-code-wrap pre .token.function { color: #8dd7f1; }
+.preview-code-wrap pre .token.attr-value,
+.preview-code-wrap pre .token.string { color: #b8e4a0; }
+.preview-code-wrap pre .token.operator,
+.preview-code-wrap pre .token.boolean,
+.preview-code-wrap pre .token.number { color: #f5ca89; }
+
 .preview-class-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
 .preview-class-list code { display: inline-block; padding: 0.2rem 0.45rem; border: 1px solid #ccd3dc; border-radius: 0.3rem; background: #fff; }
 .preview-class-empty { color: #697384; font-style: italic; }

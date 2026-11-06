@@ -16,10 +16,12 @@
     "@plblum/jivs-dom-tippy": "file:../jivs-dom-tippy",
     "@plblum/jivs-engine": "file:../jivs-engine",
     "js-beautify": "^2.0.3",
+    "prismjs": "^1.30.0",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@types/js-beautify": "^1.14.3",
+    "@types/prismjs": "^1.26.6",
     "vite": "^6.3.5"
   }
 }
