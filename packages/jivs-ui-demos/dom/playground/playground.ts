@@ -487,8 +487,10 @@ function buildGalleryMarkup(settings: PlaygroundSettings): string
 {
     const orientation = settings.sideBySide ? 'preview-field-side-by-side' : 'preview-field-stacked';
     const example = settings.example;
-    const fieldMarkup = (f: string, label: string, markup: string) => {
+    const fieldMarkup = (f: string, label: string, markup: string) =>
+    {
         const attrs = `data-field="${ f }"`;
+        const ariaError = example.popupIndicator != null ? `<span data-jivs-role="aria-error" ${ attrs }></span>` : '';
         const roleAttribute = (optedIn: boolean, role: string, presentationName: string) =>
             optedIn ? `data-jivs-role="${ role }" ${ attrs } data-jivs-presentation="${ presentationName }"` : '';
         return `<div id="${ f }_container" ${ roleAttribute(settings.roleDestinations.container, 'container', fieldContainerPresentationName) } class="preview-field ${ orientation }">
@@ -496,7 +498,7 @@ function buildGalleryMarkup(settings: PlaygroundSettings): string
 <div class="preview-control-zone">
 <div class="preview-input-row"><div class="preview-editor-slot">${ markup }</div>
 <div class="preview-required-slot"><span ${ roleAttribute(settings.roleDestinations.required, 'required', requiredIndicatorPresentationName) }></span></div></div>
-<div class="preview-error-slot"><div data-jivs-role="error" ${ attrs } data-jivs-presentation="${ example.presentationName }"></div></div>
+<div class="preview-error-slot"><div data-jivs-role="error" ${ attrs } data-jivs-presentation="${ example.presentationName }"></div>${ ariaError }</div>
 </div></div>`;
     };
     const editor = editors[settings.editor];
