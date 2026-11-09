@@ -6,13 +6,13 @@ import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/Dat
 import
     {
         invalidMonthErrorCode, invalidMonthErrorMessage, invalidYearErrorCode,
-        invalidYearErrorMessage, ExpiryLookupKey, ExpiryParser, ExpiryParserOptions, UTCExpiryConverter
+        invalidYearErrorMessage, ExpiryLookupKey, ExpiryParser, ExpiryParserOptions, ExpiryConverter
     } from '../src/ExpiryDataType';
 import { createMinimalJivsServices } from '../src/support';
 
-describe('UTCExpiryConverter', () => {
+describe('ExpiryConverter', () => {
     test('canConvert', () => {
-        let testItem = new UTCExpiryConverter();
+        let testItem = new ExpiryConverter();
         expect(testItem.canConvert(new Date(), ExpiryLookupKey, LookupKey.Number)).toBe(true);
         expect(testItem.canConvert(new Date(), ExpiryLookupKey, LookupKey.String)).toBe(false);
         expect(testItem.canConvert(new Date(), null, LookupKey.Number)).toBe(false); // always requires ExpiryLookupKey            
@@ -20,7 +20,7 @@ describe('UTCExpiryConverter', () => {
         expect(testItem.canConvert(null, ExpiryLookupKey, LookupKey.Number)).toBe(false);
     })
     test('convert', () => {
-        let testItem = new UTCExpiryConverter();
+        let testItem = new ExpiryConverter();
         // convert expects to be called after canConvert is true.
         // So no illegal values as parameters tested
         let test1 = new Date(Date.UTC(2000, 10, 5));
@@ -44,7 +44,7 @@ describe('UTCExpiryConverter', () => {
         
         let vs = createMinimalJivsServices('en');
         let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
-        dtcs.register(new UTCExpiryConverter());
+        dtcs.register(new ExpiryConverter());
         let compareService = vs.dataTypeComparerService as DataTypeComparerService;
 
         expect(compareService.compare(date1, date1, ExpiryLookupKey, ExpiryLookupKey)).toBe(ComparersResult.Equal);

@@ -132,7 +132,8 @@ describe('JivsDomServices.options', () => {
             iconMessageFrame: {},
             columnarErrorIndicatorContent: {},
             validationSummary: {},
-            validationBehaviors: {}
+            validationBehaviors: {},
+            submitButton: {}
         });
     });
 });

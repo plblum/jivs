@@ -1,49 +1,39 @@
-// Example: Introduce a new Condition class, including support for fluent syntax
-// Our class will handle several aspects of a credit card number.
+// Introduces a data type for credit card numbers.
+// This file provides:
+// - 'CreditCardNumber' data type lookup key.
+// - 'CreditCardNumberCondition' for validating credit card numbers. See below.
+// - 'CreditCardNumberConditionBuilder' and 'CreditCardNumberValidatorBuilder' for fluent syntax support.
+// - Registration of the new classes with JivsServices including automatic
+//   DataTypeCheck using CreditCardNumberCondition.
+// - CreditCardNumberParser for credit card numbers for 'CreditCard' lookup key.
+// The Condition class will handle several aspects of a credit card number.
 // - Luhn's algorithm for credit card number validation.
 // - Optional checks for card type based on number patterns, plus length check.
-// It provides:
-// - A Validator including support for our builder.
-// - Registers the new condition to be the DataTypeCheckCondition for 'CreditCard' lookup key.
-// - Provides a parser for credit card numbers for 'CreditCard' lookup key.
 
-// Here are the activities for creating a Condition class.
-// 1. Choose a name, usually with the suffix "Condition".
-// 2. Define its ConditionType, which is a string that is different from existing ConditionTypes.
-// 3. Create your Configuration object interface, inheriting from an existing Configuration.
-// 4. Create your class, inheriting from an existing Condition class.
-// 5. Extend the fluent syntax by subclassing our standard ValidatorBuilder
-//    and ConditionBuilder
-// 6. Register new classes with the JivsServices object in createJivsServices.
-//    - Condition class in the JivsServices.conditionFactory
-//    - IDataTypeCheckGenerator subclass in JivsServices.dataTypeCheckGeneratorService
-//    - ValidatorBuilder and ConditionBuilder subclasses in
-// 7. Write unit tests. See the companion file in the Tests folder.
-// 8. Create a parser for credit card numbers and register it for the 'CreditCard' lookup key.
 
+import { ConditionBuilder } from '@plblum/jivs-builder/build/Builder/ConditionBuilder';
+import { ValidatorBuilder } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
+import
+    {
+        CompleteConfigBuilderHandler,
+        IBuilderConfigHost,
+        IConditionBuilder,
+        IValidatorBuilder
+    } from '@plblum/jivs-builder/build/Interfaces/ChildBuilders';
+import { FluentValidatorConfig } from '@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders';
+import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
 import { OneValueConditionBase, OneValueConditionBaseConfig } from '@plblum/jivs-engine/build/Conditions/OneValueConditionBase';
-import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { ConditionEvaluateResult, ConditionCategory } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { CleanUpStringParserBase, CleanUpStringParserOptions } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
+import { ConditionCategory, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
+import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { ValidatorBuilder } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
-import { ConditionBuilder } from '@plblum/jivs-builder/build/Builder/ConditionBuilder';
-import { FluentValidatorConfig } from '@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders';
-import
-    {
-        IBuilderConfigHost, CompleteConfigBuilderHandler,
-        IValidatorBuilder, IConditionBuilder
-    } from '@plblum/jivs-builder/build/Interfaces/ChildBuilders';
-import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { StrongPatternParserBase, DataTypeParserOptions } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
-import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
-import { CleanUpStringParserBase, CleanUpStringParserOptions } from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 
-export const CreditCardConditionType = 'CreditCard';    // we'll extend Jivs ConditionType enum with this
+export const CreditCardNumberConditionType = 'CreditCard';    // we'll extend Jivs ConditionType enum with this
 
-export interface CreditCardConditionConfig extends OneValueConditionBaseConfig
+export interface CreditCardNumberConditionConfig extends OneValueConditionBaseConfig
 {
     /**
      * The set of rules that define valid credit card types for this condition.
@@ -91,7 +81,7 @@ export interface CreditCardType
  * So it may help to have another validator or richer parser to ensure the value only
  * contains digits.
  */
-export class CreditCardCondition extends OneValueConditionBase<CreditCardConditionConfig>
+export class CreditCardNumberCondition extends OneValueConditionBase<CreditCardNumberConditionConfig>
 {
     public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
     {
@@ -143,37 +133,37 @@ export class CreditCardCondition extends OneValueConditionBase<CreditCardConditi
 
 //#region Builder syntax
 // Builder: Subclass ConditionBuilder and add your condition functions.
-export class CreditCardConditionBuilder
+export class CreditCardNumberConditionBuilder
     extends ConditionBuilder
 {
 
-    public creditCard(): void
+    public creditCardNumber(): void
     {
-        let config: Partial<CreditCardConditionConfig> =
+        let config: Partial<CreditCardNumberConditionConfig> =
         {
-            conditionType: CreditCardConditionType
+            conditionType: CreditCardNumberConditionType
         };
         this.setConfig(config as any);
     }
 }
 
-export class CreditCardValidatorBuilder
+export class CreditCardNumberValidatorBuilder
     extends ValidatorBuilder
 {
-    public creditCard(
+    public creditCardNumber(
         errorMessage?: string | null,
         summaryMessage?: string | null): IValidatorBuilder;
-    public creditCard(
+    public creditCardNumber(
         validatorParameters: FluentValidatorConfig): IValidatorBuilder;
-    public creditCard(
+    public creditCardNumber(
         arg2?: FluentValidatorConfig | string | null,
         arg3?: string | null): IValidatorBuilder
     {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let { errorMessage, summaryMessage, conditionConfig, validatorParameters } =
-            this.resolveOverloadArgs<CreditCardConditionConfig>(arg2, arg3);
+            this.resolveOverloadArgs<CreditCardNumberConditionConfig>(arg2, arg3);
         let conditionBuilder = this.createConditionBuilder();
-        conditionBuilder.creditCard();
+        conditionBuilder.creditCardNumber();
         return this.finish(conditionBuilder,
             errorMessage, summaryMessage, validatorParameters);
     }
@@ -185,10 +175,10 @@ declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
 {
     export interface IValidatorBuilder
     {
-        creditCard(
+        creditCardNumber(
             errorMessage?: string | null,
             summaryMessage?: string | null): IValidatorBuilder;
-        creditCard(
+        creditCardNumber(
             validatorParameters: FluentValidatorConfig): IValidatorBuilder;
     }
 }
@@ -196,14 +186,15 @@ declare module '@plblum/jivs-builder/build/Interfaces/ChildBuilders'
 {
     export interface IConditionBuilder
     {
-        creditCard(): void;
+        creditCardNumber(): void;
     }
 }
 //#endregion Builder syntax
 
 /**
  * Converts a string containing a credit card number into a cleaned-up format containing only digits.
- * Reports errors on any non-digit characters, after stripping it of spaces and hyphens.
+ * Supports: digits only, digits with any number of hyphen or space separators.
+ * Reports errors on any non-supported characters.
  * 
  * If the string contains any non-digit characters after cleaning, the following will 
  * be reported as an error by the parser:
@@ -234,28 +225,28 @@ export class CreditCardNumberParser extends CleanUpStringParserBase<CleanUpStrin
 }
 
 // Register after you have JivsServices instance. Setup only on the JivsServices
-export function registerCreditCardCondition(services: IJivsServices): void
+export function registerCreditCardNumberCondition(services: IJivsServices): void
 {
     let cf = services.conditionFactory as ConditionFactory;
     // or move just this line into registerDataTypeCheckGenerators() function     
-    cf.register<CreditCardConditionConfig>(CreditCardConditionType, (config) => new CreditCardCondition(config));
+    cf.register<CreditCardNumberConditionConfig>(CreditCardNumberConditionType, (config) => new CreditCardNumberCondition(config));
 
     // Adding custom conditions to ValidatorBuilder and ConditionBuilder
     let ff = services.buildersFactory;
     ff.setValidatorBuilderCreator((parentConfig: FieldValueHostConfig) =>
     {
-        return new CreditCardValidatorBuilder(services, parentConfig) as unknown as IValidatorBuilder;
+        return new CreditCardNumberValidatorBuilder(services, parentConfig) as unknown as IValidatorBuilder;
     });
     ff.setConditionBuilderCreator((parentBuilder: IBuilderConfigHost<object>, completed?: CompleteConfigBuilderHandler<any>) =>
     {
-        return new CreditCardConditionBuilder(services, parentBuilder, completed) as unknown as IConditionBuilder;
+        return new CreditCardNumberConditionBuilder(services, parentBuilder, completed) as unknown as IConditionBuilder;
     });
 
-    services.dataTypeParserService.register(new CreditCardNumberParser(CreditCardConditionType));
+    services.dataTypeParserService.register(new CreditCardNumberParser(CreditCardNumberConditionType));
 
-    services.dataTypeCheckGeneratorService.registerLookupKey(CreditCardConditionType, [
-        <CreditCardConditionConfig> {
-            conditionType: CreditCardConditionType
+    services.dataTypeCheckGeneratorService.registerLookupKey(CreditCardNumberConditionType, [
+        <CreditCardNumberConditionConfig> {
+            conditionType: CreditCardNumberConditionType
         }
     ])
 }

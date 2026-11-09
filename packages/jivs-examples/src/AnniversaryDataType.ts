@@ -2,7 +2,7 @@
  * Introduces a data type for month and day values, such as an anniversary.
  * Includes:
  * - 'Anniversary' data type lookup key.
- * - 'UTCAnniversaryConverter' for comparing two anniversary values.
+ * - 'AnniversaryConverter' for comparing two anniversary values.
  * - 'AnniversaryParser' for parsing anniversary strings into a Date object.
  * - Registration of the new classes with JivsServices.
  */
@@ -26,7 +26,7 @@ export const AnniversaryLookupKey = 'Anniversary';
  * even if that's not what was supplied.
  * DataType LookupKey: "Anniversary".
  */
-export class UTCAnniversaryConverter extends DataTypeConverterBase
+export class AnniversaryConverter extends DataTypeConverterBase
 {
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string): number | undefined {
         if (isNaN(value.getTime()))
@@ -183,10 +183,10 @@ export function registerAnniversary(services: IJivsServices,
 {
     let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
-    dtcs.register(new UTCAnniversaryConverter());
+    dtcs.register(new AnniversaryConverter());
 
     // This gets used ONLY when the ValueHostConfig.dataType with "MonthDay".
-    // When its time to compare, the UTCAnniversaryConverter is asked if it supports the value.
+    // When its time to compare, the AnniversaryConverter is asked if it supports the value.
     // If so, the comparision immediately calls convert and now has a Date value.
     // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)

@@ -3,35 +3,35 @@ import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ConditionEvaluateResult, ConditionCategory } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { ValueHostsManager } from '@plblum/jivs-engine/build/Validation/ValueHostsManager';
 import {
-    CreditCardCondition, CreditCardConditionConfig, CreditCardConditionType,
-    CreditCardType, registerCreditCardCondition
-} from '../src/CreditCardCondition';
+    CreditCardNumberCondition, CreditCardNumberConditionConfig, CreditCardNumberConditionType,
+    CreditCardType, registerCreditCardNumberCondition
+} from '../src/CreditCardNumberDataType';
 import { createMinimalJivsServices } from '../src/support';
 
 function createCondition(creditCardTypes?: CreditCardType[]) {
     const services = createMinimalJivsServices('en');
-    registerCreditCardCondition(services);
+    registerCreditCardNumberCondition(services);
 
     const builder = createConfigBuilder(services);
     builder.field('CardNumber', LookupKey.String);
     const valueHostsManager = new ValueHostsManager(builder.complete());
     const valueHost = valueHostsManager.getFieldValueHost('CardNumber')!;
-    const config: CreditCardConditionConfig = {
-        conditionType: CreditCardConditionType,
+    const config: CreditCardNumberConditionConfig = {
+        conditionType: CreditCardNumberConditionType,
         valueHostName: 'CardNumber'
     };
     if (creditCardTypes !== undefined)
         config.creditCardTypes = creditCardTypes;
 
     return {
-        condition: new CreditCardCondition(config),
+        condition: new CreditCardNumberCondition(config),
         valueHost,
         valueHostsManager
     };
 }
 
 // Verify a digit-only card number is checked with Luhn and configured card-type rules.
-describe('CreditCardCondition evaluation', () => {
+describe('CreditCardNumberCondition evaluation', () => {
     test('matches a valid Luhn number when no card-type restriction is configured', () => {
         const { condition, valueHost, valueHostsManager } = createCondition();
         valueHost.setValue('4111111111111111');

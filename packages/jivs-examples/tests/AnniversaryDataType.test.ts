@@ -1,4 +1,4 @@
-import { AnniversaryLookupKey, UTCAnniversaryConverter } from '../src/AnniversaryDataType';
+import { AnniversaryLookupKey, AnniversaryConverter } from '../src/AnniversaryDataType';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
 import { ComparersResult } from '@plblum/jivs-engine/build/Interfaces/DataTypeComparerService';
 import { DataTypeComparerService } from '@plblum/jivs-engine/build/Services/DataTypeComparerService';
@@ -10,9 +10,9 @@ import {
     invalidMonthErrorCode, invalidMonthErrorMessage
 } from '../src/AnniversaryDataType';
 
-describe('UTCAnniversaryConverter', () => {
+describe('AnniversaryConverter', () => {
     test('canConvert', () => {
-        let testItem = new UTCAnniversaryConverter();
+        let testItem = new AnniversaryConverter();
         expect(testItem.canConvert(new Date(), AnniversaryLookupKey, LookupKey.Number)).toBe(true);
         expect(testItem.canConvert(new Date(), AnniversaryLookupKey, LookupKey.String)).toBe(false);
         expect(testItem.canConvert(new Date(), null, LookupKey.Number)).toBe(false); // always requires AnniversaryLookupKey            
@@ -20,7 +20,7 @@ describe('UTCAnniversaryConverter', () => {
         expect(testItem.canConvert(null, AnniversaryLookupKey, LookupKey.Number)).toBe(false);
     })
     test('convert', () => {
-        let testItem = new UTCAnniversaryConverter();
+        let testItem = new AnniversaryConverter();
         // convert expects to be called after canConvert is true.
         // So no illegal values as parameters tested
         // Reminder that the year used in this Converter is 2004
@@ -192,7 +192,7 @@ describe('AnniversaryParser configuration', () =>
 });
 
 // Verify the converter integrates with date comparison while ignoring the source year.
-describe('UTCAnniversaryConverter integration', () =>
+describe('AnniversaryConverter integration', () =>
 {
     test('Within dataTypeConverterService', () => {
         let date1 = new Date(Date.UTC(2000, 10, 1));
@@ -205,7 +205,7 @@ describe('UTCAnniversaryConverter integration', () =>
 
         let vs = createMinimalJivsServices('en');
         let dtcs = vs.dataTypeConverterService as DataTypeConverterService;    
-        dtcs.register(new UTCAnniversaryConverter());
+        dtcs.register(new AnniversaryConverter());
         let compareService = vs.dataTypeComparerService as DataTypeComparerService;
         expect(compareService.compare(date1, date1, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equal);
         expect(compareService.compare(date1, date2, AnniversaryLookupKey, AnniversaryLookupKey)).toBe(ComparersResult.Equal);

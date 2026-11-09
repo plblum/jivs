@@ -2,7 +2,7 @@
  * Introduces a data type for month and year values, such as credit card expiry dates.
  * Includes:
  * - 'Expiry' data type lookup key.
- * - 'UTCExpiryConverter' for comparing two month-year values.
+ * - 'ExpiryConverter' for comparing two month-year values.
  * - 'ExpiryParser' for parsing month-year strings into a Date object.
  * - 'StringPatternedExpiryParser' for parsing month-year strings 
  *    into a string with a specific pattern.
@@ -27,7 +27,7 @@ export const ExpiryLookupKey = 'Expiry';
  * that's not what was supplied.
  * DataType LookupKey: "Expiry".
  */
-export class UTCExpiryConverter extends DataTypeConverterBase
+export class ExpiryConverter extends DataTypeConverterBase
 {
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) : number | undefined {
         if (isNaN(value.getTime()))
@@ -186,10 +186,10 @@ export function registerExpiry(services: IJivsServices,
 {
     let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
-    dtcs.register(new UTCExpiryConverter());
+    dtcs.register(new ExpiryConverter());
 
     // This gets used ONLY when the ValueHostConfig.dataType with "Expiry".
-    // When its time to compare, the UTCExpiryConverter is asked if it supports the value.
+    // When its time to compare, the ExpiryConverter is asked if it supports the value.
     // If so, the comparision immediately calls convert and now has a Date value.
     // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
