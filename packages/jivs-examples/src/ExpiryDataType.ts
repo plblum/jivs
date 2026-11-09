@@ -1,10 +1,10 @@
 /**
  * Introduces a data type for month and year values, such as credit card expiry dates.
  * Includes:
- * - 'MonthYear' data type lookup key.
- * - 'UTCMonthYearConverter' for comparing two month-year values.
- * - 'MonthYearParser' for parsing month-year strings into a Date object.
- * - 'StringPatternedMonthYearParser' for parsing month-year strings 
+ * - 'Expiry' data type lookup key.
+ * - 'UTCExpiryConverter' for comparing two month-year values.
+ * - 'ExpiryParser' for parsing month-year strings into a Date object.
+ * - 'StringPatternedExpiryParser' for parsing month-year strings 
  *    into a string with a specific pattern.
  * - Registration of the new classes with JivsServices.
  */
@@ -18,16 +18,16 @@ import { DataTypeParserOptions, SpecificCulturesPatternParserBase }
 import { escapeRegExp } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 
-export const MonthYearLookupKey = 'MonthYear';
+export const ExpiryLookupKey = 'Expiry';
 
 /**
  * An implementation of IDataTypeConverter for JavaScript Date objects that only use the month and year values.
  * That is sometimes done for credit card expiry dates.
  * Effectively, the Date.getUTCDate() is treated as 1 here even if
  * that's not what was supplied.
- * DataType LookupKey: "MonthYear".
+ * DataType LookupKey: "Expiry".
  */
-export class UTCMonthYearConverter extends DataTypeConverterBase
+export class UTCExpiryConverter extends DataTypeConverterBase
 {
     public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) : number | undefined {
         if (isNaN(value.getTime()))
@@ -42,7 +42,7 @@ export class UTCMonthYearConverter extends DataTypeConverterBase
         return [LookupKey.Number];
     }
     public supportedSourceLookupKeys(): (string | null)[] {
-        return [MonthYearLookupKey];
+        return [ExpiryLookupKey];
     }
     
 }
@@ -53,16 +53,16 @@ export class UTCMonthYearConverter extends DataTypeConverterBase
  * Its output is may be one of several structured data types.
  * 
  * Classes:
- * - MonthYearParserBase - Base class for parsing month-year strings into structured data types.
- * - MonthYearParser - Native value is a Date object with the day of month set to 1.
- * - StringPatternedMonthYearParser - Native value is a string formatted according to a template.
+ * - ExpiryParserBase - Base class for parsing month-year strings into structured data types.
+ * - ExpiryParser - Native value is a Date object with the day of month set to 1.
+ * - StringPatternedExpiryParser - Native value is a string formatted according to a template.
  */
 
 
 /**
  * Base class for a parser to convert a localized month and year string into a native value.
  */
-export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearParserOptions<TDataType | null> = MonthYearParserOptions<TDataType | null>>
+export abstract class ExpiryParserBase<TDataType, TOptions extends ExpiryParserOptions<TDataType | null> = ExpiryParserOptions<TDataType | null>>
     extends SpecificCulturesPatternParserBase<TDataType, TOptions>
 {
     constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: TOptions)
@@ -81,10 +81,10 @@ export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearP
     }
     protected patternDidNotMatchMessage(): string
     {
-        return MonthYearParserBase.badMonthYearMessage;
+        return ExpiryParserBase.badExpiryMessage;
     }
 
-    public static readonly badMonthYearMessage = 'Expecting a month and year';
+    public static readonly badExpiryMessage = 'Expecting a month and year';
     /**
      * Returns an expression with 3 groups of digits where 1 group has 4 digits
      * based on the order. Allows for lead and trailing spaces.
@@ -149,7 +149,7 @@ export const invalidYearErrorMessage = 'Invalid year';
 export const invalidMonthErrorCode = 'Parser_INVALID_MONTH';
 export const invalidYearErrorCode = 'Parser_INVALID_YEAR';
 
-export interface MonthYearParserOptions<TDataType> extends DataTypeParserOptions<TDataType>
+export interface ExpiryParserOptions<TDataType> extends DataTypeParserOptions<TDataType>
 {
     order: 'my' | 'ym';
     separator: string;
@@ -159,9 +159,9 @@ export interface MonthYearParserOptions<TDataType> extends DataTypeParserOptions
  * Parser for month-year strings, converting it to Date objects where the day of month
  * is always 1.
  */
-export class MonthYearParser extends MonthYearParserBase<Date>
+export class ExpiryParser extends ExpiryParserBase<Date>
 {
-    constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: MonthYearParserOptions<Date>)
+    constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: ExpiryParserOptions<Date>)
     {
         super(supportedLookupKey, supportedCultures, options);
 
@@ -181,21 +181,21 @@ export class MonthYearParser extends MonthYearParserBase<Date>
 }
 
 // Register after you have JivsServices instance. Setup only on the JivsServices
-export function registerMonthYear(services: IJivsServices,
+export function registerExpiry(services: IJivsServices,
     supportedCultures: string[]): void
 {
     let dtcs = services.dataTypeConverterService as DataTypeConverterService;
     // or move just this line into registerDataTypeConverters() function         
-    dtcs.register(new UTCMonthYearConverter());
+    dtcs.register(new UTCExpiryConverter());
 
-    // This gets used ONLY when the ValueHostConfig.dataType with "MonthYear".
-    // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
+    // This gets used ONLY when the ValueHostConfig.dataType with "Expiry".
+    // When its time to compare, the UTCExpiryConverter is asked if it supports the value.
     // If so, the comparision immediately calls convert and now has a Date value.
     // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 
     // default converter (DefaultConverter function supports comparing numbers)
 
     let dtps = services.dataTypeParserService;
-    dtps.register(new MonthYearParser(MonthYearLookupKey, supportedCultures, {
+    dtps.register(new ExpiryParser(ExpiryLookupKey, supportedCultures, {
         order: 'ym',
         separator: '-'
     }));
@@ -215,19 +215,19 @@ export function registerMonthYear(services: IJivsServices,
  * 
  * Returns the empty string if the input is empty.
  */
-export class StringPatternedMonthYearParser extends MonthYearParserBase<string, StringPatternedMonthYearParserOptions> 
+export class StringPatternedExpiryParser extends ExpiryParserBase<string, StringPatternedExpiryParserOptions> 
 {
 
-    constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: StringPatternedMonthYearParserOptions)
+    constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: StringPatternedExpiryParserOptions)
     {
         super(supportedLookupKey, supportedCultures, options);
     }
 
-    protected override initUndefinedOptions(options: StringPatternedMonthYearParserOptions): void
+    protected override initUndefinedOptions(options: StringPatternedExpiryParserOptions): void
     {
         super.initUndefinedOptions(options);
         if (!options.template)
-            throw new Error('Template is required for StringPatternedMonthYearParser');
+            throw new Error('Template is required for StringPatternedExpiryParser');
     }
 
     protected override toNativeType(y: number, m: number): DataTypeResolution<string>
@@ -252,7 +252,7 @@ export class StringPatternedMonthYearParser extends MonthYearParserBase<string, 
     }
 }
 
-export interface StringPatternedMonthYearParserOptions extends MonthYearParserOptions<string>
+export interface StringPatternedExpiryParserOptions extends ExpiryParserOptions<string>
 {
     /**
      * The template string used to shape the native value. 
@@ -270,12 +270,12 @@ export interface StringPatternedMonthYearParserOptions extends MonthYearParserOp
 
 
 // Register after you have JivsServices instance. Setup only on the JivsServices
-export function registerStringPatternedMonthYear(services: IJivsServices,
+export function registerStringPatternedExpiry(services: IJivsServices,
     supportedCultures: string[]): void
 {
     let dtps = services.dataTypeParserService;
 
-    dtps.register(new StringPatternedMonthYearParser(MonthYearLookupKey, supportedCultures, {
+    dtps.register(new StringPatternedExpiryParser(ExpiryLookupKey, supportedCultures, {
         order: 'ym',
         separator: '-',
         template: 'YYYY-MM' // output format
