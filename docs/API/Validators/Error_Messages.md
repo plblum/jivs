@@ -29,8 +29,8 @@ Jivs has a lot of depth in its error message support.
   
     `The Event Date must be between Jan 1, 2025 and Mar 30, 2025. You entered Jun 6, 2025.`
   
-- You can setup default error message templates also with the [ErrorMessagesService](#using-the-errormessageservice).
-- Error messages are localizable with the [ErrorMessagesService](#using-the-errormessageservice).
+- You can setup default error message templates also with the [ErrorMessagesService](#using-the-errormessagesservice).
+- Error messages are localizable with the [ErrorMessagesService](#using-the-errormessagesservice).
 
 ## Using the ErrorMessagesService
 The `ErrorMessagesService` is so useful that you may put all of your error messages in it, until the default you supply fails to meet our guideline: _make the message clear enough for the user to quickly take the correct action_. See [ErrorMessagesService](../JivsServices/ErrorMessagesService.md).

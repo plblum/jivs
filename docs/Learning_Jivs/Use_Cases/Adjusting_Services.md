@@ -35,7 +35,7 @@ Each Lookup Key is connected to many tools that are automatically applied when y
 - [DataTypeFormatter](./DataTypeFormatters_Service.md) - formatting from native value to text value
 - [DataTypeConverter](./DataTypeConverters_Service.md) - converting between data types
 - [DataTypeCheckGenerator](./DataTypeCheckGenerator_Service.md) - Attaching a Validators that confirm the native type matches your Lookup Key.
-- [ErrorMessageService](../../API/JivsServices/ErrorMessagesService.md) - Uses the Lookup Key to find the right localization.
+- [ErrorMessagesService](../../API/JivsServices/ErrorMessagesService.md) - Uses the Lookup Key to find the right localization.
 
 You don't often have to write new parsers, formatters, etc. In fact, if your Lookup Key is a refinement of an existing one, like Email is a specific use of String and Currency is a specific use of Number, you can register a fallback Lookup Key with the `LookupKeyFallbackService`. See [LookupKeyFallbackService](../../API/JivsServices/Logging.md).
 

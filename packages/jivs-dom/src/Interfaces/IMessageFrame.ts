@@ -21,7 +21,7 @@ import { IPresentationContent } from './IPresentationContent';
  * This interface defines the contract for the Message Frame.
  * 
  * Implementations may provide ways to include headers, footers, tokens in text,
- * and text localization (through jivs-engine's ErrorMessageService)
+ * and text localization (through jivs-engine's ErrorMessagesService)
  */
 export interface IMessageFrame extends IPresentationContent
 {
