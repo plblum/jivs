@@ -1,21 +1,31 @@
+/**
+ * Introduces a data type for email address.
+ * Includes:
+ * - 'EmailAddress' data type lookup key.
+ * - 'EmailAddressCondition' for validating email addresses.
+ * - 'EmailAddressConditionBuilder' and 'EmailAddressValidatorBuilder' for fluent syntax support.
+ * - Registration of the new classes with JivsServices including automatic
+ *   DataTypeCheck using EmailAddressCondition.
+ */
+
+
+import { ConditionBuilder } from '@plblum/jivs-builder/build/Builder/ConditionBuilder';
+import { ValidatorBuilder } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
+import
+    {
+        CompleteConfigBuilderHandler,
+        IBuilderConfigHost,
+        IConditionBuilder,
+        IValidatorBuilder
+    } from '@plblum/jivs-builder/build/Interfaces/ChildBuilders';
+import { FluentValidatorConfig } from '@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders';
 import { RegExpCondition, RegExpConditionConfig } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ConditionFactory } from '@plblum/jivs-engine/build/Conditions/ConditionFactory';
-import { ConditionCategory, IConditionFactory, ICondition, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-import { IDataTypeCheckGenerator } from '@plblum/jivs-engine/build/Interfaces/DataTypeCheckGenerator';
-import { IFieldValueHost } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
-import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { DataTypeCheckGeneratorService } from '@plblum/jivs-engine/build/Services/DataTypeCheckGeneratorService';
-import { ValidatorBuilder } from '@plblum/jivs-builder/build/Builder/ValidatorBuilder';
-import { ConditionBuilder } from '@plblum/jivs-builder/build/Builder/ConditionBuilder';
-import { FluentValidatorConfig } from '@plblum/jivs-builder/build/Interfaces/ValueHostConfigBuilders';
-import {
-    IBuilderConfigHost, CompleteConfigBuilderHandler, IValidatorBuilder,
-    IConditionBuilder
- } from '@plblum/jivs-builder/build/Interfaces/ChildBuilders';
+import { ConditionCategory, ConditionConfig } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 
-
-// Example: Introduce a new Data Type Lookup Key for Email Address.
+// LEARNING GUIDE
 // This data type is based on a string but has a specific pattern.
 // 1. Need to declare a new Data Type Lookup Key. It will be used
 //    within the following code and assigned to the dataType property

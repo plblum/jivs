@@ -1,34 +1,77 @@
+/**
+ * Introduces a data type for month and year values, such as credit card expiry dates.
+ * Includes:
+ * - 'MonthYear' data type lookup key.
+ * - 'UTCMonthYearConverter' for comparing two month-year values.
+ * - 'MonthYearParser' for parsing month-year strings into a Date object.
+ * - 'StringPatternedMonthYearParser' for parsing month-year strings 
+ *    into a string with a specific pattern.
+ * - Registration of the new classes with JivsServices.
+ */
+
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
+import { DataTypeConverterService } from '@plblum/jivs-engine/build/Services/DataTypeConverterService';
+import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { DataTypeConverterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeConverters';
 import { DataTypeParserOptions, SpecificCulturesPatternParserBase }
     from '@plblum/jivs-engine/build/DataTypes/DataTypeParserBase';
 import { escapeRegExp } from '@plblum/jivs-engine/build/Utilities/Utilities';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 
+export const MonthYearLookupKey = 'MonthYear';
+
 /**
- * Provides several ways to parse month-year strings into structured data types.
+ * An implementation of IDataTypeConverter for JavaScript Date objects that only use the month and year values.
+ * That is sometimes done for credit card expiry dates.
+ * Effectively, the Date.getUTCDate() is treated as 1 here even if
+ * that's not what was supplied.
+ * DataType LookupKey: "MonthYear".
+ */
+export class UTCMonthYearConverter extends DataTypeConverterBase
+{
+    public convert(value: any, sourceLookupKey: string | null, resultLookupKey: string) : number | undefined {
+        if (isNaN(value.getTime()))
+            return undefined;
+        let dateOnly = new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), 1));
+        return dateOnly.getTime();
+    }
+    protected validValue(value: any): boolean {
+        return value instanceof Date;
+    }
+    public supportedResultLookupKeys(): string[] {
+        return [LookupKey.Number];
+    }
+    public supportedSourceLookupKeys(): (string | null)[] {
+        return [MonthYearLookupKey];
+    }
+    
+}
+
+/* PARSERS ------------------------------------------------------
+ * There are several ways to parse month-year strings into native values.
  * Its source is expected to be a localized string with 2 or 4 digit year and 1 or 2 digit month.
- * Its output is determined by a subclass of MonthYearParserBase.
+ * Its output is may be one of several structured data types.
  * 
- * We supply these parsers to handle common month-year parsing scenarios, but custom subclasses can be created for specialized needs.
+ * Classes:
+ * - MonthYearParserBase - Base class for parsing month-year strings into structured data types.
  * - MonthYearParser - Native value is a Date object with the day of month set to 1.
  * - StringPatternedMonthYearParser - Native value is a string formatted according to a template.
  */
 
 
 /**
- * Parser to convert a localized month and year string into a structured data type.
- * User is supplied several subclasses to handle the structured data type,
- * and if none work, please create a custom subclass to handle the structured data type.
+ * Base class for a parser to convert a localized month and year string into a native value.
  */
-export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearParserOptions<TDataType | null>  = MonthYearParserOptions<TDataType | null>>
+export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearParserOptions<TDataType | null> = MonthYearParserOptions<TDataType | null>>
     extends SpecificCulturesPatternParserBase<TDataType, TOptions>
 {
     constructor(supportedLookupKey: string, supportedCultures: Array<string>, options: TOptions)
     {
         super(supportedLookupKey, supportedCultures, options);
         this.assertMustHaveCharacter(options.separator, 'separator');
-        this._escapedShortDateSeparator = escapeRegExp(options.separator);            
+        this._escapedShortDateSeparator = escapeRegExp(options.separator);
     }
-    private readonly _escapedShortDateSeparator: string;    
+    private readonly _escapedShortDateSeparator: string;
 
     protected override initUndefinedOptions(options: TOptions): void
     {
@@ -63,7 +106,7 @@ export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearP
         pattern = pattern.replace(/ /g, this._escapedShortDateSeparator);
         pattern += '\\s*$';
         return new RegExp(pattern);
-    }    
+    }
 
     protected override processPattern(pattern: RegExpExecArray, text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<TDataType>
     {
@@ -91,7 +134,7 @@ export abstract class MonthYearParserBase<TDataType, TOptions extends MonthYearP
             return this.returnError(invalidYearErrorMessage, invalidYearErrorCode);
 
         return this.toNativeType(y, m);
-    }    
+    }
 
     /**
      * Provide the native type representation of the month-year combination
@@ -137,6 +180,28 @@ export class MonthYearParser extends MonthYearParserBase<Date>
     }
 }
 
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerMonthYear(services: IJivsServices,
+    supportedCultures: string[]): void
+{
+    let dtcs = services.dataTypeConverterService as DataTypeConverterService;
+    // or move just this line into registerDataTypeConverters() function         
+    dtcs.register(new UTCMonthYearConverter());
+
+    // This gets used ONLY when the ValueHostConfig.dataType with "MonthYear".
+    // When its time to compare, the UTCMonthYearConverter is asked if it supports the value.
+    // If so, the comparision immediately calls convert and now has a Date value.
+    // The dataTypeConverterService knows to convert Date to a number, so it can be used by the 
+    // default converter (DefaultConverter function supports comparing numbers)
+
+    let dtps = services.dataTypeParserService;
+    dtps.register(new MonthYearParser(MonthYearLookupKey, supportedCultures, {
+        order: 'ym',
+        separator: '-'
+    }));
+
+}
+
 /**
  * Parser for month-year strings, converting it to a string representation based on a template.
  * The template string is expected to have a strict pattern, not based on localization,
@@ -175,16 +240,16 @@ export class StringPatternedMonthYearParser extends MonthYearParserBase<string, 
             return this.returnError(invalidYearErrorMessage, invalidYearErrorCode);
         let template = this.options.template;
         let result = template.replace('YYYY', y.toString())
-                             .replace('YY', (y % 100).toString().padStart(2, '0'))
-                             .replace('MM', m.toString().padStart(2, '0'))
-                             .replace('M', m.toString());
+            .replace('YY', (y % 100).toString().padStart(2, '0'))
+            .replace('MM', m.toString().padStart(2, '0'))
+            .replace('M', m.toString());
 
         return { value: result };
     }
     protected override defaultEmptyStringResult(): string | null
     {
         return '';
-    }    
+    }
 }
 
 export interface StringPatternedMonthYearParserOptions extends MonthYearParserOptions<string>
@@ -201,4 +266,19 @@ export interface StringPatternedMonthYearParserOptions extends MonthYearParserOp
      * Requires a value.
      */
     template: string;
+}
+
+
+// Register after you have JivsServices instance. Setup only on the JivsServices
+export function registerStringPatternedMonthYear(services: IJivsServices,
+    supportedCultures: string[]): void
+{
+    let dtps = services.dataTypeParserService;
+
+    dtps.register(new StringPatternedMonthYearParser(MonthYearLookupKey, supportedCultures, {
+        order: 'ym',
+        separator: '-',
+        template: 'YYYY-MM' // output format
+    }));
+
 }

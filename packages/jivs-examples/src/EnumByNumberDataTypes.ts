@@ -3,6 +3,8 @@
 // - Lookup Key - create one for each enum type
 // - Formatter, converts number to localized text
 // - Parser, converts text to number
+// It provides an example data type, "PhoneType", that maps numeric values to 
+// 'Landline', 'Mobile', 'Fax', and 'Other'.
 
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatterBase';
@@ -11,17 +13,6 @@ import { DataTypeParserBase, DataTypeParserOptions } from '@plblum/jivs-engine/b
 import { DataTypeParserService } from '@plblum/jivs-engine/build/Services/DataTypeParserService';
 import { DataTypeResolution } from '@plblum/jivs-engine/build/Interfaces/DataTypes';
 import { assertNotNull, CodingError } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
-
-
-// We'll demonstrate with this type:
-export enum PhoneType
-{
-  Landline, // = 0
-  Mobile,   // = 1
-  Fax,      // = 2
-  Other = 10
-}
-export const PhoneTypeLookupKey = 'PhoneType';
 
 /**
  * IDataTypeFormatter implementation starting from our base implementation, DataTypeFormatterBase.
@@ -119,7 +110,8 @@ export interface EnumByNumberParserOptions extends DataTypeParserOptions<number>
 
 }
 /**
- * 
+ * Converts string representations of enum values to their corresponding 
+ * numeric values based on the provided enum value information.
  */
 export class EnumByNumberParser
     extends DataTypeParserBase<number, EnumByNumberParserOptions>
@@ -230,6 +222,35 @@ export class EnumByNumberParser
     }
 }
 
+//#region PhoneType Example
+/**
+ * Demonstrates how to connect numeric enum values with their string representations
+ * by way of the data type "PhoneType".
+ * Feel free to modify or remove this example when you place this file into your app.
+ * 
+ * 1. Define the numeric enum for phone types.
+ * 2. Create the mapping between enum values and their string representations
+ *    using Array<EnumValueInfo>.
+ * 3. Register the formatter and parser with the JivsServices instance, 
+ *    specifying the lookup key and Array<EnumValueInfo>.
+ */
+export const PhoneTypeLookupKey = 'PhoneType';
+
+/**
+ * Enumerated type for different phone types.
+ */
+export enum PhoneType
+{
+    Landline, // = 0
+    Mobile,   // = 1
+    Fax,      // = 2
+    Other = 10
+}
+
+/**
+ * Data structure to model the mapping between numeric enum values and their string representations.
+ * It is used by the EnumByNumberFormatter and EnumByNumberParser.
+ */
 export const PhoneTypeEnumValues: Array<EnumValueInfo> = [
     {
         value: PhoneType.Landline,
@@ -254,14 +275,17 @@ export const PhoneTypeEnumValues: Array<EnumValueInfo> = [
 ];
 
 
-// Register after you have JivsServices instance. Setup only on the JivsServices
-export function registerEnumDataTypes(services: IJivsServices): void
+// Register after you have JivsServices instance
+export function registerPhoneType(services: IJivsServices): void
 {
-
     let dtfs = services.dataTypeFormatterService as DataTypeFormatterService;
     // or move just this line into registerDataTypeFormatter() function         
     dtfs.register(new EnumByNumberFormatter(PhoneTypeLookupKey, PhoneTypeEnumValues)); 
     let dtps = services.dataTypeParserService as DataTypeParserService;
     // or move just this line into registerDataTypeParser() function         
-    dtps.register(new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, { caseInsensitive: true }));     
+    dtps.register(new EnumByNumberParser(PhoneTypeLookupKey, PhoneTypeEnumValues, {
+        caseInsensitive: true
+    }));     
 }
+
+//#endregion PhoneType Example
