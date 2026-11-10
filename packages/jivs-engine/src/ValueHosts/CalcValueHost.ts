@@ -30,6 +30,24 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
     public override get readOnly(): boolean {
         return true;
     }
+
+    /**
+     * Exposes the names of the dependency value hosts that this calculation relies on.
+     * This allows the system to track dependencies and update the calculation when any of the dependencies change.
+     * While not required, we recommend using this if the calculation is consumed
+     * by a FieldValueHost in its calculation feature, to ensure that any changes
+     * to valuehosts in this list rerun the calculation automatically and keep the calculation result up to date.
+     * 
+     * This value is set in CalcValueHostConfig.dependencyValueHostNames.
+     * If undefined, there are no dependencies setup. (Never returns [])
+     */
+    public get dependencyValueHostNames(): readonly string[] | undefined
+    {
+        if (this.config.dependencyValueHostNames && this.config.dependencyValueHostNames.length > 0)
+            return this.config.dependencyValueHostNames;
+        return undefined;
+    }
+
     /**
      * Provides conversion support against the original value using the DataTypeConverters
      * and DataTypeIdentifiers through services.dataTypeConverterService.convert()

@@ -62,6 +62,18 @@ export interface ICalcValueHost<TOptions extends CalcValueHostSetValueOptions = 
     extends IValueHost<TOptions>
 {
     /**
+     * Exposes the names of the dependency value hosts that this calculation relies on.
+     * This allows the system to track dependencies and update the calculation when any of the dependencies change.
+     * While not required, we recommend using this if the calculation is consumed
+     * by a FieldValueHost in its calculation feature, to ensure that any changes
+     * to valuehosts in this list rerun the calculation automatically and keep the calculation result up to date.
+     * 
+     * This value is set in CalcValueHostConfig.dependencyValueHostNames.
+     * If undefined or [], there are no dependencies setup.
+     */
+    readonly dependencyValueHostNames: readonly string[] | undefined;
+    
+    /**
      * Provides conversion support against the original value using the DataTypeConverters
      * and DataTypeIdentifiers through services.dataTypeConverterService.convert()
      * @param value - The value to be converted. Check its type and possibly its content.
@@ -108,6 +120,15 @@ export interface CalcValueHostConfig extends ValueHostConfig
      * if it could not calculate.
      */
     calcFn: CalculationHandler;
+
+    /**
+     * Exposes the names of the dependency value hosts that this calculation relies on.
+     * This allows the system to track dependencies and update the calculation when any of the dependencies change.
+     * While not required, we recommend using this if the calculation is consumed
+     * by a FieldValueHost in its calculation feature, to ensure that any changes
+     * to valuehosts in this list rerun the calculation automatically and keep the calculation result up to date.
+     */
+    dependencyValueHostNames?: string[] | null;
 }
 
 /**

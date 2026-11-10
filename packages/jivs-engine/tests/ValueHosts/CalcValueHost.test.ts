@@ -63,6 +63,42 @@ describe('CalcValueHost constructor', () => {
         expect(testItem!.getDataType()).toBeNull();
         expect(testItem!.getValue()).toBe(1);
         expect(testItem!.isChanged).toBe(false);
+        expect(testItem!.readOnly).toBe(true);
+        expect(testItem!.dependencyValueHostNames).toBeUndefined();
+    });
+
+    test('dependencyValueHostNames returns the configured dependencies', () => {
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
+        let testItem = new CalcValueHost(vhm, {
+            name: 'Field1',
+            valueHostType: ValueHostType.Calc,
+            label: 'Label1',
+            calcFn: TestCalcFunctionReturnsOne,
+            dependencyValueHostNames: ['Dep1', 'Dep2']
+        },
+        {
+            name: 'Field1',
+            value: undefined
+        });
+        expect(testItem.dependencyValueHostNames).toEqual(['Dep1', 'Dep2']);
+    });
+    test('dependencyValueHostNames returns undefined when config with []', () =>
+    {
+        let services = new MockJivsServices(false, false);
+        let vhm = new MockValueHostsManager(services);
+        let testItem = new CalcValueHost(vhm, {
+            name: 'Field1',
+            valueHostType: ValueHostType.Calc,
+            label: 'Label1',
+            calcFn: TestCalcFunctionReturnsOne,
+            dependencyValueHostNames: []
+        },
+            {
+                name: 'Field1',
+                value: undefined
+            });
+        expect(testItem.dependencyValueHostNames).toBeUndefined();
     });
 });
 
@@ -335,6 +371,11 @@ describe('toICalcValueHost function', () => {
     class TestICalcValueHostImplementation implements ICalcValueHost {
         valueHostsManager: IValueHostsManager = {} as IValueHostsManager;    
         dispose(): void {}
+
+        public get dependencyValueHostNames(): readonly string[] | undefined
+        {
+            return undefined;
+        }        
         convert(value: any, dataTypeLookupKey: string | null): SimpleValueType {
             throw new Error("Method not implemented.");
         }
