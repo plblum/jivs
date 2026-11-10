@@ -128,7 +128,7 @@ export interface CalcValueHostConfig extends ValueHostConfig
      * by a FieldValueHost in its calculation feature, to ensure that any changes
      * to valuehosts in this list rerun the calculation automatically and keep the calculation result up to date.
      */
-    dependencyValueHostNames?: string[] | null;
+    dependencyValueHostNames?: string[];
 }
 
 /**

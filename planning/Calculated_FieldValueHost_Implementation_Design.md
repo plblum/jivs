@@ -93,19 +93,18 @@ Add a manually supplied dependency list and expose it on the calc:
 ```ts
 // Proposed members only.
 interface CalcValueHostConfig {
-    dependencyValueHostNames?: string[] | null;
+    dependencyValueHostNames?: string[];
 }
 
 interface ICalcValueHost {
-    readonly dependencyValueHostNames: readonly string[] | null | undefined;
+    readonly dependencyValueHostNames: readonly string[] | undefined;
 }
 ```
 
 - List names for every field whose value the calculation depends on, including all conditional branches.
 - The field uses the list to decide whether a source-change notification requires recalculation.
-- **Open:** exact semantics for absent, `null`, and empty lists and whether the public list can be replaced at runtime. Do not assign auto-discovery behavior to `undefined` in this version.
-- Decide how unknown dependency names and unsupported reactive sources are diagnosed. A static host can be read but does not promise a change notification.
-- Avoid accidental mutation of the manager's cloned configuration; a readonly public view is one option.
+- Returns undefined if the config.dependencyValueHostNames is [].
+- No validation performed on the names. The consumer will learn of problems by consuming the name.
 
 ### `CalcValueHost`
 
@@ -117,10 +116,7 @@ Solution: Ensure no re-entrancy happens in any CalcValueHost.getValue call.
 
 Current implementation: [`CalcValueHost.ts`](../packages/jivs-engine/src/ValueHosts/CalcValueHost.ts).
 
-- Expose the configured list through the public interface.
-- Keep `getValue()` calculating on demand and `setValue()` behaving as it does today.
-- The calc does not need to publish its own notification for a destination field. The manager notifies the field directly; the field consults the calc's list.
-- **Owner work:** address calculations that accidentally call themselves and could cause stack overflow. The current implementation already has a `getValue()` reentrancy guard; assess its coverage, including indirect recursion, as part of that separate work. Propagation cycles among calculated fields also need a defined outcome, without assuming the existing guard covers every notification cycle.
+- Problem was already resolved in existing code with the _reentrantCount private field.
 
 ### `FieldValueHostConfig`, `IFieldValueHost`, and `FieldValueHost`
 
