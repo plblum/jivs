@@ -348,7 +348,16 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * @param valueHost 
      * @param instanceState 
      */
-    notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void;    
+    notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void;   
+    
+    /**
+     * Recommended call after initializing values to take on some wrap up operations.
+     * - Perform preliminary validation (validate({preliminary: true}))
+     * - Have any FieldValueHosts.isCalculated = true get calculated.
+     * These actions will always invoke any setup callbacks, such as reporting a value changed
+     * due to calculation or validation state changed.
+     */
+    valuesInitialized(): void;
     //#endregion
     
     /**

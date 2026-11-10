@@ -99,11 +99,13 @@ export interface IReader
 export interface ReaderOptions
 {
     /**
-     * Once finished, invoke validation on all fields using the preliminary option.
-     * It reports problems with the data that is present, but not missing input the user hasn't had a chance to supply.
+     * Treat this process as initially populating values.
+     * Upon completion, the Reader will invoke ValueHostsManager.valuesInitialized(), 
+     * which will run preliminary validation and ensure any calculated `FieldValueHost` 
+     * has its initial value.
      * Defaults to true if not specified.
      */
-    preliminaryValidation?: boolean;
+    initializingValues?: boolean;
     /**
      * Controls behavior of setValue to turn off its ability to
      * convert the value to text through an associated DataTypeFormatter.

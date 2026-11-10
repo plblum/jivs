@@ -30,14 +30,14 @@ import { EditorReader } from './EditorReader';
  *   they had in capturedState, including any issues found.
  * - Fields whose text changed, or that became enabled, are reset to NotAttempted (reset).
  *   Their old issues no longer describe the new value.
- * - Preliminary validation runs (ReaderOptions.preliminaryValidation, default true).
+ * - Preliminary validation runs (ReaderOptions.initializingValues, default true).
  *   It only considers fields that are NotAttempted or NeedsValidation, which are the reset ones.
  * - broadcastState(true, false) sends the validation state of every enabled FieldValueHost, and the form,
  *   to the presentation handlers, error displays and validation summary.
  *   That is what makes restored issues visible. Text values are not broadcast because the editors
  *   are the source of the values and must not be overwritten.
  *
- * Setting preliminaryValidation to false skips both the validation and the broadcast.
+ * Setting initializingValues to false skips both the validation and the broadcast.
  *
  * On a page that has no captured state, every field starts as NotAttempted, so the
  * broadcast reflects only the preliminary validation of the values read.
@@ -67,7 +67,7 @@ export class ServerPageValuesReader extends EditorReader
     public override read(): void
     {
         super.read();
-        if (this.options?.preliminaryValidation !== false)
+        if (this.options?.initializingValues !== false)
             this.valueHostsManager.broadcastState(true, false); // reflect validation state in the UI but no changes to editors which are the source of the values
     }
 

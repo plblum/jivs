@@ -42,6 +42,9 @@
  *  .lessThan(10, { valueHostName: 'DiffDays' });
  * ```
  * Your function can also save stateful information with the valueHost.saveIntoInstanceState.
+ * 
+ * NOTE: CalcValueHost is always enabled and read-only. Calls to setEnabled have no effect.
+ * 
 * @module jivs-engine/ValueHosts/Types/CalcValueHost
  */
 
@@ -112,7 +115,7 @@ export interface ICalcValueHost<TOptions extends CalcValueHostSetValueOptions = 
  * dataType = assigned to the output value's data type lookup key
  * calcFn = the function matching the calculationHandler
  */
-export interface CalcValueHostConfig extends ValueHostConfig
+export interface CalcValueHostConfig extends Omit<ValueHostConfig, 'initEnabled'|'enablerConfig'>
 {
     /**
      * The function that will be called by getValue. It must return

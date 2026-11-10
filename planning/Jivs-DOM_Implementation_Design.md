@@ -870,7 +870,7 @@ Concrete definitions also implement `sendValue()`. It does the editor-specific w
 `sendValue()` is the single path from an editor to its `IFieldValueHost`. Two kinds of callers use it:
 
 * **Event handlers.** The handlers attached by `attachToSendValuesCore()` call `sendValue()` with `validate: true`, because the user changed the value. `duringEdit` is `true` only for an intermediate-edit event such as `input`.
-* **Initialization.** Code that transfers the editors' initial values into the `IFieldValueHost`s calls `sendValue()` directly, with `validate: false`. Validation then runs once, after all values have been transferred, using `ValueHostsManager.validate({ preliminary: true })`.
+* **Initialization.** Code that transfers the editors' initial values into the `IFieldValueHost`s calls `sendValue()` directly, with `validate: false`. Validation then runs once, after all values have been transferred, using `ValueHostsManager.valuesInitialized()`.
 
 Both callers get identical parsing, injected-error handling, and text/native value behavior, because the same method does the work.
 
@@ -4480,7 +4480,16 @@ valueHostsManager.services.domServices.dispatchers.attach(
     - From the editors within the HTML itself, use the `EditorReader`.
     - From the editors of a page the server regenerated after a round trip, where the new `ValueHostsManager` was built with `config.capturedState`, use the `ServerPageValuesReader`. See "Server page round trip" below.
     - From a dictionary with native values, use the `DictionaryReader`.
-    - Otherwise, use the `setValue()`, `setTextValue()`, or `setValues()` functions on each `FieldValueHost`.
+    - Otherwise, use the `setValue()`, `setTextValue()`, or `setValues()` functions on each `FieldValueHost` being initialized. Pass `{ reset: true }` to identify a fresh value, then call `valuesInitialized()` after all values are supplied.
+
+    `reset: true` publishes the supplied value through the applicable value-changed callbacks even when it equals the current value, while resetting change tracking and, unless validation is requested or an injected error is supplied, validation state. Attach the relevant dispatcher first and do not set `skipValueChangedCallback` when the editor needs the update. For `setTextValue()`, `skipIfUnchanged: true` takes precedence: an unchanged text value is skipped before reset can apply. A native `setValue()` requires the formatting path to update text; formatting opt-outs leave the text unchanged.
+
+    ```ts
+    // After installation and dispatcher attachment:
+    valueHostsManager.getFieldValueHost('FirstName')!.setValue('Ada', { reset: true });
+    valueHostsManager.getFieldValueHost('Notes')!.setTextValue('Ready', { reset: true });
+    valueHostsManager.valuesInitialized();
+    ```
 
     When using `ModelReader`, `FormReader`, or `DictionaryReader`, you have the option to let this tool also populate the HTML editors.
     - Ensure the TextValueDispatcher was attached to the ValueHostManager's onTextValueChanged callback. This is the default behavior from the previous steps.
@@ -4499,7 +4508,7 @@ valueHostsManager.services.domServices.dispatchers.attach(
 10. Execute a preliminary validation on all fields, without reporting any required field errors.
     This is built into the Reader.read() operation. But if you don't use read, do this:
     ```ts
-    valueHostsManager.validate({preliminary: true});
+    valueHostsManager.valuesInitialized();
     ```
 #### The Long Form of setup
 ```ts
@@ -4537,7 +4546,7 @@ The user is expected to modify the DOM as needed on the client side, after runni
 That is impactful and the user is expected to coordinate those changes with jivs-dom.
 
 1. We expect that `ValueHostsManager` itself remains the same. Note that it should have been configured with all possible editors, not those that were offered at the time.
-2. Most of the work involves: Rerunning FormInstaller, initializing values - this time on both editor and `ValueHostsManager` side, and using `ValueHostsManager.validate({preliminary: true})`
+2. Most of the work involves: Rerunning FormInstaller, initializing values - this time on both editor and `ValueHostsManager` side, and using `ValueHostsManager.valuesInitialized()`
 
 The design allows `ValueHostsManager` to establish connections and values associated the replaced editors only. Yet, FormInstaller and the Readers all enumerate through all existing editors and FieldValueHosts.
 To ensure this works:
@@ -4570,7 +4579,7 @@ The EditorWriter is intended to assign values from FieldValueHosts to the editor
 
     const writer = new EditorWriter(valueHostsManager,  { filter: onlyReplacedEditors });
     writer.write();
-    valueHostsManager.validate({preliminary: true});
+    valueHostsManager.valuesInitialized();
     ```
 - Use `ModelReader`, `DictionaryReader`, or `FormReader` if you have values that need to be assigned to both the editor and `FieldValueHost`. They send data first to `FieldValueHost`, and through callbacks, the value is sent to the editor too.
     ```ts
@@ -4866,7 +4875,7 @@ Scenario: the browser replaces part of the DOM tree, such as a fragment returned
 1. Create the `ElementCollector`.
 2. Run `FormInstaller.install(valueHostsManager, collector)`. It recollects a fresh Registry. Untouched editors are skipped as already installed. New editors are installed in full.
 3. Initialize values, in whichever direction the application needs (see below).
-4. Run `validate({ preliminary: true })`. A Reader does this when it finishes.
+4. Run `valueHostsManager.valuesInitialized()`. A Reader does this when it finishes.
 
 Steps 1, 2 and 4 are the same as for the initial form. Only step 3 differs. The initial form usually reads a model. A replaced fragment may read the new editors, read the model, or have the application call `setValue()`.
 
@@ -4942,9 +4951,11 @@ The filter is not wired in automatically. The user passes it.
 
 - **New editors hold the correct value.** Use `EditorReader` with `onlyReplacedEditors`. The untouched editors keep their state, and validating them again would give the same result, but skipping them is cleaner.
 - **The ValueHosts hold the correct value and the new editors must show it.** The `EditorWriter` (ValueHost to editor) covers this. It is the counterpart a user picks instead of a Reader.
-- **The application sets values after install.** Call `setValue()` on the FieldValueHost, then `validate({ preliminary: true })`. This is the application's choice, so no filter applies.
+- **The application sets values after install.** Call `setValue()`, `setTextValue()`, or `setValues()` with `{ reset: true }` on each field being initialized, then call `valueHostsManager.valuesInitialized()`. Choose the fields explicitly so unrelated editable fields are not reset.
 
-Same-value caution: `FieldValueHost.setTextValue()` does nothing when the text equals the current Text Value, so `onTextValueChanged` never fires and the `TextValueDispatcher` never writes the new editor. A `setValue()` with the value the ValueHost already holds therefore leaves a replaced editor blank. `EditorReader` avoids this by reading editor to ValueHost, and `EditorWriter` is intended to bypass it. Applications that use `setValue()` for a replaced editor must change the value or write the editor directly.
+Same-value caution: without `reset: true`, an unchanged text value does not notify the text dispatcher. Explicit `reset: true` requests publication even for an unchanged value, except that `setTextValue()` with `skipIfUnchanged: true` skips unchanged text. `EditorWriter` can instead write the current value without resetting the field, while `EditorReader` reads editor to ValueHost.
+
+**Partial replacement and calculated fields:** `valuesInitialized()` currently recalculates every calculated field with `reset: true`, including those whose editors were not replaced. This can republish their unchanged values to existing editors. Decide how to scope or suppress those publications before relying on this flow where untouched editors must not be overwritten. Also verify the field-level replacement filter and writer behavior when only one of multiple editors for a field was replaced.
 
 #### Test Coverage
 
@@ -4968,7 +4979,7 @@ What each part contributes:
   - A field with unchanged text and enabled state keeps its captured state. A field whose text changed, or that became enabled, is reset to NotAttempted and then validated by the preliminary validation.
   - A parse error from the parser (`injectedError`) survives the reset, because `reset` and `injectedError` are mutually exclusive.
   - It then calls `broadcastState(true, false)`: the validation state of the form and of each enabled field reaches the application's `onValidationStateChanged` and `onValueHostValidationStateChanged` callbacks. Text values are not broadcast, so no editor is written.
-  - `preliminaryValidation: false` skips both the validation and the broadcast.
+  - `initializingValues: false` skips wrap up that calls `ValueHostsManager.valuesInitializated()`.
 - **Why `EditorReader` alone is not enough.** It skips unchanged fields, so the application's validation-state callbacks never hear about them. The DOM looks the same with either reader. The difference is only in the application's own callbacks, for example one that enables a submit button.
 
 A callback may be called more than once for the same state, because install draws it and the broadcast reports it again. Drawing is idempotent.

@@ -15,13 +15,14 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { FieldValueHostConfig, FieldValueHostInstanceState, IFieldValueHost, FieldValueHostSetValueOptions, toIFieldValueHostCallbacks } from '../Interfaces/FieldValueHost';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from './ValidatorsValueHostBase';
-import { LoggingLevel, LoggingCategory } from '../Interfaces/LoggingService';
+import { LoggingLevel, LoggingCategory, LogOptions } from '../Interfaces/LoggingService';
 import { IValidator, ValidatorConfig } from '../Interfaces/Validator';
 import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { DataTypeResolution } from '../Interfaces/DataTypes';
 import { ensureError } from '../Utilities/ErrorHandling';
 import { ValueAdapterRule } from '../Interfaces/ValueAdapterService';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 
 
 /**
@@ -67,7 +68,24 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     constructor(valueHostsManager: IValueHostsManager, config: TConfig, state: TState) {
         super(valueHostsManager, config, state);
     }
-    
+
+    /**
+     * Switches readonly on when the FieldValueHost is driven by a calculation.
+     */
+    public override get readOnly(): boolean
+    {
+        if (this.isCalculated)
+            return true;
+        return super.readOnly;
+    }
+    /**
+     * Indicates whether the value of this FieldValueHost is calculated based on other values.
+     * If true, the value is derived rather than directly set by the user or external source.
+     */
+    public get isCalculated(): boolean
+    {
+        return !!this.config.calculation?.sourceValueHostName;
+    }
 
     /**
      * Called by setValue() to determine if a formatter is setup and the value is formattable.
@@ -100,8 +118,8 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         }
         let self = this;
         // similar to tryParser.
-        if (value === undefined)
-            return false;
+        // if (value === undefined)
+        //     return false;
         if (this.valueHostsManager.behaviors.disableFormattingOnValueChange === true)
         {
             this.logger.message(LoggingLevel.Debug, () => 'behaviors.disableFormattingOnValueChange=true');
@@ -116,6 +134,12 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         {
             this.logger.message(LoggingLevel.Debug, () => 'config.formatterLookupKey=null');
             return false;
+        }
+        if (value === undefined)
+        {
+            // special case: value is undefined, skip formatting and treat text value as undefined too
+            this.setValues(value, undefined, options);
+            return true;
         }
 
         const dtfs = this.services.dataTypeFormatterService;
@@ -199,8 +223,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
     public setTextValue(textValue: string | undefined, options?: TOptions): void {
         if (!options)
             options = {} as TOptions;
-        if (this.isReadOnly(options))
-            return;
+
         this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
         let oldEnabled = this.instanceState.enabled ?? true;
         if (!this.canChangeValueCheck(options))
@@ -210,7 +233,7 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         // as a rule, if we enable the field via options.ensureEnabled, it also reflects a change
         // even if skipIfUnchanged is true.
         const oldValue: any = this.instanceState.textValue;
-        const changed = !deepEquals(textValue, oldValue) || oldEnabled !== newEnabled;        
+        let changed = !deepEquals(textValue, oldValue) || oldEnabled !== newEnabled;        
         if (!changed && options.skipIfUnchanged)
         {
             this.logger.message(LoggingLevel.Debug, () => `skipped because value is unchanged with skipIfUnchanged=true`);
@@ -220,6 +243,11 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         {
             this.tryReformatTextValue(textValue!, options);
             return; 
+        }
+        // If reset is requested, the value is brand new and needs to be treated as changed
+        if (options.reset)
+        {
+            changed = true;
         }
 
 
@@ -422,15 +450,19 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      */
     public setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void {
         options = options ?? {} as TOptions;
-        if (this.isReadOnly(options))
-            return;
         this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
         if (!this.canChangeValueCheck(options))
             return;        
         const oldNative: any = this.instanceState.value;
-        const nativeChanged = !deepEquals(nativeValue, oldNative);
+        let nativeChanged = !deepEquals(nativeValue, oldNative);
         const oldText = this.instanceState.textValue;
-        const textChanged = !deepEquals(textValue, oldText);
+        let textChanged = !deepEquals(textValue, oldText);
+        // If reset is requested, the values are considered brand new and need to be treated as changed
+        if (options.reset)
+        {
+            nativeChanged = true;
+            textChanged = true;
+        }
         const changed = nativeChanged || textChanged;
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
@@ -501,7 +533,9 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
                     this.logger.log(LoggingLevel.Info, (options) => {
                         return {
                             message: `Added ${condition.conditionType} Condition for Data Type Check`,
-                            category: LoggingCategory.Result
+                            category: LoggingCategory.Result,
+                            identity: this.getName(),
+                            feature: 'ValueHost'
                         };
                     });                    
                     created = true;
@@ -608,6 +642,73 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         const elementIdentifier = this.instanceState.elementIdentifier ?? this.config.elementIdentifier;
         return elementIdentifier != null && elementIdentifier !== '';
     }
+
+    //#region Calculations
+    /**
+     * Will attempt to calculate the value of the FieldValueHost based on its calculation configuration.
+     * 
+     * NOTE: Takes no action when the ValueHost is disabled.
+     * @param options 
+     * @param valueHostIdThatChanged - The identifier of the value host that triggered this calculation, 
+     * if applicable. When supplied, it must be in this calculation's dependency chain.
+     * When not supplied, the calculation will proceed regardless of which value host changed.
+     * @returns True if the calculation handled this FieldValueHost value, false otherwise.
+     * Not impacted on whether the calculation actually ran.
+     */
+    public calculate(options: TOptions, valueHostIdThatChanged?: ValueHostName): boolean
+    {
+        if (this.config.calculation && this.config.calculation.sourceValueHostName)
+        {
+            let sourceVHN = this.config.calculation.sourceValueHostName;
+            // Implement the calculation logic here based on the source value host.
+            // If the value is updated due to the calculation, return true.
+            let sourceValueHost = this.valueHostsManager.getCalcValueHost(sourceVHN);
+            if (sourceValueHost)
+            {
+                // If valueHostIdThatChanged is supplied, ensure it is in the dependency chain of the source value host.
+                // If the dependency chain is unassigned, do not calculate because
+                // we are looking to trigger only when the changed value host is part of the dependency chain.
+                if (valueHostIdThatChanged)
+                {
+                    if (!sourceValueHost.dependencyValueHostNames ||
+                        !sourceValueHost.dependencyValueHostNames.includes(valueHostIdThatChanged))
+                        return true;
+                }
+                let localOptions = { ...options, overrideReadOnly: true };
+                if (!this.canChangeValueCheck(localOptions))
+                    return true;                
+                let value = sourceValueHost.getValue(); // may return undefined, which is still a valid value
+                this.setValue(value, localOptions);
+            }
+            else
+            {
+                this.logger!.log(LoggingLevel.Error, (options) =>
+                {
+                    let data = options?.includeData ? {
+                        'valueHostName': sourceVHN
+                    } : undefined;
+                    return {
+                        message: `Source value host '${ sourceVHN }' not found for calculation.`,
+                        category: LoggingCategory.Configuration,
+                        feature: 'ValueHost',
+                        type: this,
+                        identity: this.getName(),
+                        data: data
+                    };
+                });
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public override otherValueHostChangedNotification(valueHostIdThatChanged: ValueHostName, revalidate: boolean): void
+    {
+        // execute first to ensure validation in the next step has the right value
+        this.calculate(<TOptions> { validate: revalidate }, valueHostIdThatChanged);
+        super.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
+    }
+    //#endregion Calculations
 
     /**
      * Invokes the ValueHostsManager.onTextValueChanged callback.

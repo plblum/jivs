@@ -69,6 +69,7 @@ export class ValueAdapterService
         this.registerWhenFunction('emptystring', whenEmptyString);
         this.registerWhenFunction('emptystringornull', whenEmptyStringOrNull);
         this.registerWhenFunction('emptystringnullorundefined', whenEmptyStringNullOrUndefined);
+        this.registerWhenFunction('always', whenAlways);
     }
 
     protected ensureThenPopulated(): void
@@ -267,6 +268,12 @@ export function whenEmptyStringOrNull(value: any): boolean
 export function whenEmptyStringNullOrUndefined(value: any): boolean
 {
     return value === null || value === '' || value === undefined;
+}
+
+// name: 'always'
+export function whenAlways(value: any): boolean
+{
+    return true;
 }
 
 //#endregion predefined When functions

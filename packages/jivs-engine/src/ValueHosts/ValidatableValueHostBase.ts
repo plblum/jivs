@@ -75,8 +75,6 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     public override setValue(value: any, options?: TOptions): void {
         if (!options)
             options = {} as TOptions;
-        if (this.isReadOnly(options))
-            return;
         this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!this.canChangeValueCheck(options))
             return;
@@ -90,7 +88,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return; // derived class handled the formatting and called setValues() instead of setValue()
         
         const oldValue: any = this.instanceState.value;
-        const changed = !deepEquals(value, oldValue);
+        const changed = !deepEquals(value, oldValue) || options.reset === true;
         let valStateChanged = false;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
@@ -136,9 +134,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             this.invokeOnValueHostValidationStateChanged(options);
     }
 
-    protected notifyOthersOfChange(options: TOptions): void {
-        toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
-            this.getName(), options.validate === true);
+    protected notifyOthersOfChange(options: TOptions): void
+    {
+        if (!options.suppressNotifications)
+            toIValueHostsManager(this.valueHostsManager)?.notifyOtherValueHostsOfValueChange?.(
+                this.getName(), options.validate === true);
     }
     /**
      * When any value changes,

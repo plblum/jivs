@@ -143,15 +143,13 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     public setValue(value: any, options?: TOptions): void {
         if (!options)
             options = {} as TOptions;
-        if (this.isReadOnly(options))
-            return;
-
         this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!this.canChangeValueCheck(options))
             return;
         
         const oldValue: any = this.instanceState.value;   // even undefined is supported
-        const changed = !deepEquals(value, oldValue);
+        // If reset is requested, the value is brand new and needs to be treated as changed
+        let changed = !deepEquals(value, oldValue) || options.reset === true;
         this.updateInstanceState((stateToUpdate) => {
             if (changed) {
                 stateToUpdate.value = value;
@@ -163,25 +161,16 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     }
 
     /**
-     * Use on each setValue style function initially to check if the ValueHost is read-only.
-     * If it returns true, the ValueHost is read-only and the calling function should not attempt to change its value.
-     * @param options 
-     * @returns true when readonly
-     */
-    protected isReadOnly(options: TOptions): boolean {
-        if (this.readOnly && !options.overrideReadOnly)
-        {
-            this.logger.message(LoggingLevel.Info, () => `ValueHost "${ this.getName() }" read-only.`);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * For setValue functions to check for disabled before trying to change.
      */
     protected canChangeValueCheck(options: TOptions): boolean
     {
+        if (this.readOnly && !options.overrideReadOnly)
+        {
+            this.logger.message(LoggingLevel.Info, () => `ValueHost "${ this.getName() }" read-only.`);
+            return false;
+        }
+       
         if (!this.isEnabled())
         {
             if (options.ensureEnabled) {

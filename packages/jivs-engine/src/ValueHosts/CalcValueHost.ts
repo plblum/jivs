@@ -8,7 +8,7 @@ import { ValueHostType } from '../Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { ValueHostBase, ValueHostBaseGenerator } from './ValueHostBase';
 import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
-import { CodingError } from '../Utilities/ErrorHandling';
+import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { SimpleValueType } from '../Interfaces/DataTypeConverterService';
 import { LookupKey } from '../DataTypes/LookupKeys';
 
@@ -28,6 +28,17 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
     }
 
     public override get readOnly(): boolean {
+        return true;
+    }
+
+    public override setEnabled(enabled: boolean): void
+    {
+        this.logger!.message(LoggingLevel.Debug,
+            () => `CalcValueHost is always enabled`);
+    }
+    
+    public override isEnabled(): boolean
+    {
         return true;
     }
 
@@ -99,12 +110,24 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
         try {
             this._reentrantCount++;
             if (this.config.calcFn)
-                return this.config.calcFn(this, this.valueHostsManager);
-
+            {
+                try
+                {
+                    return this.config.calcFn(this, this.valueHostsManager);
+                }
+                catch (ex)
+                {
+                    const err = ensureError(ex);
+                    this.logger.error(err);
+                    throw err;
+                }
+            }
             this.logger.log(LoggingLevel.Warn, (options) => {
                 return {
                     message: 'calcFn property not configured',
-                    category: LoggingCategory.Configuration
+                    category: LoggingCategory.Configuration,
+                    identity: this.getName(),
+                    feature: 'ValueHost'
                 };
             });
             return undefined;

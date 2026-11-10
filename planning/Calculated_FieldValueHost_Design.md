@@ -14,11 +14,11 @@ For the detailed proposed APIs, implementation work, and unresolved validation a
 
 1. **Display a reusable business calculation.** Business rules define a `CalcValueHost` for the number of days between two dates. A form adds a `FieldValueHost` that displays the result in a span. When the source dates change, the displayed result should update.
 2. **Validate the calculated result.** A calculated total or date difference is displayed by a field with its own validators. For example, a date difference greater than 30 days produces a validation issue associated with the displayed field.
-3. **Display an undetermined result.** When a required source is missing or cannot be parsed, the calculation returns `undefined`. The native value is `undefined`, the previously stored text is preserved, and the text adapter displays a field-specific localized message such as "Dates needed", or an empty string by default.
+3. **Display an undetermined result.** When a required source is missing or cannot be parsed, the calculation returns `undefined`. With formatting enabled, the native value and stored text are `undefined`, and the text adapter displays a field-specific localized message such as "Dates needed", or an empty string by default.
 4. **Use a read-only input rather than a span.** An application uses an `input type="text"` to display a formatted result. The input adapter definition reflects the field's `readOnly` state in the HTML input; the field's own read-only rule prevents incoming value writes regardless of the editor used.
 5. **Protect the calculated value during initialization and subsequent interaction.** A reader, editor adapter, or application attempts to set the calculated field's value. The field rejects the call without changing its state; the calculation remains its value source.
 6. **Control model output.** A form-only calculated field is omitted from model writing using `writerRule: { when: "always", then: "skip" }`, once the proposed `always` rule is available. Another application may instead choose to write its calculated result.
-7. **Clear a native value and update its editor display.** Calling `setValue(undefined)` on an ordinary writable field preserves its stored text and notifies `onTextValueChanged`, when configured and not skipped, with an explicit undefined display value, so a text adapter receives `undefined` instead of displaying the previous value.
+7. **Clear a native value and update its editor display.** With formatting enabled, calling `setValue(undefined)` on an ordinary writable field clears its stored text and notifies `onTextValueChanged` when the text changes or `reset: true` is supplied, unless the callback is skipped.
 
 Reactive updates use manually configured dependencies for the initial design. Automatic discovery is deferred; the detailed initialization and notification ordering remain to be designed.
 
@@ -180,7 +180,7 @@ For an `undefined` result:
 
 ```text
 Field native value:       undefined
-Field text value:         previous stored text, unchanged
+Field text value:         undefined, when formatting is enabled
 Displayed editor text:    localized undefined text, fallback, or ""
 ```
 
@@ -188,7 +188,7 @@ The undefined display string is presentation content. It must not be placed in t
 
 `null` and `undefined` are distinct values. The special undefined display behavior applies to `undefined`; handling of `null` continues to follow the applicable field and formatting semantics.
 
-When the result changes from a value to `undefined`, the stored native value changes but the stored text remains unchanged. An explicit undefined display notification tells the adapter not to display the previous text. Initial display synchronization also needs to handle an undefined result even when no stored value has changed.
+When the result changes from a value to `undefined` with formatting enabled, both stored values change. The normal text callback allows the dispatcher to read the new text value. Initial display synchronization still needs to handle an undefined result even when no stored value has changed.
 
 ### `setValue(undefined)` and Text Notifications
 
@@ -200,17 +200,13 @@ For example, assume formatting is active and the field already contains native `
 field.setValue(undefined);
 ```
 
-Today, `tryFormatToText()` skips `undefined` before trying a formatter. The fallback `setValue()` path changes the native value but leaves the stored text as `"42"`. It may invoke `onValueChanged` if the native value changed, but does not invoke `onTextValueChanged`; a text-based editor may therefore continue to display `"42"`.
+With formatting enabled, `setValue(undefined)` delegates to `setValues(undefined, undefined)` without calling a formatter. If the stored text changes or `reset: true` is supplied, the normal `onTextValueChanged` callback receives the previous text, and the dispatcher reads the new `undefined` from `getTextValue()`. Without reset, repeated calls and initial calls with already-undefined text do not notify. `skipValueChangedCallback` still suppresses the callback.
 
-This is not only about formatter-disabling switches. Undefined is skipped unconditionally. For defined values, other reasons formatting may not occur include `disableFormatter`, `formatterLookupKey: null`, a manager behavior disabling formatting, an inactive formatter service, or a formatter failure. In those cases the existing fallback also changes only the native value. Any enhancement must specify whether it addresses only `undefined` or also changes those other paths, and must preserve deliberate formatting opt-outs unless a behavior change is agreed.
-
-**Required work:** `setValue(undefined)` must leave the stored text unchanged and invoke `onTextValueChanged` with an explicit undefined display value when a callback is configured and `skipValueChangedCallback` is not set. This lets text adapters receive `undefined` and clear or replace their displayed text. The behavior also applies to `setValueToUndefined()` through its delegation.
-
-The current callback signature receives the field and the *old* text value, not the new display value. The text dispatcher currently obtains the new value with `field.getTextValue()`. Because the stored text must remain unchanged, the callback and dispatch path need an explicit way to distinguish an undefined display value from an omitted display value; simply reading `getTextValue()` would send the old text again. Preserve the correct old text in the callback.
+The formatting opt-outs (`disableFormatter`, `formatterLookupKey: null`, and `disableFormattingOnValueChange`) retain the prior native-only behavior and leave the text unchanged. An inactive formatter service does not prevent clearing undefined text, since no formatter is needed. The same rules apply to `setValueToUndefined()`.
 
 Do not confuse this with an unsuccessful text parse. If a user enters invalid text, a parser can set the native value to `undefined` while retaining the entered text via `setValues(undefined, enteredText)`. Retaining that text lets the user see and correct it and must not be erased by the proposed calculation-display behavior.
 
-This is an intentional behavior change for ordinary writable fields as well as a requirement for the calculated update path. Specify how `setValue(undefined)` notification interacts with the existing change-only callback convention and formatting opt-outs, and test the requested notification when text was already `undefined`. Initial UI synchronization and later state restoration also must be addressed when the displayed value differs from stored text.
+This is an intentional behavior change for ordinary writable fields as well as the calculated update path. Initialization can use `reset: true` to publish an already-undefined text value, provided the callback and dispatcher are attached and not suppressed. Editor installation and replacement still need coordinated synchronization.
 
 ## Undefined Display Text and Localization
 
@@ -342,7 +338,7 @@ The list records areas of work rather than a completed implementation plan. Orde
 - Define and implement the manager's post-value-initialization function, reader integration, propagation, and validation ordering.
 - Add the span editor definition, its text adapter, registration, and appropriate validation/ARIA support.
 - Add field-specific localized undefined display support to compatible text adapters, without global defaults.
-- Enhance `setValue(undefined)` to preserve stored text and explicitly notify configured text callbacks with undefined display content unless skipped; test ordinary and calculated fields.
+- With formatting enabled, clear stored text for `setValue(undefined)` and publish text changes or reset values; test ordinary and calculated fields and formatting opt-outs.
 - Owner: address calculations that accidentally call themselves and could cause stack overflow in `CalcValueHost`.
 - Ensure output synchronization for initial undefined values and newly installed or replaced editors.
 - Decide how readers treat calculated fields and preserve their existing lifecycle behavior.

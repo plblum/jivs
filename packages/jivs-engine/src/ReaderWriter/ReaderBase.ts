@@ -48,7 +48,8 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
      * Loops through all ValueHosts to determine their values.
      * If the external data has an associated field with a value, it is assigned to the ValueHost.
      * 
-     * The option.preliminaryValidation controls whether validation is invoked on all fields after reading.
+     * The option.initializingValues ensures ValueHostsManager.valuesInitialized() is called after reading.
+     * That provides preliminary validation and ensures any calculated `FieldValueHost` has its initial value.
      * It defaults to true if not specified.
      * 
      * The option.filter determines which ValueHosts are included in the reading process. If not specified, all ValueHosts are included.
@@ -65,9 +66,9 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
             }
             
         }
-        if (this.options.preliminaryValidation !== false)
+        if (this.options.initializingValues !== false)
         {
-            this.valueHostsManager.validate({ preliminary: true });
+            this.valueHostsManager.valuesInitialized();
         }
     }
 
@@ -101,7 +102,9 @@ export abstract class ReaderBase<TExternalData extends object, TOptions extends 
             disableFormatter: this.options.disableFormatter ?? false,
             skipValueChangedCallback: this.options.skipValueChangedCallback ?? false,
             validate: false,
-            reset: true
+            reset: true,
+            // No notifications because we expect valueHostsManager.valuesInitialized() to be called.
+            suppressNotifications: true
         };
     }    
 }

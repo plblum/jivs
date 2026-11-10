@@ -32,7 +32,7 @@ import type { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/In
  *   and issues. Becoming enabled counts as a change.
  * - A field whose text changed is reset to NotAttempted (reset), because its prior validation no longer
  *   describes the new value.
- * - Then preliminary validation runs (ReaderOptions.preliminaryValidation, default true).
+ * - Then ValueHostsManager.valuesInitialized() is called (ReaderOptions.initializingValues, default true).
  *   It only considers fields that are NotAttempted or NeedsValidation, so it
  *   validates the reset fields and leaves skipped fields alone.
  *   It also helps avoid reporting required field errors prematurely.

@@ -9,6 +9,7 @@ import
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
         ValidatorsValueHostSetValueOptions
     } from './ValidatorsValueHostBase';
+import { ValueHostName } from '../DataTypes/BasicTypes';
 
 
 /**
@@ -44,7 +45,23 @@ import
  * ...and more...
  * };
  * ```
-*/
+ * 
+ * ## Calculated Values
+ * The FieldValueHost can become a conduit to calculated values derived from a CalcValueHost.
+ * Just supply FieldValueHostConfig.calculation.sourceValueHostName with the name
+ * of the CalcValueHost.
+ * 
+ * Benefits include:
+ * - validation of the calculation, which can be reported to the UI
+ * - conversion to a text value through a DataTypeFormatter
+ * - reporting that text value through the ValueHostsManager.onTextValueChanged callback
+ *   so the UI can present the calculated data.
+ * - reporting the native value through the ValueHostsManager.onValueChanged callback
+ * 
+ * Only "active" when calculation itself is defined and its sourceValueHostName property is assigned.
+ * Once active, FieldValueHost.readOnly becomes true.
+ * It uses the same DataTypeFormatter as other FieldValueHosts for converting the typed value to text.
+ */
 export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions = FieldValueHostSetValueOptions>
     extends IValidatorsValueHost<TOptions>
 {
@@ -81,24 +98,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * parsing fails.
      *
      * @param textValue - The text value to store exactly as supplied.
-     * @param options -
-     * duringEdit - Set to true for an intermediate edit activity rather than a completed change.
-     *   For example, on the client side this may be used for an HTMLInputElement.oninput event,
-     *   where the user is still editing. In this mode, only validators intended for in-progress
-     *   edits are used. Specifically, their Condition implements IEvaluateConditionDuringEdits,
-     *   and IEvaluateConditionDuringEdits.evaluateDuringEdit() is used instead of
-     *   ICondition.evaluate().
-     * validate - Invoke validation after setting the text value.
-     * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     * disableParser - When true, do not use the DataTypeParser to resolve the typed value
-     *   from the text value.
-     * injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
-     *      an error. Assign this object to contain the error message and other info.
-     *      Internally Jivs will provide a Validator with the error message to report the error.
-     *      If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
-     *      use the errorCode value of 'InjectedError' to localize the error message. 
-     *      You can also provide a summaryMessage for use in a summary of validation errors.
-     * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
+     * @param options - See @see {FieldValueHostSetValueOptions}
      */
     setTextValue(textValue: string | undefined, options?: TOptions): void;
 
@@ -116,15 +116,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * a date from text fails. All other values, including null and the empty string,
      * are treated as real data.
      * @param textValue - The text value to store exactly as supplied.
-     * @param options -
-     *    * validate - Invoke validation after setting the values.
-     *    * reset - Clear validation state, unless validate = true, and set IsChanged to false.
-     *    *  injectedError - If you handle parsing before calling setTextValue(), your parser may have returned
-     *          an error. Assign this object to contain the error message and other info.
-     *          Internally Jivs will provide a Validator with the error message to report the error.
-     *          If setup, you can give it an errorCode. If not supplied, know that ErrorMessagesService will
-     *          use the errorCode value of 'InjectedError' to localize the error message. 
-     *          You can also provide a summaryMessage for use in a summary of validation errors.
+     * @param options - See @see {FieldValueHostSetValueOptions}
      */
     setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void;
 
@@ -192,6 +184,23 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * @param elementIdentifier - The identifier of the input element associated with this FieldValueHost. Can be null or undefined if no association is needed.
      */
     setElementIdentifier(elementIdentifier: string | null | undefined): void;
+
+    /**
+     * Indicates whether the value of this FieldValueHost is calculated based on other values.
+     * If true, the value is derived rather than directly set by the user or external source.
+     */
+    readonly isCalculated: boolean;
+
+    /**
+     * Will attempt to calculate the value of the FieldValueHost based on its calculation configuration.
+     * @param options 
+     * @param valueHostIdThatChanged - The identifier of the value host that triggered this calculation, 
+     * if applicable. When supplied, it must be in this calculation's dependency chain.
+     * When not supplied, the calculation will proceed regardless of which value host changed.
+     * @returns True if the calculation handled this FieldValueHost value, false otherwise.
+     * Not impacted on whether the calculation actually ran.
+     */
+    calculate(options: TOptions, valueHostIdThatChanged?: ValueHostName): boolean;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -321,6 +330,52 @@ export interface FieldValueHostConfig extends ValidatorsValueHostBaseConfig {
      * Note: This property is optional and may be null if no specific element is associated with this FieldValueHost.
      */
     elementIdentifier?: string | null;
+
+    /**
+     * Provides configuration for field-level calculations associated with this FieldValueHost.
+     * The feature changes some of the behaviors of FieldValueHost:
+     * - The native value is determined based on a calculation from a CalcValueHost.
+     * - The FieldValueHost becomes readOnly (can be overridden if necessary)
+     * The impact is that a fieldValueHost with this is not used for data storage directly, 
+     * but rather its value is derived from the calculation defined in the CalcValueHost.
+     * Within a FieldValueHost, it supports:
+     * - validation of the calculation
+     * - conversion to a text value through formatters
+     * - reporting that text value through the ValueHostsManager.onTextValueChanged callback
+     *   so the UI can present the calculated data.
+     * - reporting the native value through the ValueHostsManager.onValueChanged callback
+     * 
+     * Only "active" when calculation itself is defined and its sourceValueHostName property is assigned.
+     * Once active, FieldValueHost.readOnly becomes true.
+     */
+    calculation?: FieldCalculationConfig | null;
+}
+
+/**
+ * Extends FieldValueHostConfig in its calculation property to encapsulate 
+ * additional configuration for field-level calculations.
+ */
+export interface FieldCalculationConfig
+{
+    /**
+     * The name of the value host that this field calculation depends on. 
+     * This should match the name of a ValueHost within the same context.
+     */
+    sourceValueHostName: string;
+
+    /**
+     * Provides text to display when the value from the source value host is undefined.
+     * This is intended for the UI, and is assigned on individual FieldValueHosts
+     * because its text can wildly vary.
+     * jivs-engine does not use it. jivs-dom uses it in EditorAdapterDefinitions creating
+     * TextValueAdapter instances.
+     */
+    undefinedText?: string;
+    /**
+     * Localization key for the undefined text. 
+     * This allows the UI to display a localized message when the value from the source value host is undefined.
+     */
+    undefinedTextl10n?: string;
 }
 
 /**

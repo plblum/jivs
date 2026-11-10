@@ -1033,7 +1033,7 @@ The sequence is:
 8. Attach validation and selected value-change dispatchers.
 9. Load the initial values by running a Reader. Which Reader depends on where the values are (see the next section).
 10. Allow the attached text-value dispatcher to synchronize formatted values into the installed editors. Applies when the Reader writes to the ValueHosts from outside the form (`ModelReader`, `DictionaryReader`, `FormReader`).
-11. The Reader establishes the initial validation state by calling `valueHostsManager.validate({ preliminary: true })` after it finishes, unless `options.preliminaryValidation` is `false`.
+11. The Reader establishes the initial validation state by calling `valueHostsManager.validate({ preliminary: true })` after it finishes, unless `options.initializingValues` is `false`.
 
 ---
 
@@ -1045,7 +1045,7 @@ Every value lives in two places: the form's editors and the `FieldValueHost`s. B
 2. Call `read()`.
 3. Preliminary validation runs inside `read()`.
 
-`ReaderOptions.preliminaryValidation` defaults to `true`. Set it to `false` only when you will call `valueHostsManager.validate({ preliminary: true })` yourself, such as after running several Readers in a row.
+`ReaderOptions.initializingValues` defaults to `true`. Set it to `false` only when you will call `valueHostsManager.validate({ preliminary: true })` yourself, such as after running several Readers in a row.
 
 ## Where Do the Initial Values Come From?
 
@@ -1107,8 +1107,8 @@ reader.read();
 ```ts
 FormInstaller.install(valueHostsManager, new PersonFormElementCollector());
 
-new ModelReader(valueHostsManager, getPerson(), { preliminaryValidation: false }).read();
-new EditorReader(valueHostsManager, { preliminaryValidation: false }).read();
+new ModelReader(valueHostsManager, getPerson(), { initializingValues: false }).read();
+new EditorReader(valueHostsManager, { initializingValues: false }).read();
 valueHostsManager.validate({ preliminary: true });
 ```
 

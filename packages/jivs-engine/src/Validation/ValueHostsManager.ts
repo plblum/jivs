@@ -6,7 +6,7 @@
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ICalcValueHost } from '../Interfaces/CalcValueHost';
-import { IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
+import { FieldValueHostSetValueOptions, IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggingService';
@@ -533,6 +533,30 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      */
     public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
+    }
+
+    /**
+     * Recommended call after initializing values to take on some wrap up operations.
+     * - Perform preliminary validation (validate({preliminary: true}))
+     * - Have any FieldValueHosts.isCalculated = true get calculated.
+     * These actions will always invoke any setup callbacks, such as reporting a value changed
+     * due to calculation or validation state changed.
+     */
+    public valuesInitialized(): void
+    {
+        // always calculate prior to validate
+        for (let ivh of this.enumerateValueHosts((vh) => !!toIFieldValueHost(vh)))
+        {
+            let fvh = ivh as IFieldValueHost;
+            if (fvh && fvh.isCalculated)
+                fvh.calculate(<FieldValueHostSetValueOptions> {
+                    validate: false,
+                    suppressNotifications: true,
+                    reset: true
+                });
+        }        
+        this.validate({ preliminary: true });
+
     }
 
     protected * validatableValueHost(): Generator<IValidatableValueHost> {

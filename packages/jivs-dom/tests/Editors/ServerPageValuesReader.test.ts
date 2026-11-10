@@ -218,15 +218,15 @@ describe('ServerPageValuesReader.read broadcasting', () => {
     });
 });
 
-// options.preliminaryValidation = false means the caller will validate and show state later,
+// options.initializingValues = false means the caller will validate and show state later,
 // so the reader neither validates nor broadcasts.
-describe('ServerPageValuesReader.read with preliminaryValidation false', () => {
+describe('ServerPageValuesReader.read with initializingValues false', () => {
     test('Neither validates nor broadcasts, leaving changed fields reset to NotAttempted', () => {
         let { services, valueHostsManager, registry, field1, field2, events } = setupRoundTrip();
         addServerEditor(registry, field1, 'abc');
         addServerEditor(registry, field2, 'new');
 
-        new ServerPageValuesReader(valueHostsManager, { preliminaryValidation: false }).read();
+        new ServerPageValuesReader(valueHostsManager, { initializingValues: false }).read();
 
         // The only callback is Field2's own reset notification. No form-level event and no Field1 event
         // means the broadcast did not run.
@@ -236,12 +236,12 @@ describe('ServerPageValuesReader.read with preliminaryValidation false', () => {
         expect(services.loggingService.entryCount).toBe(0);
     });
 
-    test('preliminaryValidation true behaves the same as the default', () => {
+    test('initializingValues true behaves the same as the default', () => {
         let { valueHostsManager, registry, field1, field2, events } = setupRoundTrip();
         addServerEditor(registry, field1, 'abc');
         addServerEditor(registry, field2, 'new');
 
-        new ServerPageValuesReader(valueHostsManager, { preliminaryValidation: true }).read();
+        new ServerPageValuesReader(valueHostsManager, { initializingValues: true }).read();
 
         expect(events.slice(-3)).toEqual(['form', 'field:Field1', 'field:Field2']);
     });

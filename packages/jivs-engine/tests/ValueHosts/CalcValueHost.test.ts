@@ -303,6 +303,71 @@ describe('getValue using the calcFn', () => {
         expect(typeof testItem?.getValue()).toBe('number');
     });      
 });
+// A CalcValueHost is conceptually always enabled. enablerConfig, initialEnabled and setEnabled() are ignored.
+describe('CalcValueHost is always enabled', () => {
+    function setupCalc(partialConfig?: Partial<CalcValueHostConfig>) {
+        let services = createJivsServicesForTesting();
+        let logger = new TestingLoggingService();
+        logger.minLevel = LoggingLevel.Debug;
+        services.loggingService = logger;
+        let vhm = new ValueHostsManager({
+            services: services,
+            valueHostConfigs: [
+                <CalcValueHostConfig>{
+                    name: 'Field1',
+                    valueHostType: ValueHostType.Calc,
+                    calcFn: TestCalcFunctionReturnsOne,
+                    ...partialConfig
+                }
+            ]
+        });
+        return { logger, valueHost: vhm.getValueHost('Field1')! };
+    }
+    test('isEnabled is true by default', () => {
+        expect(setupCalc().valueHost.isEnabled()).toBe(true);
+    });
+    test('isEnabled is true even when config.initialEnabled=false', () => {
+        expect(setupCalc({ initialEnabled: false }).valueHost.isEnabled()).toBe(true);
+    });
+    test('isEnabled is true even when config.enablerConfig would disable it', () => {
+        let setup = setupCalc({
+            enablerConfig: { conditionType: 'NeverMatches' } as any
+        } as any);
+        expect(setup.valueHost.isEnabled()).toBe(true);
+    });
+    test('setEnabled(false) takes no action other than a Debug log', () => {
+        let setup = setupCalc();
+        setup.valueHost.setEnabled(false);
+        expect(setup.valueHost.isEnabled()).toBe(true);
+        expect(setup.logger.findMessage('always enabled', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+});
+
+describe('getValue when calcFn throws', () => {
+    test('Logs the error, rethrows it, and a later getValue can still run (reentrancy count was released)', () => {
+        let services = createJivsServicesForTesting();
+        let logger = new TestingLoggingService();
+        logger.minLevel = LoggingLevel.Info;
+        services.loggingService = logger;
+        let shouldThrow = true;
+        let vhm = new ValueHostsManager({
+            services: services,
+            valueHostConfigs: [
+                <CalcValueHostConfig>{
+                    name: 'Field1',
+                    valueHostType: ValueHostType.Calc,
+                    calcFn: () => { if (shouldThrow) throw new Error('boom'); return 1; }
+                }
+            ]
+        });
+        let testItem = vhm.getValueHost('Field1')!;
+        expect(() => testItem.getValue()).toThrow('boom');
+        expect(logger.findMessage('boom', LoggingLevel.Error, null)).toBeTruthy();
+        shouldThrow = false;
+        expect(testItem.getValue()).toBe(1);
+    });
+});
+
 describe('setValue', () => {
     test('setValue only logs. Has no impact on calculation', () => {
         let services = createJivsServicesForTesting();

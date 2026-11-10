@@ -247,6 +247,24 @@ describe('ModelReader', () =>
             expect(result.skip).toBe(false);
             expect(result.value).toBeNull();
         });
+        test('when the value is always considered invalid, then=skip. Expect skip=true.', () =>
+        {
+            let model = { prop1: 'value1', prop2: 42 };
+            let { valueHost, reader } = setup(model, 'prop1', 'always', 'skip');
+            let readerRule = valueHost.getReaderRule();
+            expect(readerRule).toBeDefined();
+            let result = reader.publicify_adjustValueByRule(model.prop1, readerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when null
+            result = reader.publicify_adjustValueByRule(null, readerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when undefined
+            result = reader.publicify_adjustValueByRule(undefined, readerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when number
+            result = reader.publicify_adjustValueByRule(100, readerRule!, valueHost);
+            expect(result.skip).toBe(true);
+        });
     });
     describe('publicify_tryGetValueFromModel via publicify_', () =>
     {

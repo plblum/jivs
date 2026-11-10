@@ -261,6 +261,10 @@ export class MockFieldValueHost extends MockValueHost
     isValid: boolean = false;
     asyncProcessing: boolean = false;
     corrected: boolean = false;
+    isCalculated: boolean = false;
+    calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {
+        throw new Error("Method not implemented.");
+    }
     groupCheck(options?: ValidateOptions | undefined): boolean {
         return true;
     }

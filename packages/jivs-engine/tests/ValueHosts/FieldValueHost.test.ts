@@ -13,6 +13,7 @@ import { IDataTypeParser } from "../../src/Interfaces/DataTypeParsers";
 import { DataTypeResolution } from "../../src/Interfaces/DataTypes";
 import
     {
+        FieldCalculationConfig,
         FieldValueHostConfig, FieldValueHostInstanceState, FieldValueHostSetValueOptions,
         IFieldValueHost, IFieldValueHostCallbacks, toIFieldValueHostCallbacks
     } from "../../src/Interfaces/FieldValueHost";
@@ -55,6 +56,7 @@ import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 import { restoreCapturedState } from '../TestSupport/utilities';
 import { IntegerDataTypeCheckGenerator, RegExpDataTypeCheckGenerator } from '../../src/DataTypes/DataTypeCheckGenerators';
 import { CleanUpStringParser } from '../../src/DataTypes/DataTypeParsers';
+import { ValueHostName } from '../../src/DataTypes/BasicTypes';
 
 
 interface ITestSetupConfig {
@@ -139,17 +141,19 @@ function setupFieldValueHostForValidate(
     return setupFieldValueHost(fieldValueConfig, updatedState);
 }
 
-describe('constructor and resulting property values', () => {
+describe('constructor and resulting property values', () =>
+{
 
-    test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () => {
+    test('constructor with valid parameters created and sets up Services, Config, and InstanceState', () =>
+    {
         let services = new MockJivsServices(true, true);
         let vhm = new MockValueHostsManager(services);
         let testItem: FieldValueHost | null = null;
-        expect(()=> testItem = new FieldValueHost(vhm, {
+        expect(() => testItem = new FieldValueHost(vhm, {
             name: 'Field1',
             valueHostType: ValueHostType.Field,
             validatorConfigs: []
-            },
+        },
             {
                 name: 'Field1',
                 status: ValidationStatus.NotAttempted,
@@ -170,22 +174,25 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.isChanged).toBe(false);
         expect(testItem!.isValid).toBe(true);
         expect(testItem!.asyncProcessing).toBe(false);
-        expect(testItem!.corrected).toBe(false);        
+        expect(testItem!.corrected).toBe(false);
         expect(testItem!.required).toBe(false);
         expect(testItem!.getInjectedError()).toBeNull();
         expect(testItem!.getParserLookupKey()).toBeUndefined();
+        expect(testItem!.readOnly).toBe(false);
+        expect(testItem!.isCalculated).toBe(false);
     });
 
-    test('constructor with Config.propertyName sets up getPropertyName correctly', () => {
+    test('constructor with Config.propertyName sets up getPropertyName correctly', () =>
+    {
         let services = new MockJivsServices(true, true);
         let vhm = new MockValueHostsManager(services);
         let testItem: FieldValueHost | null = null;
-        expect(()=> testItem = new FieldValueHost(vhm, {
+        expect(() => testItem = new FieldValueHost(vhm, {
             name: 'Field1',
             propertyName: 'Prop1',
             valueHostType: ValueHostType.Field,
             validatorConfigs: []
-            },
+        },
             {
                 name: 'Field1',
                 status: ValidationStatus.NotAttempted,
@@ -198,9 +205,50 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getPropertyName()).toBe('Prop1');
 
-    });    
-});
+    });
+    test('readOnly is true when driven by a calculation when sourceValueHostName is set', () =>
+    {
+        let services = new MockJivsServices(true, true);
+        let vhm = new MockValueHostsManager(services);
+        let testItem: FieldValueHost | null = null;
+        expect(() => testItem = new FieldValueHost(vhm, {
+            name: 'Field1',
+            valueHostType: ValueHostType.Field,
+            calculation: { sourceValueHostName: 'Source1' },
+            validatorConfigs: []
+        },
+            {
+                name: 'Field1',
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null,
+                value: undefined
+            })).not.toThrow();
 
+        expect(testItem!.readOnly).toBe(true);
+        expect(testItem!.isCalculated).toBe(true);
+    });
+    test('readOnly is false when the calculation object exists but sourceValueHostName is not set', () =>
+    {
+        let services = new MockJivsServices(true, true);
+        let vhm = new MockValueHostsManager(services);
+        let testItem: FieldValueHost | null = null;
+        expect(() => testItem = new FieldValueHost(vhm, {
+            name: 'Field1',
+            valueHostType: ValueHostType.Field,
+            calculation: {} as FieldCalculationConfig,
+            validatorConfigs: []
+        },
+            {
+                name: 'Field1',
+                status: ValidationStatus.NotAttempted,
+                issuesFound: null,
+                value: undefined
+            })).not.toThrow();
+
+        expect(testItem!.readOnly).toBe(false);
+        expect(testItem!.isCalculated).toBe(false);
+    });
+});
 describe('setValue', () =>
 {
     test('Value was changed. OnValueChanged called. (confirm ancestor was not broken)', () => {
@@ -598,6 +646,351 @@ function setupReadOnlyFieldValueHost(partialConfig?: Partial<FieldValueHostConfi
     setup.valueHostsManager.onValueChanged = () => { result.nativeCallbacks++; };
     return result;
 }
+
+// With formatting enabled, an undefined native value clears the text and reports a text change.
+// Formatting opt-outs and changed-only callbacks without reset still apply.
+describe('FieldValueHost.setValue with an undefined native value', () =>
+{
+    test('Clears both values and notifies with the previous text', () =>
+    {
+        let setup = setupFieldValueHost({ dataType: LookupKey.Number },
+            { value: 42, textValue: '42' });
+        let calls: Array<{ host: IValidatableValueHost, oldText: string | null | undefined, native: any, text: string | undefined }> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) =>
+        {
+            calls.push({ host, oldText, native: host.getValue(), text: setup.valueHost.getTextValue() });
+        };
+
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toHaveLength(1);
+        expect(calls[0].host).toBe(setup.valueHost);
+        expect(calls[0].oldText).toBe('42');
+        expect(calls[0].native).toBeUndefined();
+        expect(calls[0].text).toBeUndefined();
+    });
+
+    test('Does not notify when the native and stored text values are already undefined', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: undefined, textValue: undefined });
+        let calls: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+
+        setup.valueHost.setValue(undefined);
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toHaveLength(0);
+    });
+
+    test('Repeated undefined assignments notify only for the first text change', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        let calls: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+
+        setup.valueHost.setValue(undefined);
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toEqual(['old']);
+    });
+
+    test('Clears and reports existing text even when the native value was already undefined', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: undefined, textValue: 'invalid input' });
+        let calls: Array<string | null | undefined> = [];
+        let nativeCalls = 0;
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+        setup.valueHostsManager.onValueChanged = () => { nativeCalls++; };
+
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toEqual(['invalid input']);
+        expect(nativeCalls).toBe(0);
+    });
+
+    test('setValueToUndefined also clears the stored text and notifies', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        let calls: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+
+        setup.valueHost.setValueToUndefined();
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toEqual(['old']);
+    });
+
+    test('skipValueChangedCallback suppresses the notification and a repeat does not report a change', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        let calls: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+
+        setup.valueHost.setValue(undefined, { skipValueChangedCallback: true });
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toEqual([]);
+
+        setup.valueHost.setValue(undefined);
+        expect(calls).toEqual([]);
+    });
+
+    test('A read-only field accepts overrideReadOnly and notifies when clearing the stored text', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost(undefined, { value: 'old', textValue: 'old' });
+
+        setup.valueHost.setValue(undefined, { overrideReadOnly: true });
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(setup.textCallbacks).toBe(1);
+        expect(setup.nativeCallbacks).toBe(1);
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeNull();
+    });
+
+    test('disableFormatter retains the old text and does not send a text callback', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let calls = 0;
+        setup.valueHostsManager.onTextValueChanged = () => { calls++; };
+
+        setup.valueHost.setValue(undefined, { disableFormatter: true });
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(calls).toBe(0);
+        expect(setup.logger.findMessage('option.disableFormatter=true', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('A null formatterLookupKey retains the old text and does not send a text callback', () =>
+    {
+        let setup = setupFieldValueHost({ formatterLookupKey: null }, { value: 'old', textValue: 'old' });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let calls = 0;
+        setup.valueHostsManager.onTextValueChanged = () => { calls++; };
+
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(calls).toBe(0);
+        expect(setup.logger.findMessage('config.formatterLookupKey=null', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('The manager formatting opt-out retains the old text and does not send a text callback', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        setup.valueHostsManager.behaviors.disableFormattingOnValueChange = true;
+        let calls = 0;
+        setup.valueHostsManager.onTextValueChanged = () => { calls++; };
+
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(calls).toBe(0);
+        expect(setup.logger.findMessage('behaviors.disableFormattingOnValueChange=true', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('Clears stored text without requiring an active formatter service', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        setup.services.dataTypeFormatterService.enabled = false;
+        let calls: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) => { calls.push(oldText); };
+
+        setup.valueHost.setValue(undefined);
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBeUndefined();
+        expect(calls).toEqual(['old']);
+    });
+
+    test('setValues with undefined native value still reports and retains the supplied text', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 42, textValue: '42' });
+        let calls: Array<{ oldText: string | null | undefined, text: string | undefined }> = [];
+        setup.valueHostsManager.onTextValueChanged = (host, oldText) =>
+        {
+            calls.push({ oldText, text: setup.valueHost.getTextValue() });
+        };
+
+        setup.valueHost.setValues(undefined, 'invalid input');
+
+        expect(setup.valueHost.getValue()).toBeUndefined();
+        expect(setup.valueHost.getTextValue()).toBe('invalid input');
+        expect(calls).toEqual([{ oldText: '42', text: 'invalid input' }]);
+    });
+});
+
+// Reset republishes supplied values even when unchanged, while respecting the setter's
+// formatting, parsing, callback suppression, and skipIfUnchanged options.
+describe('FieldValueHost setters with reset', () =>
+{
+    test('setValues republishes unchanged native and text values and clears change tracking', () =>
+    {
+        let setup = setupFieldValueHost(null, {
+            value: 'old', textValue: 'old', changeCounter: 2, status: ValidationStatus.Valid
+        });
+        let nativeOld: any[] = [];
+        let textOld: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onValueChanged = (host, old) => { nativeOld.push(old); };
+        setup.valueHostsManager.onTextValueChanged = (host, old) => { textOld.push(old); };
+
+        setup.valueHost.setValues('old', 'old', { reset: true });
+
+        expect(setup.valueHost.getValue()).toBe('old');
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(nativeOld).toEqual(['old']);
+        expect(textOld).toEqual(['old']);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
+    });
+
+    test('setValue republishes an unchanged formatted value through both callbacks', () =>
+    {
+        let setup = setupFieldValueHost({ dataType: LookupKey.Number, formatterLookupKey: LookupKey.Number },
+            { value: 42, textValue: '42' });
+        let nativeOld: any[] = [];
+        let textOld: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onValueChanged = (host, old) => { nativeOld.push(old); };
+        setup.valueHostsManager.onTextValueChanged = (host, old) => { textOld.push(old); };
+
+        setup.valueHost.setValue(42, { reset: true });
+
+        expect(nativeOld).toEqual([42]);
+        expect(textOld).toEqual(['42']);
+        expect(setup.valueHost.isChanged).toBe(false);
+    });
+
+    test('setValueToUndefined republishes already undefined values on each reset', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: undefined, textValue: undefined });
+        let nativeOld: any[] = [];
+        let textOld: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onValueChanged = (host, old) => { nativeOld.push(old); };
+        setup.valueHostsManager.onTextValueChanged = (host, old) => { textOld.push(old); };
+
+        setup.valueHost.setValueToUndefined({ reset: true });
+        setup.valueHost.setValueToUndefined({ reset: true });
+
+        expect(nativeOld).toHaveLength(2);
+        expect(nativeOld).toStrictEqual([undefined, undefined]);
+        expect(textOld).toHaveLength(2);
+        expect(textOld).toStrictEqual([undefined, undefined]);
+        expect(setup.valueHost.isChanged).toBe(false);
+    });
+
+    test('setValue with formatting disabled republishes only the unchanged native value', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let nativeOld: any[] = [];
+        let textCalls = 0;
+        setup.valueHostsManager.onValueChanged = (host, old) => { nativeOld.push(old); };
+        setup.valueHostsManager.onTextValueChanged = () => { textCalls++; };
+
+        setup.valueHost.setValue('old', { reset: true, disableFormatter: true });
+
+        expect(nativeOld).toEqual(['old']);
+        expect(textCalls).toBe(0);
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.logger.findMessage('option.disableFormatter=true', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('setTextValue with parsing disabled republishes only the unchanged text', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old' });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let nativeCalls = 0;
+        let textOld: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onValueChanged = () => { nativeCalls++; };
+        setup.valueHostsManager.onTextValueChanged = (host, old) => { textOld.push(old); };
+
+        setup.valueHost.setTextValue('old', { reset: true, disableParser: true });
+
+        expect(nativeCalls).toBe(0);
+        expect(textOld).toEqual(['old']);
+        expect(setup.valueHost.getValue()).toBe('old');
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.logger.findMessage('option.disableParser=true', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('setTextValue with a parser republishes both unchanged values', () =>
+    {
+        let setup = setupFieldValueHost({ dataType: LookupKey.Number, parserLookupKey: LookupKey.Number },
+            { value: 42, textValue: '42' });
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let nativeOld: any[] = [];
+        let textOld: Array<string | null | undefined> = [];
+        setup.valueHostsManager.onValueChanged = (host, old) => { nativeOld.push(old); };
+        setup.valueHostsManager.onTextValueChanged = (host, old) => { textOld.push(old); };
+
+        setup.valueHost.setTextValue('42', { reset: true });
+
+        expect(setup.valueHost.getValue()).toBe(42);
+        expect(setup.valueHost.getTextValue()).toBe('42');
+        expect(nativeOld).toEqual([42]);
+        expect(textOld).toEqual(['42']);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.logger.findMessage('Parsed into native value', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('skipIfUnchanged takes precedence over reset and preserves validation and change tracking', () =>
+    {
+        let setup = setupFieldValueHost(null, {
+            value: 'old', textValue: 'old', changeCounter: 2, status: ValidationStatus.Valid
+        });
+        setup.logger.minLevel = LoggingLevel.Debug;
+        let callbacks = 0;
+        setup.valueHostsManager.onValueChanged = () => { callbacks++; };
+        setup.valueHostsManager.onTextValueChanged = () => { callbacks++; };
+
+        setup.valueHost.setTextValue('old', { reset: true, skipIfUnchanged: true });
+
+        expect(callbacks).toBe(0);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.logger.findMessage('skipped because value is unchanged with skipIfUnchanged=true', LoggingLevel.Debug, null)).toBeTruthy();
+    });
+
+    test('skipValueChangedCallback suppresses both callbacks despite reset', () =>
+    {
+        let setup = setupFieldValueHost(null, { value: 'old', textValue: 'old', changeCounter: 2 });
+        let callbacks = 0;
+        setup.valueHostsManager.onValueChanged = () => { callbacks++; };
+        setup.valueHostsManager.onTextValueChanged = () => { callbacks++; };
+
+        setup.valueHost.setValues('old', 'old', { reset: true, skipValueChangedCallback: true });
+
+        expect(callbacks).toBe(0);
+        expect(setup.valueHost.isChanged).toBe(false);
+    });
+
+    test('A read-only field still rejects reset without overrideReadOnly', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost(undefined, { value: 'old', textValue: 'old', changeCounter: 2 });
+
+        setup.valueHost.setValues('old', 'old', { reset: true });
+
+        expect(setup.textCallbacks).toBe(0);
+        expect(setup.nativeCallbacks).toBe(0);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.logger.findMessage('ValueHost "Field1" read-only.', LoggingLevel.Info, null)).toBeTruthy();
+    });
+});
 
 // Verifies that a read-only FieldValueHost rejects setValue, setValues, setTextValue and setValueToUndefined
 // without changing values, validation, change tracking or callbacks, unless overrideReadOnly=true.
@@ -2723,6 +3116,10 @@ describe('toIFieldValueHost function', () => {
         }
         isChanged: boolean = false;
         readOnly: boolean = false;
+        isCalculated: boolean = false;
+        calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {
+            throw new Error("Method not implemented.");
+        }
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

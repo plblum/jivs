@@ -258,6 +258,24 @@ describe('ValueRulesWriterBase', () =>
             expect(result.skip).toBe(false);
             expect(result.value).toBeNull();
         });
+        test('when the value is always considered invalid, then=skip. Expect skip=true.', () =>
+        {
+            let model = { prop1: 'value1', prop2: 42 };
+            let { valueHost, writer } = setup(model, 'prop1', 'always', 'skip');
+            let writerRule = valueHost.getWriterRule();
+            expect(writerRule).toBeDefined();
+            let result = writer.publicify_adjustValueByRule(model.prop1, writerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when null
+            result = writer.publicify_adjustValueByRule(null, writerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when undefined
+            result = writer.publicify_adjustValueByRule(undefined, writerRule!, valueHost);
+            expect(result.skip).toBe(true);
+            // when number
+            result = writer.publicify_adjustValueByRule(100, writerRule!, valueHost);
+            expect(result.skip).toBe(true);
+        });
     });
 
     describe('getRule via publicify_', () =>

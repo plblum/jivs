@@ -4111,6 +4111,10 @@ describe('toIValueHostsManager function', () => {
             {
                 throw new Error('Function not implemented.');
             },
+            valuesInitialized(): void
+            {
+                throw new Error('Function not implemented.');
+            },
             addExternalIssuesFound: function (errors: IssueFound[] | null, determinedLocally: boolean, options?: ValidateOptions | undefined): boolean
             {
                 throw new Error('Function not implemented.');
@@ -4257,6 +4261,10 @@ describe('toIValueHostsManagerAccessor function', () => {
                     throw new Error("Function not implemented.");
                 },
                 notifyValidationStateChanged: function (validationState: ValidationState | null, options?: ValidateOptions | undefined): void
+                {
+                    throw new Error("Function not implemented.");
+                },
+                valuesInitialized(): void
                 {
                     throw new Error("Function not implemented.");
                 },

@@ -10,11 +10,11 @@ The desired behavior is established in the use cases and contracts below. Implem
 
 1. **Business calculation displayed by a form.** Business rules define a `CalcValueHost` for the difference between two dates. A form adds a field that displays its result. Changing either source field causes the calculated display to refresh.
 2. **Calculated result with validation.** The form attaches validators to the calculated field, such as a maximum of 30 days. The result can be displayed along with its validation issue.
-3. **Undetermined result.** A missing or unparseable source causes the calculation to return `undefined`. The native value becomes `undefined`, stored field text remains unchanged, and the editor displays a localized field-specific message or an empty string.
+3. **Undetermined result.** A missing or unparseable source causes the calculation to return `undefined`. With formatting enabled, the native value and stored text become `undefined`, and the editor displays a localized field-specific message or an empty string.
 4. **Read-only editor choices.** The result can be shown in a `span` registered with the existing `editor` role or in a readonly text input. The field rejects external value-setting calls regardless of the editor used.
 5. **Initial calculation.** After source values are initialized, a manager operation computes and publishes the calculated field, including an initial `undefined` result.
 6. **Model output control.** The developer can use a `writerRule` to omit a calculated field from model output, or allow the result to be written when desired.
-7. **Ordinary `setValue(undefined)`.** A writable field receiving `setValue(undefined)` keeps its stored text but explicitly notifies text listeners of an `undefined` display value, unless the callback is skipped.
+7. **Ordinary `setValue(undefined)`.** With formatting enabled, a writable field receiving `setValue(undefined)` clears its stored text and notifies text listeners if the text changed or `reset: true` was supplied, unless the callback is skipped.
 
 ## Scope and Design Constraints
 
@@ -44,7 +44,7 @@ builder.calc({
 adapter.field("DiffDaysDisplay", LookupKey.Integer, {
     label: "Days apart",
     calculation: {
-        valueHostName: "DiffDays",
+        sourceValueHostName: "DiffDays",
         undefinedText: "Dates needed",
         undefinedTextl10n: "DiffDays.DatesNeeded"
     },
@@ -122,7 +122,7 @@ Current implementation: [`CalcValueHost.ts`](../packages/jivs-engine/src/ValueHo
 
 **Problem 1**: User needs a way to express that the `FieldValueHost` gets its value from a `CalcValueHost`.
 
-**Solution 1**: Introduce FieldValueHostConfig.calculation where its valueHostName property indicates the CalcValueHost.
+**Solution 1**: Introduce FieldValueHostConfig.calculation where its sourceValueHostName property indicates the CalcValueHost.
 
 **Problem 2**: Calculations are a readonly situation. Calls to setValue, setValues, and setTextValues break this.
 
@@ -134,7 +134,7 @@ Current implementation: [`CalcValueHost.ts`](../packages/jivs-engine/src/ValueHo
 
 **Problem 4**: Jivs-dom needs a way to refresh an editor when setValue(undefined) is supplied.
 
-**Solution 4a**: Ensure that calls to FieldValueHost.setValue know to invoke `onTextValueChanged` with a value of undefined.
+**Solution 4a**: With formatting enabled, have `FieldValueHost.setValue(undefined)` set both values to `undefined`, invoking `onTextValueChanged` when text changes or `reset: true` is supplied.
 
 **Solution 4b**: Supply localized text that can appear instead of leaving the existing value unchanged through properties on the `FieldValueHostConfig`. Its ultimate destination is in `EditorAdapterDefinition.createTextValueAdapter` and individual `TextValueAdapters`.
 
@@ -143,7 +143,7 @@ Current definitions: [`FieldValueHost.ts` interface](../packages/jivs-engine/src
 ```ts
 // Proposed members only.
 interface FieldCalculationConfig {
-    valueHostName: string;
+    sourceValueHostName: string;
     undefinedText?: string;
     undefinedTextl10n?: string;
 }
@@ -154,14 +154,24 @@ interface FieldValueHostConfig {
 
 interface IFieldValueHost {
     readonly readOnly: boolean;
-    getCalculationConfig(): Readonly<FieldCalculationConfig> | undefined;
-    refreshCalculation(options?: CalculationRefreshOptions): void;
+    readonly isCalculated: boolean;
+    calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean;
 }
 ```
 
-The accessor exposes the calculation settings required by the DOM adapter definition without exposing mutable internal configuration. `refreshCalculation()` is a possible manager-to-field entry point; determine its final visibility and options during implementation.
+The calculate() function will attempt to calculate and update the FieldValueHost's value.
+1. It is called from:
+    a. otherValueHostChangedNotification(), which is triggered by another ValueHost having its value  changed. This ensure that the value is updated after a dependency changed. See below.
+    b. ValueHostsManager.valuesInitialized()
+2. It is not called from getValue or getTextValue. Those depend on the existing value.
+3. Call it manually if needed.
+4. **PENDING** Determine if there are any other places we can automatically call it such that getValue and getTextValue provide an up-to-date result. Or determine if we should wire it into getValue/getTextValue.
+5. It will take no action and return false if the calculation feature is not setup.
+6. When _valueHostIdThatChanged_ parameter is assigned, only calculate if the dependency list is setup and contains a match (case sensitive).
 
 The public `readOnly` property normally reports `false`. A field with a configured calculation reports `true`. It stays `true` during the calculation's own update, which instead passes `overrideReadOnly`. Whether the property belongs on `IFieldValueHost` alone or a broader interface, and whether non-calculated fields can configure it, are open API questions.
+
+The public `isCalculated` property is only true when calculations are setup: FieldValueHostConfig.calculation?.sourceValueHostName is assigned.
 
 The field's usual `dataType`, formatter, validator, label, element identifier, reader rule, and writer rule remain separate from the calculation child configuration.
 
@@ -199,12 +209,21 @@ public override otherValueHostChangedNotification(
     changedName: ValueHostName,
     revalidate: boolean
 ): void {
-    this.refreshCalculationIfDependencyChanged(changedName, revalidate);
+    this.calculate(revalidate, changedName);
     super.otherValueHostChangedNotification(changedName, revalidate);
 }
 ```
 
 The calculation check must not be bypassed by the early exits in [`ValidatableValueHostBase.otherValueHostChangedNotification()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts), including the case where validation has never run. Preserve the base method's validation-dependency behavior.
+
+```ts
+interface FieldValueHostSetValueOptions
+{
+    suppressNotifications?: boolean;
+}
+```
+FieldValueHost will not call ValueHostsManager.notifyOtherValueHostsOfValueChange when this is true.
+This lets value initialization code defer any side effects (validation and calculations) until ValueHostsManager.valuesInitialized(). As a result, ReaderBase uses suppressNotifications=true.
 
 Open implementation details include whether the source must have actually changed, how `revalidate` influences the calculated field, and how to avoid duplicate validation. A source field currently performs its own validation before notifying other hosts, so validators that use the calculated destination may otherwise see the previous result. Define ordering before claiming consistent validation.
 
@@ -219,9 +238,14 @@ Current definitions: [`IValueHostsManager`](../packages/jivs-engine/src/Interfac
 ```ts
 // Proposed member; name and options are open.
 interface IValueHostsManager {
-    completeValueInitialization(): void;
+    valuesInitialized(): void;
 }
 ```
+**ALERT**: We are revising our approach to preliminary validation.
+Instead of calling validate({preliminary: true}), call valuesInitialized()
+and it will include both preliminary validation and addressing calculated fields.
+We also expect calls to setValue(value, { suppressNotifications: true}) during initialization.
+
 
 - Add a post-value-initialization operation that finds calculated fields, computes their results, and applies them.
 - Ensure that initial display synchronization handles `undefined`, even if the native value or stored text was already `undefined`.
@@ -238,14 +262,17 @@ Relevant implementations: [`ReaderBase`](../packages/jivs-engine/src/ReaderWrite
 Potential integration sequence:
 
 ```text
-Read source values
-  -> completeValueInitialization()
-  -> preliminary validation, when requested
+Read source value -> setValue(value, { suppressNotifications: true})
+Completed  -> ValueHostsManager.valuesInitialized()
 ```
 
-The intent is for preliminary validation to see initialized calculated values. Integration must not assume one reader always represents the end of all initialization; determine how multiple readers and manual setup coordinate.
+The intent is to defer validation and calculations until valuesInitialized(). By suppressing Notifications, we prevent individual field value changes from during their normal interactive updating
+of related valuehosts.
 
-Skipping calculated destinations in model readers is likely useful but not yet decided. The setter guard still rejects direct writes; reader logging, return values, `alignEnabled`, filters, and validation must not misleadingly report a successful assignment or accidentally change enabled state.
+1. Ensure ReaderBase uses the suppressNotifications = true option on setValue.
+2. Switch ReaderBase from calling valueHostsManager.validate({preliminary}) to valueHostsManager.valuesInitialized() which has preliminary validation and calculations built in.
+
+Models may contain a property matching the calculated FieldValueHost, and will attempt to write their value to it. The setter guard still rejects direct writes; reader logging, return values, `alignEnabled`, filters, and validation must not misleadingly report a successful assignment or accidentally change enabled state. We don't require a Reader to explicitly skip calculated FieldValueHosts just to avoid extra logging noise when setValue identifies its in a read-only state.
 
 `EditorReader` currently suppresses public value callbacks during reads. Internal field-to-field notification is a separate path, but display delivery still needs its text callback or an explicit synchronization step. Account for the server-page reader's intentional preservation of source editor values. Document any callback restrictions and test built-in reader behavior, rather than relying solely on callers to change options.
 
@@ -259,7 +286,7 @@ Solution: Introduce a new WhenFunction, "Always", in the `ValueAdapterService`.
 adapter.field("DiffDaysDisplay", LookupKey.Integer, {
     label: "Days apart",
     calculation: {
-        valueHostName: "DiffDays",
+        sourceValueHostName: "DiffDays",
         undefinedText: "Dates needed",
         undefinedTextl10n: "DiffDays.DatesNeeded"
     },
@@ -287,59 +314,26 @@ For a writable field:
 ```text
 Before: native = 42, stored text = "42", editor displays "42"
 Call:   setValue(undefined)
-After:  native = undefined, stored text = "42"
-Event:  onTextValueChanged reports explicit display value undefined
+After:  native = undefined, stored text = undefined
+Event:  onTextValueChanged reports the text change
 Editor: receives undefined and clears or displays its configured fallback
 ```
 
-The callback is invoked when configured and not suppressed by `skipValueChangedCallback`. It reports an undefined display value without clearing the stored text. The same applies to a calculation-driven `setValue(undefined)` and to `setValueToUndefined()` through delegation. Account for repeated calls where text is already undefined; normal changed-only logic cannot silently prevent the requested notification.
+When formatting is enabled, `setValue(undefined)` delegates to `setValues(undefined, undefined)` without invoking a formatter. The callback receives the previous text and is invoked when the text changes or `reset: true` is supplied, if configured and not suppressed by `skipValueChangedCallback`. Without reset, repeated calls and initial calls with already-undefined text do not trigger it. The same applies to calculation-driven updates and `setValueToUndefined()`.
 
-This is not a request to change parsing: `setValues(undefined, enteredText)` can represent an invalid user entry and must retain and display that entry. Formatting-disabled or formatter-error behavior for defined native values should not be changed inadvertently.
+The formatting opt-outs (`disableFormatter`, `formatterLookupKey: null`, and `disableFormattingOnValueChange`) retain their existing behavior: only the native value changes, stored text remains unchanged, and no text callback is sent. An inactive formatter service is not an opt-out for undefined: no formatter is needed to clear the text.
 
-### `TextValueChangedHandler` and Notification Payload
+This is not a change to parsing: `setValues(undefined, enteredText)` can represent an invalid user entry and must retain and display that entry. Formatter-error behavior for defined native values should not be changed inadvertently.
 
-Current [`TextValueChangedHandler`](../packages/jivs-engine/src/Interfaces/FieldValueHost.ts) takes the field and the old text only. `getTextValue()` still returns the stored old text, so the existing dispatcher cannot infer the requested display update by reading it.
+### Text Callback and Dispatcher
 
-One possible backward-compatible *source-level* shape:
-
-```ts
-// Proposed payload: its presence distinguishes an explicit undefined
-// display value from an older callback invocation with no payload.
-interface TextDisplayUpdate {
-    value: string | undefined;
-}
-
-type TextValueChangedHandler = (
-    valueHost: IValidatableValueHost,
-    oldValue?: string | null,
-    displayUpdate?: TextDisplayUpdate
-) => void;
-```
-
-- For `setValue(undefined)`, send `{ value: undefined }`, retaining the real previous text in `oldValue`.
-- Normal callers that do not send a payload can continue to use the current `getTextValue()` behavior.
-- Do not use `displayUpdate?.value ?? valueHost.getTextValue()`: it would discard the explicit `undefined`. Test payload presence.
-- This is a proposed design, not an agreed final signature. Assess compatibility for existing callbacks, custom managers, implementers, and consumers, as well as documentation. An alternative may be chosen if it preserves the explicit undefined distinction.
-
-### `DispatcherService`, `ITextValueDispatcher`, and `TextValueDispatcher`
-
-Update the callback attachment in [`DispatcherService`](../packages/jivs-dom/src/Dispatchers/DispatcherService.ts) to preserve and forward any explicit display payload to both retained callbacks and the dispatcher. Extend [`ITextValueDispatcher`](../packages/jivs-dom/src/Interfaces/Dispatchers.ts) and [`TextValueDispatcher`](../packages/jivs-dom/src/Dispatchers/TextValueDispatcher.ts) accordingly.
-
-For an explicit payload, call `adapter.writeTextValue(displayUpdate.value)` even when that value is `undefined`. Without a payload, preserve the current `getTextValue()` behavior. Verify callback ordering and compatibility with custom dispatchers.
+The existing [`TextValueChangedHandler`](../packages/jivs-engine/src/Interfaces/FieldValueHost.ts) receives the field and old text. The existing text dispatcher reads the new value with `getTextValue()`, so clearing stored text avoids needing an additional display payload or dispatcher API change.
 
 ### Initial Display, `EditorWriter`, and Restored State
 
-An event alone does not solve later synchronization: [`EditorWriter`](../packages/jivs-dom/src/Editors/EditorWriter.ts) and normal broadcast paths currently read stored text, which may be `"42"` after an undefined display event. Reinstalling an editor or restoring captured state could therefore redisplay stale text.
+When formatting is enabled, writers and broadcast paths can read the stored `undefined` text; no separate display-state marker is needed for this transition. `reset: true` can publish an already-undefined result if callbacks are attached and not suppressed. Verify initial writes, editor reinstallation, broadcast, and restored state, including invalid user input whose native value is undefined but whose stored text is defined.
 
-**Open design choice:** establish a reliable way for initial writes, broadcast, and restored state to resolve the current intended display without changing stored text. For example, a separate explicit display-state marker could distinguish `setValue(undefined)` from invalid user text; if persisted, it must survive capture/restore without relying on JSON retaining an `undefined` property. A public display accessor could expose the result to writers. Specify reset rules for later `setTextValue()`, `setValues()`, and successful formatting. Do not infer the display solely from an undefined native value, because invalid user input also has an undefined native value and must remain visible.
-
-This is required integration work, not permission to change the stored text contract.
-
-### Validation of Retained Text
-
-The retained text creates a separate validation issue. [`DataTypeCheckCondition`](../packages/jivs-engine/src/Conditions/ConcreteConditions.ts) treats defined text with an `undefined` native value as a failed conversion. After a successful calculation changes from `42` to `undefined`, the retained `"42"` can therefore be mistaken for invalid input even though the calculation did not parse that text. Other text-based validators may also observe retained text.
-
-**Open design choice:** distinguish a calculation-driven undefined result from a failed user parse and decide which text-based validation behavior is appropriate for each. An explicit origin or display-state marker could supply that distinction; alternatively, validation could be adjusted specifically for calculated fields. Either approach must preserve genuine parse errors, avoid treating the placeholder as input, and account for ordinary `setValue(undefined)` as well. Test the transition with automatic data-type validation and with user-entered invalid text. A required-value validator may still legitimately report a missing value; deciding that outcome must not hide a genuine validation error.
+Formatting opt-outs deliberately retain the previous text, including for calculated fields, and therefore may display that text or expose it to text-based validation. Test validation of an undefined calculated result and of genuine parse errors separately; placeholder text must never become field data.
 
 ## DOM Types
 
@@ -402,7 +396,7 @@ Before writing or changing tests, follow [Testing Approach](./Testing_Approach.m
 
 - Calc configuration: dependency list supplied, absent, empty, conditional sources, and configuration replacement.
 - Calculated field: initialization, source update before validation, irrelevant source, defined/undefined transitions, formatting, validation, read-only setter rejection and Info logging, `overrideReadOnly` accepted by each setter (including through the formatter path) while the disabled check still applies, and `readOnly` remaining true after the calculation update, including after an exception.
-- Notifications: explicit undefined display payload, old text preserved, repeated undefined calls, callback skipped/configured, ordinary text edits, parser failure, callback compatibility, and correct dispatcher forwarding.
+- Notifications: cleared text and previous text in the callback, repeated undefined calls, formatting opt-outs, callback skipped/configured, ordinary text edits, parser failure, and correct dispatcher behavior.
 - Display lifecycle: initial undefined result, editor installation and reinstallation, writer and broadcast synchronization, and captured-state restoration when native value and stored text differ.
 - DOM: empty/whitespace span matching, no input handlers or `sendValue`, formatted output and localized undefined text, readonly input, appropriate ARIA and error presentation, and unsupported adapters retaining their existing behavior.
 - Readers: manual initialization, model and editor readers, callback suppression, preliminary validation, disabled/enabled state, and server-page restoration.
@@ -413,7 +407,7 @@ Before writing or changing tests, follow [Testing Approach](./Testing_Approach.m
 
 1. Final API names (`overrideReadOnly` is chosen) and the placement and mutability of `readOnly`, dependency lists, and the calculation refresh operation.
 2. Semantics of absent, `null`, or empty dependencies; diagnostics for unknown sources.
-3. Callback payload, synchronization and restoration without changing stored text, and how validation distinguishes retained text from a genuine parse error.
+3. Initial synchronization when the stored text is already undefined, restoration, and validation behavior including formatting opt-outs and genuine parse errors.
 4. Initialization batching, reader completion, multiple calculated fields, and validation/notification ordering.
 5. Disabled field behavior, initialization change tracking, calculation failure reporting, and support for calculation chains.
 6. Exact span matching/reinstallation and ARIA behavior.

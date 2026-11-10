@@ -105,12 +105,9 @@ The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object t
 
 
 
-- `preliminaryValidation` - Once finished, invoke validation on all fields using the preliminary option. This will ensure that all fields are validated, except:
-    - Required validators because the user doesn't need to notifications about fields they haven't edited
-    - Fields that already show signs of validation. This will let you replace (reinitialize) 
-    a few values and run validation without getting other fields involved.
-    
-    Defaults to true if not specified.
+- `initializingValues` - Treat this process as initially populating values.
+   Upon completion, the Reader will invoke `ValueHostsManager.valuesInitialized()`, which will run preliminary validation and ensure any calculated `FieldValueHost` has its initial value.
+   Defaults to true if not specified.
 - `disableFormatter` - (Not on `FormReader`) When true, do not convert the value to text. Just set the native value.
     When false, these settings still disable the formatter:
     - `valueHostsManager.behaviors.disableFormatterOnValueChange`
@@ -190,6 +187,7 @@ The values for _when_ and _then_ are strings that lookup functions from the `Val
 |\<emptystring>| Type in ''. its the alias of 'emptystring'
 |emptystringornull| '', null
 |emptystringnullorundefined| '', null, undefined
+|always|every time - use together with skip: "always skip"
 
 #### Creating your own When rule
 ```ts

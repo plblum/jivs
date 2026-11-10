@@ -231,8 +231,12 @@ export interface SetValueOptions {
     duringEdit?: boolean;    
 
     /**
+     * Indicates that the value is new, as if the field has never been edited.
      * Reset the field's changed and validation states as if the field has never been edited.
-     * It effectively sets ValueHost.IsChanged to false and calls ValidatableValueHost.clearValidation().
+     * - Sets ValueHost.IsChanged to false
+     * - Calls ValidatableValueHost.clearValidation()
+     * - Retains the values supplied but will always trigger the onTextValueChanged and
+     *   onValueChanged callbacks because you are supplying a value that is effectively new.
      */
     reset?: boolean;
 

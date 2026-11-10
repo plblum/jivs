@@ -486,12 +486,12 @@ describe('Preliminary validation after each reader', () =>
         expect(t.vhm.getFieldValueHost('Number_Range')!.validationStatus).toBe(ValidationStatus.Invalid);
     });
 
-    test('preliminaryValidation false leaves the field unvalidated', () =>
+    test('initializingValues false leaves the field unvalidated', () =>
     {
         let t = createTestForm({ fields: ['Number_Range'], install: false, verbose: verbose });
         installWithDispatchers(t);
 
-        new ModelReader(t.vhm, { Number_Range: 150 }, { preliminaryValidation: false }).read();
+        new ModelReader(t.vhm, { Number_Range: 150 }, { initializingValues: false }).read();
 
         expect(t.vhm.getFieldValueHost('Number_Range')!.validationStatus).toBe(ValidationStatus.NotAttempted);
     });

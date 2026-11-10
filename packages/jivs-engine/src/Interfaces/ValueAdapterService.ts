@@ -50,6 +50,7 @@
  *   + whenEmptyString: '' or 'emptystring': true when value === ''.
  *   + whenEmptyStringOrNull: 'emptystringornull': true when value === null or value === ''.
  *   + whenEmptyStringNullOrUndefined: 'emptystringnullorundefined': true when value === null or value === '' or value === undefined.
+ *   + whenAlways: 'always': true for any value; use together with skip to always skip.
  * 
  * ### Example to add your own function:
  * ```ts
@@ -122,6 +123,7 @@ export interface ValueAdapterRule
      *                      true when value === null or value === ''.
      * - 'emptystringnullorundefined': 
      *                      true when value === null or value === '' or value === undefined.
+     * - 'always':          true for any value; use together with skip to always skip.
      */
     when: string;
     /**

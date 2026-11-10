@@ -731,7 +731,7 @@ document.getElementById('preview-reset')!.addEventListener('click', () =>
     });
     if (vhm)
     {
-        new EditorReader(vhm, { preliminaryValidation: false }).read();
+        new EditorReader(vhm, { initializingValues: false }).read();
         vhm.clearValidation();
     }
 });
@@ -746,7 +746,7 @@ document.getElementById('preview-validate')!.addEventListener('click', () =>
 document.getElementById('preview-validate-preliminary')!.addEventListener('click', () =>
 {
     vhm?.clearValidation(); // because prelim intentionally skips trying anything on fields that have existing validation issues
-    vhm?.validate({ preliminary: true });
+    vhm?.valuesInitialized();
 });
 rebuild();
 enterSample(false);

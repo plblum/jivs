@@ -168,7 +168,7 @@ describe('EditorReader constructor', () => {
         let definition = new RecordingDefinition();
         addEditor(registry, field1, definition);
 
-        new EditorReader(valueHostsManager, { preliminaryValidation: false });
+        new EditorReader(valueHostsManager, { initializingValues: false });
 
         expect(definition.sendValueCalls).toEqual([]);
         expect(readerLogs(services).length).toBe(0);
@@ -304,7 +304,7 @@ describe('EditorReader.read fields without an installed editor', () => {
     });
 });
 
-// ReaderBase validates with preliminary: true after all values are sent, unless options.preliminaryValidation is false.
+// ReaderBase validates with preliminary: true after all values are sent, unless options.initializingValues is false.
 describe('EditorReader.read preliminary validation', () => {
     test('By default, validation runs after the values are sent, leaving no field in NeedsValidation', () => {
         let { valueHostsManager, registry, field1, field2 } = setup();
@@ -317,21 +317,21 @@ describe('EditorReader.read preliminary validation', () => {
         expect(field2.validationStatus).not.toBe(ValidationStatus.NeedsValidation);
     });
 
-    test('preliminaryValidation true behaves the same as the default', () => {
+    test('initializingValues true behaves the same as the default', () => {
         let { valueHostsManager, registry, field1 } = setup();
         addEditor(registry, field1, new RecordingDefinition());
 
-        new EditorReader(valueHostsManager, { preliminaryValidation: true }).read();
+        new EditorReader(valueHostsManager, { initializingValues: true }).read();
 
         expect(field1.validationStatus).not.toBe(ValidationStatus.NeedsValidation);
     });
 
-    test('preliminaryValidation false leaves the fields in NeedsValidation', () => {
+    test('initializingValues false leaves the fields in NeedsValidation', () => {
         let { valueHostsManager, registry, field1, field2 } = setup();
         addEditor(registry, field1, new RecordingDefinition());
         addEditor(registry, field2, new RecordingDefinition());
 
-        new EditorReader(valueHostsManager, { preliminaryValidation: false }).read();
+        new EditorReader(valueHostsManager, { initializingValues: false }).read();
 
         expect(field1.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(field2.validationStatus).toBe(ValidationStatus.NeedsValidation);

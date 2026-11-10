@@ -250,6 +250,13 @@ export interface ValidatableValueHostBaseInstanceState extends ValueHostInstance
 
 export interface ValidatableValueHostBaseSetValueOptions extends SetValueOptions
 {
+    /**
+     * Normally when a value changes, the ValueHostsManager tells other ValueHosts about the change
+     * so they can react to the change accordingly, particularly for validation and dependent calculations.
+     * When true, these reactive notifications will be suppressed.
+     * When undefined, it is the same as false.
+     */
+    suppressNotifications?: boolean;
 }
 
 

@@ -5,7 +5,7 @@ import
     {
         ValueAdapterService, thenEmptyArray, thenEmptyObject, thenEmptyString,
         thenFalse, thenKeep, thenNull, thenSkip, thenTrue,
-        thenUndefined, thenZero, whenEmptyString, whenEmptyStringNullOrUndefined,
+        thenUndefined, thenZero, whenAlways, whenEmptyString, whenEmptyStringNullOrUndefined,
         whenEmptyStringOrNull, whenNull, whenNullOrUndefined, whenUndefined, whenZero,
         whenZeroNullOrUndefined, whenZeroOrNull
     } from '../../src/Services/ValueAdapterService';
@@ -233,6 +233,23 @@ describe('ValueAdapterService', () =>
             // Expect no log message about value adjusted by the rule, since the value is already null and does not need to be changed.
             expect(_logger!.findMessage(`has adjusted the source value`, LoggingLevel.Debug)).toBeFalsy();
         });
+        test('when an always invalid value is provided, then=skip. Expect skip=true.', () =>
+        {
+            let model = { prop1: 'value1', prop2: 42 };
+            let rule = { when: 'always', then: 'skip' };
+            expect(rule).toBeDefined();
+            let result = _valueAdapterService!.resolve(model.prop1, rule!);
+            expect(result.skip).toBe(true);
+            // when null
+            result = _valueAdapterService!.resolve(null, rule!);
+            expect(result.skip).toBe(true);
+            // when undefined
+            result = _valueAdapterService!.resolve(undefined, rule!);
+            expect(result.skip).toBe(true);
+            // when number
+            result = _valueAdapterService!.resolve(100, rule!);
+            expect(result.skip).toBe(true);
+        });
    
     });
     test('should return the correct When function for all predefined names', () =>
@@ -358,6 +375,16 @@ describe('test actual when functions', () =>
         expect(whenEmptyStringNullOrUndefined(null)).toBe(true);
         expect(whenEmptyStringNullOrUndefined(undefined)).toBe(true);
         expect(whenEmptyStringNullOrUndefined(0)).toBe(false);
+    });
+    test('whenAlways should return true for any value', () =>
+    {
+        expect(whenAlways('anything')).toBe(true);
+        expect(whenAlways(undefined)).toBe(true);
+        expect(whenAlways(null)).toBe(true);
+        expect(whenAlways(0)).toBe(true);
+        expect(whenAlways('')).toBe(true);
+        expect(whenAlways(false)).toBe(true);
+        expect(whenAlways(true)).toBe(true);
     });
 });
 
