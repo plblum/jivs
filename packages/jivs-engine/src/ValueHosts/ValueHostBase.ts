@@ -141,9 +141,12 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
     *      OnValueChanged property.
     */
     public setValue(value: any, options?: TOptions): void {
-        this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!options)
             options = {} as TOptions;
+        if (this.isReadOnly(options))
+            return;
+
+        this.logger.message(LoggingLevel.Debug, () => `setValue(${value})`);
         if (!this.canChangeValueCheck(options))
             return;
         
@@ -157,6 +160,21 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
             return stateToUpdate;
         }, this);
         this.useOnValueChanged(changed, oldValue, options);
+    }
+
+    /**
+     * Use on each setValue style function initially to check if the ValueHost is read-only.
+     * If it returns true, the ValueHost is read-only and the calling function should not attempt to change its value.
+     * @param options 
+     * @returns true when readonly
+     */
+    protected isReadOnly(options: TOptions): boolean {
+        if (this.readOnly && !options.overrideReadOnly)
+        {
+            this.logger.message(LoggingLevel.Info, () => `ValueHost "${ this.getName() }" read-only.`);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -248,6 +266,23 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
      */
     public get isChanged(): boolean {
         return (this.instanceState.changeCounter ?? 0) > 0;
+    }
+
+    /**
+     * Indicates whether the ValueHost is read-only, which means that calls to setValue,
+     * setValues, setTextValue, and similar functions will not modify the value.
+     * They will simply log and stop without making any changes.
+     * 
+     * This property is usually not user driven. It reflects a condition of the ValueHost
+     * which doesn't support modification of its value. This includes CalcValueHost
+     * and FieldValueHost when its calculation option is setup.
+     * 
+     * It can be overridden in SetValueOptions with overrideReadOnly.
+     * 
+     * In the base class, it always returns false.
+     */
+    public get readOnly(): boolean {
+        return false;
     }
 
     /**

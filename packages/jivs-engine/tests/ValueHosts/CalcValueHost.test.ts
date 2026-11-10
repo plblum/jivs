@@ -287,7 +287,7 @@ describe('setValue', () => {
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(() => testItem?.setValue(0)).not.toThrow();
 
-        expect(logger.findMessage('setValue', LoggingLevel.Warn)).toBeTruthy();
+        expect(logger.findMessage('read-only', LoggingLevel.Info)).toBeTruthy();
     });
 });
 
@@ -372,6 +372,7 @@ describe('toICalcValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        readOnly: boolean = false;
         isEnabled(): boolean {
             throw new Error("Method not implemented.");
         }

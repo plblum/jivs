@@ -1905,6 +1905,7 @@ describe('toIValidatableValueHost', () => {
             validationStatus: ValidationStatus.NotAttempted,
             asyncProcessing: false,
             corrected: false,
+            readOnly: false,
             currentValidationState: {} as any,
 
             addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
@@ -2275,6 +2276,7 @@ describe('toIValidatableValueHost function', () => {
         }
     
         isChanged: boolean = false;
+        readOnly: boolean = false;
         isEnabled(): boolean {
             throw new Error("Method not implemented.");
         }

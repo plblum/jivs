@@ -127,7 +127,20 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
-    isChanged: boolean;
+    readonly isChanged: boolean;
+
+    /**
+     * Indicates whether the ValueHost is read-only, which means that calls to setValue,
+     * setValues, setTextValue, and similar functions will not modify the value.
+     * They will simply log and stop without making any changes.
+     * 
+     * This property is usually not user driven. It reflects a condition of the ValueHost
+     * which doesn't support modification of its value. This includes CalcValueHost
+     * and FieldValueHost when its calculation option is setup.
+     * 
+     * It can be overridden in SetValueOptions with overrideReadOnly.
+     */
+    readonly readOnly: boolean;
 
     /**
      * Provides a localized label for the data type when it needs to be shown to the user.
@@ -245,6 +258,14 @@ export interface SetValueOptions {
      * When applied, the reset option will be forced to true to clear the validation and change state.
      */
     ensureEnabled?: boolean;    
+
+    /**
+     * When true, the setter proceeds even though readOnly is true.
+     * It does not bypass the disabled check; overrideDisabled and ensureEnabled still apply.
+     * Rarely needed. Documentation must explain its impact.
+     * When undefined, it is the same as false.
+     */
+    overrideReadOnly?: boolean;    
 }
 
 /**

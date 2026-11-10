@@ -571,6 +571,162 @@ describe('setValues', () =>
         expectCorrectedFlagSequence((vh, value, options) => vh.setValues(value, value, options));
     });
 });
+/**
+ * FieldValueHost does not yet report readOnly=true on its own (its calculation option is not implemented).
+ * This subclass simulates that condition to test the guards in its setters.
+ */
+class ReadOnlyFieldValueHost extends FieldValueHost
+{
+    public override get readOnly(): boolean
+    {
+        return true;
+    }
+}
+function setupReadOnlyFieldValueHost(partialConfig?: Partial<FieldValueHostConfig>,
+    partialState?: Partial<FieldValueHostInstanceState>): ITestSetupConfig & {
+        textCallbacks: number, nativeCallbacks: number }
+{
+    let setup = setupFieldValueHost(partialConfig, partialState);
+    setup.logger.minLevel = LoggingLevel.Info;
+    let result = {
+        ...setup,
+        valueHost: new ReadOnlyFieldValueHost(setup.valueHostsManager, setup.config, setup.state),
+        textCallbacks: 0,
+        nativeCallbacks: 0
+    };
+    setup.valueHostsManager.onTextValueChanged = () => { result.textCallbacks++; };
+    setup.valueHostsManager.onValueChanged = () => { result.nativeCallbacks++; };
+    return result;
+}
+
+// Verifies that a read-only FieldValueHost rejects setValue, setValues, setTextValue and setValueToUndefined
+// without changing values, validation, change tracking or callbacks, unless overrideReadOnly=true.
+describe('FieldValueHost readOnly and SetValueOptions.overrideReadOnly', () =>
+{
+    const initialState = { value: 'old', textValue: 'old', status: ValidationStatus.Valid };
+    function expectUnchanged(setup: ReturnType<typeof setupReadOnlyFieldValueHost>): void
+    {
+        expect(setup.valueHost.getValue()).toBe('old');
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.textCallbacks).toBe(0);
+        expect(setup.nativeCallbacks).toBe(0);
+        expect(setup.logger.findMessage('ValueHost "Field1" read-only.', LoggingLevel.Info, null)).toBeTruthy();
+    }
+    test('readOnly is false by default', () =>
+    {
+        let setup = setupFieldValueHost();
+        expect(setup.valueHost.readOnly).toBe(false);
+    });
+    test('setValue is rejected', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValue('new');
+        expectUnchanged(setup);
+    });
+    test('setValue is rejected before the formatter runs, even with a formatter configured', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.Number, formatterLookupKey: LookupKey.Number },
+            { value: 1, textValue: '1', status: ValidationStatus.Valid });
+        setup.valueHost.setValue(2);
+        expect(setup.valueHost.getValue()).toBe(1);
+        expect(setup.valueHost.getTextValue()).toBe('1');
+        expect(setup.textCallbacks).toBe(0);
+        expect(setup.nativeCallbacks).toBe(0);
+    });
+    test('setValueToUndefined is rejected', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValueToUndefined();
+        expectUnchanged(setup);
+    });
+    test('setTextValue is rejected even when the parser is configured', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setTextValue('new');
+        expectUnchanged(setup);
+    });
+    test('setValues is rejected', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValues('new', 'new');
+        expectUnchanged(setup);
+    });
+    test('A rejected call with validate=true does not run validation', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValue('new', { validate: true });
+        setup.valueHost.setTextValue('new', { validate: true });
+        setup.valueHost.setValues('new', 'new', { validate: true });
+        expectUnchanged(setup);
+    });
+    test('setValue with overrideReadOnly=true changes the value, formats it, and invokes callbacks', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.Number, formatterLookupKey: LookupKey.Number },
+            { value: 1, textValue: '1', status: ValidationStatus.Valid });
+        setup.valueHost.setValue(2, { overrideReadOnly: true });
+        // the option must survive the hand-off from setValue to setValues in the formatter path
+        expect(setup.valueHost.getValue()).toBe(2);
+        expect(setup.valueHost.getTextValue()).toBe('2');
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(setup.nativeCallbacks).toBe(1);
+        expect(setup.textCallbacks).toBe(1);
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeNull();
+    });
+    test('setValue with overrideReadOnly=true and no formatter changes the native value', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValue('new', { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe('new');
+        // String has a default formatter, so the text follows the native value
+        expect(setup.valueHost.getTextValue()).toBe('new');
+        expect(setup.nativeCallbacks).toBe(1);
+    });
+    test('setValueToUndefined with overrideReadOnly=true sets the native value to undefined', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValueToUndefined({ overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBeUndefined();
+    });
+    test('setTextValue with overrideReadOnly=true changes the text value', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String, parserLookupKey: null }, initialState);
+        setup.valueHost.setTextValue('new', { overrideReadOnly: true });
+        expect(setup.valueHost.getTextValue()).toBe('new');
+        expect(setup.textCallbacks).toBe(1);
+    });
+    test('setTextValue with overrideReadOnly=true and a parser sets both values through setValues', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.Number, parserLookupKey: LookupKey.Number },
+            { value: 1, textValue: '1', status: ValidationStatus.Valid });
+        registerDataTypeParsers(setup.services.dataTypeParserService);
+        setup.valueHost.setTextValue('5', { overrideReadOnly: true });
+        expect(setup.valueHost.getTextValue()).toBe('5');
+        expect(setup.valueHost.getValue()).toBe(5);
+    });
+    test('setValues with overrideReadOnly=true changes both values', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setValues('new', 'newText', { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe('new');
+        expect(setup.valueHost.getTextValue()).toBe('newText');
+        expect(setup.nativeCallbacks).toBe(1);
+        expect(setup.textCallbacks).toBe(1);
+    });
+    test('overrideReadOnly does not bypass the disabled check', () =>
+    {
+        let setup = setupReadOnlyFieldValueHost({ dataType: LookupKey.String }, initialState);
+        setup.valueHost.setEnabled(false);
+        setup.valueHost.setValue('new', { overrideReadOnly: true });
+        setup.valueHost.setTextValue('new', { overrideReadOnly: true });
+        setup.valueHost.setValues('new', 'new', { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe('old');
+        expect(setup.valueHost.getTextValue()).toBe('old');
+        expect(setup.logger.findMessage('disabled', LoggingLevel.Warn, null)).toBeTruthy();
+    });
+});
+
 // setValue (inherited from ValidatableValueHostBase) is the third setter that must follow the corrected rules.
 describe('setValue', () =>
 {
@@ -2566,6 +2722,7 @@ describe('toIFieldValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        readOnly: boolean = false;
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {
             throw new Error("Method not implemented.");
         }

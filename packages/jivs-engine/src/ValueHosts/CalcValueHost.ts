@@ -27,6 +27,9 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
         super(valueHostsManager, config, state);
     }
 
+    public override get readOnly(): boolean {
+        return true;
+    }
     /**
      * Provides conversion support against the original value using the DataTypeConverters
      * and DataTypeIdentifiers through services.dataTypeConverterService.convert()
@@ -99,16 +102,6 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
      * not use getValue.
      */
     private _reentrantCount = 0;
-
-    /**
-     * Does nothing. This change also impacts setValueToUndefined()
-     * @param value 
-     * @param options 
-     */
-    public override setValue(value: any, options?: TOptions): void {
-        // does nothing
-        this.logger.message(LoggingLevel.Warn, () => 'setValue does nothing');        
-    }
 }
 
 /**

@@ -543,6 +543,100 @@ describe('setValue', () =>
         expect(logger.findMessage('ValueHost "Field1" disabled.', LoggingLevel.Warn, null)).toBeNull();
     });
 });
+/**
+ * ValueHostBase.readOnly is always false. This subclass represents any ValueHost
+ * (like CalcValueHost) that reports itself as read-only.
+ */
+class ReadOnlyValueHostBase extends PublicifiedValueHostBase
+{
+    public override get readOnly(): boolean
+    {
+        return true;
+    }
+}
+function setupReadOnlyValueHost(initialValue: any):
+    { valueHost: ReadOnlyValueHostBase, valueHostsManager: MockValueHostsManager, logger: TestingLoggingService }
+{
+    let setup = setupValueHost({}, initialValue);
+    let logger = setup.services.loggingService as TestingLoggingService;
+    logger.minLevel = LoggingLevel.Info;
+    let valueHost = new ReadOnlyValueHostBase(setup.valueHostsManager, setup.config,
+        setup.state as IPublicifiedValueHostInstanceState);
+    return { valueHost, valueHostsManager: setup.valueHostsManager, logger };
+}
+
+// Verifies the readOnly property and the overrideReadOnly option, which together
+// let a ValueHost block value changes while allowing an informed caller to bypass the block.
+describe('readOnly and SetValueOptions.overrideReadOnly', () =>
+{
+    test('readOnly is false in the base class', () =>
+    {
+        let setup = setupValueHost({}, 100);
+        expect(setup.valueHost.readOnly).toBe(false);
+    });
+    test('When readOnly is false, overrideReadOnly has no effect and the value changes without a read-only log', () =>
+    {
+        let setup = setupValueHost({}, 100);
+        let logger = setup.services.loggingService as TestingLoggingService;
+        logger.minLevel = LoggingLevel.Info;
+        setup.valueHost.setValue(200, { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe(200);
+        expect(logger.findMessage('read-only', LoggingLevel.Info, null)).toBeNull();
+    });
+    test('When readOnly is true, setValue takes no action except to log at Info level', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        let callbackCount = 0;
+        setup.valueHostsManager.onValueChanged = () => { callbackCount++; };
+        setup.valueHost.setValue(200);
+        expect(setup.valueHost.getValue()).toBe(100);
+        expect(setup.valueHost.isChanged).toBe(false);
+        expect(callbackCount).toBe(0);
+        expect(setup.logger.findMessage('ValueHost "Field1" read-only.', LoggingLevel.Info, null)).toBeTruthy();
+    });
+    test('When readOnly is true, setValueToUndefined is also rejected because it delegates to setValue', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        setup.valueHost.setValueToUndefined();
+        expect(setup.valueHost.getValue()).toBe(100);
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeTruthy();
+    });
+    test('When readOnly is true and overrideReadOnly=true, setValue changes the value, tracks the change, invokes the callback, and does not log read-only', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        let callbackOldValue: any = null;
+        setup.valueHostsManager.onValueChanged = (vh, oldValue) => { callbackOldValue = oldValue; };
+        setup.valueHost.setValue(200, { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe(200);
+        expect(setup.valueHost.isChanged).toBe(true);
+        expect(callbackOldValue).toBe(100);
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeNull();
+    });
+    test('When readOnly is true and overrideReadOnly=false, setValue is rejected', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        setup.valueHost.setValue(200, { overrideReadOnly: false });
+        expect(setup.valueHost.getValue()).toBe(100);
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeTruthy();
+    });
+    test('overrideReadOnly does not bypass the disabled check', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        setup.valueHost.setEnabled(false);
+        setup.valueHost.setValue(200, { overrideReadOnly: true });
+        expect(setup.valueHost.getValue()).toBe(100);
+        expect(setup.logger.findMessage('disabled', LoggingLevel.Warn, null)).toBeTruthy();
+        expect(setup.logger.findMessage('read-only', LoggingLevel.Info, null)).toBeNull();
+    });
+    test('overrideReadOnly combined with overrideDisabled changes a read-only, disabled ValueHost', () =>
+    {
+        let setup = setupReadOnlyValueHost(100);
+        setup.valueHost.setEnabled(false);
+        setup.valueHost.setValue(200, { overrideReadOnly: true, overrideDisabled: true });
+        expect(setup.valueHost.getValue()).toBe(200);
+    });
+});
+
 describe('setValueToUndefined', () =>
 {
     test('Value was changed. State changes.', () =>

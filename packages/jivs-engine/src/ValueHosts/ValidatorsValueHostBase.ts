@@ -59,15 +59,6 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         this._validators = undefined!;
     }
 
-    /**
-     * Override the default setValue() to provide additional options for FieldValueHost.
-     * @param value 
-     * @param options 
-     */
-    public override setValue(value: any, options?: TOptions): void
-    {
-        super.setValue(value, options);
-    }
     protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void
     {
         super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);

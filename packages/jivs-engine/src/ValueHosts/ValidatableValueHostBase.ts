@@ -73,9 +73,11 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     *      OnValueChanged property.
     */
     public override setValue(value: any, options?: TOptions): void {
-        this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!options)
             options = {} as TOptions;
+        if (this.isReadOnly(options))
+            return;
+        this.logger.message(LoggingLevel.Debug, () => `setValue(${valueForLog(value)})`);
         if (!this.canChangeValueCheck(options))
             return;
         if (options.duringEdit)

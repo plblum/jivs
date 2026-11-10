@@ -3347,6 +3347,7 @@ describe('toIValidatorsValueHost function', () => {
             return '';
         }
         isChanged: boolean = false;
+        readOnly: boolean = false;
         isEnabled(): boolean {
             return this.hostEnabled;
         }

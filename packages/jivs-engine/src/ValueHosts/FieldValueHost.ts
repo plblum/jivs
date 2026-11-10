@@ -197,10 +197,11 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      *  - skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     public setTextValue(textValue: string | undefined, options?: TOptions): void {
-        this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
-
         if (!options)
             options = {} as TOptions;
+        if (this.isReadOnly(options))
+            return;
+        this.logger.message(LoggingLevel.Debug, () => `setTextValue(${valueForLog(textValue)})`);        
         let oldEnabled = this.instanceState.enabled ?? true;
         if (!this.canChangeValueCheck(options))
             return;        
@@ -420,8 +421,10 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
      *    * skipValueChangedCallback - Skip the automatic callback setup through the OnValueChanged property.
      */
     public setValues(nativeValue: any, textValue: string | undefined, options?: TOptions): void {
-        this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
         options = options ?? {} as TOptions;
+        if (this.isReadOnly(options))
+            return;
+        this.logger.message(LoggingLevel.Debug, () => `setValues(${valueForLog(nativeValue)}, ${valueForLog(textValue)})`);        
         if (!this.canChangeValueCheck(options))
             return;        
         const oldNative: any = this.instanceState.value;
