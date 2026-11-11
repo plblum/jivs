@@ -4,7 +4,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/CheckboxPresentation
  */
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
+import { HtmlFormControlFieldPresentationBase, HtmlFormControlFieldPresentationBaseOptions } from './HtmlFormControlFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a checkbox.
@@ -20,7 +20,7 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from 
  * Registered with FieldPresentationFactory as presentation name 'checkboxEditor'.
  * CheckboxAdapterDefinition should use this presentation name: 'checkboxEditor'.
  */
-export class CheckboxPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
+export class CheckboxPresentation extends HtmlFormControlFieldPresentationBase<HtmlFormControlFieldPresentationBaseOptions, HTMLInputElement>
 {
     /**
      * Constructor for the CheckboxPresentation class.
@@ -28,8 +28,8 @@ export class CheckboxPresentation extends EditorFieldPresentationBase<EditorFiel
      * @param options Configuration options for the field presentation, including CSS classes.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
-    constructor(element: HTMLElement,
-        options?: EditorFieldPresentationBaseOptions,
+    constructor(element: HTMLInputElement,
+        options?: HtmlFormControlFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

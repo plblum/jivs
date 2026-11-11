@@ -10,6 +10,7 @@ import type { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfa
 import { IsValidFieldPresentationBase, IsValidFieldPresentationGlobalOptions } from './IsValidFieldPresentationBase';
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase, EditorFieldPresentationBaseGlobalOptions, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
+import { HtmlFormControlFieldPresentationBase, HtmlFormControlFieldPresentationBaseGlobalOptions, HtmlFormControlFieldPresentationBaseOptions } from './HtmlFormControlFieldPresentationBase';
 
 
 /**
@@ -38,7 +39,7 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseGlobalOptions, 
  * RadioButtonsAdapterDefinition should use this presentation name: 'radiobuttonsEditor'.
  */
 export class RadioButtonsPresentation<TOptions extends RadioButtonsFieldPresentationOptions = RadioButtonsFieldPresentationOptions>
-    extends EditorFieldPresentationBase<TOptions>
+    extends HtmlFormControlFieldPresentationBase<TOptions, HTMLInputElement>
 {
     /**
      * Creates an instance of the RadioButtonsPresentation class.
@@ -46,7 +47,7 @@ export class RadioButtonsPresentation<TOptions extends RadioButtonsFieldPresenta
      * @param options Configuration options for the field presentation, including CSS classes.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
-    constructor(radioButton: HTMLElement,
+    constructor(radioButton: HTMLInputElement,
         options?: TOptions,
         jivsElement?: IJivsElement | null
     )
@@ -104,7 +105,7 @@ export const defaultRadioButtonsPresentationName = 'radiobuttonsEditor';
  * globally and supply a default when not overridden in the Presentations options.
  */
 export interface RadioButtonsFieldPresentationGlobalOptions extends
-    Omit<EditorFieldPresentationBaseGlobalOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>
+    Omit<HtmlFormControlFieldPresentationBaseGlobalOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>
 {
 }
 
@@ -114,7 +115,7 @@ export interface RadioButtonsFieldPresentationGlobalOptions extends
  * Only add options here that are used situationally.
  */
 export interface RadioButtonsFieldPresentationOptions extends
-    Omit<EditorFieldPresentationBaseOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>,
+    Omit<HtmlFormControlFieldPresentationBaseOptions, 'validatedClassEnabled'| 'correctedClassEnabled' | 'requiredClassEnabled'>,
     RadioButtonsFieldPresentationGlobalOptions
 {
 }

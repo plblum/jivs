@@ -69,12 +69,12 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         // We keep this here for testing purposes, but may later remove it.
 
         // Register default field presentations here
-        factory.register(defaultTextInputPresentationName, (element) => new TextInputPresentation(element));
-        factory.register(defaultCheckboxPresentationName, (element) => new CheckboxPresentation(element));
-        factory.register(defaultRadioButtonsPresentationName, (element) => new RadioButtonsPresentation(element));
-        factory.register(defaultSelectPresentationName, (element) => new SelectPresentation(element));
-        factory.register(defaultTextAreaPresentationName, (element) => new TextAreaPresentation(element));
-        factory.register(defaultFileInputPresentationName, (element) => new FileInputPresentation(element));
+        factory.register(defaultTextInputPresentationName, (element) => new TextInputPresentation(element as HTMLInputElement));
+        factory.register(defaultCheckboxPresentationName, (element) => new CheckboxPresentation(element as HTMLInputElement));
+        factory.register(defaultRadioButtonsPresentationName, (element) => new RadioButtonsPresentation(element as HTMLInputElement));
+        factory.register(defaultSelectPresentationName, (element) => new SelectPresentation(element as HTMLSelectElement));
+        factory.register(defaultTextAreaPresentationName, (element) => new TextAreaPresentation(element as HTMLTextAreaElement));
+        factory.register(defaultFileInputPresentationName, (element) => new FileInputPresentation(element as HTMLInputElement));
         factory.register(defaultWrappedTextInputPresentationName, (element) => new WrappedTextInputPresentation(element));
         factory.register(defaultWrappedCheckboxPresentationName, (element) => new WrappedCheckboxPresentation(element));
         factory.register(defaultWrappedRadioButtonsPresentationName, (element) => new WrappedRadioButtonsPresentation(element));

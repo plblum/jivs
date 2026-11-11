@@ -175,12 +175,12 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
     // EDITORS
     // DEMO: the editor adapter definitions return the library's default presentation names,
     // so these must match them (the original starter code used different names).
-    factory.register('inputEditor', (element) => new TextInputPresentation(element));
-    factory.register('checkboxEditor', (element) => new CheckboxPresentation(element));
-    factory.register('radiobuttonsEditor', (element) => new RadioButtonsPresentation(element));
-    factory.register('selectEditor', (element) => new SelectPresentation(element));
-    factory.register('textareaEditor', (element) => new TextAreaPresentation(element));
-    factory.register('fileInputEditor', (element) => new FileInputPresentation(element));
+    factory.register('inputEditor', (element) => new TextInputPresentation(element as HTMLInputElement));
+    factory.register('checkboxEditor', (element) => new CheckboxPresentation(element as HTMLInputElement));
+    factory.register('radiobuttonsEditor', (element) => new RadioButtonsPresentation(element as HTMLInputElement));
+    factory.register('selectEditor', (element) => new SelectPresentation(element as HTMLSelectElement));
+    factory.register('textareaEditor', (element) => new TextAreaPresentation(element as HTMLTextAreaElement));
+    factory.register('fileInputEditor', (element) => new FileInputPresentation(element as HTMLInputElement));
     factory.register('wrappedInputEditor', (element) => new WrappedTextInputPresentation(element));
     factory.register('wrappedCheckboxEditor', (element) => new WrappedCheckboxPresentation(element));
     factory.register('wrappedRadioButtonsEditor', (element) => new WrappedRadioButtonsPresentation(element));
@@ -196,11 +196,11 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
 
     // DEMO:
     factory.register('inputEditorValidated', (element) =>
-        new TextInputPresentation(element, {
+        new TextInputPresentation(element as HTMLInputElement, {
             validatedClassEnabled: true
         }));
     factory.register('inputEditorValidatedCorrected', (element) =>
-        new TextInputPresentation(element, {
+        new TextInputPresentation(element as HTMLInputElement, {
             validatedClassEnabled: true,
             correctedClassEnabled: true
         }));

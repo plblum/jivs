@@ -164,12 +164,12 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
     factory.setDefaultPresentationName(ElementRole.error, 'InlineError');
 
     // EDITORS
-    factory.register('TextInput', (element) => new TextInputPresentation(element));
-    factory.register('Checkbox', (element) => new CheckboxPresentation(element));
-    factory.register('RadioButtons', (element) => new RadioButtonsPresentation(element));
-    factory.register('Select', (element) => new SelectPresentation(element));
-    factory.register('TextArea', (element) => new TextAreaPresentation(element));
-    factory.register('FileInput', (element) => new FileInputPresentation(element));
+    factory.register('TextInput', (element) => new TextInputPresentation(element as HTMLInputElement));
+    factory.register('Checkbox', (element) => new CheckboxPresentation(element as HTMLInputElement));
+    factory.register('RadioButtons', (element) => new RadioButtonsPresentation(element as HTMLInputElement));
+    factory.register('Select', (element) => new SelectPresentation(element as HTMLSelectElement));
+    factory.register('TextArea', (element) => new TextAreaPresentation(element as HTMLTextAreaElement));
+    factory.register('FileInput', (element) => new FileInputPresentation(element as HTMLInputElement));
     factory.register('Wrapped:TextInput', (element) => new WrappedTextInputPresentation(element));
     factory.register('Wrapped:Checkbox', (element) => new WrappedCheckboxPresentation(element));
     factory.register('Wrapped:RadioButtons', (element) => new WrappedRadioButtonsPresentation(element));

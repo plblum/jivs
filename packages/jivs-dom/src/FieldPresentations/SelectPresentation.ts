@@ -4,8 +4,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
-
+import { HtmlFormControlFieldPresentationBase, HtmlFormControlFieldPresentationBaseOptions } from './HtmlFormControlFieldPresentationBase';
 /**
  * Presentation for HTML select tags.
  * 
@@ -20,7 +19,7 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from 
  * Registered with FieldPresentationFactory as presentation name 'selectEditor'.
  * SelectAdapterDefinition should use this presentation name: 'selectEditor'.
  */
-export class SelectPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
+export class SelectPresentation extends HtmlFormControlFieldPresentationBase<HtmlFormControlFieldPresentationBaseOptions, HTMLSelectElement>
 {
     /**
      * Constructor for the SelectPresentation class.
@@ -28,8 +27,8 @@ export class SelectPresentation extends EditorFieldPresentationBase<EditorFieldP
      * @param options Configuration options for the field presentation, including CSS classes.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
-    constructor(element: HTMLElement,
-        options?: EditorFieldPresentationBaseOptions,
+    constructor(element: HTMLSelectElement,
+        options?: HtmlFormControlFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {
@@ -41,6 +40,7 @@ export class SelectPresentation extends EditorFieldPresentationBase<EditorFieldP
         super.gatherPersistentClasses(list);
         list.push('jivs-editor-select');
     }
+
 }
 /**
  * For registering this presentation with the FieldPresentationFactory

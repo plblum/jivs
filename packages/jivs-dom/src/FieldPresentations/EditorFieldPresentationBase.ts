@@ -53,7 +53,17 @@ export abstract class EditorFieldPresentationBase<
     }
 }
 
-export interface EditorFieldPresentationBaseGlobalOptions extends IsValidFieldPresentationGlobalOptions {}
+export interface EditorFieldPresentationBaseGlobalOptions
+    extends IsValidFieldPresentationGlobalOptions
+{
+    /**
+     * When the FieldValueHost identifies as ReadOnly and this is not false,
+     * the subclass Presentation can set the widget up as read only,
+     * if supported.
+     * When true or undefined, let the subclass set up the widget as read only.
+     */
+    forceReadOnly?: boolean;
+}
 export interface EditorFieldPresentationBaseOptions
     extends IsValidFieldPresentationOptions, EditorFieldPresentationBaseGlobalOptions
 {

@@ -4,8 +4,7 @@
  */
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
-
+import { HtmlFormControlFieldPresentationBase, HtmlFormControlFieldPresentationBaseOptions } from './HtmlFormControlFieldPresentationBase';
 /**
  * Presentation for HTML input tags that feature a textbox.
  * That includes these type= attribute values: text, password, email, number, search, tel, url,
@@ -21,7 +20,7 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from 
  * Registered with FieldPresentationFactory as presentation name 'inputEditor'.
  * InputAdapterDefinition should use this presentation name: 'inputEditor'.
  */
-export class TextInputPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
+export class TextInputPresentation extends HtmlFormControlFieldPresentationBase<HtmlFormControlFieldPresentationBaseOptions, HTMLInputElement>
 {
     /**
      * Constructor for the TextInputPresentation class.
@@ -29,8 +28,8 @@ export class TextInputPresentation extends EditorFieldPresentationBase<EditorFie
      * @param options Configuration options for the field presentation, including CSS classes.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
-    constructor(element: HTMLElement,
-        options?: EditorFieldPresentationBaseOptions,
+    constructor(element: HTMLInputElement,
+        options?: HtmlFormControlFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {

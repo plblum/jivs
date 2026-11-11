@@ -3,7 +3,7 @@
  * @module jivs-dom/FieldPresentations/ConcreteClasses/FileInputPresentation
  */
 import { IJivsElement } from '../Interfaces/IJivsElement';
-import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
+import { HtmlFormControlFieldPresentationBase, HtmlFormControlFieldPresentationBaseOptions } from './HtmlFormControlFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a file input.
@@ -19,7 +19,8 @@ import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from 
  * Registered with FieldPresentationFactory as presentation name 'fileInputEditor'.
  * InputAdapterDefinition should use this presentation name: 'fileInputEditor'.
  */
-export class FileInputPresentation extends EditorFieldPresentationBase<EditorFieldPresentationBaseOptions>
+export class FileInputPresentation
+    extends HtmlFormControlFieldPresentationBase<HtmlFormControlFieldPresentationBaseOptions, HTMLInputElement>
 {
     /**
      * Constructor for the FileInputPresentation class.
@@ -27,8 +28,8 @@ export class FileInputPresentation extends EditorFieldPresentationBase<EditorFie
      * @param options Configuration options for the field presentation, including CSS classes.
      * @param jivsElement The Jivs DOM element associated with this field presentation, if any.
      */
-    constructor(element: HTMLElement,
-        options?: EditorFieldPresentationBaseOptions,
+    constructor(element: HTMLInputElement,
+        options?: HtmlFormControlFieldPresentationBaseOptions,
         jivsElement?: IJivsElement | null
     )
     {
