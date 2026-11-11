@@ -102,13 +102,11 @@ const reader = new FormReader(valueHostsManager, formData, options);
 const reader = new DictionaryReader(vhm, dictionaryData, options);
 ```
 The `ModelReader`, `DictionaryReader`, and `FormReader` take an options object that supports these values:
-
-
-
 - `initializingValues` - Treat this process as initially populating values.
-   Upon completion, the Reader will invoke `ValueHostsManager.valuesInitialized()`, which will run preliminary validation and ensure any calculated `FieldValueHost` has its initial value.
+   Upon completion, the `Reader` will invoke `ValueHostsManager.valuesInitialized()`, which will run preliminary validation and ensure any calculated `FieldValueHost` has its initial value.
    Defaults to true if not specified.
 - `disableFormatter` - (Not on `FormReader`) When true, do not convert the value to text. Just set the native value.
+
     When false, these settings still disable the formatter:
     - `valueHostsManager.behaviors.disableFormatterOnValueChange`
     - `FieldValueHostConfig.formatterLookupKey = null`

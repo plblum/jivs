@@ -1023,6 +1023,7 @@ It resolves all siblings as a group;
 * `TextAreaAdapterDefinition` for textarea elements with `adapterKey="textarea"`;
 * `SelectAdapterDefinition` for select elements with `adapterKey="select"`;
 * `FileInputAdapterDefinition` for file inputs with `adapterKey="input:file"`.
+* `PlaceholderAdapterDefinition` for to treat a span or div tag as a placeholder that will show text values from the FieldValueHost. `adapterKey="placeholder"`.
 
 Each class supplies its matching rules, directly creates its adapters, and attaches its widget-specific events. The concrete definitions inherit diagnostic logging and the standard ValueHost submission helpers.
 
@@ -1318,6 +1319,17 @@ All initial built-in definitions use the Text Value path. They read strings from
 | `textarea`               | `TextAreaAdapterDefinition`        | `TextAreaTextValueAdapter`        | `change`, plus `input` when `duringEdit` is enabled |
 | Single-value `select`    | `SelectAdapterDefinition`          | `SelectTextValueAdapter`          | `change`                                            |
 | File `input`             | `FileInputAdapterDefinition`       | `FileInputTextValueAdapter`       | `change`                                            |
+| 'span' or 'div' tags     | `PlaceholderAdapterDefinition`     | `PlaceholderTextValueAdapter`     | not used. Placeholders are read only |
+
+#### Output-Only Placeholder Editor and Read-Only Presentation
+
+The starter DOM configuration and UI demos also register `PlaceholderAdapterDefinition` for output-only text elements such as a `span`. Its match rule identifies an initially empty or whitespace-only element; after installation, the element retains its adapter association and does not need to match again after its text has been written.
+
+`PlaceholderTextValueAdapter` reads and writes `textContent`, attaches no input or change handlers, and does not send values back to the field. For a calculated `FieldValueHost`, it uses `textForUndefinedCalculationValue()` when the text value is `undefined`. That method resolves the configured localization key and fallback using the manager's active culture. The adapter caches that display text when it is created; live culture changes do not update an existing adapter. Placeholder text is presentation-only and is not stored in the field's text value. Because writing uses `textContent`, placeholder markup should not depend on child nodes.
+
+The placeholder definition is registered through application DOM configuration rather than the generic native-editor list. It uses the ordinary editor role, field presentation, and validation presentation flow.
+
+`HtmlFormControlFieldPresentationBase` adds the `readonly` attribute when its `FieldValueHost` reports `readOnly`, unless the `forceReadOnly` presentation option disables that behavior. This attribute is effective for controls such as text inputs and textareas; subclasses such as select and checkbox presentations do not become non-editable merely because the attribute is present. Use a placeholder element or a control with native read-only support for calculated display. The field's setter guard enforces read-only state independently of the DOM attribute; callers may explicitly use `overrideReadOnly` when they intend to replace the calculated value.
 
 None of these definitions creates an `IValueAdapter`. During installation, `jivsValueAdapter` is therefore set to `null`.
 
@@ -1889,9 +1901,9 @@ For example, the absence of `jivs-has-issues` hides an Error Message Display:
 
 Concrete implementations of `IsValidFieldPresentationBase` include `FieldContainerPresentation`, `LabelPresentation`, and `RequiredIndicatorPresentation`.
 
-Concrete implementations of `EditorFieldPresentationBase` include `CheckboxPresentation`, `FileInputPresentation`, `RadioButtonsPresentation`, `SelectPresentation`, `TextAreaPresentation`, and `TextInputPresentation`.
+Concrete implementations of `EditorFieldPresentationBase` include `TextInputPresentation`, `CheckboxPresentation`, `FileInputPresentation`, `RadioButtonsPresentation`, `SelectPresentation`, `TextAreaPresentation`,  and `PlaceholderPresentation`.
 
-Concrete implementations of `WrappedEditorFieldPresentationBase` include `WrapperCheckboxPresentation`, `WrapperFileInputPresentation`, `WrapperRadioButtonsPresentation`, `WrapperSelectPresentation`, `WrapperTextAreaPresentation`, and `WrapperTextInputPresentation`.
+Concrete implementations of `WrappedEditorFieldPresentationBase` include `WrapperTextInputPresentation`, `WrapperCheckboxPresentation`, `WrapperFileInputPresentation`, `WrapperRadioButtonsPresentation`, `WrapperSelectPresentation`, and `WrapperTextAreaPresentation`.
 
 The concrete error displays include `InlineErrorMessageDisplayPresentation` (directly from `ErrorMessageDisplayPresentationBase`), `PopupErrorMessageDisplayPresentation`, and `TargetErrorMessageDisplayPresentation` (both from `TriggeredErrorMessageDisplayPresentationBase`). `CompositeFieldPresentation` is a general-purpose `IFieldPresentation` composer, but its primary use is combining Error Message Display behaviors while remaining the sole presentation installed on its element.
 
@@ -4119,7 +4131,7 @@ abstract class TextValueDispatcherBase
 valueHost.getTextValue()
 ```
 
-For each discovered element, it reads `jivsTextValueAdapter`. An adapter instance receives the current Text Value through `writeTextValue()`. Both `undefined` and `null` are skipped.
+For each discovered element, it reads `jivsTextValueAdapter`. An adapter instance receives the current Text Value through `writeTextValue()`, including `undefined`. This lets an adapter define how an undefined text value is displayed; for example, `PlaceholderTextValueAdapter` substitutes its configured calculation fallback. The standard Text Value type is `string | undefined`.
 
 The standard implementation does not use `oldTextValue`. It remains part of the contract so subclasses and direct interface implementations receive the complete callback information.
 
@@ -4506,10 +4518,12 @@ valueHostsManager.services.domServices.dispatchers.attach(
     const reader = new EditorReader(valueHostsManager);
     ```
 10. Execute a preliminary validation on all fields, without reporting any required field errors.
-    This is built into the Reader.read() operation. But if you don't use read, do this:
+    `Reader.read()` calls `ValueHostsManager.valuesInitialized()` by default; it calculates calculated fields before preliminary validation. If you do not use a Reader, call:
     ```ts
     valueHostsManager.valuesInitialized();
     ```
+
+    Calculated fields are evaluated in manager configuration order. A calculated consumer listed before its calculated provider can initially retain a stale value; this known limitation will be revisited.
 #### The Long Form of setup
 ```ts
 const services = createJivsServices('en-US');
@@ -4879,6 +4893,8 @@ Scenario: the browser replaces part of the DOM tree, such as a fragment returned
 
 Steps 1, 2 and 4 are the same as for the initial form. Only step 3 differs. The initial form usually reads a model. A replaced fragment may read the new editors, read the model, or have the application call `setValue()`.
 
+`valuesInitialized()` recalculates all calculated fields in manager configuration order before preliminary validation. The order limitation for a calculated consumer listed before its provider also applies here.
+
 A field whose elements must be added later needs its `FieldValueHost` in the manager before the install. That means the ValueHost configuration exists even though the page has no markup for it yet.
 
 #### The Install Counter
@@ -4955,7 +4971,7 @@ The filter is not wired in automatically. The user passes it.
 
 Same-value caution: without `reset: true`, an unchanged text value does not notify the text dispatcher. Explicit `reset: true` requests publication even for an unchanged value, except that `setTextValue()` with `skipIfUnchanged: true` skips unchanged text. `EditorWriter` can instead write the current value without resetting the field, while `EditorReader` reads editor to ValueHost.
 
-**Partial replacement and calculated fields:** `valuesInitialized()` currently recalculates every calculated field with `reset: true`, including those whose editors were not replaced. This can republish their unchanged values to existing editors. Decide how to scope or suppress those publications before relying on this flow where untouched editors must not be overwritten. Also verify the field-level replacement filter and writer behavior when only one of multiple editors for a field was replaced.
+**Partial replacement and calculated fields:** `valuesInitialized()` recalculates every calculated field with `reset: true`, including those whose editors were not replaced. This is safe: the reset-driven callbacks republish each current result to both existing and replaced editors. No per-replacement suppression is needed.
 
 #### Test Coverage
 
@@ -4979,7 +4995,7 @@ What each part contributes:
   - A field with unchanged text and enabled state keeps its captured state. A field whose text changed, or that became enabled, is reset to NotAttempted and then validated by the preliminary validation.
   - A parse error from the parser (`injectedError`) survives the reset, because `reset` and `injectedError` are mutually exclusive.
   - It then calls `broadcastState(true, false)`: the validation state of the form and of each enabled field reaches the application's `onValidationStateChanged` and `onValueHostValidationStateChanged` callbacks. Text values are not broadcast, so no editor is written.
-  - `initializingValues: false` skips wrap up that calls `ValueHostsManager.valuesInitializated()`.
+  - `initializingValues: false` skips wrap up that calls `ValueHostsManager.valuesInitialized()`.
 - **Why `EditorReader` alone is not enough.** It skips unchanged fields, so the application's validation-state callbacks never hear about them. The DOM looks the same with either reader. The difference is only in the application's own callbacks, for example one that enables a submit button.
 
 A callback may be called more than once for the same state, because install draws it and the broadcast reports it again. Drawing is idempotent.

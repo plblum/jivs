@@ -47,7 +47,7 @@ flowchart TB
 
     + `FieldValueHost` – Represents a field-oriented value. It holds both a Native Value used by application code and a Text Value used by an editor.
     + `StaticValueHost` – Supplies a value that does not require validation but may be used by other validation rules.
-    + `CalcValueHost` – Calculates a value needed by validation rules. For example, it might calculate the number of days between two dates.
+    + `CalcValueHost` – Calculates a value needed by validation rules or for display through a `FieldValueHost`. For example, it might calculate the number of days between two dates.
 
 -   [`Validator`](./Validators/Home.md) – Handles one validation rule on a `ValueHost`. It uses a `Condition` to evaluate the rule and reports a validation issue when the rule is not satisfied.
 

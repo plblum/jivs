@@ -92,7 +92,7 @@ class ValueHost
 - Formatting:
     - Your own formatter: If you handle converting native to text value outside of Jivs, use `setValues()` instead.
     - Using our formatter, you can wire up your UI element to take the resulting string by setting up the `ValueHostsManager.onTextValueChanged` callback handler. See [Decisions around formatting](#decisions-around-jivs-built-in-formatting) below.
-- `CalcValueHosts` are effectively read-only, and calling this does nothing.
+- `CalcValueHosts` and `FieldValueHosts` that get their values from `CalcValueHosts` are read-only, and calling this does nothing.
 
 ```ts
 // vhm = ValueHostsManager
@@ -184,6 +184,7 @@ class FieldValueHost {
     - Using our parser: See [Decisions around parsing](#decisions-around-jivs-built-in-parsing)
     - Your own parser: If you handle converting the text to native value outside of Jivs, use `setValues()` instead.
 - Reformatting takes the original text, parses to native, then formats back to text which often applies desirable formatting. See [Reformatting the original text](#reformatting-the-original-text).
+- `FieldValueHosts` that get their values from `CalcValueHosts` are read-only, and calling this does nothing.
 ```ts
 // vhm = ValueHostsManager
 document.getElementById('birthDate').attachEventListener('onchange', (event)=> {
@@ -274,7 +275,7 @@ class FieldValueHost
 - The [options parameter](#options-parameter-setvalueoptions) is described below.
 - If conversion failed or the value is undetermined, pass the value `undefined` as the value.
 - Even if configured, Jivs own parsers and formatters will not be used by `setValues()`.
-
+- `FieldValueHosts` that get their values from `CalcValueHosts` are read-only, and calling this does nothing.
 ```ts
 // vhm = ValueHostsManager
 // to initialize, convert the model's native value to text and assign to the HTML element
@@ -332,6 +333,7 @@ interface SetValueOptions {
     duringEdit?: boolean;
     overrideDisabled?: boolean;    
     ensureEnabled?: boolean;
+    overrideReadOnly?: boolean;
 }
 
 interface FieldValueHostSetValueOptions extends SetValueOptions
@@ -340,9 +342,10 @@ interface FieldValueHostSetValueOptions extends SetValueOptions
     disableParser?: boolean;
     disableFormatter?: boolean;
     skipIfUnchanged?: boolean;
+    suppressNotifications?: boolean;
 }
 ```
-These properties are all related to validation:
+Properties of `SetValueOptions`:
 - `validate` - When true, invoke validation but only if the value changed. Only supported by validatable `ValueHosts`.
 - `reset` - When true, change the state of the `ValueHost` to unchanged and validation has not been attempted. Consider setting this to true when using `setValue()` to initialize.
 - `skipValueChangedCallback` - When true, the `ValueHostsManager.onValueChanged` and `ValueHostsManager.onTextValueChanged` callbacks will not be invoked.
@@ -359,7 +362,10 @@ These properties are all related to validation:
     When applied, the reset option will be forced to true to clear the validation and change state.
 
     _Use case:_ server side generates the page and your initialization process sets the enabled state of each `ValueHost` to which there is an editor on the page.
-    
+- overrideReadOnly - Normally functions like `setValue()`, `setValues()`, and `setTextValue()` take no action when their ValueHost is setup as read-only (IValueHost.readOnly = true).
+Use this to allow those functions to ignore the read-only block and set their value.
+
+Properties added by `FieldValueHostSetValueOptions`:    
 - `injectedError` - When you handle parsing, your parser may report an error that you want to display.
   Use this option to pass along the error. Jivs will display it. See [Injecting errors on demand](#injecting-errors-on-demand).
 - `disableParser` - When true, do not allow the parser to run on this `ValueHost`.
@@ -369,7 +375,13 @@ These properties are all related to validation:
     when they match.
 
     _Use case:_ page generated on the server after a round trip. The server may have changed
-    elements. As we scrape the HTML for values, we want to retain the validation state of those unchanged.
+    elements. As we scrape the HTML for values, we want to retain the validation state of those unchanged.    
+- `suppressNotifications` - Normally value changes should immediately trigger consuming validators and calculations to run. Set this to true to disable that behavior. 
+
+    This is typically used during value initialization of the ValueHostsManager. Then you call `ValueHostsManager.valuesInitialized()` and it runs validation and calculations. 
+    
+    `Readers` use `suppressNotifications` and call `valuesInitialized()` automatically.
+
 ## API References
 - [ValueHostBase class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_AbstractClasses_ValueHostBase.ValueHostBase.html)
 - [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)

@@ -60,6 +60,7 @@ interface SetValueOptions {
     skipValueChangedCallback?: boolean;
     overrideDisabled?: boolean;
     ensureEnabled?: boolean; 
+    overrideReadOnly?: boolean;
 // FieldValueHosts add the following:
     injectedError?: InjectedError;
     disableParser?: boolean;

@@ -235,8 +235,9 @@ When the value comes from a `ValueHost`:
 - `greaterThanOrEqual(valueHost('value_host_name'))` or `gte(valueHost('value_host_name'))`
 
 ```ts
-equalTo(value, errorMessage?, summaryMessage?);
-equalTo(value, 
+equalTo(value, // or valueHost(valueHostName)
+    errorMessage?, summaryMessage?); 
+equalTo(value, // or valueHost(valueHostName)
     { // these are the validator parameters
         errorMessage?: null | string | ((host) => string);
         errorMessagel10n?: null | string;

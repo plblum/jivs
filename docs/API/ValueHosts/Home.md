@@ -6,7 +6,7 @@ Every value that you expose to Jivs is kept in a `ValueHost`. They identify what
     - **Text Value** – the value from within the editor
     > These terms – Native Value and Text Value – will be referenced frequently throughout Jivs documentation.
 - `StaticValueHost` – The value that is not validated itself, but its value is needed by validation rules. It can also retain a member of the Model that is not being edited.
-- `CalcValueHost` – For calculated values needed by validation rules. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
+- `CalcValueHost` – For calculated values needed by validation rules or `FieldValueHosts`. Classic example is the difference in days between two dates is compared to a number of days. You supply it a function that returns a value, which can be based on other ValueHosts. 
 
 `ValueHostsManager` holds all `ValueHosts`.
 

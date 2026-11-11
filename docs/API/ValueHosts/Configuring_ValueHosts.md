@@ -49,6 +49,11 @@ builder.field('fieldname', LookupKey.Integer, {
     parserLookupKey?: null | string;
     formatterLookupKey?: null | string;
     reformatTextValue?: boolean;
+    calculation?: {
+        sourceValueHostName: string;
+        textForUndefined?: string;
+        textForUndefinedl10n?: string;
+    };
     group?: null | string | string[];
     elementIdentifier?: string | null;
     propertyName?: string;
@@ -95,15 +100,21 @@ type SimpleValueType = number | Date | string | null | boolean | undefined;
 ```
 See [Using CalcValueHost](#using-calcvaluehost) for more.
 
-`calc(valueHostName, dataType, calcFn): ValueHostsManagerConfigBuilder`
+`calc(valueHostName, dataType, calcFn, dependencyValueHostNames?): ValueHostsManagerConfigBuilder`
 
-`calc(valueHostName, dataType, calcFn, *parameters object*): ValueHostsManagerConfigBuilder`
+`calc(*parameters object*): ValueHostsManagerConfigBuilder`
 
 _Examples:_
 ```ts
-builder.calc('fieldname', LookupKey.Date, myCalcFunction);
-builder.calc('fieldname', LookupKey.Date, myCalcFunction, { initialEnabled: true });
+builder.calc('fieldname', LookupKey.Integer, myCalcFunction);
+builder.calc('fieldname', LookupKey.Integer, myCalcFunction, ['valuesource1', 'valuesource2']);
 builder.calc('fieldname', LookupKey.Date, (callingValueHost, findValueHosts) => return new Date());
+builder.calc({
+    name: 'fieldname',
+    dataType: LookupKey.Integer,
+    calcFn: myCalcFunction, 
+    dependencyValueHostNames: ['valuesource1', 'valuesource2']
+});
 ```
 All parameters and arguments are [discussed below](#configuration-parameters-of-all-valuehosts).
 
@@ -116,8 +127,33 @@ Here are the arguments and parameters for all `ValueHosts` described above.
 - `initialValue` – An initial native value for the `ValueHost`. If not assigned, it is initially undefined.
 - `initialEnabled` – `ValueHosts` have an enabled state. When it is false, validation and setting their value is blocked, plus attempts to get the validation state report no error, except to say the `ValidationStatus` is `Disabled`. Use `initialEnabled=false` to configure the `ValueHost` as disabled. If omitted, the state is initially true. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.
 - `enablerConfig` – Use `builder.enabler('valueHostName', (builder)=> builder.condition(parameters))` to set it up. Don't directly modify this property. See [Disabling a ValueHost](./Disabling_a_ValueHost.md) for more.
+- `calculation` – When used, it changes the behavior of `FieldValueHost`. It gets its values from a calculation associated with a `CalcValueHost`, and ignores attempts to set its value. To pair with a `CalcValueHost`, set its `sourceValueHostName` to the name of the `CalcValueHost`. On the `CalcValueHost's` side, setup its `dependencyValueHostNames` property.
+    - `sourceValueHostName` – The name of the associated `CalcValueHost`. Once assigned, the two are paired. However, the `CalcValueHost` can be used elsewhere too, such as within a validation rule.
+    - `textForUndefined` and `textForUndefinedl10n` – Provides localized text to use when your `onTextValueChanged` handler recieves a value of undefined from the calculation. That code will use the `FieldValueHost.textForUndefinedCalculationValue()` to retrieve an already localized string or the empty string if these weren't setup.
+        ```ts
+        vhm.onTextValueChanged = (fieldValueHost, oldValue) => {
+            let element = document.getElementById(fieldValueHost.getElementIdentifier());
+            let newTextValue = fieldValueHost.getTextValue();
 
+            switch (element.tagName)
+            {
+                case 'input':
+                case 'button':
+                case 'textarea':
+                case 'select':
+                    element.value = newTextValue;
+                    break;
+                else
+                    if (nextTextValue === undefined)
+                        nextTextValue = fieldValueHost.textForUndefinedCalculationValue(); 
+                    element.textContent = newTextValue;
+                    break;
+            }
+        };
+        ```
 - `calcFn` – Assign the function used by `CalcValueHost` to determine its value. See [Using CalcValueHost](./Using_CalcValueHost.md).
+- `dependencyValueHostNames` – Supply the `ValueHost` names that supply values to your calculation so that a `FieldValueHost` consuming your calculation knows when to recalculate. While its not required, ensure that the list is accurate, including case sensitive name matching. See [Pairing a CalcValueHost with a FieldValueHost](./Using_CalcValueHost.md#pairing-a-calcvaluehost-with-a-fieldvaluehost).
+
 ### Configuration parameters specific to FieldValueHost
 - `group` – Group validation is a tool to group `ValueHosts` with a specific submit command when validating. If used, create a name for the group and use it on all `ValueHosts` and calls to `validate()` that share the group. The name matching is case insensitive.
 - `parserLookupKey` – When you have [configured parsing](../Data_Type_Support/DataTypeParsers_Service.md) for `FieldValueHosts`, this overrides the default `DataTypeParser` which is determined by the `dataType` property. Specify a Lookup Key to match one that you have registered with the `DataTypeParserService`.

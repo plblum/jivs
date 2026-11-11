@@ -150,9 +150,13 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
      * @param valueHostName - the ValueHost name
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
+     * @param dependencyValueHostNames - Suggested when this calculation is the value of a FieldValueHost.
+     * Supply all ValueHost names found within the calculation, and these will be monitored for value changes
+     * to trigger a recalculation.
      * @returns CalcValueHostConfig
      */
-    public calc(valueHostName: ValueHostName, dataType: string | null, calcFn: CalculationHandler): CalcValueHostConfig;
+    public calc(valueHostName: ValueHostName, dataType: string | null,
+        calcFn: CalculationHandler, dependencyValueHostNames?: string[]): CalcValueHostConfig;
     /**
      * Converts builder input into CalcValueHostConfig.
      * @param config - Supply the entire CalcValueHostConfig. This is a special use case.
@@ -161,7 +165,8 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
      */
     public calc(config: FluentCalcValueConfig): CalcValueHostConfig;
     // overload resolution
-    public calc(arg1: ValueHostName | FluentCalcValueConfig, dataType?: string | null, calcFn?: CalculationHandler): CalcValueHostConfig
+    public calc(arg1: ValueHostName | FluentCalcValueConfig, dataType?: string | null,
+        calcFn?: CalculationHandler, dependencyValueHostNames?: string[]): CalcValueHostConfig
     {
         this.assertFirstParameterValid(arg1);
         if (this.isConfigObject(arg1)) {
@@ -173,7 +178,9 @@ export class ValueHostConfigBuilder implements IDisposable, IServicesAccessor
             const config: CalcValueHostConfig = { valueHostType: ValueHostType.Calc, name: arg1, calcFn: calcFn };
             if (dataType)
                 config.dataType = dataType;
-        
+            if (dependencyValueHostNames)
+                config.dependencyValueHostNames = dependencyValueHostNames;
+
             return config;
         }
         /* istanbul ignore next */

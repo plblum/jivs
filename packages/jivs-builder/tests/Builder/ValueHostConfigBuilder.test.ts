@@ -127,6 +127,16 @@ describe('ValueHostConfigBuilder', () => {
                     calcFn: calcFnForTests
                 });
             });
+            test('Includes dependencyValueHostNames in CalcValueHostConfig', () => {
+                let testItem = createVHBuilder().calc('Field1', 'Test', calcFnForTests, ['Field2', 'Field3']);
+                expect(testItem).toEqual({
+                    valueHostType: ValueHostType.Calc,
+                    name: 'Field1',
+                    dataType: 'Test',
+                    calcFn: calcFnForTests,
+                    dependencyValueHostNames: ['Field2', 'Field3']
+                });
+            });
 
             test('Pass in a CalcValueHostConfig. Adds it plus type to ValueHostsManagerConfig', () => {
                 let testItem = createVHBuilder().calc({ name: 'Field1', dataType: 'Test', calcFn: calcFnForTests });

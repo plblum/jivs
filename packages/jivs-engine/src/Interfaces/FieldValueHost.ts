@@ -71,6 +71,7 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * This is the string representation before parsing into the typed value.
      * For example, a date field or posted form value is exposed as text, not as a Date.
      * The text is returned unchanged, with no trimming or other normalization applied.
+     * The result will be undefined if the value has never been set or was cleared.
      */
     getTextValue(): string | undefined;
 

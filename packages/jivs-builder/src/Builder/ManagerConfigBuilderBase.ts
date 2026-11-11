@@ -426,9 +426,13 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      * @param valueHostName - the ValueHost name
      * @param dataType - can be null. The value for ValueHost.dataType.
      * @param calcFn - required. Function callback.
+     * @param dependencyValueHostNames - Suggested when this calculation is the value of a FieldValueHost.
+     * Supply all ValueHost names found within the calculation, and these will be monitored for value changes
+     * to trigger a recalculation.
      * @returns Same instance for chaining.
      */
-    public calc(valueHostName: ValueHostName, dataType: string | null | undefined, calcFn: CalculationHandler): IManagerConfigBuilder<T>;
+    public calc(valueHostName: ValueHostName, dataType: string | null | undefined,
+        calcFn: CalculationHandler, dependencyValueHostNames?: string[]): IManagerConfigBuilder<T>;
     /**
      * Fluent format to create a CalcValueHostConfig.
      * This is the start of a fluent series. However, at this time, there are no further items in the series.
@@ -438,7 +442,9 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
      */
     public calc(config: Omit<CalcValueHostConfig, 'valueHostType'>): IManagerConfigBuilder<T>;
     // overload resolution
-    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null, calcFn?: CalculationHandler): IManagerConfigBuilder<T> {
+    public calc(arg1: ValueHostName | CalcValueHostConfig, dataType?: string | null,
+        calcFn?: CalculationHandler, dependencyValueHostNames?: string[]): IManagerConfigBuilder<T>
+    {
         this.assertNotDisposed();
         assertNotNull(arg1, 'arg1');
         const builder = this.createValueHostBuilder();
@@ -448,7 +454,7 @@ export abstract class ManagerConfigBuilderBase<T extends ValueHostsManagerConfig
             vhConfig = builder.calc(arg1 as CalcValueHostConfig);
         }
         else if (typeof arg1 === 'string') {
-            vhConfig = builder.calc(arg1, dataType ?? null, calcFn!);
+            vhConfig = builder.calc(arg1, dataType ?? null, calcFn!, dependencyValueHostNames);
         }
         else
             throw new TypeError('Must pass valuehost name or CalcValueHostConfig');

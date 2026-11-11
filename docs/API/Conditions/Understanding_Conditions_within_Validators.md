@@ -17,7 +17,10 @@ let compareVal: ValidatorConfig = {
 ```
 Use the **Builder API** syntax to better convey what you are trying to do.
 ```ts
-builder.field('FieldName1').equalTo(2, 'Error message', 'Summary message');
+builder.field('FieldName1').equalTo(20, 'Error message', 'Summary message');
+// same but gets the value from another ValueHost:
+builder.field('FieldName1').equalTo(valueHost('FieldName2'), 'Error message', 'Summary message');
+
 ```
 The Builder flattens the validator and condition, as the parameters for equalTo are a combination of condition (_secondValue_) and validator (_errorMessage_ and _summaryMessage_).
 

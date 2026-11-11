@@ -66,12 +66,20 @@ The builder's class has a rich API called **Builder API**. Learn about it here:
 [Builder](../../ValueHostsManager_Configuration_Guide.md#the-valuehostsmanagerconfigbuilder-class)
 
 The `ValueHostsManagerConfigBuilder` has these features:
-- `builder.field(valueHostName, parameters)` adds n `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
-For more, see [ValueHost members](#valuehost-members).
-- `builder.static(valueHostName, parameters)` adds a `StaticValueHost` configuration.
-For more, see [ValueHost members](#valuehost-members).
-- `builder.calc(valueHostName, parameters)` adds a `CalcValueHost` configuration. 
-For more, see [Using CalcValueHost](#using-calcvaluehost).
+- `builder.field('valueHostName', parameters)` adds a `FieldValueHost` configuration. You can chain validator functions like requireText() and regExp() to it.
+For more, see [ValueHost members](../ValueHosts/Home.md).
+- `builder.static('valueHostName', parameters)` adds a `StaticValueHost` configuration.
+For more, see [ValueHost members](../ValueHosts/Home.md).
+- `builder.calc('valueHostName', parameters)` adds a `CalcValueHost` configuration. 
+For more, see [Using CalcValueHost](../ValueHosts/Using_CalcValueHost.md).
+- Paired calc and field when a `FieldValueHost` gets its value from a `CalcValueHost`.
+    ```ts
+    builder.calc('valueHostName1', parameters);
+    builder.field('valueHostName2', parameters, {
+        calculation: { sourceValueHostName: 'valueHostName1'}
+    })
+    ```
+    For more, see [Pairing a CalcValueHost with a FieldValueHost](../ValueHosts/Using_CalcValueHost.md#pairing-a-calcvaluehost-with-a-fieldvaluehost).
 
 ## Using IAdaptModelRulesToForm
 When a form uses model rules, subclass that model's `ValueHost` rules class and implement `IAdaptModelRulesToForm`.
@@ -106,12 +114,12 @@ The `Adapter` has these features:
     + `adapter.useOnlyTheseModelFields([field names])`
     + `adapter.disableTheseModelFields([field names])`
 - Replace business logic supplied strings like labels and error messages
-    + `adapter.modify(valueHostName, { label: 'text', labell10n: 'localize id' })`
-    + `adapter.modify(valueHostName).validator(condition type, { errorMessage: 'text', errorMessagel10n: 'localize id'})`
+    + `adapter.modify('valueHostName', { label: 'text', labell10n: 'localize id' })`
+    + `adapter.modify('valueHostName').validator(condition type, { errorMessage: 'text', errorMessagel10n: 'localize id'})`
 - Extend validation rules on existing value hosts
-    + `adapter.modify(valueHostName).validator(condition type).and(childBuilder => childBuilder.[new condition])`
-    + `adapter.modify(valueHostName).validator(condition type).or(childBuilder => childBuilder.[new condition])`
-    + `adapter.modify(valueHostName).validator(condition type).whenToEnable(childBuilder => childBuilder.[new condition])`
+    + `adapter.modify('valueHostName').validator(condition type).and(childBuilder => childBuilder.[new condition])`
+    + `adapter.modify('valueHostName').validator(condition type).or(childBuilder => childBuilder.[new condition])`
+    + `adapter.modify('valueHostName').validator(condition type).whenToEnable(childBuilder => childBuilder.[new condition])`
 - Add your own ValueHosts
     + `adapter.field()`
     + `adapter.calc()`
