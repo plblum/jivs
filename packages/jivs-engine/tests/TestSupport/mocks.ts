@@ -265,6 +265,11 @@ export class MockFieldValueHost extends MockValueHost
     calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {
         throw new Error("Method not implemented.");
     }
+    textForUndefinedCalculationValue(): string
+    {
+        throw new Error("Method not implemented.");
+    }
+    
     groupCheck(options?: ValidateOptions | undefined): boolean {
         return true;
     }

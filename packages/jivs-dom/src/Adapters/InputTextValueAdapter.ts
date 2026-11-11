@@ -32,6 +32,6 @@ export class InputTextValueAdapter
     }
 
     public writeTextValue(textValue: string | undefined): void {
-        this.element.value = textValue ?? "";
+        this.element.value = textValue ?? '';
     }
 }

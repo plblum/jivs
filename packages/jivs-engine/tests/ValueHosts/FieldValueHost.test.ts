@@ -141,6 +141,124 @@ function setupFieldValueHostForValidate(
     return setupFieldValueHost(fieldValueConfig, updatedState);
 }
 
+// Undefined calculation text should resolve using the manager's culture, or the default culture.
+describe('FieldValueHost.textForUndefinedCalculationValue', () =>
+{
+    test('Returns an empty string when no calculation is configured', () =>
+    {
+        let absent = setupFieldValueHost();
+        let explicitNull = setupFieldValueHost({ calculation: null });
+
+        expect(absent.valueHost.textForUndefinedCalculationValue()).toBe('');
+        expect(explicitNull.valueHost.textForUndefinedCalculationValue()).toBe('');
+    });
+
+    test('Returns an empty string when a calculation has no display text or localization key', () =>
+    {
+        let setup = setupFieldValueHost({ calculation: { sourceValueHostName: 'Calc' } });
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('');
+    });
+
+    test('Returns the configured fallback text when no localization key is supplied', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: { sourceValueHostName: 'Calc', textForUndefined: 'Waiting for values' }
+        });
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('Waiting for values');
+    });
+
+    test('Uses the configured fallback when the localization key is not found', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: {
+                sourceValueHostName: 'Calc',
+                textForUndefined: 'Waiting for values',
+                textForUndefinedl10n: 'calculation.missing'
+            }
+        });
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('Waiting for values');
+    });
+
+    test('Returns an empty string when an unmatched key has no fallback text', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: { sourceValueHostName: 'Calc', textForUndefinedl10n: 'calculation.missing' }
+        });
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('');
+    });
+
+    test('Uses the manager active culture rather than the service default and resolves again after a culture change', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: {
+                sourceValueHostName: 'Calc',
+                textForUndefined: 'Fallback',
+                textForUndefinedl10n: 'calculation.pending'
+            }
+        });
+        let messages = setup.services.errorMessagesService as ErrorMessagesService;
+        messages.register('calculation.pending', { en: 'Waiting', fr: 'En attente' });
+        setup.valueHostsManager.behaviors.activeCultureId = 'fr';
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('En attente');
+        setup.valueHostsManager.behaviors.activeCultureId = 'en';
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('Waiting');
+    });
+
+    test('A localized empty string is returned rather than the nonempty fallback', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: {
+                sourceValueHostName: 'Calc',
+                textForUndefined: 'Fallback',
+                textForUndefinedl10n: 'calculation.pending'
+            }
+        });
+        let messages = setup.services.errorMessagesService as ErrorMessagesService;
+        messages.register('calculation.pending', { en: '' });
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('');
+    });
+
+    test('Returns the display setting without changing the existing value, text or validation state', () =>
+    {
+        let setup = setupFieldValueHost({
+            calculation: { sourceValueHostName: 'Calc', textForUndefined: 'Waiting for values' }
+        }, { value: 42, textValue: '42', status: ValidationStatus.Valid });
+        let callbacks = 0;
+        setup.valueHostsManager.onValueChanged = () => { callbacks++; };
+        setup.valueHostsManager.onTextValueChanged = () => { callbacks++; };
+
+        expect(setup.valueHost.textForUndefinedCalculationValue()).toBe('Waiting for values');
+        expect(setup.valueHost.getValue()).toBe(42);
+        expect(setup.valueHost.getTextValue()).toBe('42');
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(callbacks).toBe(0);
+    });
+
+    test('Uses the default culture when manager behaviors omit activeCultureId', () =>
+    {
+        let services = new MockJivsServices(true, true, 'en');
+        let messages = services.errorMessagesService as ErrorMessagesService;
+        messages.register('calculation.pending', { en: 'Waiting for values' });
+        let manager = new ValueHostsManager({
+            services: services,
+            behaviors: {},
+            valueHostConfigs: [{
+                name: 'Result', valueHostType: ValueHostType.Field,
+                calculation: { sourceValueHostName: 'Calc', textForUndefinedl10n: 'calculation.pending' },
+                validatorConfigs: []
+            } as FieldValueHostConfig]
+        });
+
+        expect(manager.getFieldValueHost('Result')!.textForUndefinedCalculationValue()).toBe('Waiting for values');
+    });
+});
+
 describe('constructor and resulting property values', () =>
 {
 
@@ -3118,6 +3236,9 @@ describe('toIFieldValueHost function', () => {
         readOnly: boolean = false;
         isCalculated: boolean = false;
         calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {
+            throw new Error("Method not implemented.");
+        }
+        textForUndefinedCalculationValue(): string {
             throw new Error("Method not implemented.");
         }
         saveIntoInstanceState(key: string, value: ValidTypesForInstanceStateStorage | undefined): void {

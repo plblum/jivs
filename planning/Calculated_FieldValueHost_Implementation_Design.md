@@ -45,8 +45,8 @@ adapter.field("DiffDaysDisplay", LookupKey.Integer, {
     label: "Days apart",
     calculation: {
         sourceValueHostName: "DiffDays",
-        undefinedText: "Dates needed",
-        undefinedTextl10n: "DiffDays.DatesNeeded"
+        textForUndefined: "Dates needed",
+        textForUndefinedl10n: "DiffDays.DatesNeeded"
     },
     writerRule: { when: "always", then: "skip" }
 })
@@ -144,8 +144,8 @@ Current definitions: [`FieldValueHost.ts` interface](../packages/jivs-engine/src
 // Proposed members only.
 interface FieldCalculationConfig {
     sourceValueHostName: string;
-    undefinedText?: string;
-    undefinedTextl10n?: string;
+    textForUndefined?: string;
+    textForUndefinedl10n?: string;
 }
 
 interface FieldValueHostConfig {
@@ -287,8 +287,8 @@ adapter.field("DiffDaysDisplay", LookupKey.Integer, {
     label: "Days apart",
     calculation: {
         sourceValueHostName: "DiffDays",
-        undefinedText: "Dates needed",
-        undefinedTextl10n: "DiffDays.DatesNeeded"
+        textForUndefined: "Dates needed",
+        textForUndefinedl10n: "DiffDays.DatesNeeded"
     },
     writerRule: { when: "always", then: "skip" }  <<<<
 })
@@ -345,7 +345,7 @@ Compatible text adapters receive one **already-localized** undefined-display str
 
 ```ts
 // Proposed constructor; not required for all implementations.
-new SpanTextValueAdapter(editor, jivsElement, localizedUndefinedText);
+new PlaceholderTextValueAdapter(editor, jivsElement, localizedUndefinedText);
 ```
 
 The exact optional interface/property or constructor mechanism remains open. Do not require a new constructor argument or behavior for every text adapter. Checkbox, radio, and select adapters use text as selection data and must not interpret a display message as an option or checked value.
@@ -355,7 +355,7 @@ The exact optional interface/property or constructor mechanism remains open. Do 
 [`EditorAdapterDefinitionBase.createTextValueAdapter()`](../packages/jivs-dom/src/EditorAdapterDefinitions/EditorAdapterDefinitionBase.ts) is abstract. Each participating concrete definition receives the field and has access to `domServices`; a shared helper can:
 
 1. Obtain the field's calculation display settings through its public accessor.
-2. Resolve `undefinedTextl10n` with `services.errorMessagesService`, using `undefinedText` as fallback.
+2. Resolve `textForUndefinedl10n` with `services.errorMessagesService`, using `textForUndefined` as fallback.
 3. Use `""` when neither is available.
 4. Supply the resulting string to the compatible adapter.
 

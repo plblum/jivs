@@ -117,8 +117,13 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
         // this._config = internalConfig;
         const internalConfig = this._config = ValueHostsManager.safeConfigClone(config);
+        let behaviors = createBehaviors(this._config.services);
         if (!this._config.behaviors)
-            this._config.behaviors = createBehaviors(this._config.services);
+        {
+            this._config.behaviors = behaviors;
+        }
+        else 
+            this._config.behaviors = { ...behaviors, ...this._config.behaviors };
 
         this.restoreState(internalConfig);
 

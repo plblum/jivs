@@ -255,6 +255,19 @@
     box-shadow: var(--jivs-invalid-choice-editor-box-shadow);
 }
 
+/**
+ * A placeholder editor displays text content without allowing direct user edits.
+ * It requires an HTML tag with textContent support (span, div, etc),
+ * where textContent will be used to display the value.
+ * Typically a calculated FieldValueHost supplies its value,
+ * due to having text formatting capabilities. But its also valid to apply
+ * validators to the FieldValueHost, which is why there is a validation oriented
+ * presentation available.
+ */
+:where(.jivs-isvalidpresentation.jivs-editor.jivs-invalid.jivs-editor-placeholder) {
+    color: var(--jivs-invalid-editor-color);
+}
+
 /*
  * Expand invalid styling on .jivs-editor-file-input.
  *

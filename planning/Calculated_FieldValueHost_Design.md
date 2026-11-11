@@ -84,8 +84,8 @@ class DateRangeFormRules extends DateRangeRules
             label: "Days apart",
             calculation: {
                 valueHostName: "DiffDays",
-                undefinedText: "Dates needed",
-                undefinedTextl10n: "DiffDays.DatesNeeded"
+                textForUndefined: "Dates needed",
+                textForUndefinedl10n: "DiffDays.DatesNeeded"
             },
             writerRule: { when: "always", then: "skip" }
         })
@@ -127,8 +127,8 @@ The leading proposal is a child object on `FieldValueHostConfig`:
 // Illustrative shape; names and types remain to be finalized.
 interface FieldCalculationConfig {
     valueHostName: string;
-    undefinedText?: string;
-    undefinedTextl10n?: string;
+    textForUndefined?: string;
+    textForUndefinedl10n?: string;
 }
 
 interface FieldValueHostConfig {
@@ -137,8 +137,8 @@ interface FieldValueHostConfig {
 ```
 
 - `valueHostName` identifies the existing source `CalcValueHost`.
-- `undefinedText` is a fallback string to display for an undefined calculation result.
-- `undefinedTextl10n` is the localization key for that display string.
+- `textForUndefined` is a fallback string to display for an undefined calculation result.
+- `textForUndefinedl10n` is the localization key for that display string.
 - If neither provides a string, the displayed fallback is the empty string.
 
 The field should expose the necessary calculation/display configuration through an appropriate public accessor; DOM code should not access its protected configuration directly. The details of the accessor and how it reports missing or wrong-type source hosts remain to be designed.
@@ -224,8 +224,8 @@ For example:
 
 ```ts
 // Illustrative only.
-const undefinedText = resolveUndefinedText(valueHost, this.domServices);
-return new SpanTextValueAdapter(editor, jivsElement, undefinedText);
+const textForUndefined = resolveUndefinedText(valueHost, this.domServices);
+return new PlaceholderTextValueAdapter(editor, jivsElement, textForUndefined);
 ```
 
 The shared resolution logic should use the existing localization service and define a culture consistent with field formatting. `createTextValueAdapter()` is abstract on the current base class, so applicable concrete definitions must participate. A shared helper can avoid repeating resolution logic.

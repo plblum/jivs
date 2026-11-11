@@ -5,7 +5,6 @@
 
 import type { IJivsElement } from '../Interfaces/IJivsElement';
 import { EditorFieldPresentationBase, EditorFieldPresentationBaseOptions } from './EditorFieldPresentationBase';
-import { IsValidFieldPresentationOptions } from './IsValidFieldPresentationBase';
 
 /**
  * Presentation for HTML input tags that feature a textbox.

@@ -708,6 +708,25 @@ export class FieldValueHost<TConfig extends FieldValueHostConfig = FieldValueHos
         this.calculate(<TOptions> { validate: revalidate }, valueHostIdThatChanged);
         super.otherValueHostChangedNotification(valueHostIdThatChanged, revalidate);
     }
+
+    /**
+     * Provides the text to display when the value of this FieldValueHost is undefined due to a calculation.
+     * This can be used to show a placeholder or informative message in the UI.
+     * @returns The text to display when the value is undefined due to a calculation.
+     * Values come from FieldValueHostConfig.calculation.textForUndefined and 
+     * FieldValueHostConfig.calculation.textForUndefinedl10n.
+     * If not found with calculation properties, it returns the empty string.
+     */
+    public textForUndefinedCalculationValue(): string
+    {
+        if (this.config.calculation)
+            return this.services.errorMessagesService.localize(
+                this.valueHostsManager.behaviors.activeCultureId!,
+                this.config.calculation.textForUndefinedl10n ?? null,
+                this.config.calculation.textForUndefined ?? null
+            ) ?? '';
+        return '';
+    }
     //#endregion Calculations
 
     /**

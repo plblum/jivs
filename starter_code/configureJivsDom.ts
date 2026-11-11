@@ -39,6 +39,7 @@ import { WrappedFileInputPresentation } from '@plblum/jivs-dom/build/FieldPresen
 import { LabelPresentation } from '@plblum/jivs-dom/build/FieldPresentations/LabelPresentation';
 import { RequiredIndicatorPresentation } from '@plblum/jivs-dom/build/FieldPresentations/RequiredIndicatorPresentation';
 import { FieldContainerPresentation } from '@plblum/jivs-dom/build/FieldPresentations/FieldContainerPresentation';
+import { PlaceholderPresentation } from '@plblum/jivs-dom/build/FieldPresentations/PlaceholderPresentation';
 import { ElementRole } from '@plblum/jivs-dom/build/Interfaces/Types';
 import { PopupErrorMessageDisplayPresentation, PopupErrorMessageDisplayPresentationOptions } from '@plblum/jivs-dom/build/FieldPresentations/PopupErrorMessageDisplayPresentation';
 import { MessageFrame } from '@plblum/jivs-dom/build/Presentations_common/MessageFrame';
@@ -53,6 +54,7 @@ import { CheckboxAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterD
 import { RadioButtonsAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/RadioButtonsAdapterDefinition';
 import { FileInputAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/FileInputAdapterDefinition';
 import { TextAreaAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/TextAreaAdapterDefinition';
+import { PlaceholderAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/PlaceholderAdapterDefinition';
 import { SelectAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/SelectAdapterDefinition';
 import { WrappedInputAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedInputAdapterDefinition';
 import { WrappedCheckboxAdapterDefinition } from '@plblum/jivs-dom/build/EditorAdapterDefinitions/WrappedCheckboxAdapterDefinition';
@@ -174,6 +176,7 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
     factory.register('Wrapped:Select', (element) => new WrappedSelectPresentation(element));
     factory.register('Wrapped:TextArea', (element) => new WrappedTextAreaPresentation(element));
     factory.register('Wrapped:FileInput', (element) => new WrappedFileInputPresentation(element));
+    factory.register('Placeholder', (element) => new PlaceholderPresentation(element));
 
     // LABELS, REQUIRED INDICATORS, AND CONTAINERS
     factory.register('Label', (element) => new LabelPresentation(element));
@@ -651,6 +654,7 @@ function registerEditorAdapterDefinitions(factory: IEditorAdapterDefinitionFacto
     factory.register(new CheckboxAdapterDefinition('input:checkbox', 80));
     factory.register(new RadioButtonsAdapterDefinition('input:radio', 80));
     factory.register(new FileInputAdapterDefinition('input:file', 80));
+    factory.register(new PlaceholderAdapterDefinition('placeholder', 80, ['span']));
 
     factory.register(new TextAreaAdapterDefinition('textarea', 80));
     factory.register(new SelectAdapterDefinition('select', 80));

@@ -28,6 +28,7 @@ import { defaultRequiredIndicatorPresentationName, RequiredIndicatorPresentation
 import { defaultFieldContainerPresentationName, FieldContainerPresentation } from './FieldContainerPresentation';
 import { defaultInlineErrorMessageDisplayPresentationName, InlineErrorMessageDisplayPresentation, InlineErrorMessageDisplayPresentationOptions } from './InlineErrorMessageDisplayPresentation';
 import { MessageFrame } from '../Presentations_common/MessageFrame';
+import { defaultPlaceholderPresentationName, PlaceholderPresentation } from './PlaceholderPresentation';
 
 /**
  * Factory class for creating field presentations (implementations of IFieldPresentation)
@@ -80,6 +81,7 @@ export class FieldPresentationFactory extends PresentationFactoryBase<IFieldPres
         factory.register(defaultWrappedSelectPresentationName, (element) => new WrappedSelectPresentation(element));
         factory.register(defaultWrappedTextAreaPresentationName, (element) => new WrappedTextAreaPresentation(element));
         factory.register(defaultWrappedFileInputPresentationName, (element) => new WrappedFileInputPresentation(element));
+        factory.register(defaultPlaceholderPresentationName, (element) => new PlaceholderPresentation(element));
 
         factory.register(defaultLabelPresentationName, (element) => new LabelPresentation(element));
         factory.register(defaultRequiredIndicatorPresentationName, (element) => new RequiredIndicatorPresentation(element));

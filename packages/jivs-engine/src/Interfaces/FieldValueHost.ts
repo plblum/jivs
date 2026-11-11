@@ -201,6 +201,16 @@ export interface IFieldValueHost<TOptions extends FieldValueHostSetValueOptions 
      * Not impacted on whether the calculation actually ran.
      */
     calculate(options: TOptions, valueHostIdThatChanged?: ValueHostName): boolean;
+
+    /**
+     * Provides the text to display when the value of this FieldValueHost is undefined due to a calculation.
+     * This can be used to show a placeholder or informative message in the UI.
+     * @returns The text to display when the value is undefined due to a calculation. 
+     * Values come from FieldValueHostConfig.calculation.textForUndefined and 
+     * FieldValueHostConfig.calculation.textForUndefinedl10n.
+     * If no text is configured, returns an empty string.
+     */
+    textForUndefinedCalculationValue(): string;
 }
 /**
  * Just the data that is used to describe this input value.
@@ -370,12 +380,12 @@ export interface FieldCalculationConfig
      * jivs-engine does not use it. jivs-dom uses it in EditorAdapterDefinitions creating
      * TextValueAdapter instances.
      */
-    undefinedText?: string;
+    textForUndefined?: string;
     /**
      * Localization key for the undefined text. 
      * This allows the UI to display a localized message when the value from the source value host is undefined.
      */
-    undefinedTextl10n?: string;
+    textForUndefinedl10n?: string;
 }
 
 /**
