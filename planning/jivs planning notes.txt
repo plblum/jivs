@@ -1,27 +1,9 @@
 * Change of valuehost.enabled or enabler condition result must fire the onvalueHostValidationState callback, except if the current validationstate is notattempted. The UI needs to update validator related features as that state changes.
 
-* Rename 'enablerConfig' prperty to whenToEnableConfig
+* Rename 'enablerConfig' property to whenToEnableConfig
 * Rename secondValue to rightOperand, value, something else?
 
-* Comparison conditions will have one of each case, where the secondValue can be an object containing a ValueHost name.
-
-  build.field('firstname').equalTo(valueHost('lastname'));	// new ValueHostNaming(name)
-  build.field('firstname').equalTo('bad word');
-  build.field('firstname').equalTo(vh('lastname'));	// new ValueHostNaming(name)
-
 * Consider making IValueHost.setInitialValue(vhname, value) and similar setInitialValues, setInitialTextValue. All they do is wrap setValue with the { validate: false } option to remove boilerplate and express the action more clearly.
-
-
-* Possibly introduce callback that notifies a specific input that it needs to show itself and set focus. ValidationSummary calls ValidationManager.setFocusTo(valueHostName) and it fires this callback. All inputs can listen to that callback and take appropriate actions if they are the same valueHostName. This will allow clicks on error messages to set focus to the relevant input.
-
-* Stronger unit testing story
-- Expand logging to capture info for easier testing. Include path, so the user can find "ValueHostName"/"ErrorCode", and how the logs played out:
-  - never happened
-  - happened and got a result
-  - error
-  - happened but was not setup to get a result (disabled features)
-- A Logger designed to easily get those answers without knowing about the logged data.
-- Use LoggingCategory to identify LoggingCategory.Result
 
 * Separate project for TestingSupport. Includes much of the jivs-engine/tests/TestSupport folder. May need to be a folder in jivs-engine/src because it needs access to jivs-engine and jivs-engine needs access to it.
 
@@ -76,8 +58,6 @@
 * Document setting activeCultureID each time you create a valuehostmanager, especially on postback where we need to know the clientside value for cultureID
 * Document usage scenarios: 
 - Posting back with a form should retain the active CultureId and set it on the server
-- Posting back with and without our parsers connected to FieldValueHost.
-- Setting up FieldValueHostConfig with parser lookup key.
 
 * Document LookupKeyFallback in the Lookup Key section
 
@@ -89,7 +69,7 @@
 	errorMessage: string;
 	tokenSupport: [ { tokenName: "Value", nativeValue: 10 } ]
 }
-The setExternalIssueFound will:	
+The addExternalIssueFound will:	
 
 - Run the tokenSupport values against the tokens of errorMessage and summaryErrorMessage
 - Run the MessageTokenResolverService against the remaining tokens
@@ -97,9 +77,16 @@ The setExternalIssueFound will:
 
 
 * Expand ModelValidatorsValueHost to support validators at the model level.
-- These will not have a default valueHostName. So fluent validators should enforce setting up valueHostName. Example: requiredText() now, requiredText(valueHostName) on ModelValidatorsValueHost
-- Limited set of top level conditions: customRule, any, all, none. Because these generally require multiple fields.
-- builder.model().customRule().any(), etc.
+  - Model level validation needs:
+      - Evaluation of model properties (which are in ValueHosts) after the model itself has had field level validation.
+      - async operations
+  - Our validators can handle those. So why not let the user move model level validation in ValueHostsManager:
+      - Page submission fully handles both field and form level, potentially eliminating the need for an external model-level code.
+      - Business logic represented by the ValueHostsRules classes can enclose the model level logic. builder.model().validatorname().
+      - Many of these validation rules require a callback, including calculations and async operations. We don't have clean support for caching callback hooks on validators. Need to address that.
+      - Challenge when validators wrap external validation code that return their own errors. We don't have a story to update error messages and error codes upon receipt of external validation issue info.
+  - Limited set of top level conditions: customRule, any, all, none. Because these generally require multiple fields. Actually when consuming calc() values, comparison evaluators can be top level.
+  - builder.model().customRule().any(), etc.
 
 Product name: Fivase
 Field Validation Service - FiVaSe Fivase "Fee-Vah-Seh" "Fih-Vah-See"
@@ -129,25 +116,6 @@ used to handle collections which need unique paths per each item in the collecti
 
 * Document using conditions to find invalid matches, so there can be specific errors that tell the user exactly what to fix.
 
-
-* IValueHost implementations:
-- HTMLValueHost - for getting data directly from HTML elements.
-Uses an HTML selector to find the exact element. Provides functions to learn about their current states, and when called, the values are stored in HTMLValueHostState for comparison in a later call. States include: IsVisible, IsEnabled, IsReadOnly (inputs), HasClassName, HasAttribute, HasAttributeValue.
-
-LIFTED FROM Jivs-Engine where it didn't belong.
- * - HTMLElementValueHost - Its value is an HTML Element in the DOM which it gets
- *   by a queryselector.
- *   Conditions are expected to use its data in a read-only fashion. 
- *   Example info from HTML elements are:
- *   visible, enabled, readonly, classname, attribute name (exists), and attribute value.
- *   These are mostly used by a validator's Enabler condition
- *   to determine if something in the UI might block validation, like
- *   a disabled field.
-
-
-
-
-
 * ListOfStringsCondition for a list of strings that are allowed with optional case insensitive matching. Its an implementation of RegExpConditionBase. Could be called EnumTypeCondition or InThisStringListCondition
 
 * Conditions that apply the same child condition rule to a list of ValueHosts. They work together with AllConditions/AnyConditions, generating the Conditions for those classes.
@@ -174,16 +142,7 @@ creates
 
 * Consider making ConditionType case insensitive in matching to registered values and mapping into IssuesFound
 
-* !!!To support clicks from summary error messages to set focus to the widget,
-* this class uses library/framework specific code to set the attribute
-* "validationID" on the DOM Element where focus is expected.
-* The value of validationID will be "VAL_" + Path. Hyperlinks just need to use
-* $('VAL_' + id).focus();
-
-* Ensure input components have an attribute that contains their ValueHost.id, like name or id.
-* Validation Summary clicks to go to a specific message will $([attribute=valuehostid]).trigger('ShowElement'). Its up to the input to respond to onShowElement, doing the focus, scroll into view, making itself visible (including showing the containing tab), and animating to call itself out as the location where focus resides now. So most of the work is in the hands of the user.
-
-* How to deliver same error messages from Descriptor to the <input> tag's validation attributes? Don't. Turn off input validatoin on tags.
+* How to deliver same error messages from Descriptor to the <input> tag's validation attributes? Don't. Turn off input validation on tags.
 
 * User can install a token formatter to convert "message {token}" with a value of { value: 'text', purpose: 'value' } into "message <span class='value'>text</span>"
 
@@ -193,3 +152,61 @@ creates
 
 * Consider adding value mapping to support enum types directly in FieldValueHostConfig.validValues - array. Could also support a string with regexp?
 This will let us have a single validator for enums, perhaps even DataTypeCheck?
+
+* ModelReaderBase should have readFrom() as a protected method. No public readFromModel. Instead each subclass provides its name: readFromModel, readFromForm, readFromDictionary
+
+* Bird's eye view of the parts - learning jivs guide quickly shows each major element from ValueHostsManager to the HTML of an error display so the reader can fully relate to all of the parts. More of a diagram/picture. We now have this in the API home page.
+
+* New learning document: "Changing the editors and their values" that deals with client-side code revising the existing editors. It needs to address add, remove with changing enabled state of ValueHost and revised values on existing using skipIfUnchanged = false. Uses reconcileValueHostsWithEditors and getEditorValue functions into jivs-dom-helpers.ts
+
+Let InjectedError from parser set severity=high and category=DataTypeCheck to supercede normal Data Type Checks
+
+Create a source for new data type source files to cover numerous cases. They can be moved from jivs-Examples. jivs-Examples itself will likely be replaced by individual apps built around DOM, React, and Angular.
+
+New data type to support within examples and our Learning Jivs stuff: MultiSelect. Works with <select multiselect>. Text value is whatever is returned by <select>. Native value is an array of strings. It needs:
+- Condition to evaluate the native value. It requires an array of valid strings. 100% of the strings found in the array must be found in the list of valid strings. 
+- Parser -> array of strings
+- Formatter -> <select> string pattern
+- DataTypeCheckGenerator - Desirable, but need to inject the array of valid strings in somehow. Perhaps MultiSelect is a base Lookup Key and the user creates a specific lookup key that is tied to multiselect tools and falls back to MultiSelect. If that's done, then we can support this. 
+
+
+Localization plural/singular:
+Tokens that are numeric can have this pattern:
+{TokenName:Singular:|Plural:Singularl10n:Plurall10n}
+{Count:Item:Items:item-sing:item-plur}
+The Validator prepares these a little differently. It converts them to another token that will be resolved by the ErrorMessageServices:
+{Item:item-sing} or {Items:item-plur}
+
+Need to fix RadioButtons to support buttons enclosed in labels:
+<div>
+   <label><input type='radio' name='group'/>This is radio 1</label>
+</div>
+Right now, it requires all radios to be siblings.   
+
+Rename EditorAdapterDefinition to EditorDefinition. https://chatgpt.com/g/g-p-6ac7dc30124081918c224a2967ed7f0f-jivs-dom-phase2/c/6ad8e390-0228-83ea-b127-45b7dd206246
+
+# Wrapped editors
+- Should we let the user tag the actual editor and have that tag identify its wrapper? I think users may tag actual editors naturally.
+<div data-jivs-editorpresentation="true">
+   <input data-jivs-role="editor" />
+</div>
+
+This will setup presentationElement for the presentation on <div> while the editor handles textvalueadapter and event handler
+
+<div data-jivs-presentation="wrappededitor">
+   <input data-jivs-role="editor" data-field="name" />
+</div>
+
+<div data-jivs-presentation="wrappededitor" data-jivs-role="container">
+   <input data-jivs-role="editor" data-field="name" />
+</div>
+However, this means the default presentation for input should be different due to the container.
+<div data-jivs-presentation="wrappededitor" data-jivs-role="editor-container">
+   <input data-jivs-role="editor" data-field="name" />
+</div>
+This might let editor search upward to find editor-container and turn off its presentation unless it has been explicitly setup with jivs-presentation.
+Or
+<div data-jivs-presentation="wrappededitor" data-jivs-role="container">
+   <input data-jivs-role="editor" data-field="name" data-jivs-presentation="" />
+</div>
+

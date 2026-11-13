@@ -6,7 +6,7 @@ Working notes so the project can continue without the original chat.
 - Show jivs-dom HTML and CSS driven by the real Jivs engine.
 - Let visitors change configuration (state, messages, editor, presentation) and see the result.
 - Show popup error presentations (`PopupErrorMessageDisplayPresentation`) with a real `IPopupMechanism` (Tippy).
-- Later: server-side validation in Node, a main selling point of jivs-engine.
+- Demonstrate the complete submission lifecycle on each form, including client-side pre-submit work and server-side validation in Node.
 - Positioning of popups is the job of Tippy/Popper. We only verify it happens.
 
 ## Decisions
@@ -20,8 +20,8 @@ Working notes so the project can continue without the original chat.
 8. **No automated browser tests** (Playwright declined). Unit tests skipped for now.
 
 ## Hosting plan
-- Needs Node for the server demo. The user rents shared IIS hosting. Suggested approach: IIS reverse proxy (URL Rewrite + ARR) to a Node process run as a Windows service (NSSM, WinSW or pm2); serve the site and API from one origin; add rate and body-size limits.
-- **Open**: shared hosting may not allow Node or services. Ask tech support. A static-only deploy of `dist/` works meanwhile.
+- Needs Node for the forms' server-side submission demonstrations. The user rents shared IIS hosting. Suggested approach: IIS reverse proxy (URL Rewrite + ARR) to a Node process run as a Windows service (NSSM, WinSW or pm2); serve the site and API from one origin; add rate and body-size limits.
+- **Open**: shared hosting may not allow Node or services. Ask tech support. A static-only deploy of `dist/` cannot demonstrate the complete submission lifecycle without an accessible Node backend.
 - Dev: `vite.config.ts` proxies `/api` to `http://localhost:3000`.
 
 ## Engine notes found while building
@@ -60,7 +60,19 @@ The demo index and playground already exist. The remaining planned pages are:
 1. A simple registration form: one form, one model, one `ValueHostsManager`, and no Validation Groups.
 2. One form containing registration and order scenarios, with one `ValueHostsManager` and Validation Groups separating their validation.
 3. Two forms, registration and order, each with its own `ValueHostsManager` and no Validation Groups.
-4. Server-side validation using a model and business rules shared with client-side code.
+4. A server-side validation-focused example using a model and business rules shared with client-side code. Since all forms now include server-side handling, revisit this page's distinct purpose during further design.
+
+### Submission lifecycle across forms
+
+Each demo form should present the complete lifecycle, rather than stopping after client-side validation:
+
+1. The submit button fires an event requesting pre-submit work. That phase includes client-side Jivs validation and other pre-submission actions; it must finish successfully before submitting to the server.
+2. A Node.js server receives the submitted data, handles the request, and performs server-side validation using the applicable shared model and business rules. Client-side success does not replace server-side validation.
+3. The client handles the server response, including success and validation errors, so the visitor can see that the server participated. Show returned field and form-level issues in the appropriate form's existing field presentation and Validation Summary, as applicable.
+
+The user is developing code to help applications perform this phase; use that work in the demos when available. The specific event/API, ordering and content of other pre-submit actions, request/response contract, server implementation, error mapping, and demonstration controls remain to be designed after that work is available. Do not invent an API or treat a locally fabricated success as a server response. Simulated confirmations and payment are still appropriate, but successful form submission must include actual Node-side handling. The Node service and its integration are not implemented yet.
+
+Preserve the examples' distinctions: the wizard submits its combined form after its group validation; the two-manager page submits and validates the selected form independently. The payment dialog remains a separate form and simulated payment-service transaction, with its own manager and the previously agreed approval/decline and field-error behavior; design how that service participates in the Node-backed lifecycle without mixing card data into the parent order model. Whether and how the payment dialog shares the new submission helper is still open.
 
 **Agreed example scenarios:** a tradeshow attendee event registration and order/payment. Registration is the only scenario in the simple-form and server-side demos. Its model will include first name, last name, job title, home state, home country, company name, company email, business type (`Retail sales`, `Wholesaler`, `Distributor`, `Producer`), and role (`Senior management`, `Sales / business development`, `Marketing`, `Procurement / buying`, `Operations`, `Product / category management`, `Other`). Home state and country represent the attendee's residence, not the business location, to personalize the badge. Both country and state are text inputs. Home state is shown and enabled only for a US home country; an enabler rule will disable its `FieldValueHost` otherwise. State validation accepts case-insensitive two-character codes for the 50 US states, and `reformatTextValue` with a formatter normalizes the state to uppercase. A custom case-insensitive country parser maps supported country forms to full country names for US, CA, MX, and GB. Accepted aliases: `US`, `USA`, `United States`, `United States of America`; `CA`, `Canada`; `MX`, `Mexico`; `GB`, `UK`, `Great Britain`, `United Kingdom`. First name, last name, home country, company name, company email, business type, and role are required; job title is required only when role is `Senior management`, using a `WhenCondition` whose `when` checks the role and whose `then` is `RequireTextCondition`; home state is required only for a US home country. Company email validation checks syntax only.
 
@@ -70,7 +82,22 @@ The order/payment scenario is a single registration for a two-day event, with si
 
 Add a discount-code field with an asynchronous Jivs validator that simulates asking a server whether the code is valid and retrieving its discount value in USD. The field displays its own validation error. Convert the returned USD discount to the selected local currency on the client and write the value to a UI-specific `StaticValueHost`, making it available for display and the total calculation. Do not put this UI-specific host in the shared business model.
 
-**Prerequisite engine design, in a separate chat:** expand `StaticValueHost` and `CalcValueHost` to support formatting their native values and writing formatted text to an editor, so their values can be displayed using currency formatting. Design this feature before implementing the order form; the user will develop it in another chat. The previous proposed `TextValueAdapter` for a `<span>` may be relevant, but how it fits the new host support remains a design decision. `CalcValueHost.getValue()` currently calculates on demand, so the design must also address how dependency changes and currency/culture changes refresh the displayed discount and total.
+### Calculated fields and read-only displays
+
+The previously planned direct formatting/editor support on `StaticValueHost` and `CalcValueHost` has been superseded. The implemented solution uses a **calculated `FieldValueHost`** for the formatted, validated UI value, backed by a separate `CalcValueHost`. See the as-built [Calculated FieldValueHost Implementation Design](../../planning/Calculated_FieldValueHost_Implementation_Design.md) for full details. The demo has not yet been implemented; this is the integration design:
+
+- Keep the order calculation in a `CalcValueHost`. Its `calcFn` reads the relevant numeric ValueHosts through the manager and returns the total, or `undefined` when it cannot calculate. `getValue()` on the calc evaluates the function on demand; the calculated field's `getValue()` returns its last stored result.
+- Give each displayed calculation its own `FieldValueHost` with `calculation: { sourceValueHostName: '...' }` naming the source calc. The field owns the formatter, text value, UI notifications, label, and any validators. It is read-only to ordinary setter calls while still enabled and validatable; `overrideReadOnly: true` is a public escape hatch, not the normal update path. The calculation itself updates the field via its existing formatter/setter flow.
+- Configure the source calc's `dependencyValueHostNames` explicitly with the exact, case-sensitive names of **every** host it reads in every conditional branch. Use either `builder.calc(name, dataType, calcFn, dependencyValueHostNames)` or the config-object overload. A changed field named in that list causes its calculated field to recalculate before normal dependent validation; omitted or empty dependency lists do not trigger this automatic refresh. Avoid self-dependencies and reactive cycles.
+- The discount's agreed storage remains a UI-specific `StaticValueHost`. Static hosts do not themselves format or update editors, and changing one is **not guaranteed** to notify calculated fields. A possible display bridge is a calc that reads the static discount and a calculated field backed by it; after changing the static value, explicitly call the relevant field's `calculate(options)` without a changed-name filter. Ensure the total is also recalculated, either through the resulting calculated-field notification when it is a dependency or explicitly in the correct order. Do not rely on `StaticValueHost.setValue()` alone to refresh either display. Confirm this integration with the final discount design.
+- List the displayed discount field as a total dependency if the total reads that field; if the total reads the static discount instead, explicitly refresh the total after static changes. Choose one consistent data flow when implementing; make all inputs use the same currency before subtraction. Do not assume a `CalcValueHost` dependency itself pushes notifications merely because its result would change.
+- A calculated field's `calculation.textForUndefined` and `textForUndefinedl10n` configure optional display-only fallback text. When formatting is enabled, an undefined result clears the stored native/text values; the adapter displays the fallback or an empty string, without storing it as field text. Deliberate formatting opt-outs retain prior text, so avoid them for these displays unless that behavior is wanted.
+- Use an initially empty or whitespace-only `<span>` with the normal Jivs `editor` role for a non-editable display. The existing `PlaceholderAdapterDefinition`, `PlaceholderTextValueAdapter`, and `PlaceholderPresentation` write formatted text through `textContent` and do not send editor changes; no new `TextValueAdapter` is needed. The UI demos' `configureJivsDom.ts` already registers the placeholder adapter and `placeholderEditor` presentation. Alternatively use a text input supporting native `readonly`; `readonly` is not sufficient for checkbox, radio, or select controls. The placeholder adapter's undefined text is localized and cached at creation, so a live culture change requires a deliberate refresh/recreation strategy.
+- Configure the calculated field with `writerRule: { when: 'always', then: 'skip' }` where it is UI-only and a model writer would otherwise include it. `EditorWriter` uses the field's text adapter without applying model writer rules, so this does not suppress display. The model's actual business properties and transaction ID remain separate; do not let displayed discount/total fields inadvertently extend the shared model. Decide independently whether any business total should be persisted.
+- Initialize source values and install the display callbacks/editors, then ensure `ValueHostsManager.valuesInitialized()` runs so even an initially undefined calculation is published. Readers normally suppress intermediate notifications and call it on completion; `initializingValues: false` skips that step, so manual initialization must invoke it. This operation calculates fields in configuration order, publishes with reset semantics, then performs preliminary validation. Configure any calculated provider before its calculated consumer; initialization is not topologically sorted. Avoid an unnecessary extra initialization when the reader already performed it.
+- Country/culture changes must update the local amounts **and** reformat/republish fields even when their numeric values do not change; explicitly coordinate this across the two independent managers. `CurrencyFormatter` formats an amount but does not perform exchange conversion: configure its culture-to-currency mapping (the demo setup currently registers a USD default) and convert numeric USD amounts separately. Do not display a default currency for an unrecognized country. Verify refresh behavior, including the cached undefined placeholder, as part of implementation.
+
+Implementation verification should cover initial/undefined display, each day-selection change, discount success/change/removal and stale asynchronous responses, country/currency changes, correct total and formatting, read-only display, calculated-field ordering, model-output exclusions, and both one-manager and two-manager flows. Define the expected discount and payment behavior before writing those scenarios.
 
 Open order-design details include day-selection controls and whether selection is required; discount-code examples, timing and behavior for invalid, cleared, pending, or superseded requests; conversion rates and rounding; and how an existing payment approval is handled if the payable total changes. Do not assume answers until these are designed.
 
@@ -90,7 +117,7 @@ The registration form will be presented in two clear sections: attendee informat
 
 The Validation Summary will remain inline near the top of the form in both display modes; the inline/popup switch changes field-level error presentation only.
 
-The registration submit button will call `valueHostsManager.validate()` and show a simulated confirmation only when validation succeeds; it will not persist or send data.
+The registration submit button requests the shared pre-submit lifecycle. After successful client-side validation and other pre-submit work, submit to Node for server-side validation and handling; show a simulated confirmation only after server success. No persistence is required.
 
 The registration form will not add a UI-only confirmation field; it will use the shared registration model shape directly.
 
@@ -108,19 +135,19 @@ The same payment dialog implementation and its dedicated `ValueHostsManager` wil
 
 The two-form/two-manager comparison page will use one shared page-level inline/popup error-presentation switch for both forms. The payment dialog's field-level errors remain inline regardless of the host page's switch.
 
-Each form on that page will have its own Validation Summary and submit button. Submitting validates only that form's `ValueHostsManager` and shows a simulated confirmation on success, demonstrating independent state and validation. The order form's submit remains enabled before payment; validation reports the missing transaction ID until the payment dialog succeeds. The order manager validates only its own order/payment data, independently of registration validity. The order price's selected culture and display update immediately as the registration form's country changes, coordinated outside the independent managers. Until a supported country is recognized, show a prompt rather than assuming a default currency.
+Each form on that page will have its own Validation Summary and submit button. Submitting runs pre-submit validation only for that form's `ValueHostsManager`, submits that form for Node-side handling and validation, and shows a simulated confirmation after server success, demonstrating independent state and validation. The order form's submit remains enabled before payment; validation reports the missing transaction ID until the payment dialog succeeds. The order manager validates only its own order/payment data, independently of registration validity. The order price's selected culture and display update immediately as the registration form's country changes, coordinated outside the independent managers. Until a supported country is recognized, show a prompt rather than assuming a default currency.
 
 The two forms appear side by side on wide screens and stack on narrow screens.
 
 Because the demos contain valuable custom behavior, pages should identify and explain those features and link to the relevant source files on GitHub's main branch (without line anchors). Distinct custom logic, such as the issue-click handler, rules subclasses, parser, and formatter, may live in separate code files so each feature is easy to find.
 
-Each form page is expected to consider a control panel, readable HTML form, Validation Summary, submit behavior, a UI-independent model, model-level rules in a `ValueHostRulesBase` subclass, and form-specific rules that adapt or extend those model rules. Any UI-only model extensions belong to the form layer, not the shared model. Submit may validate locally and show a fake success response; it does not need to save or send real data.
+Each form page is expected to consider a control panel, readable HTML form, Validation Summary, the complete client/server submission lifecycle, a UI-independent model, model-level rules in a `ValueHostRulesBase` subclass, and form-specific rules that adapt or extend those model rules. Any UI-only model extensions belong to the form layer, not the shared model. Data may be fictional and need not be persisted, but the form must send it to Node and handle the server's actual response.
 
 ## Next phases
 1. Finish designing the registration tooling and presentation, including the event identity.
 2. Implement and register supporting data types, parsers, and formatters before implementing the registration form.
-3. Design and develop `StaticValueHost` and `CalcValueHost` formatting/editor support in a separate chat before implementing the order form; resolve order and discount behavior.
-4. Implement the agreed form examples and client-side behaviors.
-5. Design and implement the Node server demo after its shared model and rules are defined.
+3. Use the implemented calculated-field and placeholder-adapter support for order displays; resolve order, discount, currency refresh, and payment-change behavior before implementing the order form.
+4. Incorporate the user's forthcoming pre-submit helper into the lifecycle design; define the Node service, submission contracts, server validation and response handling for every form.
+5. Implement the agreed form examples, client-side behaviors, and Node-backed submission lifecycle using their shared models and rules.
 6. Revisit deployment after the hosting question is resolved.
 7. Consider React and Angular pages.
