@@ -15,7 +15,7 @@ import { IValidatableValueHost, ValueHostValidationStateChangedHandler, ValueHos
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorValidateResult } from "../../src/Interfaces/Validator";
+import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorType, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -157,6 +157,7 @@ function finishPartialValidatorsValueHostBaseConfigs(partialConfigs: Array<Parti
 }
 function createValidatorConfig(condConfig: ConditionConfig | null): ValidatorConfig {
     return {
+        validatorType: ValidatorType.Validator,
         conditionConfig: condConfig,
         errorMessage: 'Local',
         summaryMessage: 'Summary',
@@ -1084,7 +1085,7 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     }
@@ -1129,7 +1130,8 @@ describe('validate() and its impact on isValid and ValidationStatus', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     }
@@ -1771,14 +1773,15 @@ describe('corrected property', () => {
         expect(setup.valueHost.corrected).toBe(false);
     });
     test('From Invalid->Valid->NeedsValidation, corrected=false', () => {
-        let setup = setupValidatorsValueHostBaseForValidate([{
+        let setup = setupValidatorsValueHostBaseForValidate([
+            <ValidatorConfig>{
             conditionConfig: {
                 conditionType: NeverMatchesConditionType,
             },
             errorMessage: 'NeverMatch',
             enabled: true
         },
-        {
+        <ValidatorConfig>{
             conditionConfig: {
                 conditionType: AlwaysMatchesConditionType,
             },
@@ -1818,20 +1821,23 @@ describe('corrected property', () => {
         let vh = vhm.addValueHost(<ValidatorsValueHostBaseConfig>{
             valueHostType: TestValueHostType,
             name: 'Field1',
-            validatorConfigs: [{
-                conditionConfig: {
-                    conditionType: NeverMatchesConditionType,
+            validatorConfigs: [
+                <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
+                    conditionConfig: {
+                        conditionType: NeverMatchesConditionType,
+                    },
+                    errorMessage: 'NeverMatch',
+                    enabled: true
                 },
-                errorMessage: 'NeverMatch',
-                enabled: true
-            },
-            {
-                conditionConfig: {
-                    conditionType: AlwaysMatchesConditionType,
-                },
-                errorMessage: 'Never shown',
-                enabled: false
-            }]
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
+                    conditionConfig: {
+                        conditionType: AlwaysMatchesConditionType,
+                    },
+                    errorMessage: 'Never shown',
+                    enabled: false
+                }]
         }, null) as TestValidatorsValueHost;
 
         let neverMatchIssueFound: IssueFound = {
@@ -2309,7 +2315,8 @@ describe('validate with async Conditions', () => {
                 }],
                 done,
                 null,
-                <ValidatorConfig>{
+                <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: null,
                     conditionCreator: (requester) =>
                         new ConditionWithPromiseTester(
@@ -2324,6 +2331,7 @@ describe('validate with async Conditions', () => {
     test('With 1 Condition that whose promise gets rejected doesnt change validation results',
         (done) => {
             let vds: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: null,
                 conditionCreator: (requester) => {
                     return <ICondition>{
@@ -2373,6 +2381,7 @@ describe('validate with async Conditions', () => {
 describe('clearValidation', () => {
     test('After validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: { conditionType: IsUndeterminedConditionType },
             errorMessage: ''
         };
@@ -2400,6 +2409,7 @@ describe('clearValidation', () => {
     });
     test('Without calling validate, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: { conditionType: IsUndeterminedConditionType },
             errorMessage: ''
         };
@@ -2420,6 +2430,7 @@ describe('clearValidation', () => {
     });
     test('With prior state reflecting a validation issue, Ensure no exceptions and the state is NotAttempted with IssuesFound = null', () => {
         let ivConfig: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: { conditionType: NeverMatchesConditionType },
             errorMessage: ''
         };
@@ -2479,7 +2490,8 @@ describe('clearValidation', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
@@ -2534,7 +2546,8 @@ describe('clearValidation', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
@@ -2582,7 +2595,8 @@ describe('currentValidationState', () =>
             name: 'Field1',
             group: group,
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
@@ -2743,7 +2757,8 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: UserSuppliedResultConditionType,
                         result: ConditionEvaluateResult.Match,
@@ -2752,7 +2767,8 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
                     errorMessage: 'TOBEREPLACED Error message',
                     errorCode: 'TOBEREPLACED',
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType,
                     },
@@ -2815,7 +2831,8 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             valueHostType: TestValueHostType,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: UserSuppliedResultConditionType,
                         result: ConditionEvaluateResult.NoMatch,
@@ -2825,7 +2842,8 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
                     errorCode: 'TOBEREPLACED',
                     severity: ValidationSeverity.Warning   // helps notice the issue was replaced when we later change the severity
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType,
                     },
@@ -3062,7 +3080,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 valueHostType: TestValueHostType,
                 name: 'Field1',
                 label: 'Label1',
-                validatorConfigs: [{
+                validatorConfigs: [<ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig>{
                         conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2',
@@ -3075,7 +3094,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 valueHostType: TestValueHostType,
                 name: 'Field2',
                 label: 'Label2',
-                validatorConfigs: [{
+                validatorConfigs: [<ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     // emulate RequireText because the real condition needs text value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
@@ -3091,7 +3111,8 @@ describe('ValidatorsValueHostBase.otherValueHostChangedNotification and setValue
                 name: 'Field3',
                 label: 'Label3',
 
-                validatorConfigs: [{
+                validatorConfigs: [<ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     // emulate RequireText because the real condition needs text value
                     conditionConfig: <UserSuppliedResultConditionConfig>{
                         conditionType: UserSuppliedResultConditionType,
@@ -3424,7 +3445,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RequireTextConditionConfig>{
                         conditionType: ConditionType.RequireText,
                         valueHostName: null
@@ -3450,7 +3472,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
@@ -3482,7 +3505,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RequireTextConditionConfig>{
                         conditionType: ConditionType.RequireText,
                         valueHostName: 'Field1'
@@ -3516,7 +3540,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionCreator: (requestor) => new RequireTextCondition({ conditionType: ConditionType.RequireText, valueHostName: 'Field1' }),
                     conditionConfig: null,
                     errorMessage: ''
@@ -3548,7 +3573,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RangeConditionConfig>{
                         conditionType: ConditionType.Range,   // different type from in InstanceState
                         valueHostName: 'Field1'
@@ -3584,7 +3610,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionCreator: (requestor) => new NeverMatchesCondition({ conditionType: NeverMatchesConditionType }),
                     conditionConfig: null,
                     errorMessage: ''
@@ -3619,7 +3646,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RangeConditionConfig>{
                         conditionType: ConditionType.Range,   // different type from in InstanceState
                         valueHostName: 'Field1'
@@ -3664,7 +3692,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
@@ -3717,13 +3746,15 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
                     errorMessage: ''
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RangeConditionConfig>{
                         conditionType: ConditionType.Range,
                         valueHostName: null
@@ -3777,13 +3808,15 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             valueHostType: TestValueHostType,
             label: '',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: NeverMatchesConditionType
                     },
                     errorMessage: ''
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RangeConditionConfig>{
                         conditionType: ConditionType.Range,
                         valueHostName: null
@@ -3808,7 +3841,8 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
             label: '',
             initialValue: 'TEST',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <RequireTextConditionConfig>{
                         conditionType: ConditionType.RequireText,
                         valueHostName: 'Field1'
@@ -3832,7 +3866,8 @@ describe('dispose', () => {
     test('dispose kills many references including state and config', () => {
         let setup = setupValidatorsValueHostBase({
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText
                     }

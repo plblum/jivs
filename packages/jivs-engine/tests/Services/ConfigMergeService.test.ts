@@ -9,7 +9,7 @@ import { ConditionType } from '../../src/Conditions/ConditionTypes';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { ValidatorConfig } from '../../src/Interfaces/Validator';
+import { ValidatorConfig, ValidatorType } from '../../src/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../../src/Interfaces/ValidatorsValueHostBase';
 import { LessThanConditionConfig } from '../../src/Conditions/ComparisonCondition_classes';
 import { FieldValueHostConfig } from '../../src/Interfaces/FieldValueHost';
@@ -466,7 +466,8 @@ describe('ValueHostConfigMergeService', () => {
                 label: 'Birthdate',
                 labell10n: 'BD',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <LessThanConditionConfig>{
                             conditionType: ConditionType.LessThan,
                             value: new Date(2000, 0, 1),
@@ -482,7 +483,8 @@ describe('ValueHostConfigMergeService', () => {
                     label: 'Field 1',
                     initialValue: 'not in source',
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: {
                                 conditionType: ConditionType.NotNull
                             }
@@ -497,12 +499,14 @@ describe('ValueHostConfigMergeService', () => {
                     labell10n: 'BD',
                     initialValue: 'not in source',
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: {
                                 conditionType: ConditionType.NotNull
                             }
                         },
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: <LessThanConditionConfig>{
                                 conditionType: ConditionType.LessThan,
                                 value: new Date(2000, 0, 1),
@@ -566,6 +570,7 @@ describe('ValidatorConfigMergeService', () => {
         test('source.errorCode not found in empty destination array returns undefined', () => {
             let testItem = new ValidatorConfigMergeService();
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 errorCode: '1',
                 conditionConfig: null,
             },
@@ -575,14 +580,17 @@ describe('ValidatorConfigMergeService', () => {
         test('source.errorCode not found in populated destination array returns undefined', () => {
             let testItem = new ValidatorConfigMergeService();
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 errorCode: '1',
                 conditionConfig: null,
             },
                 [{
+                    validatorType: ValidatorType.Validator,
                     errorCode: '2',
                     conditionConfig: null,
                 },
                 {
+                    validatorType: ValidatorType.Validator,
                     errorCode: '3',
                     conditionConfig: null,
                 }],
@@ -591,20 +599,24 @@ describe('ValidatorConfigMergeService', () => {
         test('source.errorCode found in populated destination array returns the instance from the destination', () => {
             let testItem = new ValidatorConfigMergeService();
             let dest1: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 errorCode: '1', // will match
                 conditionConfig: null
             };
             let dest2: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 errorCode: '2', // will not match
                 conditionConfig: null
             };
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 errorCode: '1',
                 conditionConfig: null,
             },
                 [dest1, dest2],
                 { valueHostName: 'Field1' })).toBe(dest1);
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 errorCode: '2',
                 conditionConfig: null,
             },
@@ -614,16 +626,19 @@ describe('ValidatorConfigMergeService', () => {
         test('with no errorcode, but conditionTypes instead, source found in populated destination array returns the instance from the destination', () => {
             let testItem = new ValidatorConfigMergeService();
             let dest1: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: '1'  // will match
                 }
             };
             let dest2: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: '2' // will not match
                 }
             };
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: '1'
                 },
@@ -631,6 +646,7 @@ describe('ValidatorConfigMergeService', () => {
                 [dest1, dest2],
                 { valueHostName: 'Field1' })).toBe(dest1);
             expect(testItem.identifyValidatorConflict({
+                validatorType: ValidatorType.Validator,
                 errorCode: '2', // mixing it up with error code, instead of conditionType
                 conditionConfig: null,
             },
@@ -719,12 +735,14 @@ describe('ValidatorConfigMergeService', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
-                    [{
+                    [<ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: '1'
                         }
                     },
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorCode: '2',
                         errorMessage: 'Message',
                         conditionConfig: { conditionType: 'Require' }
@@ -740,12 +758,14 @@ describe('ValidatorConfigMergeService', () => {
                     valueHostType: ValueHostType.Field,
                     name: 'Field1',
                     dataType: LookupKey.String,
-                    validatorConfigs: [{
+                    validatorConfigs: [<ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: '1'
                         }
                     },
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorCode: '2',
                         errorMessage: 'Message',
                         conditionConfig: { conditionType: 'Require' }
@@ -758,7 +778,8 @@ describe('ValidatorConfigMergeService', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
-                    [{
+                    [<ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: '1'
                         }
@@ -769,7 +790,8 @@ describe('ValidatorConfigMergeService', () => {
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             errorCode: '2',
                             errorMessage: 'Message',
                             conditionConfig: { conditionType: 'Require' }
@@ -780,12 +802,14 @@ describe('ValidatorConfigMergeService', () => {
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             errorCode: '2',
                             errorMessage: 'Message',
                             conditionConfig: { conditionType: 'Require' }
                         },
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: {
                                 conditionType: '1'
                             }
@@ -801,7 +825,8 @@ describe('ValidatorConfigMergeService', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs:
-                    [{
+                    [<ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: '1'
                         },
@@ -813,7 +838,8 @@ describe('ValidatorConfigMergeService', () => {
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             errorCode: '1',
                             errorMessage: 'From Destination',
                             conditionConfig: { conditionType: 'Require' }
@@ -824,7 +850,8 @@ describe('ValidatorConfigMergeService', () => {
                     name: 'Field1',
                     dataType: LookupKey.String,
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             errorCode: '1',
                             errorMessage: 'From Destination',
                             summaryMessage: 'From Source',

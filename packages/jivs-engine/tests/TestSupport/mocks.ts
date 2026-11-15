@@ -53,7 +53,7 @@ import { ErrorMessagesService } from "../../src/Services/ErrorMessagesService";
 import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
 import { registerAllConditions, registerDataTypeConverters, registerDataTypeFormatters } from "../../src/Support/createJivsServicesForTesting";
-import { ValidatorFactory } from "../../src/Validation/Validator";
+import { ValidatorFactory } from "../../src/Validation/ValidatorFactory";
 import { FieldValueHost } from "../../src/ValueHosts/FieldValueHost";
 import { registerStandardValueHostGenerators, ValueHostFactory } from "../../src/ValueHosts/ValueHostFactory";
 import { populateServicesWithManyCultures } from "./utilities";

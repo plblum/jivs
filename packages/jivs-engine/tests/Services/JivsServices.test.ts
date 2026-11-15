@@ -1,5 +1,5 @@
 import { JivsServices } from "../../src/Services/JivsServices";
-import { ValidatorFactory } from "../../src/Validation/Validator";
+import { ValidatorFactory } from "../../src/Validation/ValidatorFactory";
 
 import { DataTypeCheckGeneratorService } from "../../src/Services/DataTypeCheckGeneratorService";
 import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";

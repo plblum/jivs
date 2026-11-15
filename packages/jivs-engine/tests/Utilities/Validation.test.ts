@@ -1,12 +1,13 @@
 import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { WhenConditionConfig } from "../../src/Conditions/WhenCondition";
-import { ValidatorConfig } from "../../src/Interfaces/Validator";
+import { ValidatorConfig, ValidatorType } from "../../src/Interfaces/Validator";
 import { resolveErrorCode } from "../../src/Utilities/Validation";
 
 describe('resolveErrorCode', () => {
 
     it('should return the errorCode if it is defined in the ValidatorConfig', () => {
         const validatorConfig = {
+            validatorType: ValidatorType.Validator,
             errorCode: 'CUSTOM_ERROR_CODE',
             conditionConfig: null
         };
@@ -15,6 +16,7 @@ describe('resolveErrorCode', () => {
 
     it('should return the ConditionType of the conditionConfig if errorCode is not defined', () => {
         const validatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: {
                 conditionType: 'SOME_CONDITION_TYPE'
             }
@@ -24,6 +26,7 @@ describe('resolveErrorCode', () => {
 
     it('should return the thenConfig\'s ConditionType for WhenCondition', () => {
         const validatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 thenConfig: {

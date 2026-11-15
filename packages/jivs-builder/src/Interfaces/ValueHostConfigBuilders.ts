@@ -211,5 +211,5 @@ export type FluentValidatorsValueHostParameters<T extends ValidatorsValueHostBas
  * Targets fluent functions for conditions as their second parameter, hosting most of the 
  * properties needed for ValidatorConfig
  */
-export type FluentValidatorConfig = Omit<ValidatorConfig, 'conditionConfig' | 'conditionCreator'>;
+export type FluentValidatorConfig = Omit<ValidatorConfig, 'validatorType' | 'conditionConfig' | 'conditionCreator'>;
 

@@ -61,7 +61,7 @@ export interface AsyncValidatorEvaluationResult {
     errorMessage?: string;
     valueHostName?: ValueHostName;
     severity?: ValidationSeverity;
-    failedToResolve?: boolean;
+    failedToResolve?: Error;
 }
 
 export type AsyncValidatorEvaluateHandler = (
@@ -81,7 +81,7 @@ export interface ValidatorValidateResult {
     conditionEvaluateResult: ConditionEvaluateResult;
     issueFound: IssueFound | null;
     skipped?: boolean;
-    failedToResolve?: boolean;
+    failedToResolve?: Error;
 }
 ```
 
@@ -115,9 +115,7 @@ const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager
     catch (error) {
         return {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            failedToResolve: true,
-            errorCode: 'apierror',
-            errorMessage: error instanceof Error ? error.message : String(error)
+            failedToResolve: error as Error
         };
     }
 };

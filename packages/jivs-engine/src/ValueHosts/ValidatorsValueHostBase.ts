@@ -8,7 +8,7 @@ import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, ValidatorConfig } from '../Interfaces/Validator';
+import { ValidatorValidateResult, IValidator, ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
 import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import
     {
@@ -21,6 +21,8 @@ import { ConditionType } from '../Conditions/ConditionTypes';
 import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
+import { resolveErrorCode } from '../Utilities/Validation';
+import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -400,6 +402,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     {
         let errorCode = injectedError.errorCode ?? InjectedErrorValidatorErrorCode;
         return {
+            validatorType: ValidatorType.Validator,
             conditionCreator: (valConfig) => new InjectedErrorCondition(),
             conditionConfig: null,
             errorCode: errorCode, // may be null
@@ -551,12 +554,19 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
         if (state.issuesFound) {
             const oldState = state.issuesFound;
 
-            config.validatorConfigs?.forEach((valConfig) => {
+            config.validatorConfigs?.forEach((valConfig) =>
+            {
+                // only considers on ValidatorConfig, not AsyncValidatorConfig.
+                // AsyncValidatorConfig is not going to have an external state change.
+                if (isAsyncValidatorConfig(valConfig))
+                    return;
                 let errorCode: string | null = cleanString(valConfig.errorCode);
-                if (!errorCode && valConfig.conditionConfig)
-                    errorCode = valConfig.conditionConfig.conditionType;
-                else if (valConfig.conditionCreator) {
-                    const cond = valConfig.conditionCreator(valConfig);   // return null is actually a configuration bug reported to the user in Validator.Condition
+                const vc = valConfig as ValidatorConfig;
+                if (!errorCode && vc.conditionConfig)
+                    errorCode = vc.conditionConfig.conditionType;
+                else if (vc.conditionCreator)
+                {
+                    const cond = vc.conditionCreator(vc);   // return null is actually a configuration bug reported to the user in Validator.Condition
                     if (cond)
                         errorCode = cond.conditionType;
                 }

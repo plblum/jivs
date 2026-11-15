@@ -14,6 +14,8 @@ import { ConfigAnalysisOptions, IConfigAnalysis } from '../src/Types/ConfigAnaly
 import { CONFIG_ANALYSIS_SERVICE_NAME } from '../src/Types/ConfigAnalysisService';
 import { IConfigAnalysisResultsExplorer } from '../src/Types/Explorer';
 import { createServices } from './TestSupport/support';
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
+import { Validator } from '@plblum/jivs-engine/src/Validation/Validator';
 
 describe('install and getConfigAnalysisService', () => {
     // not installed initially
@@ -61,7 +63,8 @@ describe('Create from ValueHostsManagerConfig object', () => {
                 <FieldValueHostConfig>{
                     name: 'Field1',
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: { conditionType: ConditionType.RequireText }
                         }
                     ]

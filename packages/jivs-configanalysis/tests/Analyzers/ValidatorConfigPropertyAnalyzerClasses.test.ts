@@ -10,6 +10,7 @@ import { DataTypeFormatterLookupKeyAnalyzer } from "../../src/Analyzers/DataType
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from "../../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses";
 import { ValidatorConfigCAResult, CAFeature, IConfigAnalysisResults, PropertyCAResult, CAIssueSeverity, LocalizedPropertyCAResult } from "../../src/Types/ConfigAnalysisResults";
 import { createServices, setupHelper, checkLookupKeyResults, checkLookupKeyResultsForMultiClassRetrievalService, checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService, checkSyntaxError, checkLocalizedPropertyResultFromArray, checkPropertyCAResultsFromArray } from "../TestSupport/support";
+import { ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 
 function createServicesForTheseTests(serviceOptions?: TestingJivsServicesOptions): IJivsServices {
@@ -30,6 +31,7 @@ function setupHelperForTheseTests(services: IJivsServices): AnalysisResultsHelpe
 }        
 function createValidatorConfigResults(): ValidatorConfigCAResult {
     let vc: ValidatorConfig = {
+        validatorType: ValidatorType.Validator,
         conditionConfig: { conditionType: 'Test' }
     };                
     return {

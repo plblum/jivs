@@ -1,7 +1,7 @@
 /**
  * @module jivs-engine/ValueHosts/Types/ValidatorsValueHostBase
  */
-import { IValidator, ValidatorConfig } from './Validator';
+import { IValidator, ValidatorConfig, ValidatorConfigBase } from './Validator';
 import {
     IValidatableValueHost, IValidatableValueHostCallbacks,
     ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState,
@@ -71,7 +71,7 @@ export interface ValidatorsValueHostBaseConfig extends ValidatableValueHostBaseC
      * This array may need to host validators that are client-side only,
      * such as parser error converting "abc" to number.
      */
-    validatorConfigs: Array<ValidatorConfig> | null;
+    validatorConfigs: Array<ValidatorConfigBase> | null;
 }
 
 

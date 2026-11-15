@@ -8,6 +8,8 @@ import { IValidatorConfigPropertyAnalyzer, IConditionConfigAnalyzer } from '../.
 import { AllMessagePropertiesConfigPropertyAnalyzer, ConditionCreatorConfigPropertyAnalyzer } from './../../src/Analyzers/ValidatorConfigPropertyAnalyzerClasses';
 import { ValidatorConfigCAResult, ConditionConfigCAResult, CAFeature, CAIssueSeverity } from '../../src/Types/ConfigAnalysisResults';
 import { setupHelper, createServices, checkPropertyCAResultsFromArray, checkLocalizedPropertyResultFromArray } from '../TestSupport/support';
+import { ValidatorType } from '@plblum/jivs-engine/build/Interfaces/Validator';
+
 
 class TestValidatorConfigPropertyAnalyzer implements IValidatorConfigPropertyAnalyzer {
     public analyze(config: ValidatorConfig, results: ValidatorConfigCAResult): void {
@@ -53,6 +55,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // testConfig.errorCode='TESTEC', a valid error code, which will not change results.properties
         it('with ValidatorConfig.errorCode="TESTEC" and conditionConfig = null, should initialize results correctly, result.errorCode=TESTEC and no changes to results.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: 'TESTEC',
                 conditionConfig: null,
             };
@@ -70,7 +73,8 @@ describe('ValidatorConfigAnalyzer', () => {
             expect(ranCountOfPropertyAnalyzers(propertyAnalyzers)).toBe(0);
         });
         it('with ValidatorConfig.errorCode=undefined and conditionConfig = null, should initialize results correctly, result.errorCode=[Missing] and error message in result object', () => {
-            const testConfig = <ValidatorConfig>{
+            const testConfig = <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: null!,
             };
             let helper = setupHelperForTheseTests(createServices());
@@ -89,6 +93,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // same but errorCode=''
         it('with ValidatorConfig.errorCode="" and conditionConfig = null, should initialize results correctly, result.errorCode=[Missing] and error in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: '',
                 conditionConfig: null!,
             };
@@ -108,6 +113,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // same but errorCode= '   '
         it('with ValidatorConfig.errorCode="   " and conditionConfig = null, should initialize results correctly, result.errorCode=[Missing] and error in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: '   ',
                 conditionConfig: null!,
             };
@@ -128,6 +134,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // errorCode has whitespace: ' TESTEC '. Reports error in results.properties
         it('with ValidatorConfig.errorCode=" TESTEC " and conditionConfig = null, should initialize results correctly, result.errorCode="TESTEC" and whitespace error in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: ' TESTEC ',
                 conditionConfig: null!,
             };
@@ -149,6 +156,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // errorCode is not assigned and conditionConfig has conditionType. results.errorCode is set to conditionType and info message in results.properties
         it('with ValidatorConfig.errorCode=undefined and conditionConfig.conditionType="TestCondition", should initialize results correctly, result.errorCode="TestCondition" and info in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: { conditionType: 'TestCondition' },
             };
             let helper = setupHelperForTheseTests(createServices());
@@ -169,6 +177,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // same with errorCode=null
         it('with ValidatorConfig.errorCode=null and conditionConfig.conditionType="TestCondition", should initialize results correctly, result.errorCode="TestCondition" and info in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: null!,
                 conditionConfig: { conditionType: 'TestCondition' },
             };
@@ -191,6 +200,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // same with errorCode=''
         it('with ValidatorConfig.errorCode="" and conditionConfig.conditionType="TestCondition", should initialize results correctly, result.errorCode="TestCondition" and info in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: '',
                 conditionConfig: { conditionType: 'TestCondition' },
             };
@@ -212,6 +222,7 @@ describe('ValidatorConfigAnalyzer', () => {
         // errorCode=undefined, conditionConfig=null, and conditionCreator is assigned to a function. results.errorCode is set to '[Unknown at this time]' and warning in results.properties
         it('with ValidatorConfig.errorCode=undefined, conditionConfig=null, and conditionCreator assigned, should initialize results correctly, result.errorCode="[Unknown at this time]" and warning in result.properties', () => {
             const testConfig = <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: null!,
                 conditionCreator: () => { return {} as any; },
             };
@@ -252,8 +263,8 @@ describe('ValidatorConfigAnalyzer', () => {
     describe('duplicate errorCode', () => {
         // two ValidatorConfigs with different errorCodes should not report an error
         it('should not report duplicate config error after two ValidatorConfigs are added with different errorCode values', () => {
-            const testConfig1 = { errorCode: 'TestEC1', conditionConfig: null };
-            const testConfig2 = { errorCode: 'TestEC2', conditionConfig: null };
+            const testConfig1 = { errorCode: 'TestEC1', conditionConfig: null, validatorType: ValidatorType.Validator };
+            const testConfig2 = { errorCode: 'TestEC2', conditionConfig: null, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -268,8 +279,8 @@ describe('ValidatorConfigAnalyzer', () => {
 
         // with no property analyzers, adding the same named config to existing results should result in a duplicate error
         it('should report duplicate config error after second ValidatorConfig is added with identical errorCode value', () => {
-            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null };
-            const testConfig2 = { errorCode: 'TestEC', conditionConfig: null };
+            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null, validatorType: ValidatorType.Validator };
+            const testConfig2 = { errorCode: 'TestEC', conditionConfig: null, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -287,8 +298,8 @@ describe('ValidatorConfigAnalyzer', () => {
 
         // same but case insensitive duplicate match
         it('should report duplicate config error after the same-named config is added with a case insensitive match', () => {
-            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null };
-            const testConfig2 = { errorCode: 'testec', conditionConfig: null };
+            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null, validatorType: ValidatorType.Validator };
+            const testConfig2 = { errorCode: 'testec', conditionConfig: null, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -305,8 +316,8 @@ describe('ValidatorConfigAnalyzer', () => {
         });
         // same with whitespace differences
         it('should report duplicate config error after the same-named config is added with whitespace differences', () => {
-            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null };
-            const testConfig2 = { errorCode: ' TestEC ', conditionConfig: null };
+            const testConfig1 = { errorCode: 'TestEC', conditionConfig: null, validatorType: ValidatorType.Validator };
+            const testConfig2 = { errorCode: ' TestEC ', conditionConfig: null, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -335,7 +346,7 @@ describe('ValidatorConfigAnalyzer', () => {
     
         // with config.conditionConfig = undefined, the MockConditionConfigAnalyzer.ranCount should be 0
         it('should not call the conditionConfigAnalyzer if config.conditionConfig is undefined', () => {
-            const testConfig = <ValidatorConfig> { conditionConfig: undefined! };
+            const testConfig = <ValidatorConfig> { conditionConfig: undefined!, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -344,7 +355,7 @@ describe('ValidatorConfigAnalyzer', () => {
         });
         // same with null
         it('should not call the conditionConfigAnalyzer if config.conditionConfig is null', () => {
-            const testConfig = <ValidatorConfig> { conditionConfig: null! };
+            const testConfig = <ValidatorConfig> { conditionConfig: null!, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -355,7 +366,7 @@ describe('ValidatorConfigAnalyzer', () => {
 
         // with config.conditionConfig = { conditionType: 'TEST' }, the MockConditionConfigAnalyzer.ranCount should be 1
         it('should call the conditionConfigAnalyzer if config.conditionConfig is assigned', () => {
-            const testConfig = <ValidatorConfig> { conditionConfig: { conditionType: 'TEST' } };
+            const testConfig = <ValidatorConfig> { conditionConfig: { conditionType: 'TEST' }, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers: Array<IValidatorConfigPropertyAnalyzer> = [];
             const analyzer = new ValidatorConfigAnalyzer(helper, propertyAnalyzers);
@@ -369,7 +380,7 @@ describe('ValidatorConfigAnalyzer', () => {
     describe('Using ValidatorConfigPropertyAnalyzers', () => {
         // Using 3 MockValidatorConfigPropertyAnalyzers, we'll test that the property analyzers are called
         test('should call all registered property analyzers', () => {
-            const testConfig = <ValidatorConfig>{ errorCode: 'TestEC', conditionConfig: null };
+            const testConfig = <ValidatorConfig>{ errorCode: 'TestEC', conditionConfig: null, validatorType: ValidatorType.Validator };
             let helper = setupHelperForTheseTests(createServices());
             let propertyAnalyzers = [
                 new TestValidatorConfigPropertyAnalyzer(),
@@ -389,7 +400,8 @@ describe('ValidatorConfigAnalyzer', () => {
         // In both cases, there may be non-error entries in results.properties.
 
         test('using real property Analyzers and ValidatorConfig with no issues, should call all property analyzers and not report any errors', () => {
-            const testConfig = <ValidatorConfig>{
+            const testConfig = <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: 'TestEC',    // not covered by any property analyzer
                 conditionConfig: { conditionType: 'TestCondition' },    // not covered by any property analyzer
                 conditionCreator: null!,    // ConditionCreatorConfigPropertyAnalyzer will not report an error
@@ -419,7 +431,8 @@ describe('ValidatorConfigAnalyzer', () => {
                 1, 'en', '*', 'Summary Message Localized', undefined);
         });
         test('using real property Analyzers and ValidatorConfig with issues for each property Analyzer, should call all property analyzers and report errors', () => {
-            const testConfig = <ValidatorConfig>{
+            const testConfig = <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: 'TestEC',    // not covered by any property analyzer
                 conditionConfig: { conditionType: 'TestCondition' },    // not covered by any property analyzer
                 conditionCreator: () => { return {} as any },    // ConditionCreatorConfigPropertyAnalyzer will report an error because conditionCOnfig is already used

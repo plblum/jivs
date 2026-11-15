@@ -4,7 +4,7 @@
 
 import { CodingError } from '../Utilities/ErrorHandling';
 import { ValueHostConfig } from '../Interfaces/ValueHost';
-import { ValidatorConfig } from '../Interfaces/Validator';
+import { ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig } from '../Interfaces/ValidatorsValueHostBase';
 import { resolveErrorCode } from '../Utilities/Validation';
 import {
@@ -379,13 +379,24 @@ export class ValidatorConfigMergeService extends ConfigMergeServiceBase<Validato
 
         if (!source.validatorConfigs)
             return;
+        let sourceValidatorConfigs: Array<ValidatorConfig> = [];
 
         if (!destination.validatorConfigs)
-            destination.validatorConfigs = [];
+            destination.validatorConfigs = [];        
+        for (const validatorSrc of source.validatorConfigs)
+        {
+            if (validatorSrc.validatorType === ValidatorType.Validator)
+                sourceValidatorConfigs.push(validatorSrc as ValidatorConfig);
+            else
+                destination.validatorConfigs.push(validatorSrc);
+        }
 
-        for (const validatorSrc of source.validatorConfigs) {
+
+        for (const validatorSrc of sourceValidatorConfigs) {
+            
             const identity: MergeIdentity = { valueHostName: destination.name, errorCode: resolveErrorCode(validatorSrc) };
-            const validatorDest = this.identifyHandler.call(this, validatorSrc, destination.validatorConfigs, identity);
+            const validatorDest = this.identifyHandler.call(this, validatorSrc,
+                destination.validatorConfigs as Array<ValidatorConfig>, identity);
             if (validatorDest) {
                 if (validatorSrc.conditionConfig && validatorDest.conditionConfig)
                     if (validatorSrc.conditionConfig.conditionType !==

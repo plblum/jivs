@@ -9,6 +9,7 @@ import { IFormConfigAdapter, IValueHostsManagerConfigBuilder } from "../../src/I
 import { IAdaptModelRulesToForm, ValueHostRulesOptions } from "../../src/Interfaces/ValueHostRules";
 import { ValueHostRulesBase } from "../../src/ValueHostRules/ValueHostRules";
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
+import { ValidatorConfig } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 class Person
 {
@@ -48,8 +49,9 @@ describe('ValueHostRulesBase subclass for a single Model and no form involvement
             let validators = (<FieldValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();
             expect(validators!.length).toBe(1);
-            expect(validators![0].conditionConfig).not.toBeNull();
-            expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+            let validator = validators![0] as ValidatorConfig; 
+            expect(validator.conditionConfig).not.toBeNull();
+            expect(validator.conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
         let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());
@@ -141,8 +143,9 @@ describe('ValueHostRulesBase subclass for a single Model and a Form that adapts 
             let validators = (<FieldValueHostConfig>vhc).validatorConfigs;
             expect(validators).not.toBeNull();
             expect(validators!.length).toBe(1);
-            expect(validators![0].conditionConfig).not.toBeNull();
-            expect(validators![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+            let validator = validators![0] as ValidatorConfig;
+            expect(validator.conditionConfig).not.toBeNull();
+            expect(validator.conditionConfig!.conditionType).toBe(ConditionType.RequireText);
         });
         // check the cachingService to see if the config was cached
         let cachedConfig = services.cachingService.get<ValueHostsManagerConfigBuilder>(rules.exposeCacheKey());

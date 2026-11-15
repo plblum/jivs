@@ -3,7 +3,7 @@ import { ConditionConfig } from '../../src/Interfaces/Conditions';
 import { FieldValueHostConfig, FieldValueHostInstanceState, FieldValueHostSetValueOptions, IFieldValueHost } from '../../src/Interfaces/FieldValueHost';
 import { IJivsServices } from '../../src/Interfaces/JivsServices';
 import { ValidationStatus } from '../../src/Interfaces/Validation';
-import { ValidatorConfig } from '../../src/Interfaces/Validator';
+import { ValidatorConfig, ValidatorType } from '../../src/Interfaces/Validator';
 import { ValueHostConfig } from '../../src/Interfaces/ValueHost';
 import { ValueHostType } from '../../src/Interfaces/ValueHostFactory';
 import { IValueHostsManager } from '../../src/Interfaces/ValueHostsManager';
@@ -111,6 +111,7 @@ export function finishPartialFieldValueHostConfigs(partialConfigs: Array<Partial
  */
 export function createValidatorConfig(condConfig: ConditionConfig | null): ValidatorConfig {
     return {
+        validatorType: ValidatorType.Validator,
         conditionConfig: condConfig,
         errorMessage: 'Local',
         summaryMessage: 'Summary',

@@ -29,7 +29,7 @@ import
         ValidationStatus,
         ValueHostValidateResult
     } from "../../src/Interfaces/Validation";
-import { IValidator, ValidatorConfig } from "../../src/Interfaces/Validator";
+import { IValidator, ValidatorConfig, ValidatorType } from "../../src/Interfaces/Validator";
 import { InjectedError } from '../../src/Interfaces/ValidatorsValueHostBase';
 import
     {
@@ -525,7 +525,8 @@ describe('setTextValue with getTextValue to check result', () => {
     test('Follow the state of corrected flag through multiple validated changes', () => {
         let setup = setupFieldValueHost({
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: "Required text is missing",
                 conditionConfig: <RequireTextConditionConfig> {
                     conditionType: ConditionType.RequireText,
@@ -1254,7 +1255,8 @@ function expectCorrectedFlagSequence(
 {
     let setup = setupFieldValueHost({
         dataType: LookupKey.String,
-        validatorConfigs: [{
+        validatorConfigs: [<ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             errorMessage: "Required text is missing",
             conditionConfig: <RequireTextConditionConfig> {
                 conditionType: ConditionType.RequireText,
@@ -3362,7 +3364,8 @@ describe('No mocks!', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             lookupKey: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'error',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText

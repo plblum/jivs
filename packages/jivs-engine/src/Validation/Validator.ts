@@ -17,89 +17,39 @@ import { WhenCondition } from '../Conditions/WhenCondition';
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import
     {
-        type ICondition, ConditionCategory, ConditionEvaluateResult,
+        type ICondition,
+        ConditionEvaluateResult,
         IEvaluateConditionDuringEdits, toIEvaluateConditionDuringEdits
     } from '../Interfaces/Conditions';
 import { toIDisposable } from '../Interfaces/General_Purpose';
-import type { IJivsServices } from '../Interfaces/JivsServices';
 import { LogDetails, LogOptions, LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
-import { IMessageTokenSource, TokenLabelAndValue, toIMessageTokenSource } from '../Interfaces/MessageTokenSource';
 import { type IssueFound, type ValidateOptions, ValidationSeverity } from '../Interfaces/Validation';
-import { type IValidator, type IValidatorFactory, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
+import { type IValidator, type ValidatorConfig, type ValidatorValidateResult } from '../Interfaces/Validator';
 import { IValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
-import { type IValueHost, ValidTypesForInstanceStateStorage, toIGatherValueHostNames } from '../Interfaces/ValueHost';
+import { type IValueHost, toIGatherValueHostNames } from '../Interfaces/ValueHost';
 import type { IValueHostResolver } from '../Interfaces/ValueHostResolver';
-import { IValueHostsManager, toIValueHostsManager, toIValueHostsManagerAccessor } from '../Interfaces/ValueHostsManager';
-import { CodingError, SevereErrorBase, assertNotNull, assertWeakRefExists, ensureError } from '../Utilities/ErrorHandling';
-import { LoggingFacade } from '../Utilities/LoggingFacade';
-import { NameToFunctionMapper } from '../Utilities/NameToFunctionMap';
+import { CodingError, SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import { cleanString } from '../Utilities/Utilities';
 import { resolveErrorCode } from '../Utilities/Validation';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
-import { ValueHostsManager } from './ValueHostsManager';
+import { ValidatorBase } from './ValidatorBase';
 
 /**
- * An IValidator implementation that represents a single validator 
- * for the value of an ValidatorsValueHostBase.
- * It is stateless.
- * Basically you want to call validate() to get all of the results
- * of a validation, including ConditionEvaluateResult, error messages,
- * severity, and more.
- * That data ends up in the ValueHostsManager as part of its state,
- * allowing the system consumer to know how to deal with the data
- * of the ValueHost (save or not) and the UI to display the state.
- * 
- * Each instance depends on a few things, all passed into the constructor
- * and treated as immutable.
- * - IValidatorsValueHost - name, label, and values from the consuming system.
- * - ValidatorConfig - The business logic supplies these rules
- *   to implement validation including Condition, Enabler, and error messages
- * If the caller changes any of these, discard the instance
- * and create a new one. The parent ValueHost will restore the state.
+ * A validator that uses a Condition object to evaluate its values.
+ * Its configuration supplies:
+ * - The Condition object that defines the validation rule.
+ * - Error Code, or if not supplied, ConditionType is used.
+ * - Error messages to display when the validation fails.
+ * - Severity level of the validation issue.
+ * - Enabler conditions and other rules to control when the validator is active.
  */
-export class Validator implements IValidator {
+export class Validator extends ValidatorBase<ValidatorConfig> {
     // As a rule, ValidatorsValueHostBase discards Validator when anything contained in these objects
     // has changed.
     constructor(valueHost: IValidatorsValueHost, config: ValidatorConfig) {
-        assertNotNull(valueHost, 'valueHost');
-        assertNotNull(config, 'config');
-        this._valueHost = new WeakRef<IValidatorsValueHost>(valueHost);
-        this._config = config;
+        super(valueHost, config);
     }
-    private readonly _valueHost: WeakRef<IValidatorsValueHost>;
-    /**
-    * The business rules behind this validator.
-    */
-    protected get config(): ValidatorConfig {
-        return this._config;
-    }
-
-    protected get services(): IJivsServices {
-        return this.valueHostsManager.services;
-    }
-
-    protected get valueHost(): IValidatorsValueHost {
-        assertWeakRefExists(this._valueHost, 'ValueHost disposed');
-        return this._valueHost.deref()!;
-    }
-
-    protected get valueHostsManager(): IValueHostsManager {
-        const vhm = toIValueHostsManagerAccessor(this.valueHost)?.valueHostsManager;
-        if (vhm) {
-            if (vhm instanceof ValueHostsManager || toIValueHostsManager(vhm))
-                return vhm as IValueHostsManager;
-            throw new CodingError('ValueHost.valueHostsManager must contain IValueHostsManager');
-        }
-        /* istanbul ignore next */
-        throw new CodingError('ValueHost must implement IValueHostsManagerAccessor');
-    }
-    /**
-     * Always supplied by constructor. Treat it as immutable.
-     * Expected to be changed only by the caller (business logic)
-     * and at that time, it must replace this instance with 
-     * a new one and a new Config instance.
-     */
-    private readonly _config: ValidatorConfig;
+ 
 
     /**
      * Participates in releasing memory.
@@ -107,38 +57,22 @@ export class Validator implements IValidator {
      * Note that once called, expect null reference errors to be thrown if any other functions
      * try to use them.
      */
-    public dispose(): void
+    public override dispose(): void
     {
-        function disposeStandardConfigItems(config: ValidatorConfig) : void
+        function disposeStandardConfigItems(config: ValidatorConfig): void
         {
             toIDisposable(config.conditionConfig)?.dispose();
             config.conditionConfig = undefined!;
             config.conditionCreator = undefined;
         }
+        disposeStandardConfigItems(this.config);        
         toIDisposable(this._condition)?.dispose();
         this._condition = undefined!;
         toIDisposable(this._enabler)?.dispose();
-        this._enabler = undefined!;
-        disposeStandardConfigItems(this._config);
-        toIDisposable(this._config)?.dispose(); // handle anything introduced by alternative implementations if they add dispose()
-        (this._config as any) = undefined;
-        (this._valueHost as any) = undefined;
-        (this._logger as any) = undefined!;        
+        this._enabler = undefined!; 
+        super.dispose();        
     }    
 
-    /**
-     * Provides an API for logging, sending entries to the loggingService.
-     */
-    protected get logger(): LoggingFacade
-    {
-        if (!this._logger)
-            this._logger = new LoggingFacade(this.services.loggingService,
-                'Validator', this,
-                [this.valueHost.getName() ?? 'ValueHost', resolveErrorCode(this.config)],
-            false);
-        return this._logger;
-    }
-    private _logger: LoggingFacade | null = null;    
     /**
      * The validator's issue identifier.
      * Uses ValidatorConfig.errorCode when assigned,
@@ -148,7 +82,11 @@ export class Validator implements IValidator {
     {
         return cleanString(this.config.errorCode) ?? this.conditionType;
     }
-
+    protected resolveErrorCodeForLogger(): string
+    {
+        // avoids resolving this.errorCode because it can recursively this.condition.
+        return resolveErrorCode(this.config);
+    }
 
     /**
      * Condition used to validate the data.
@@ -224,39 +162,6 @@ export class Validator implements IValidator {
     private _enabler: ICondition | null = null;
 
     /**
-     * Determined from the Config.enabled.
-     * Does not use the Enabler.
-     */
-    public get enabled(): boolean {
-        let value = this.getFromInstanceState('enabled') ??
-            this.config.enabled;
-        if (typeof value == 'function')
-            value = value(this);
-        if (value == null)  // null/undefined
-            return true;
-        return value as boolean;
-    }
-
-    /**
-     * Determined from Config.severity.
-     */
-    protected get severity(): ValidationSeverity {
-        let value = this.config.severity;
-        if (typeof value == 'function')
-            value = value(this);
-        if (value == null)  // null/undefined
-            switch (this.condition.category) {
-                case ConditionCategory.Require:
-                case ConditionCategory.DataTypeCheck:
-                    return ValidationSeverity.Severe;
-                default:
-                    return ValidationSeverity.Error;
-            }
-
-        return value as ValidationSeverity;
-    }
-
-    /**
      * Resolves the errorMessage as a template - before it has its tokens processed.
      * It uses several sources to get the template. The first to have text is used.
      * 1. Config.errorMessagel10n gets data from ErrorMessagesService with Config.errorMessage as fallback
@@ -269,14 +174,15 @@ export class Validator implements IValidator {
         let direct = this.config.errorMessage;
         if (typeof direct == 'function')
             direct = direct(this);
+        let cultureId = this.valueHostsManager.behaviors.activeCultureId!;
         let msg = direct as string | null;
         const l10n = this.config.errorMessagel10n as string | null;
         if (l10n)
-            msg = this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.localize(cultureId,
                 l10n, msg);
         if (msg == null)  // null/undefined
         {// fallback: see if ErrorMessagesService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.errorMessagesService.getErrorMessage(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.getErrorMessage(cultureId,
                 this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null) {
@@ -304,14 +210,15 @@ export class Validator implements IValidator {
         let direct = this.config.summaryMessage;
         if (typeof direct == 'function')
             direct = direct(this);
+        let cultureId = this.valueHostsManager.behaviors.activeCultureId!;
         let msg = direct as string | null;
         const l10n = this.config.summaryMessagel10n as string | null;
         if (l10n)
-            msg = this.services.errorMessagesService.localize(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.localize(cultureId,
                 l10n, msg ?? '');
         if (msg == null)  // null/undefined
         {// fallback: see if ErrorMessagesService has an entry specific to the errorCode and DataTypeLookupKey.
-            msg = this.services.errorMessagesService.getSummaryMessage(this.services.cultureService.defaultCultureId,
+            msg = this.services.errorMessagesService.getSummaryMessage(cultureId,
                 this.errorCode, this.valueHost.getDataType()) ?? null;
         }
         if (msg == null)
@@ -431,7 +338,7 @@ export class Validator implements IValidator {
             switch (cer) {
                 case ConditionEvaluateResult.NoMatch:
                     const issueFound = createIssueFound(self.valueHost, self);   // set up for ConditionEvaluateResult.Undetermined
-                    issueFound.severity = self.severity;
+                    issueFound.severity = self.resolveSeverity(self.config.severity);
                     self.updateIssueFoundWhenNoMatch(issueFound, self.valueHost);
                     resultState.issueFound = issueFound;
                     break;
@@ -486,7 +393,7 @@ export class Validator implements IValidator {
     protected updateIssueFoundWhenNoMatch(issueFound: IssueFound,
         valueHost: IValueHost): void {
         const services = this.services;
-        issueFound.severity = this.severity;
+        issueFound.severity = this.resolveSeverity(this.config.severity);
         const errorMessage = this.getErrorMessageTemplate();
         issueFound.errorMessage = services.messageTokenResolverService.resolveTokens(
             errorMessage, this.valueHost, this.valueHostsManager, this);
@@ -497,81 +404,6 @@ export class Validator implements IValidator {
         issueFound.doNotSave = issueFound.severity !== ValidationSeverity.Warning; // default to blocking save for errors, but not warnings. This can be overridden by the caller by directly setting doNotSave on the IssueFound.
     }
 
-    /**
-     * Creates a validator-aligned IssueFound when the supplied issue has the same errorCode.
-     * This does not execute validation logic.
-     * @param externalIssueFound 
-     * @returns null when the issue does not align to this validator.
-     * Returns a ValidatorValidateResult that can be stored in validator-owned state when it does.
-     */
-    public tryValidatorSwap(externalIssueFound: IssueFound): ValidatorValidateResult | null
-    {
-        if (externalIssueFound.errorCode === this.errorCode)
-        {
-            const issueFound = createIssueFound(this.valueHost, this);   // set up as if ConditionEvaluateResult.Undetermined
-            issueFound.severity = this.severity;
-            this.updateIssueFoundWhenNoMatch(issueFound, this.valueHost);
-            const resultState: ValidatorValidateResult = {
-                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                issueFound: issueFound
-            };
-            return resultState;
-        }
-        return null;
-    }
-    //#region state management
-
-    /**
-     * InstanceState is stored in ValueHost's InstanceState using its saveIntoInstanceStare/getFromInstanceState.
-     * Each entry needs to be associated with the errorCode of this Validator
-     * and have its own identifier for the value.
-     * This function creates a name to use with saveToStore and getFromStore.
-     * @param identifier 
-     */
-    protected nameForInstanceState(identifier: string): string {
-        return `_IV[${this.errorCode}].${identifier}`;
-    }
-
-    /**
-     * Saves an entry into the ValueHostInstanceState.
-     * @param identifier - used together with the errorCode to form a key in the instanceState.
-     * @param value - value to store. Use undefined to remove existing value.
-     */
-    protected saveIntoInstanceState(identifier: string, value: ValidTypesForInstanceStateStorage | undefined): void {
-        this.valueHost.saveIntoInstanceState(this.nameForInstanceState(identifier), value);
-    }
-
-    /**
-     * Returns an entry from the ValueHostInstanceState.
-     * 
-     * Often used to store values that override an entry in the ValidatorConfig.
-     * In that case, typical implementation is:
-     * let value = this.getFromInstanceState('identifier') ?? this.config.identifier;
-     * @param identifier - used together with the errorCode to form a key in the instanceState.
-     * @returns The value or undefined if the key is not stored in state.
-     */
-    protected getFromInstanceState(identifier: string): ValidTypesForInstanceStateStorage | undefined {
-        return this.valueHost.getFromInstanceState(this.nameForInstanceState(identifier));
-    }
-    //#endregion state management
-
-    //#region config overrides
-
-    /**
-     * Use to change the enabled flag. It overrides the value from ValidatorConfig.enabled.
-     * Use case: the list of validators on ValidatorsValueHostBase might change while the form is active.
-     * Add all possible cases to ValidatorsValueHostBase and change their enabled flag here when needed.
-     * Also remember that you can use the enabler property on 
-     * ValidatorConfig to automatically determine if the validator
-     * should run or not. Enabler may not be ideal in some cases though.
-     * @param enabled 
-     */
-    public setEnabled(enabled: boolean): void {
-        this.saveIntoInstanceState('enabled', enabled);
-    }
-
-    //#endregion config overrides
-
 
     /**
      * A service to provide all ValueHostNames that have been assigned to this Condition's
@@ -580,46 +412,6 @@ export class Validator implements IValidator {
     public gatherValueHostNames(collection: Set<ValueHostName>, valueHostResolver: IValueHostResolver): void {
         toIGatherValueHostNames(this.condition)?.gatherValueHostNames(collection, valueHostResolver);
     }
-
-    /**
-     * Returns an array of 0 or more tokens supported by this MessageTokenSource.
-     * Each returned has the token supported (omitting {} so {Label} is "Label")
-     * and the value in its native data type (such as Date, number, or string).
-     * Supports these tokens:
-     * {Label} - the Config.label property verbatim
-     * {Value} - the native value in instanceState.Value. If null/undefined, the value in instanceState.LastRawValue.
-     * Plus any from the Condition in use.     
-     * {DataType} - the name of the data type. Uses values registered with ErrorMessagesService and LookupKey enum's strings as a fallback.
-     */
-    public getValuesForTokens(valueHost: IValidatorsValueHost, valueHostResolver: IValueHostResolver): Array<TokenLabelAndValue> {
-        let tlv: Array<TokenLabelAndValue> = [
-            {
-                tokenLabel: 'Label',
-                associatedValue: valueHost.getLabel(),
-                purpose: 'label'
-            },
-            {
-                tokenLabel: 'Value',
-                associatedValue: valueHost.getValue(),
-                purpose: 'value'
-            },
-            {
-                tokenLabel: 'DataType',
-                associatedValue: valueHost.getDataTypeLabel(),
-                purpose: 'message'
-            }
-        ];
-        if (tlv[1].associatedValue === undefined)   // fallback to input value if available
-        {
-            const ivh = toIFieldValueHost(valueHost);
-            if (ivh)
-                tlv[1].associatedValue = ivh?.getTextValue();
-        }
-        if (toIMessageTokenSource(this.condition))   // since we cannot test for the IMessageTokenSource interface at runtime
-            tlv = tlv.concat((this.condition as unknown as IMessageTokenSource).getValuesForTokens(valueHost, valueHostResolver));
-        return tlv;
-    }
-
 }
 
 
@@ -655,58 +447,3 @@ export function highestSeverity(issues: IssueFound[] | null): ValidationSeverity
     }
     return severity;
 }   
-
-//#region Factory
-
-/**
- * ValidatorFactory creates the appropriate IValidator class.
- * It supports the built-in Validator class when ValidatorConfig.validatorType=null/undefined.
- */
-export class ValidatorFactory implements IValidatorFactory {
-
-    /**
-     * Checks if a validator can be created based on the provided configuration.
-     * @param config - The configuration for the validator.
-     * @returns A boolean indicating whether the validator can be created.
-     */
-    public canCreate(config: ValidatorConfig): boolean {
-        return config.validatorType == null || this.isRegistered(config.validatorType);
-    }
-    
-    public create(valueHost: IValidatorsValueHost, config: ValidatorConfig): IValidator {
-        if (config.validatorType == null)   // null or undefined
-            return new Validator(valueHost, config);
-        const fn = this._map.get(config.validatorType);
-        if (fn)
-            return fn(config) as IValidator;
-        throw new CodingError(`ValidationType not supported: ${config.validatorType}`);        
-    }
-   // user supplies JSON string or object implementing ValidatorConfig
-    // and it returns an instance of IValidator.
-
-    private readonly _map = new NameToFunctionMapper<ValidatorConfig, IValidator>();
-
-    /**
-     * Add or replace a function to create an instance of the Validator
-     * given a ValidatorConfig.
-     * @param validatorType - Unique way to select the function. Uses ValidatorConfig.validatorType.
-     * @param fn - Expected to create an instance of a Validator.
-     */
-    public register<TConfig extends ValidatorConfig>(validatorType: string,
-        fn: (config: TConfig) => IValidator): void {
-        this._map.register(validatorType, fn as any);
-    }
-
-    /**
-     * Utility to determine if a ValidatorType has been registered.
-     * @param validatorType 
-     * @returns 
-     */
-    public isRegistered(validatorType: string): boolean {
-        return this._map.get(validatorType) !== undefined;
-    }    
-
-}
-
-
-//#endregion Factory

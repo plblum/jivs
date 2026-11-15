@@ -54,6 +54,7 @@ import { createStateContainer, createCapturedStateAsString } from '../TestSuppor
 import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 import { createFieldValueHostInstanceState, finishPartialFieldValueHostConfig } from '../TestSupport/FieldValueHostTestFunctions';
 import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
+import { ValidatorConfig, ValidatorType } from '../../src/Interfaces/Validator';
 
 
 class Publicify_ValueHostsManagerWithTestValidatableValueHost extends Publicify_ValueHostsManager {
@@ -322,7 +323,8 @@ describe('constructor and initial property values', () => {
                 name: 'Property1',
                 dataType: LookupKey.String,
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <RegExpConditionConfig>{
                             conditionType: ConditionType.RegExp,
                             valueHostName: 'Property1',
@@ -359,7 +361,8 @@ describe('constructor and initial property values', () => {
                 name: 'Property1',
                 dataType: LookupKey.Date,
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <EqualToConditionConfig>{
                             conditionType: ConditionType.EqualTo,
                             valueHostName: 'Property1',
@@ -428,7 +431,8 @@ function setupFieldValueHostConfig(fieldIndex: number,
         for (let conditionType of conditionTypes) {
             if (!config.validatorConfigs)
                 config.validatorConfigs = [];
-            config.validatorConfigs.push({
+            config.validatorConfigs.push(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: conditionType
                 },
@@ -601,7 +605,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText,
                     },
@@ -632,7 +637,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText,
                     },
@@ -668,7 +674,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText,
                     },
@@ -687,7 +694,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText,
                     },
@@ -742,7 +750,8 @@ describe('addToValueHosts with FieldValueHosts', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText,
                     },
@@ -771,7 +780,8 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
 
             let replacementConfig = { ...config };
             replacementConfig.validatorConfigs = [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType,
                     },
@@ -838,7 +848,8 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
 
             let replacementConfig = { ...config };
             replacementConfig.validatorConfigs = [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     },
@@ -882,7 +893,8 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
                 valueHostType: ValueHostType.Field,
                 label: 'Field 1',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: AlwaysMatchesConditionType,
                         },
@@ -917,7 +929,8 @@ describe('addOrUpdateValueHost completely replaces the ValueHost instance', () =
                 valueHostType: ValueHostType.Field,
                 label: 'Field 1',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: {
                             conditionType: AlwaysMatchesConditionType,
                         },
@@ -1200,7 +1213,8 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
 
         let replacementConfig = { ...config };
         replacementConfig.validatorConfigs = [
-            {
+            <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: AlwaysMatchesConditionType,
                 },
@@ -1212,7 +1226,8 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     },
@@ -1276,7 +1291,8 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
 
         let replacementConfig = { ...config };
         replacementConfig.validatorConfigs = [
-            {
+            <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: AlwaysMatchesConditionType
                 },
@@ -1289,10 +1305,11 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     },
+                    validatorType: ValidatorType.Validator,
                     errorMessage: 'Error'
                 }
             ]
@@ -1329,11 +1346,13 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {   // this does not match in the replacement
+                <ValidatorConfig>{   // this does not match in the replacement
+                    validatorType: ValidatorType.Validator,
                     errorCode: 'Q',
                     conditionConfig: { conditionType: ConditionType.NotNull }
                 },
-                {   // replacement changes its error message
+                <ValidatorConfig>{   // replacement changes its error message
+                    validatorType: ValidatorType.Validator,
                     errorCode: 'R',
                     errorMessage: 'Required',
                     conditionConfig: { conditionType: ConditionType.RequireText }
@@ -1345,12 +1364,14 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
         let replacementConfig = { ...config, dataType: LookupKey.String, label: 'First name' };
 
         replacementConfig.validatorConfigs = [
-            {
+            <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: 'R',
                 errorMessage: 'Changed',
                 conditionConfig: { conditionType: ConditionType.RequireText }
             },
-            {
+            <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: AlwaysMatchesConditionType
                 },
@@ -1364,16 +1385,19 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             dataType: LookupKey.String,
             label: 'First name',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     errorCode: 'Q',
                     conditionConfig: { conditionType: ConditionType.NotNull }
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     errorCode: 'R',
                     errorMessage: 'Changed',
                     conditionConfig: { conditionType: ConditionType.RequireText }
                 },
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType
                     },
@@ -1404,7 +1428,8 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType,
                     },
@@ -1438,7 +1463,8 @@ describe('ValueHostsManager.addOrMergeValueHost', () => {
             valueHostType: ValueHostType.Field,
             label: 'Field 1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: AlwaysMatchesConditionType,
                     },
@@ -1980,8 +2006,9 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
     test('With 1 ValueHost that is assigned with 1 validator that is NoMatch, 1 external IssueFound not associated with a ValueHost, isValid=false, DoNotSave=true, getIssuesFound has both errors external IssueFound, BLValueHost has the BLError, FieldValueHost has its own error', () => {
 
         let config = setupFieldValueHostConfig(0, [NeverMatchesConditionType]);
-        config.validatorConfigs![0].errorMessage = 'CONDITION ERROR';
-        config.validatorConfigs![0].summaryMessage = 'SUMMARY CONDITION ERROR';
+        let vc = config.validatorConfigs![0] as ValidatorConfig;
+        vc.errorMessage = 'CONDITION ERROR';
+        vc.summaryMessage = 'SUMMARY CONDITION ERROR';
         let setup = setupValueHostsManager([config]);
         let result = setup.valueHostsManager.addExternalIssuesFound([
             {
@@ -2326,7 +2353,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
     });
     test('With 1 fieldValueHost and a condition that does not implement IEvaluateConditionDuringEdits, use option DuringEdit=true, expect condition to be skipped and array of ValidateResults = []', () => {
         let config = setupFieldValueHostConfig(0, [UserSuppliedResultConditionType]);
-        (config.validatorConfigs![0].conditionConfig as UserSuppliedResultConditionConfig).result = ConditionEvaluateResult.Match;
+        let vc = config.validatorConfigs![0] as ValidatorConfig;
+        (vc.conditionConfig as UserSuppliedResultConditionConfig).result = ConditionEvaluateResult.Match;
         let setup = setupValueHostsManager([config]);
 
         let vh = (setup.valueHostsManager.getValueHost('Field1')! as IFieldValueHost);
@@ -2432,7 +2460,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2492,7 +2521,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2504,7 +2533,7 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field2',
             dataType: LookupKey.String,
             group: 'B',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
                 errorMessage: 'required B',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2533,7 +2562,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2545,7 +2575,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field2',
             dataType: LookupKey.String,
             group: 'B',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required B',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2581,7 +2612,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2611,7 +2643,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2640,7 +2673,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2669,7 +2703,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2695,7 +2730,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2721,7 +2757,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             name: 'Field1',
             dataType: LookupKey.String,
             group: 'A',
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required A',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2745,7 +2782,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required 1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -2756,7 +2794,8 @@ describe('validate, and isValid, doNotSave, getIssuesForField, getIssuesFound, c
             valueHostType: ValueHostType.Field,
             name: 'Field2',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required 2',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -3686,7 +3725,8 @@ describe('broadcastState', () =>
             dataType: LookupKey.String,
             initialValue: undefined, // we are going to expect state to replace this
             validatorConfigs: [
-                { // has a validator to ensure the state round trip isn't cleaned up (Generator.cleanupInstanceState)
+                <ValidatorConfig>{ // has a validator to ensure the state round trip isn't cleaned up (Generator.cleanupInstanceState)
+                    validatorType: ValidatorType.Validator,
                     errorMessage: 'Some error',
                     conditionConfig: <RegExpConditionConfig>{
                         conditionType: ConditionType.RegExp,
@@ -4337,7 +4377,8 @@ describe('Round trip caching of Config and State', () => {
                     label: 'Label1',
                     valueHostType: ValueHostType.Field,
                     validatorConfigs: [
-                        {
+                        <ValidatorConfig>{
+                            validatorType: ValidatorType.Validator,
                             conditionConfig: {
                                 conditionType: ConditionType.RequireText
                             }
@@ -4677,7 +4718,8 @@ describe('toValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4711,7 +4753,8 @@ describe('toValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4747,7 +4790,8 @@ describe('toValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4826,7 +4870,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4867,7 +4912,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4927,7 +4973,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required 1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4938,7 +4985,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field2',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required 2',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -4965,7 +5013,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required 1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -5003,7 +5052,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -5104,7 +5154,8 @@ describe('fromValidationPayload()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -5163,7 +5214,8 @@ describe('clearExternalIssuesFound()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -5193,7 +5245,8 @@ describe('clearExternalIssuesFound()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType:  LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'required',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText

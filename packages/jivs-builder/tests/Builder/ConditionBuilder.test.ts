@@ -13,6 +13,7 @@ import { StartConditionBuilder } from '../../src/Builder/StartConditionBuilder';
 import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { CompleteConfigBuilderHandler, IBuilderConfigHost } from "../../src/Interfaces/ChildBuilders";
 import { valueHost } from '../../src/Builder/ValidatorBuilder';
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 class TestParentBuilder implements IBuilderConfigHost<object> {
     constructor() {
@@ -108,7 +109,8 @@ describe('dataTypeCheck on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -229,7 +231,8 @@ describe('regExp on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -322,7 +325,8 @@ describe('range on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -443,7 +447,8 @@ describe('equalTo on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -561,7 +566,9 @@ describe('equalTo on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
+                    <ValidatorConfig>
                     {
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -680,7 +687,8 @@ describe('notEqualTo on conditions', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -793,7 +801,8 @@ describe('notEqualTo on conditions', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -899,7 +908,8 @@ describe('lessThan on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1032,7 +1042,8 @@ describe('lessThan on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1185,7 +1196,8 @@ describe('lessThanOrEqual on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1318,7 +1330,8 @@ describe('lessThanOrEqual on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1471,7 +1484,8 @@ describe('greaterThan on conditions', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1617,7 +1631,8 @@ describe('greaterThan on conditions', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1767,7 +1782,8 @@ describe('greaterThanOrEqual on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -1914,7 +1930,8 @@ describe('greaterThanOrEqual on conditions', () =>
                 valueHostType: ValueHostType.Field,
                 name: 'myField',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         conditionConfig: <WhenConditionConfig> {
                             conditionType: ConditionType.When,
                             whenToEnableConfig: {
@@ -2008,7 +2025,8 @@ describe('stringLength on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -2098,7 +2116,8 @@ describe('requireText on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -2155,7 +2174,8 @@ describe('notNull on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -2212,7 +2232,8 @@ describe('positive on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -2269,7 +2290,8 @@ describe('integer on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -2328,7 +2350,8 @@ describe('maxDecimals on conditions', () => {
             valueHostType: ValueHostType.Field,
             name: 'myField',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {

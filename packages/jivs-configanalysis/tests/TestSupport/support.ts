@@ -39,6 +39,7 @@ import
         ValidatorConfigCAResult,
         ValueHostConfigCAResult
     } from "../../src/Types/ConfigAnalysisResults";
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 new BuildersFactoryInstaller();
 /**
@@ -440,6 +441,7 @@ export function createValidatorConfigResult(errorCode: string | undefined,
         properties: createPropertiesWithErrorsResults(propertyNamesWithErrors),
         conditionResult: condResult,
         config: {
+            validatorType: ValidatorType.Validator,
             errorCode: errorCode,
             conditionConfig: condResult ? condResult!.config : undefined!
         }

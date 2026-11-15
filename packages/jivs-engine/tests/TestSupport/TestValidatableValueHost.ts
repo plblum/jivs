@@ -14,7 +14,7 @@ import { ValidatableValueHostBaseConfig, ValidatableValueHostBaseInstanceState }
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound } from "../../src/Interfaces/Validation";
 import { IValueHostsManager } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { ValidatorConfig } from "../../src/Interfaces/Validator";
+import { ValidatorConfig, ValidatorType } from "../../src/Interfaces/Validator";
 import { ValueHostConfig, IValueHost } from "../../src/Interfaces/ValueHost";
 import { IValueHostGenerator } from "../../src/Interfaces/ValueHostFactory";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
@@ -234,6 +234,7 @@ export function finishPartialValidatableValueHostBaseConfigs(partialConfigs: Arr
 
 export function createValidatorConfig(condConfig: ConditionConfig | null): ValidatorConfig {
     return {
+        validatorType: ValidatorType.Validator,
         conditionConfig: condConfig,
         errorMessage: 'Local',
         summaryMessage: 'Summary',

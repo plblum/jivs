@@ -33,6 +33,7 @@ import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuild
 import { FluentValidatorConfig } from '../../src/Interfaces/ValueHostConfigBuilders';
 import { FluentOverloadArgs, ValidatorBuilder, valueHost } from './../../src/Builder/ValidatorBuilder';
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
+import { ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 
 class Publicify_ValidatorBuilder extends ValidatorBuilder
@@ -105,6 +106,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', 'Summary', validatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
             expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -122,6 +124,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, 'Error', null, validatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
             expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -138,6 +141,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, null, null, validatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
             expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -157,6 +161,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, null, null, validatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
             expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -169,6 +174,7 @@ describe('ValidatorBuilder', () => {
             let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'Error',
                 summaryMessage: 'Summary',
                 conditionConfig: null,
@@ -179,8 +185,9 @@ describe('ValidatorBuilder', () => {
             };
             expect(() => testItem.publicify_finish(null, 'Error', 'Summary', validatorConfig as FluentValidatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
-            expect(testItem.parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-            expect(testItem.parentConfig.validatorConfigs![0].conditionCreator).toBeTruthy
+            const vc = testItem.parentConfig.validatorConfigs![0] as ValidatorConfig;
+            expect(vc.conditionConfig).toBeNull();
+            expect(vc.conditionCreator).toBeTruthy();
         });
         test('with null for error message and summary parameters, but rich content in validatorConfig', () => {
             let vhConfig = createVMConfig();
@@ -196,6 +203,7 @@ describe('ValidatorBuilder', () => {
             expect(() => testItem.publicify_finish(conditionBuilder, null, null, validatorConfig)).not.toThrow();
             expect(testItem.parentConfig.validatorConfigs!.length).toBe(1);
             expect(testItem.parentConfig.validatorConfigs![0]).toEqual({
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -226,6 +234,7 @@ describe('ValidatorBuilder', () => {
             let testItem = new Publicify_ValidatorBuilder(services, vhConfig);
 
             let validatorConfig: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'Error',
                 summaryMessage: 'Summary',
                 conditionConfig: null
@@ -437,7 +446,7 @@ function createValidatorParamsAllProperties<T extends FluentValidatorConfig>(): 
             errorCode: 'E001', enabled: true,
             errorMessagel10n: 'ErrorKey',
             summaryMessagel10n: 'SummaryKey',
-            validatorType: 'Validator'
+    //        validatorType: 'Validator'
         };
 }
 
@@ -445,7 +454,8 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With no parameters creates ValidatorConfig with DataTypeCheckCondition with only type assigned', () => {
 
         let testItem = createVMBuilder().field('Field1').dataTypeCheck();
-        TestValidatorBuilder(testItem, <ValidatorConfig>{
+        TestValidatorBuilder(testItem, <ValidatorConfig> {
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -455,6 +465,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').dataTypeCheck('Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -465,6 +476,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').dataTypeCheck('Error', 'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -476,6 +488,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With errorMessage = null, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').dataTypeCheck(null, 'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -486,6 +499,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With errorMessage assigned, parameter.errorMessage and parameter.summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned. ErrorMessage is from first parameter, not validatorConfig assigned', () => {
         let testItem = createVMBuilder().field('Field1').dataTypeCheck(null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -496,6 +510,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With FluentValidatorConfig with errorMessage and summaryMessage creates ValidatorConfig with DataTypeCheckCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').dataTypeCheck({ errorMessage: 'Error', summaryMessage: 'Summary' });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             },
@@ -513,6 +528,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
         // clone sourceProperties to destProperties, but add conditionConfig with type DataTypeCheckConditionConfig
         let destProperties = {
             ...sourceProperties,
+            validatorType: ValidatorType.Validator,
             conditionConfig: {
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -524,6 +540,7 @@ describe('dataTypeCheck as a validator of a field()', () => {
     test('With FluentValidatorConfig with no properties assigned', () => {
         let testItem = createVMBuilder().field('Field1').dataTypeCheck({});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <DataTypeCheckConditionConfig>{
                 conditionType: ConditionType.DataTypeCheck
             }
@@ -538,6 +555,7 @@ describe('regExp as a validator of a field()', () => {
 
             let testItem = createVMBuilder().field('Field1').regExp('\\d');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
@@ -548,6 +566,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -559,6 +578,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, false), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', false);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
 
                     conditionType: ConditionType.RegExp,
@@ -571,6 +591,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -583,6 +604,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, false, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', false, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
 
                     conditionType: ConditionType.RegExp,
@@ -596,6 +618,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -609,6 +632,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -621,6 +645,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, undefined, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', undefined, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d'
@@ -632,6 +657,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, null);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -643,6 +669,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, false, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', false, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -654,6 +681,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true and errorMessage + summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, { errorMessage: 'Error', summaryMessage: 'Summary' });
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -667,6 +695,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, false, { errorMessage, summaryMessage }), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = false and errorMessage + summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', false, { errorMessage: 'Error', summaryMessage: 'Summary' });
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -680,6 +709,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(string, true, {}), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and ignoreCase = true', () => {
             let testItem = createVMBuilder().field('Field1').regExp('\\d', true, {});
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expressionAsString: '\\d',
@@ -694,6 +724,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -704,6 +735,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp, errorMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -716,6 +748,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp, errorMessage, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and errorMessage + summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -728,6 +761,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp, null, summaryMessage), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned and summaryMessage assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -739,6 +773,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp, null, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -749,6 +784,7 @@ describe('regExp as a validator of a field()', () => {
         test('regExp(RegExp, null), creates ValidatorConfig with RegExpCondition with type=RegExp and expressionAsString assigned', () => {
             let testItem = createVMBuilder().field('Field1').regExp(/\d/, null);
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -765,6 +801,7 @@ describe('regExp as a validator of a field()', () => {
                     multiline: true
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/,
@@ -781,6 +818,7 @@ describe('regExp as a validator of a field()', () => {
                     multiline: true
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/,
@@ -796,6 +834,7 @@ describe('regExp as a validator of a field()', () => {
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <RegExpConditionConfig>{
                     conditionType: ConditionType.RegExp,
                     expression: /\d/
@@ -814,6 +853,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1', LookupKey.Integer).range(1, 4);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -826,6 +866,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').range(1, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1
@@ -836,6 +877,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').range(null, 4);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 maximum: 4
@@ -847,6 +889,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').range(null, null, 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
             },
@@ -857,6 +900,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').range(1, 4, 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -869,6 +913,7 @@ describe('range as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').range(1, 4, 'Error',  'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -881,6 +926,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4, null, "Summary"), creates ValidatorConfig with RangeCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').range(1, 4, null,  'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -897,6 +943,7 @@ describe('range as a validator of a field()', () => {
             summaryMessage: 'Summary'
         });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -910,6 +957,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4, {}), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').range(1, 4, {});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -921,6 +969,7 @@ describe('range as a validator of a field()', () => {
     test('range(1, 4, null), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').range(1, 4, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range,
                 minimum: 1,
@@ -932,6 +981,7 @@ describe('range as a validator of a field()', () => {
     test('range(null, null, null), creates ValidatorConfig with RangeCondition with only type assigned and no errorMessage or summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').range(null, null, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RangeConditionConfig>{
                 conditionType: ConditionType.Range
             }
@@ -950,6 +1000,7 @@ describe('equalTo as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -961,6 +1012,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -972,6 +1024,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -983,6 +1036,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo
                 }
@@ -993,6 +1047,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(undefined);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo
                 }
@@ -1004,6 +1059,7 @@ describe('equalTo as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -1016,6 +1072,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -1029,6 +1086,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -1045,6 +1103,7 @@ describe('equalTo as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -1064,6 +1123,7 @@ describe('equalTo as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1,
@@ -1081,6 +1141,7 @@ describe('equalTo as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1,
@@ -1093,6 +1154,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).equalTo(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValue: 1
@@ -1107,6 +1169,7 @@ describe('equalTo as a validator of a field()', () =>
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eq(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValue: 1
@@ -1119,6 +1182,7 @@ describe('equalTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .eq(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValue: 1
@@ -1133,6 +1197,7 @@ describe('equalTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .eq(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValue: 1
@@ -1149,6 +1214,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1160,6 +1226,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1171,6 +1238,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1182,6 +1250,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1194,6 +1263,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1207,6 +1277,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1223,6 +1294,7 @@ describe('equalTo as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1239,6 +1311,7 @@ describe('equalTo as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2',
@@ -1251,6 +1324,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: 'Field2'
@@ -1262,6 +1336,7 @@ describe('equalTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').equalTo(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <EqualToConditionConfig> {
                     conditionType: ConditionType.EqualTo,
                     secondValueHostName: ''
@@ -1275,6 +1350,7 @@ describe('equalTo as a validator of a field()', () =>
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).eq(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
@@ -1287,6 +1363,7 @@ describe('equalTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .eq(valueHost("Field2"), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
@@ -1301,6 +1378,7 @@ describe('equalTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .eq(valueHost("Field2"), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <EqualToConditionConfig> {
                         conditionType: ConditionType.EqualTo,
                         secondValueHostName: 'Field2'
@@ -1324,6 +1402,7 @@ describe('notEqualTo as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1335,6 +1414,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1346,6 +1426,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1357,6 +1438,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1369,6 +1451,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1382,6 +1465,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1398,6 +1482,7 @@ describe('notEqualTo as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1414,6 +1499,7 @@ describe('notEqualTo as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1,
@@ -1426,6 +1512,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: 1
@@ -1437,6 +1524,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValue: ''
@@ -1448,6 +1536,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).notEqualTo(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo
                 }
@@ -1460,6 +1549,7 @@ describe('notEqualTo as a validator of a field()', () =>
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).neq(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <NotEqualToConditionConfig> {
                         conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
@@ -1472,6 +1562,7 @@ describe('notEqualTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .neq(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <NotEqualToConditionConfig> {
                         conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
@@ -1486,6 +1577,7 @@ describe('notEqualTo as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .neq(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <NotEqualToConditionConfig> {
                         conditionType: ConditionType.NotEqualTo,
                         secondValue: 1
@@ -1503,6 +1595,7 @@ describe('notEqualTo as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1514,6 +1607,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1525,6 +1619,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1536,6 +1631,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1548,6 +1644,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1561,6 +1658,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1577,6 +1675,7 @@ describe('notEqualTo as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1593,6 +1692,7 @@ describe('notEqualTo as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2',
@@ -1605,6 +1705,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1616,6 +1717,7 @@ describe('notEqualTo as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').notEqualTo(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: ''
@@ -1627,6 +1729,7 @@ describe('notEqualTo as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1').neq(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <NotEqualToConditionConfig> {
                     conditionType: ConditionType.NotEqualTo,
                     secondValueHostName: 'Field2'
@@ -1645,6 +1748,7 @@ describe('lessThan as a validator of a field()', () => {
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1656,6 +1760,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1667,6 +1772,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1678,6 +1784,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1690,6 +1797,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1703,6 +1811,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1719,6 +1828,7 @@ describe('lessThan as a validator of a field()', () => {
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1735,6 +1845,7 @@ describe('lessThan as a validator of a field()', () => {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1,
@@ -1747,6 +1858,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: 1
@@ -1758,6 +1870,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThan('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValue: ''
@@ -1771,6 +1884,7 @@ describe('lessThan as a validator of a field()', () => {
 
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lt(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValue: 1
@@ -1783,6 +1897,7 @@ describe('lessThan as a validator of a field()', () => {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .lt(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValue: 1
@@ -1797,6 +1912,7 @@ describe('lessThan as a validator of a field()', () => {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .lt(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValue: 1
@@ -1814,6 +1930,7 @@ describe('lessThan as a validator of a field()', () => {
 
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1825,6 +1942,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1836,6 +1954,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1847,6 +1966,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1859,6 +1979,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1872,6 +1993,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1888,6 +2010,7 @@ describe('lessThan as a validator of a field()', () => {
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1904,6 +2027,7 @@ describe('lessThan as a validator of a field()', () => {
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2',
@@ -1916,6 +2040,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: 'Field2'
@@ -1927,6 +2052,7 @@ describe('lessThan as a validator of a field()', () => {
         {
             let testItem = createVMBuilder().field('Field1').lessThan(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanConditionConfig> {
                     conditionType: ConditionType.LessThan,
                     secondValueHostName: ''
@@ -1940,6 +2066,7 @@ describe('lessThan as a validator of a field()', () => {
 
                 let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
@@ -1951,6 +2078,7 @@ describe('lessThan as a validator of a field()', () => {
 
                 let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
@@ -1964,6 +2092,7 @@ describe('lessThan as a validator of a field()', () => {
 
                 let testItem = createVMBuilder().field('Field1').lt(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanConditionConfig> {
                         conditionType: ConditionType.LessThan,
                         secondValueHostName: 'Field2'
@@ -1987,6 +2116,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -1998,6 +2128,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2009,6 +2140,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2020,6 +2152,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2032,6 +2165,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2045,6 +2179,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2061,6 +2196,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2077,6 +2213,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1,
@@ -2089,6 +2226,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: 1
@@ -2100,6 +2238,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lessThanOrEqual('');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValue: ''
@@ -2112,6 +2251,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).lte(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
@@ -2123,6 +2263,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .lte(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
@@ -2136,6 +2277,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .lte(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValue: 1
@@ -2154,6 +2296,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2165,6 +2308,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2176,6 +2320,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2187,6 +2332,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2199,6 +2345,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2212,6 +2359,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2227,6 +2375,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2242,6 +2391,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
                 secondConversionLookupKey: LookupKey.Integer
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2',
@@ -2254,6 +2404,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2265,6 +2416,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').lessThanOrEqual(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <LessThanOrEqualConditionConfig> {
                     conditionType: ConditionType.LessThanOrEqual,
                     secondValueHostName: ''
@@ -2277,6 +2429,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2287,6 +2440,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2299,6 +2453,7 @@ describe('lessThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').lte(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <LessThanOrEqualConditionConfig> {
                         conditionType: ConditionType.LessThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2323,6 +2478,7 @@ describe('greaterThan as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2334,6 +2490,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2345,6 +2502,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2356,6 +2514,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2368,6 +2527,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2381,6 +2541,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2397,6 +2558,7 @@ describe('greaterThan as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2413,6 +2575,7 @@ describe('greaterThan as a validator of a field()', () =>
                     secondConversionLookupKey: LookupKey.Integer
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1,
@@ -2425,6 +2588,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValue: 1
@@ -2436,6 +2600,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThan(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan
                 }
@@ -2447,6 +2612,7 @@ describe('greaterThan as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gt(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValue: 1
@@ -2458,6 +2624,7 @@ describe('greaterThan as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gt(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValue: 1
@@ -2471,6 +2638,7 @@ describe('greaterThan as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gt(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValue: 1
@@ -2489,6 +2657,7 @@ describe('greaterThan as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2500,6 +2669,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2511,6 +2681,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2522,6 +2693,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2534,6 +2706,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2547,6 +2720,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2562,6 +2736,7 @@ describe('greaterThan as a validator of a field()', () =>
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2577,6 +2752,7 @@ describe('greaterThan as a validator of a field()', () =>
                 secondConversionLookupKey: 'key'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2',
@@ -2589,6 +2765,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: 'Field2'
@@ -2600,6 +2777,7 @@ describe('greaterThan as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThan(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanConditionConfig> {
                     conditionType: ConditionType.GreaterThan,
                     secondValueHostName: ''
@@ -2612,6 +2790,7 @@ describe('greaterThan as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
@@ -2622,6 +2801,7 @@ describe('greaterThan as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
@@ -2634,6 +2814,7 @@ describe('greaterThan as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gt(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanConditionConfig> {
                         conditionType: ConditionType.GreaterThan,
                         secondValueHostName: 'Field2'
@@ -2658,6 +2839,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2669,6 +2851,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2680,6 +2863,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2691,6 +2875,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2703,6 +2888,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2716,6 +2902,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2732,6 +2919,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     summaryMessage: 'Summary'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2748,6 +2936,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                     secondConversionLookupKey: 'key'
                 });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1,
@@ -2760,6 +2949,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(1, {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValue: 1
@@ -2771,6 +2961,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1', LookupKey.Integer).greaterThanOrEqual(null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual
                 }
@@ -2782,6 +2973,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer).gte(1);
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
@@ -2793,6 +2985,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gte(1, 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
@@ -2806,6 +2999,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 let testItem = createVMBuilder().field('Field1', LookupKey.Integer)
                     .gte(1, { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValue: 1
@@ -2824,6 +3018,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
 
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2835,6 +3030,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2846,6 +3042,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null, null);
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2857,6 +3054,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), 'Error');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2869,6 +3067,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), 'Error', 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2882,6 +3081,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), null, 'Summary');
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2897,6 +3097,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 summaryMessage: 'Summary'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2912,6 +3113,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
                 secondConversionLookupKey: 'key'
             });
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2',
@@ -2924,6 +3126,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost('Field2'), {});
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: 'Field2'
@@ -2935,6 +3138,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
         {
             let testItem = createVMBuilder().field('Field1').greaterThanOrEqual(valueHost(''));
             TestValidatorBuilder(testItem, <ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 conditionConfig: <GreaterThanOrEqualConditionConfig> {
                     conditionType: ConditionType.GreaterThanOrEqual,
                     secondValueHostName: ''
@@ -2947,6 +3151,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'));
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2957,6 +3162,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'), 'Error', 'Summary');
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2969,6 +3175,7 @@ describe('greaterThanOrEqual as a validator of a field()', () =>
             {
                 let testItem = createVMBuilder().field('Field1').gte(valueHost('Field2'), { errorMessage: 'Error', summaryMessage: 'Summary' });
                 TestValidatorBuilder(testItem, <ValidatorConfig> {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <GreaterThanOrEqualConditionConfig> {
                         conditionType: ConditionType.GreaterThanOrEqual,
                         secondValueHostName: 'Field2'
@@ -2989,6 +3196,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -3000,6 +3208,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4, { minimum: 1 });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4,
@@ -3013,6 +3222,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4, 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -3025,6 +3235,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4, 'Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -3038,6 +3249,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4, null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4
@@ -3050,6 +3262,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(4, { errorMessage: 'Error', summaryMessage: 'Summary', minimum: 1 });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength,
                 maximum: 4,
@@ -3064,6 +3277,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -3074,6 +3288,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(null, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -3084,6 +3299,7 @@ describe('stringLength as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').stringLength(null, null, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <StringLengthConditionConfig>{
                 conditionType: ConditionType.StringLength
             }
@@ -3096,6 +3312,7 @@ describe('requireText as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').requireText();
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             }
@@ -3109,6 +3326,7 @@ describe('requireText as a validator of a field()', () => {
             errorMessage: 'Error',
         });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 nullValueResult: ConditionEvaluateResult.NoMatch
@@ -3121,6 +3339,7 @@ describe('requireText as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').requireText('Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -3132,6 +3351,7 @@ describe('requireText as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').requireText('Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -3144,6 +3364,7 @@ describe('requireText as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').requireText(null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText
             },
@@ -3157,6 +3378,7 @@ describe('notNull as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').notNull();
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             }
@@ -3167,6 +3389,7 @@ describe('notNull as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').notNull('Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -3177,6 +3400,7 @@ describe('notNull as a validator of a field()', () => {
     test('notNull(errorMessage, summaryMessage), creates ValidatorConfig with NotNullCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').notNull('Error', 'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -3189,6 +3413,7 @@ describe('notNull as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').notNull({ errorMessage: 'Error', summaryMessage: 'Summary' });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotNullConditionConfig>{
                 conditionType: ConditionType.NotNull
             },
@@ -3204,6 +3429,7 @@ describe('all as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1').all(
             (children) => []);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -3219,6 +3445,7 @@ describe('all as a validator of a field()', () => {
                     children.fieldValue('F2').requireText()
                 ]);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3243,6 +3470,7 @@ describe('all as a validator of a field()', () => {
                 ],
                 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3268,6 +3496,7 @@ describe('all as a validator of a field()', () => {
                 'Error',
                 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: [<any>{
@@ -3290,6 +3519,7 @@ describe('all as a validator of a field()', () => {
             null,
             'Summary' );
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -3306,6 +3536,7 @@ describe('all as a validator of a field()', () => {
                 summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AllMatchConditionConfig>{
                 conditionType: ConditionType.All,
                 conditionConfigs: []
@@ -3329,6 +3560,7 @@ describe('any as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1').any(
             (children) => []);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3343,6 +3575,7 @@ describe('any as a validator of a field()', () => {
                 children.fieldValue('F2').requireText()
             ]);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3366,6 +3599,7 @@ describe('any as a validator of a field()', () => {
             ],
             'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3390,6 +3624,7 @@ describe('any as a validator of a field()', () => {
             'Error',
             'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: [<any>{
@@ -3412,6 +3647,7 @@ describe('any as a validator of a field()', () => {
             null,
             'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3428,6 +3664,7 @@ describe('any as a validator of a field()', () => {
                 summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <AnyMatchConditionConfig>{
                 conditionType: ConditionType.Any,
                 conditionConfigs: []
@@ -3452,6 +3689,7 @@ describe('countMatches as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1').countMatches(1, 2,
             (children) => []);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3464,6 +3702,7 @@ describe('countMatches as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1').countMatches(1, null,
             (children) => []);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3476,6 +3715,7 @@ describe('countMatches as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1').countMatches(null, 2,
             (children) => []);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 maximum: 2,
@@ -3492,6 +3732,7 @@ describe('countMatches as a validator of a field()', () => {
             ]);
 
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 0,
@@ -3516,6 +3757,7 @@ describe('countMatches as a validator of a field()', () => {
             ],
             'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3541,6 +3783,7 @@ describe('countMatches as a validator of a field()', () => {
             'Error',
             'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 minimum: 1,
@@ -3566,6 +3809,7 @@ describe('countMatches as a validator of a field()', () => {
                 summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 conditionConfigs: [],
@@ -3581,6 +3825,7 @@ describe('countMatches as a validator of a field()', () => {
             (children) => [], 
             {});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <CountMatchesConditionConfig>{
                 conditionType: ConditionType.CountMatches,
                 conditionConfigs: [],
@@ -3604,6 +3849,7 @@ describe('positive as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').positive();
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3614,6 +3860,7 @@ describe('positive as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').positive('Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3625,6 +3872,7 @@ describe('positive as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').positive('Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3636,6 +3884,7 @@ describe('positive as a validator of a field()', () => {
     test('positive(null, summaryMessage), creates ValidatorConfig with PositiveCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').positive(null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3649,6 +3898,7 @@ describe('positive as a validator of a field()', () => {
                 errorMessage: 'Error', summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             },
@@ -3660,6 +3910,7 @@ describe('positive as a validator of a field()', () => {
     test('positive({}), creates ValidatorConfig with PositiveCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').positive({});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3669,6 +3920,7 @@ describe('positive as a validator of a field()', () => {
     test('positive(null), creates ValidatorConfig with PositiveCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').positive(null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <PositiveConditionConfig>{
                 conditionType: ConditionType.Positive
             }
@@ -3681,6 +3933,7 @@ describe('integer as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').integer();
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3690,6 +3943,7 @@ describe('integer as a validator of a field()', () => {
     test('integer(errorMessage), creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').integer('Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3700,6 +3954,7 @@ describe('integer as a validator of a field()', () => {
     test('integer(errorMessage, summaryMessage), creates ValidatorConfig with IntegerCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').integer('Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3711,6 +3966,7 @@ describe('integer as a validator of a field()', () => {
     test('integer(null, summaryMessage), creates ValidatorConfig with IntegerCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').integer(null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3725,6 +3981,7 @@ describe('integer as a validator of a field()', () => {
                 summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             },
@@ -3736,6 +3993,7 @@ describe('integer as a validator of a field()', () => {
     test('integer({}), creates ValidatorConfig with IntegerCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').integer({});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3745,6 +4003,7 @@ describe('integer as a validator of a field()', () => {
     test('integer(null), creates ValidatorConfig with IntegerCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').integer(null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <IntegerConditionConfig>{
                 conditionType: ConditionType.Integer
             }
@@ -3758,6 +4017,7 @@ describe('maxDecimals as a validator of a field()', () => {
 
         let testItem = createVMBuilder().field('Field1').maxDecimals(2);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3768,6 +4028,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2, errorMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').maxDecimals(2, 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3779,6 +4040,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2, errorMessage, summaryMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and errorMessage + summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').maxDecimals(2, 'Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3791,6 +4053,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2, null, summaryMessage), creates ValidatorConfig with MaxDecimalsCondition with only type assigned and summaryMessage assigned', () => {
         let testItem = createVMBuilder().field('Field1').maxDecimals(2, null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3806,6 +4069,7 @@ describe('maxDecimals as a validator of a field()', () => {
                 summaryMessage: 'Summary'
             });
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3818,6 +4082,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2, {}), creates ValidatorConfig with MaxDecimalsCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').maxDecimals(2, {});
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3828,6 +4093,7 @@ describe('maxDecimals as a validator of a field()', () => {
     test('maxDecimals(2, null), creates ValidatorConfig with MaxDecimalsCondition with only type assigned', () => {
         let testItem = createVMBuilder().field('Field1').maxDecimals(2, null);
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <MaxDecimalsConditionConfig>{
                 conditionType: ConditionType.MaxDecimals,
                 maxDecimals: 2
@@ -3844,6 +4110,7 @@ describe('not as a validator of a field()', () => {
         let testItem = createVMBuilder().field('Field1')
             .not((children) => children.fieldValue('F1').requireText());
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3859,6 +4126,7 @@ describe('not as a validator of a field()', () => {
                 (children) => children.fieldValue('F1').requireText(),
                 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3876,6 +4144,7 @@ describe('not as a validator of a field()', () => {
                 'Error',
                 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3893,6 +4162,7 @@ describe('not as a validator of a field()', () => {
                 null,
                 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <NotConditionConfig>{
                 conditionType: ConditionType.Not,
                 childConditionConfig: <any>{
@@ -3935,6 +4205,7 @@ describe('when as a validator of a field()', () => {
                 (whenBuilder) => whenBuilder.parentValue().regExp(/abc/),
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText());
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -3956,6 +4227,7 @@ describe('when as a validator of a field()', () => {
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),
                 'Error');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -3981,6 +4253,7 @@ describe('when as a validator of a field()', () => {
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 'Error', 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{
@@ -4004,6 +4277,7 @@ describe('when as a validator of a field()', () => {
                 (thenBuilder) => thenBuilder.fieldValue('F1').requireText(),   
                 null, 'Summary');
         TestValidatorBuilder(testItem, <ValidatorConfig>{
+            validatorType: ValidatorType.Validator,
             conditionConfig: <WhenConditionConfig>{
                 conditionType: ConditionType.When,
                 whenToEnableConfig: <any>{

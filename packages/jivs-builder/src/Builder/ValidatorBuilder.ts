@@ -41,7 +41,7 @@ import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
@@ -68,6 +68,7 @@ import
     } from '../Interfaces/ChildBuilders';
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
+import { isAsyncValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 
 
 /**
@@ -167,7 +168,12 @@ export class ValidatorBuilder
         validatorConfig: FluentValidatorConfig | undefined | null): IValidatorBuilder {
         const ivDesc: ValidatorConfig = validatorConfig ?
             { ...validatorConfig as ValidatorConfig } :
-            { conditionConfig: null };
+            {
+                validatorType: ValidatorType.Validator,
+                conditionConfig: null
+            };
+        if (ivDesc.validatorType == null)
+            ivDesc.validatorType = ValidatorType.Validator;
         if (errorMessage != null)   // null or undefined
             ivDesc.errorMessage = errorMessage;
         if (summaryMessage != null)   // null or undefined
@@ -185,7 +191,11 @@ export class ValidatorBuilder
 
         // prevent duplicate errorcodes
         const errorCode = resolveErrorCode(ivDesc);
-        if (this.parentConfig.validatorConfigs!.find((ivConfig) => resolveErrorCode(ivConfig) === errorCode))
+        if (this.parentConfig.validatorConfigs!.find((ivConfig) => {
+            if (isAsyncValidatorConfig(ivConfig))
+                return false;
+            return resolveErrorCode(ivConfig as ValidatorConfig) === errorCode;
+        }))
             this.reportError(new Error(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`));    // throws
 
         this.parentConfig.validatorConfigs!.push(ivDesc as ValidatorConfig);
@@ -237,7 +247,10 @@ export class ValidatorBuilder
             this.resolveOverloadArgs<ConditionConfig>(arg1, arg2);
         const ivConfig: ValidatorConfig = validatorParameters ?
             { ...validatorParameters as ValidatorConfig, conditionConfig: null } :
-            { conditionConfig: null };
+            {
+                validatorType: ValidatorType.Validator,
+                conditionConfig: null
+            };
         ivConfig.conditionCreator = conditionCreator;
         this.finish(null, errorMessage, summaryMessage, ivConfig);
         return this;
@@ -2175,7 +2188,7 @@ const FluentValidatorConfigPropertyNames: Array<string> = [
  */
 export class ResolveValueHost
 {
-    constructor(public valueHostName: string) {}
+    constructor(public valueHostName: ValueHostName) {}
     public getValue(valueHostsManager: IValueHostsManager): any
     {
         let vh = valueHostsManager.getValueHost(this.valueHostName);
@@ -2191,7 +2204,7 @@ export class ResolveValueHost
  * @param valueHostName The name of the ValueHost to reference.
  * @returns An instance of ResolveValueHost pointing to the specified ValueHost.
  */
-export function valueHost(valueHostName: string): ResolveValueHost
+export function valueHost(valueHostName: ValueHostName): ResolveValueHost
 {
     return new ResolveValueHost(valueHostName);
 }

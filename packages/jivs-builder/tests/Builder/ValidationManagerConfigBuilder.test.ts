@@ -11,6 +11,7 @@ import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/
 import { ValueHostsManagerConfigBuilder, createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
 import { ValidatorBuilder } from './../../src/Builder/ValidatorBuilder';
 import { createCapturedStateAsString, createStateContainer } from '@plblum/jivs-engine/tests/TestSupport/utilities';
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 
 function createVMConfig(): ValueHostsManagerConfig {
@@ -167,6 +168,7 @@ describe('complete', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field2',
             validatorConfigs: [{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -184,8 +186,9 @@ describe('Fluent chaining on build(vmConfig).field', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).not.toBeNull();
+        expect(vc.conditionConfig!.conditionType).toBe(ConditionType.RequireText);
     });
     test('build(vmConfig).field: Add RequireTest and RegExp conditions to FieldValueHostConfig via chaining', () => {
         let vmConfig = createVMConfig();
@@ -196,11 +199,13 @@ describe('Fluent chaining on build(vmConfig).field', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(2);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionConfig!.conditionType).toBe(ConditionType.RequireText);
-        expect(parentConfig.validatorConfigs![1].conditionConfig).not.toBeNull();
-        expect(parentConfig.validatorConfigs![1].conditionConfig!.conditionType).toBe(ConditionType.RegExp);
-        expect((parentConfig.validatorConfigs![1].conditionConfig! as RegExpConditionConfig).expressionAsString).toBe('\\d');
+        const vc0 = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        const vc1 = parentConfig.validatorConfigs![1] as ValidatorConfig;
+        expect(vc0.conditionConfig).not.toBeNull();
+        expect(vc0.conditionConfig!.conditionType).toBe(ConditionType.RequireText);
+        expect(vc1.conditionConfig).not.toBeNull();
+        expect(vc1.conditionConfig!.conditionType).toBe(ConditionType.RegExp);
+        expect((vc1.conditionConfig! as RegExpConditionConfig).expressionAsString).toBe('\\d');
     });
 });
 describe('customRule', () => {
@@ -215,10 +220,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBe('Error');
+        expect(vc.summaryMessage).toBe('Summary');
     });
     test('customRule(fn), creates a ValidatorBuilder with validatorConfig.conditionCreator setup, and conditionConfig null', () => {
         let vmConfig = createVMConfig();
@@ -229,10 +235,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBeUndefined();
+        expect(vc.summaryMessage).toBeUndefined();
     });
     // customRule(fn, error message, null)
     test('customRule(fn, error message, null), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
@@ -246,10 +253,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBe('Error');
+        expect(vc.summaryMessage).toBeUndefined();
     });
     // customRule(fn, null, summary message)
     test('customRule(fn, null, summary message), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
@@ -263,10 +271,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBeUndefined();
+        expect(vc.summaryMessage).toBe('Summary');
     });
     // customRule(fn, { error message, summary message })
     test('customRule(fn, { error message, summary message }), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
@@ -282,10 +291,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBe('Error');
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBe('Summary');
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBe('Error');
+        expect(vc.summaryMessage).toBe('Summary');
     });
     // customRule(fn, { })
     test('customRule(fn, { }), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
@@ -299,10 +309,11 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBeUndefined();
+        expect(vc.summaryMessage).toBeUndefined();
     });
     // customRule(fn, null)
     test('customRule(fn, null), creates ValidatorBuilder with validatorConfig.conditionCreator setup, and  conditionConfig null', () => {
@@ -315,9 +326,10 @@ describe('customRule', () => {
         expect(testItem).toBeInstanceOf(ValidatorBuilder);
         let parentConfig = (testItem as ValidatorBuilder).parentConfig;
         expect(parentConfig.validatorConfigs!.length).toBe(1);
-        expect(parentConfig.validatorConfigs![0].conditionConfig).toBeNull();
-        expect(parentConfig.validatorConfigs![0].conditionCreator).not.toBeNull();
-        expect(parentConfig.validatorConfigs![0].errorMessage).toBeUndefined();
-        expect(parentConfig.validatorConfigs![0].summaryMessage).toBeUndefined();
+        const vc = parentConfig.validatorConfigs![0] as ValidatorConfig;
+        expect(vc.conditionConfig).toBeNull();
+        expect(vc.conditionCreator).not.toBeNull();
+        expect(vc.errorMessage).toBeUndefined();
+        expect(vc.summaryMessage).toBeUndefined();
     });
 });

@@ -20,6 +20,7 @@ import { createConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBu
 import { AdapterValueHostConfig, BuilderOverrideOptions } from '../../src/Interfaces/ManagerConfigBuilder';
 import { ModifyFieldBuilder, ModifyValidatorBuilder } from './../../src/Builder/FormConfigAdapter';
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
+import { ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 // Subclass that makes protected members public for testing
 class Publicify_FormConfigAdapter extends FormConfigAdapter
@@ -156,6 +157,7 @@ describe('favorUIMessages', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -170,6 +172,7 @@ describe('favorUIMessages', () => {
             name: 'Field2',
             validatorConfigs: [
                 {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d',
@@ -181,6 +184,7 @@ describe('favorUIMessages', () => {
                     summaryMessagel10n: 'sml10n'
                 },
                 {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText
                     },
@@ -192,6 +196,7 @@ describe('favorUIMessages', () => {
             name: 'Field3',
             validatorConfigs: [
                 {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText
                     },
@@ -234,6 +239,7 @@ describe('favorUIMessages', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 },
@@ -248,6 +254,7 @@ describe('favorUIMessages', () => {
             name: 'Field2',
             validatorConfigs: [
                 {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RegExp,
                         expressionAsString: '\\d',
@@ -259,6 +266,7 @@ describe('favorUIMessages', () => {
                     summaryMessagel10n: 'sml10n',                    
                 },
                 {
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: {
                         conditionType: ConditionType.RequireText
                     },
@@ -526,7 +534,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -550,7 +559,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -579,7 +589,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -591,10 +602,11 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
-                conditionConfig: {
-                    conditionType: ConditionType.RequireText
-                }
+            validatorConfigs: [<ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
+                    conditionConfig: {
+                        conditionType: ConditionType.RequireText
+                    }
             }]
         };
         formAdapter.publicify_mergeConfigs(existingConfig, adjustments);
@@ -609,7 +621,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -623,7 +636,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -641,7 +655,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -672,7 +687,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -701,7 +717,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -714,7 +731,8 @@ describe('mergeConfigs() using publicify_mergeConfigs', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             dataType: LookupKey.String,
-            validatorConfigs: [{
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -883,6 +901,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText);
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -898,6 +917,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator('ErrorCode1');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: 'ErrorCode1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText,
@@ -914,6 +934,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, null!);
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -929,6 +950,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, {});
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
                 }
@@ -951,6 +973,7 @@ describe('ModifyFieldBuilder class', () => {
             });
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: 'ErrorCode1',
                 errorMessage: 'ErrorMessage1',
                 errorMessagel10n: 'ErrorMessageL10n1',
@@ -978,6 +1001,7 @@ describe('ModifyFieldBuilder class', () => {
             });
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'ErrorMessage1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -997,6 +1021,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, 'ErrorMessage1');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'ErrorMessage1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -1013,6 +1038,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, 'ErrorMessage1', 'SummaryMessage1');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: 'ErrorMessage1',
                 summaryMessage: 'SummaryMessage1',
                 conditionConfig: {
@@ -1030,6 +1056,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, null, 'SummaryMessage1');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: null,
                 summaryMessage: 'SummaryMessage1',
                 conditionConfig: {
@@ -1047,6 +1074,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, '');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: '',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -1063,6 +1091,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, '', '');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: '',
                 summaryMessage: '',
                 conditionConfig: {
@@ -1080,6 +1109,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, '', null);
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: '',
                 summaryMessage: null,
                 conditionConfig: {
@@ -1097,6 +1127,7 @@ describe('ModifyFieldBuilder class', () => {
             let result = modifyBuilder.validator(ConditionType.RequireText, null, '');
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorMessage: null,
                 summaryMessage: '',
                 conditionConfig: {
@@ -1148,7 +1179,8 @@ describe('ModifyFieldBuilder class', () => {
             let expectedConfig: FieldValueHostConfig = {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
-                validatorConfigs: [{    
+                validatorConfigs: [<ValidatorConfig>{    
+                    validatorType: ValidatorType.Validator,
                     errorMessage: 'errormessage1',
                     conditionConfig: {
                             conditionType: ConditionType.RequireText
@@ -1173,13 +1205,15 @@ describe('ModifyFieldBuilder class', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorMessage: 'errormessage1',
                         conditionConfig: {
                             conditionType: ConditionType.RequireText
                         }
                     },
                     {
+                        validatorType: ValidatorType.Validator,
                         errorMessage: 'errormessage2',
                         conditionConfig: {
                             conditionType: ConditionType.DataTypeCheck,
@@ -1204,13 +1238,15 @@ describe('ModifyFieldBuilder class', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorMessage: 'errormessage1',
                         conditionConfig: {
                             conditionType: ConditionType.RequireText
                         }
                     },
                     {
+                        validatorType: ValidatorType.Validator,
                         errorMessage: 'errormessage2',
                         conditionConfig: {
                             conditionType: ConditionType.DataTypeCheck,
@@ -1248,13 +1284,15 @@ describe('ModifyFieldBuilder class', () => {
                 valueHostType: ValueHostType.Field,
                 name: 'Field1',
                 validatorConfigs: [
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorMessage: 'errormessage1',
                         conditionConfig: {
                             conditionType: ConditionType.RequireText
                         }
                     },
-                    {
+                    <ValidatorConfig>{
+                        validatorType: ValidatorType.Validator,
                         errorCode: 'ErrorCode1',
                         conditionConfig: {
                             conditionType: ConditionType.RequireText
@@ -1409,10 +1447,11 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(result).toBeInstanceOf(ModifyValidatorBuilder);
-            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+            expect(result.getConfig()).toEqual(<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: 'ErrorCode1',
                 conditionConfig: {
                     conditionType: ConditionType.RequireText
@@ -1441,11 +1480,12 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.and((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
-            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+            expect(result.getConfig()).toEqual(<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: ConditionType.RequireText,   // inherited from original validator
                 conditionConfig: {
                     conditionType: ConditionType.All,
@@ -1466,7 +1506,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
                 result.and(null!);
@@ -1478,7 +1518,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
                 result.and((childBuilder) => childBuilder);
@@ -1491,7 +1531,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             existingValidator.conditionConfig = null!;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
@@ -1509,11 +1549,12 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.and((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
-            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+            expect(result.getConfig()).toEqual(<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: ConditionType.All,   // inherited from original validator
                 errorMessage: 'error message1', // does not get lost
                 summaryMessage: 'summary message1', // does not get lost
@@ -1543,12 +1584,13 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.and((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
-            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+            expect(result.getConfig()).toEqual(<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: 'ErrorCode1', // inherited from original validator
                 errorMessage: 'error message1', // does not get lost
                 summaryMessage: 'summary message1', // does not get lost
@@ -1580,11 +1622,12 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.or((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: ConditionType.RequireText,   // inherited from original validator
                 conditionConfig: {
                     conditionType: ConditionType.Any,
@@ -1605,7 +1648,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
                 result.or(null!);
@@ -1618,7 +1661,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
                 result.or((childBuilder) => childBuilder);
@@ -1631,7 +1674,7 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             existingValidator.conditionConfig = null!;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             expect(() => {
@@ -1649,11 +1692,12 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.or((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
-            expect(result.getConfig()).toEqual(<ValidatorConfig>{
+            expect(result.getConfig()).toEqual(<ValidatorConfig> {
+                validatorType: ValidatorType.Validator,
                 errorCode: ConditionType.Any,   // inherited from original validator
                 errorMessage: 'error message1', // does not get lost
                 summaryMessage: 'summary message1', // does not get lost
@@ -1682,12 +1726,13 @@ describe('ModifyValidatorBuilder class', () => {
             let formAdapter = new Publicify_FormConfigAdapter(
                 builder.handOffState());
             let modifyBuilder = formAdapter.modify('Field1');
-            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+            let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
             let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
             result.or((childBuilder) =>
                 childBuilder.parentValue().dataTypeCheck());
 
             expect(result.getConfig()).toEqual(<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
                 errorCode: 'ErrorCode1', // inherited from original validator
                 errorMessage: 'error message1', // does not get lost
                 summaryMessage: 'summary message1', // does not get lost
@@ -1719,7 +1764,7 @@ describe('whenToEnable()', () => {
         let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
-        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
         let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
         result.whenToEnable((childBuilder) => childBuilder.parentValue().equalTo(10));
         let vh1 = builder.snapshot().valueHostConfigs.find(vhc => vhc.name === 'Field1')! as FieldValueHostConfig;
@@ -1727,7 +1772,8 @@ describe('whenToEnable()', () => {
             valueHostType: ValueHostType.Field,
             name: 'Field1',
             validatorConfigs: [
-                {
+                <ValidatorConfig>{
+                    validatorType: ValidatorType.Validator,
                     conditionConfig: <WhenConditionConfig>{
                         conditionType: ConditionType.When,
                         whenToEnableConfig: {
@@ -1750,7 +1796,7 @@ describe('whenToEnable()', () => {
         let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
-        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
         existingValidator.conditionConfig = null!;
         let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
         expect(() => {
@@ -1764,7 +1810,7 @@ describe('whenToEnable()', () => {
         let formAdapter = new Publicify_FormConfigAdapter(
             builder.handOffState());
         let modifyBuilder = formAdapter.modify('Field1');
-        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0];
+        let existingValidator = (<FieldValueHostConfig>modifyBuilder.getConfig()).validatorConfigs![0] as ValidatorConfig;
         let result = new ModifyValidatorBuilder(formAdapter.services, modifyBuilder as any, existingValidator);
         expect(() => {
             result.whenToEnable((childBuilder) => childBuilder);

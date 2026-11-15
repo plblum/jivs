@@ -10,7 +10,9 @@ import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices
 import { AnalysisResultsHelper } from './AnalysisResultsHelper';
 import { ConfigAnalyzerBase } from './ConfigAnalyzerBase';
 import { IValueHostConfigAnalyzer, IValueHostConfigPropertyAnalyzer } from '../Types/Analyzers';
-import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult } from '../Types/ConfigAnalysisResults';
+import { ValueHostConfigCAResult, CAFeature, CAIssueSeverity, PropertyCAResult, ValidatorConfigCAResult } from '../Types/ConfigAnalysisResults';
+import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { isAsyncValidatorConfig, AsyncValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 
 /**
  * Analyzes a ValueHostConfig object, creating a ValueHostResults object.
@@ -75,9 +77,23 @@ implements IValueHostConfigAnalyzer {
         const valValueHostConfig = config as ValidatorsValueHostBaseConfig;
         if (valValueHostConfig.validatorConfigs) {
             results.validatorResults = [];
-            for (const validatorConfig of valValueHostConfig.validatorConfigs) {
+            for (const validatorConfig of valValueHostConfig.validatorConfigs)
+            {
+                if (isAsyncValidatorConfig(validatorConfig)) {
+                    // handle async validator config if needed
+                    const vc = validatorConfig as AsyncValidatorConfig;
+                    const identity = vc.handlerIdentity ?? '[handlerIdentity Missing]';
+                    const func = vc.handler != null ? ['Supplied'] : '[Missing]';
+                    let childResult = {
+                        config: validatorConfig,
+                        message: `Async validator config detected with identity "${identity}" and handler status "${func}"`
+                    } as ValidatorConfigCAResult;
+                    
+                    results.validatorResults.push(childResult);
+                    continue;
+                }
                 const childResults = this.helper.analysisArgs.validatorConfigAnalyzer!.analyze(
-                    validatorConfig, valValueHostConfig, results.validatorResults);
+                    validatorConfig as ValidatorConfig, valValueHostConfig, results.validatorResults);
                 results.validatorResults.push(childResults);
             }
         }

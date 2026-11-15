@@ -19,7 +19,7 @@ import type { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { type TokenLabelAndValue, IMessageTokenSource, toIMessageTokenSource } from "../../src/Interfaces/MessageTokenSource";
 import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
-import { IValidator, ValidatorConfig, ValidatorValidateResult } from '../../src/Interfaces/Validator';
+import { IValidator, ValidatorConfig, ValidatorType, ValidatorValidateResult } from '../../src/Interfaces/Validator';
 import { IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { IValueHost } from '../../src/Interfaces/ValueHost';
 import { IValueHostResolver } from '../../src/Interfaces/ValueHostResolver';
@@ -28,7 +28,9 @@ import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import { AlwaysMatchesConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, ThrowsExceptionConditionType } from "../../src/Support/conditionsForTesting";
 import { registerAllConditions } from "../../src/Support/createJivsServicesForTesting";
-import { Validator, ValidatorFactory, highestSeverity } from "../../src/Validation/Validator";
+import { Validator, highestSeverity } from "../../src/Validation/Validator";
+import { ValidatorFactory } from '../../src/Validation/ValidatorFactory';
+
 import { MockFieldValueHost, MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 
@@ -51,9 +53,13 @@ class PublicifiedValidator extends Validator {
     public exposeEnabler(): ICondition | null {
         return this.enabler;
     }
-    public exposeSeverity(): ValidationSeverity {
-        return this.severity;
+
+    public exposeResolveSeverity(value: ValidationSeverity | ((validator: this) => ValidationSeverity) | null | undefined): ValidationSeverity
+    {
+        return this.resolveSeverity(value);
     }
+
+
     public exposeGetErrorMessageTemplate(): string {
         return this.getErrorMessageTemplate();
     }
@@ -88,6 +94,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>,
     let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
     let vh2 = vhm.addMockFieldValueHost('Field2', LookupKey.String, 'Label2');
     const defaultConfig: ValidatorConfig = {
+        validatorType: ValidatorType.Validator,
         conditionConfig: <RequireTextConditionConfig>
             { conditionType: ConditionType.RequireText, valueHostName: 'Field1' },
         errorMessage: 'Local',
@@ -141,6 +148,7 @@ export class ConditionWithPromiseTester implements ICondition {
 describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
         let config: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: { conditionType: '' },
             errorMessage: ''
         };
@@ -408,21 +416,21 @@ describe('Validator.severity', () => {
             severity: ValidationSeverity.Error
         });
 
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = Warning, severity=Warning', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Warning
         });
 
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Warning);
     });
     test('Config.severity = Severe, severity=Severe', () => {
         let setup = setupWithField1AndField2({
             severity: ValidationSeverity.Severe
         });
 
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Severe);
     });  
     test('Conditions that use severity=Severe when Config.severity = undefined', () => {
         function checkDefaultSeverity(conditionType: string, ) {
@@ -434,7 +442,7 @@ describe('Validator.severity', () => {
             });
             registerAllConditions((setup.services.conditionFactory as ConditionFactory));
 
-            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
+            expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Severe);
         }
         checkDefaultSeverity(ConditionType.RequireText);
         checkDefaultSeverity(ConditionType.DataTypeCheck);
@@ -450,7 +458,7 @@ describe('Validator.severity', () => {
                 severity: undefined
             });
 
-            expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
+            expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Error);
         }
         checkDefaultSeverity(ConditionType.Range);
         checkDefaultSeverity(ConditionType.StringLength);
@@ -473,7 +481,7 @@ describe('Validator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Error);
     });
     test('AllMatchCondition Config.severity = undefined, severity=Error', () => {
         let setup = setupWithField1AndField2({
@@ -483,7 +491,7 @@ describe('Validator.severity', () => {
             severity: undefined
         });
 
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Error);
     });
     test('Config.severity = function, severity= result of function', () => {
         let setup = setupWithField1AndField2({
@@ -491,11 +499,11 @@ describe('Validator.severity', () => {
         });
 
         let severityForFn: ValidationSeverity = ValidationSeverity.Warning;
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Warning);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Warning);
         severityForFn = ValidationSeverity.Error;
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Error);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Error);
         severityForFn = ValidationSeverity.Severe;
-        expect(setup.validator.exposeSeverity()).toBe(ValidationSeverity.Severe);
+        expect(setup.validator.exposeResolveSeverity(setup.validator.exposeConfig().severity)).toBe(ValidationSeverity.Severe);
     });
 });
 
@@ -1014,6 +1022,7 @@ describe('Validator.validate', () => {
         let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
 
         let config: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: null,
             conditionCreator: (requestor) => {
                 return new ConditionWithPromiseTester(result,
@@ -1198,6 +1207,7 @@ describe('ValidatorFactory.create', () => {
         let vhm = new MockValueHostsManager(services);
         let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1');
         const config: ValidatorConfig = {
+            validatorType: ValidatorType.Validator,
             conditionConfig: <RequireTextConditionConfig>{
                 conditionType: ConditionType.RequireText,
                 valueHostName: 'Field1'
@@ -1249,7 +1259,7 @@ describe('ValidatorFactory.create', () => {
         setup.validatorConfig.validatorType = 'TEST';
         let testItem = setup.factory;
         expect(testItem.isRegistered('TEST')).toBe(false);
-        testItem.register('TEST', (config) => new TestValidator(setup.vh, config));
+        testItem.register('TEST', (valueHost, config) => new TestValidator(setup.vh, config as ValidatorConfig));
         let created: IValidator | null = null;
         expect(() => created = testItem.create(setup.vh, setup.validatorConfig)).not.toThrow();
         expect(created).not.toBeNull();

@@ -30,6 +30,7 @@ import {
     checkCultureSpecificClassRetrievalFoundInService, checkCultureSpecificClassRetrievalNotFoundInService
 } from '../TestSupport/support';
 import { DataTypeFormatterBase } from '@plblum/jivs-engine/build/DataTypes/DataTypeFormatterBase';
+import { ValidatorType } from '@plblum/jivs-engine/src/Interfaces/Validator';
 
 interface IAnalysisResultsHelperCommon {
     publicify_results: IConfigAnalysisResults;
@@ -843,9 +844,10 @@ describe('AnalysisResultsHelper', () => {
             expectedLookupKeyResultsCount: number,
             expectedPropertiesCount: number): Array<PropertyCAResult | ErrorCAResult> {
             let vc: ValidatorConfig = {
+                validatorType: ValidatorType.Validator,
                 errorMessage: message, 
                 conditionConfig: { conditionType: 'Test' }
-                };
+            };
             let vhc: ValidatorsValueHostBaseConfig = {
                 name: 'testValueHost', dataType: LookupKey.Number,
                 validatorConfigs: [vc]

@@ -19,7 +19,7 @@
 import { CodingError } from '../Utilities/ErrorHandling';
 import type { IValidatorFactory } from '../Interfaces/Validator';
 import { ServiceName, type IJivsServices } from '../Interfaces/JivsServices';
-import { ValidatorFactory } from '../Validation/Validator';
+import { ValidatorFactory } from '../Validation/ValidatorFactory';
 import { IDataTypeCheckGeneratorService } from '../Interfaces/DataTypeCheckGeneratorService';
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
 import { IMessageTokenResolverService } from '../Interfaces/MessageTokenResolverService';

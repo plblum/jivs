@@ -89,30 +89,33 @@ import { ConditionWithChildrenBaseConfig } from '@plblum/jivs-engine/build/Condi
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
+import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValidatableValueHostBaseConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
-import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
-import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { ValidatorConfig, ValidatorType } from '@plblum/jivs-engine/build/Interfaces/Validator';
 import { ValidatorsValueHostBaseConfig, isValidatableValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
 import { ValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
+import { ValueHostsManagerConfig } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
 import { CodingError, assertFunction, assertNotNull } from '@plblum/jivs-engine/build/Utilities/ErrorHandling';
 import { resolveErrorCode } from '@plblum/jivs-engine/build/Utilities/Validation';
-import {
-    CompleteConfigBuilderHandler, IBuilderConfigHost,
-    IStartConditionBuilder, IStartConditionWithOneChildBuilder,
-    IValidatorBuilder
-} from '../Interfaces/ChildBuilders';
+import
+    {
+        CompleteConfigBuilderHandler, IBuilderConfigHost,
+        IStartConditionBuilder, IStartConditionWithOneChildBuilder,
+        IValidatorBuilder
+    } from '../Interfaces/ChildBuilders';
+import
+    {
+        AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
+        IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
+    } from '../Interfaces/ManagerConfigBuilder';
 import { FluentValidatorConfig } from '../Interfaces/ValueHostConfigBuilders';
-import {
-    AdapterValueHostConfig, BuilderOverrideOptions, IFormConfigAdapter,
-    IManagerConfigBuilder, IModifyFieldBuilder, IModifyValidatorBuilder
-} from '../Interfaces/ManagerConfigBuilder';
 import { ValueHostRulesOptions } from '../Interfaces/ValueHostRules';
 import { BuilderConfigHostBase } from './BuilderConfigHostBase';
 import { BuilderState, ManagerConfigBuilderBase } from './ManagerConfigBuilderBase';
 import { StartConditionWithOneChildBuilder } from './StartConditionWithOneChildBuilder';
 import { ValueHostsManagerConfigBuilder } from './ValueHostsManagerConfigBuilder';
+import { isAsyncValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 
 /**
  * Creates a FormConfigAdapter from a source IManagerConfigBuilder.
@@ -180,13 +183,17 @@ export class FormConfigAdapter
         for (let i = 0; i < this.baseConfig.valueHostConfigs.length; i++) {
             const vhConfig = this.baseConfig.valueHostConfigs[i] as FieldValueHostConfig;
             if (vhConfig.validatorConfigs)
-                vhConfig.validatorConfigs.forEach((ivConfig) => {
-                    if (ivConfig.errorMessage || ivConfig.errorMessagel10n)
-                        if (tls.getErrorMessage('*', resolveErrorCode(ivConfig), null)) {
-                            delete ivConfig.errorMessage;
-                            delete ivConfig.errorMessagel10n;
-                            delete ivConfig.summaryMessage;
-                            delete ivConfig.summaryMessagel10n;
+                vhConfig.validatorConfigs.forEach((ivConfig) =>
+                {
+                    if (isAsyncValidatorConfig(ivConfig))
+                        return;
+                    const vc = ivConfig as ValidatorConfig;
+                    if (vc.errorMessage || vc.errorMessagel10n)
+                        if (tls.getErrorMessage('*', resolveErrorCode(vc), null)) {
+                            delete vc.errorMessage;
+                            delete vc.errorMessagel10n;
+                            delete vc.summaryMessage;
+                            delete vc.summaryMessagel10n;
                         }
                 });
         }
@@ -428,7 +435,11 @@ export class ModifyFieldBuilder
         }
         let existingValidator: ValidatorConfig | undefined = undefined;
         if (config.validatorConfigs && config.validatorConfigs.length > 0)
-            existingValidator = config.validatorConfigs.find(v => conditionType === resolveErrorCode(v));
+            existingValidator = config.validatorConfigs.find(v => {
+                if (isAsyncValidatorConfig(v))
+                    return false;
+                return conditionType === resolveErrorCode(v as ValidatorConfig);
+            }) as ValidatorConfig | undefined;
         if (!existingValidator) {
             this.reportError(new Error(`Validator with conditionType/errorCode '${conditionType}' does not exist.`));
         }
@@ -436,10 +447,14 @@ export class ModifyFieldBuilder
         {
             let adjustments: FluentValidatorConfig | undefined = undefined;
             if (typeof arg2 === 'string') {
-                adjustments = { errorMessage: arg2, summaryMessage: arg3 };
+                adjustments = {
+                    errorMessage: arg2, summaryMessage: arg3
+                };
             }
             else if (typeof arg3 === 'string') { // arg2 should be null
-                adjustments = { errorMessage: null, summaryMessage: arg3 };
+                adjustments = { 
+                    errorMessage: null, summaryMessage: arg3 
+                    };
             }
             else if (typeof arg2 === 'object')
                 adjustments = arg2 as FluentValidatorConfig;

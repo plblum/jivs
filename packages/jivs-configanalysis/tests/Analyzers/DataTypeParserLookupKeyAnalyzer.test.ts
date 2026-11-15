@@ -18,6 +18,7 @@ class ToNumberParser implements IDataTypeParser<number> {
         this._caseIdentifier = caseIdentifier;
         this._dataTypeLookupKey = dataTypeLookupKey;
     }
+
     supports(dataTypeLookupKey: string, cultureId: string, text: string): boolean {
         return this.isCompatible(dataTypeLookupKey, cultureId);
     }
@@ -47,6 +48,11 @@ class ToNumberParser implements IDataTypeParser<number> {
         return this._dataTypeLookupKey;
     }
     private _dataTypeLookupKey: string;
+
+    returnError(message?: string, errorCode?: string): DataTypeResolution<number>
+    {
+        throw new Error('Method not implemented.');
+    }    
 }
 class ToNumberParser2 extends ToNumberParser {
 
@@ -56,6 +62,7 @@ class ToNumberParser3 extends ToNumberParser {
 }
 const parserThatThrowsLookupKey = 'throwsError';
 class ParserThatThrowsError implements IDataTypeParser<number> {
+
     isCompatible(dataTypeLookupKey: string, cultureId: string): boolean {
         if (dataTypeLookupKey === parserThatThrowsLookupKey)
             throw new Error('ERROR');
@@ -67,6 +74,10 @@ class ParserThatThrowsError implements IDataTypeParser<number> {
     parse(text: string, dataTypeLookupKey: string, cultureId: string): DataTypeResolution<number | null> {
         throw new Error('Method not implemented.');
     }
+    returnError(message?: string, errorCode?: string): DataTypeResolution<number>
+    {
+        throw new Error('Method not implemented.');
+    }    
 }
 
 function oneCulture(services: IJivsServices) {

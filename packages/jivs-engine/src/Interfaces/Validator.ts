@@ -71,6 +71,12 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
 
 }
 
+export enum ValidatorType
+{
+    Validator = 'Validator',
+    AsyncValidator = 'AsyncValidator'
+}
+
 /**
  * Just the data that is used to describe one validator assigned to a ValueHost.
  * It should not contain any supporting functions or services.
@@ -87,17 +93,65 @@ export interface IValidator extends IDisposable, IMessageTokenSource, IGatherVal
  * NOTE: extensions of this interface can implement IDisposable knowing
  * that the Validator will call dispose() if supplied, during its own disposal.
  */
-export interface ValidatorConfig {
+export interface ValidatorConfigBase
+{
     /**
      * The ValidatorType used by the ValidatorFactory.
      * Leave it null or undefined to use the built-in Validator class.
+     * Built in values:
+     * - 'Validator' - the built-in Validator class.
+     * - 'AsyncValidator' - the built-in AsyncValidator class.
+     * Both are preregistered in ValidatorFactory.
      */
-    validatorType?: string;
+    validatorType: ValidatorType | string;
     /**
      * Provides the error code associated with this instance.
      * When unassigned, the Validator uses the ConditionType as the error code.
      */
     errorCode?: string;
+
+    /**
+     * When false, validation is never run. This supersedes the Enabler too.
+     * Values:
+     * - true/false obviously.
+     * - undefined - tells the Validator to treat it as true. (Its value 
+     *   will not be updated as we want this to be immutable while the Config
+     *   is assigned to the host.)
+     * - function - Provide a function that will return true or false, 
+     *   given the Validator as a parameter.
+     */
+    enabled?: undefined | boolean | ((host: IValidator) => boolean);
+    /**
+     * Resolves the Severity for when the Condition evaluates as NoMatch.
+     * Values:
+     * - ValidationSeverity enum. Set to Severe by default for conditions with
+     *   Category=Require and DataTypeCheck.
+     * - Undefined - tells the Validator to treat it as Error.
+     * - function - Provide a function that will return the ValidationSeverity, 
+     *   given the Validator as a parameter.
+     */
+    severity?: undefined | ValidationSeverity | ((host: IValidator) => ValidationSeverity);
+
+}
+
+/**
+ * Just the data that is used to describe one validator assigned to a ValueHost.
+ * It should not contain any supporting functions or services.
+ * It should be generatable from JSON, and simply gets typed to ValidatorConfig.
+ * This provides the backing data for each ValidatorInfo.
+ * When placed into the ValidatorInfo, it is treated as immutable
+ * and can be used as state in React.
+ * The server side could in fact supply this object via JSON,
+ * allowing the server's Model to dictate this. However, there are sometimes
+ * cases a business rule is client side only (parser error converting "abc" to number)
+ * and times when a business rule is server side only (looking for injection attacks
+ * for the purpose of logging and blocking.)
+ * 
+ * NOTE: extensions of this interface can implement IDisposable knowing
+ * that the Validator will call dispose() if supplied, during its own disposal.
+ */
+export interface ValidatorConfig extends ValidatorConfigBase {
+
     
     // -----------------------
     // There are two ways to supply this validator's Condition.
@@ -125,30 +179,6 @@ export interface ValidatorConfig {
      * @returns 
      */
     conditionCreator?: ConditionCreatorHandler;
-
-     
-
-    /**
-     * When false, validation is never run. This supersedes the Enabler too.
-     * Values:
-     * - true/false obviously.
-     * - undefined - tells the Validator to treat it as true. (Its value 
-     *   will not be updated as we want this to be immutable while the Config
-     *   is assigned to the host.)
-     * - function - Provide a function that will return true or false, 
-     *   given the Validator as a parameter.
-     */
-    enabled?: undefined | boolean | ((host: IValidator) => boolean);
-    /**
-     * Resolves the Severity for when the Condition evaluates as NoMatch.
-     * Values:
-     * - ValidationSeverity enum. Set to Severe by default for conditions with
-     *   Category=Require and DataTypeCheck.
-     * - Undefined - tells the Validator to treat it as Error.
-     * - function - Provide a function that will return the ValidationSeverity, 
-     *   given the Validator as a parameter.
-     */
-    severity?: undefined | ValidationSeverity | ((host: IValidator) => ValidationSeverity);
 
     /**
      * The error message "template" that will appear on screen when the condition is NoMatch.
@@ -204,14 +234,6 @@ export interface ValidatorConfig {
      * the value from the errorMessage property is used.
      */
     summaryMessagel10n?: string | null | undefined;
-
-    //!! Interferes with intellisense support for building with known properties    
-    // /**
-    //  * Handy way to allow users to enter known properties without getting ts errors.
-    //  * However, they can improve things if they typecast to the appropriate
-    //  * validator's Config.
-    //  */
-    // [propName: string]: any;    
 }
 
 /**
@@ -235,6 +257,14 @@ export interface ValidatorValidateResult {
     issueFound: IssueFound | null;
 
     /**
+     * Indicates whether the validation could not be completed due to an error or failed external operation.
+     * Typically used by async validators to indicate that the handler function had an exception
+     * or a failed external operation, such as an API call.
+     * When assigned, it makes the overall ValueHostsManager doNotSave = true, blocking further processing.
+     */
+    failedToResolve?: Error;
+
+    /**
      * When true, validate() bailed before evaluation due to Enabled or Enabler
      */
     skipped?: boolean;
@@ -246,6 +276,8 @@ export interface ValidatorValidateResult {
  * This interface targets unit testing with mocks.
  */
 export interface IValidatorFactory {
-    create(valueHost: IValidatorsValueHost, config: ValidatorConfig): IValidator;
-    canCreate(config: ValidatorConfig): boolean;
+    create(valueHost: IValidatorsValueHost, config: ValidatorConfigBase): IValidator;
+    canCreate(config: ValidatorConfigBase): boolean;
 }
+
+export type ValidatorCreatorHandler = (valueHost: IValidatorsValueHost, config: ValidatorConfigBase) => IValidator;
