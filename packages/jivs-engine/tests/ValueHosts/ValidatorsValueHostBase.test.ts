@@ -16,6 +16,7 @@ import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, Validate
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorType, ValidatorValidateResult } from "../../src/Interfaces/Validator";
+import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult } from "../../src/Interfaces/AsyncValidator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -275,6 +276,330 @@ function setupValidatorsValueHostBaseForValidate(
 
     return setupValidatorsValueHostBase(fieldValueConfig, updatedState);
 }
+
+type AsyncOwnedIssue = IssueFound & { asyncIdentity: string };
+
+/**
+ * Sets up a host with real async validators and, optionally, previously stored issues.
+ * Seeding issues isolates replacement tests from the unfinished async result handling.
+ */
+function setupAsyncIssueHost(
+    handlers: Array<{ identity: string, handler: AsyncValidatorEvaluateHandler }>,
+    issues: AsyncOwnedIssue[] = [],
+    standardValidators: ValidatorConfig[] = []
+) {
+    let validatorConfigs: AsyncValidatorConfig[] = handlers.map(({ identity, handler }) => ({
+        validatorType: ValidatorType.AsyncValidator,
+        handlerIdentity: identity,
+        handler
+    }));
+    let setup = setupValidatorsValueHostBase({ validatorConfigs: [...standardValidators, ...validatorConfigs] });
+    let logger = new TestingLoggingService(LoggingLevel.Debug);
+    setup.services.loggingService = logger;
+    if (issues.length)
+        setup.valueHost.updateInstanceState(state => {
+            state.issuesFound = issues;
+            state.status = ValidationStatus.Invalid;
+            return state;
+        }, setup.valueHost);
+    logger.clearAll();
+    return { ...setup, logger };
+}
+
+/**
+ * Starts validation and waits for every validator Promise registered by the host.
+ */
+async function finishAsyncIssueValidation(valueHost: TestValidatorsValueHost, logger: TestingLoggingService) {
+    let result = valueHost.validate();
+    expect(result?.pending?.length).toBeGreaterThan(0);
+    let pending = [...result!.pending!];
+    await Promise.all(pending);
+    expect(logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result)).not.toBeNull();
+    expect(logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+}
+
+function asyncIssue(identity: string, code: string, message: string): AsyncOwnedIssue {
+    return {
+        asyncIdentity: identity,
+        valueHostName: 'Field1',
+        errorCode: code,
+        errorMessage: message,
+        severity: ValidationSeverity.Error,
+        doNotSave: true
+    };
+}
+
+// The host must associate each displayed async result with the validator that produced it.
+describe('ValidatorsValueHostBase async issue ownership', () => {
+    test('Stores and captures the handler identity when an async validator reports an issue', async () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken',
+                errorMessage: 'Already taken'
+            })
+        }]);
+
+        await finishAsyncIssueValidation(setup.valueHost, setup.logger);
+        expect(setup.valueHost.getIssuesFound()).toEqual([expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            errorCode: 'NameTaken',
+            errorMessage: 'Already taken'
+        })]);
+        let saved = restoreCapturedState(setup.valueHostsManager);
+        expect(saved.vh[0]).toEqual(expect.objectContaining({
+            issuesFound: [expect.objectContaining({
+                asyncIdentity: 'AvailabilityCheck',
+                errorCode: 'NameTaken'
+            })]
+        }));
+    });
+
+    test('Replaces the previous issue when the same handler returns a different code', async () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameReserved',
+                errorMessage: 'Reserved name'
+            })
+        }], [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+
+        await finishAsyncIssueValidation(setup.valueHost, setup.logger);
+        expect(setup.valueHost.getIssuesFound()).toEqual([expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            errorCode: 'NameReserved',
+            errorMessage: 'Reserved name'
+        })]);
+    });
+
+    test('Clears the previous issue when the same handler later succeeds', async () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }], [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+
+        await finishAsyncIssueValidation(setup.valueHost, setup.logger);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
+    });
+
+    test('Keeps each identity with its issue when two handlers finish in reverse order', async () => {
+        let finishAvailability!: (result: AsyncValidatorEvaluationResult) => void;
+        let finishAlternate!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupAsyncIssueHost([
+            { identity: 'AvailabilityCheck', handler: () => new Promise(resolve => { finishAvailability = resolve; }) },
+            { identity: 'AlternateCheck', handler: () => new Promise(resolve => { finishAlternate = resolve; }) }
+        ]);
+        let result = setup.valueHost.validate();
+        expect(result?.pending).toHaveLength(2);
+        let pending = [...result!.pending!];
+
+        finishAlternate({ conditionEvaluateResult: ConditionEvaluateResult.NoMatch, errorCode: 'AlternateInvalid', errorMessage: 'Alternate' });
+        await pending[1];
+        finishAvailability({ conditionEvaluateResult: ConditionEvaluateResult.NoMatch, errorCode: 'NameTaken', errorMessage: 'Taken' });
+        await Promise.all(pending);
+
+        expect(setup.valueHost.getIssuesFound()).toEqual([
+            expect.objectContaining({ asyncIdentity: 'AlternateCheck', errorCode: 'AlternateInvalid' }),
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorCode: 'NameTaken' })
+        ]);
+        expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result)).not.toBeNull();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+});
+
+// External issues replace a known async issue without losing its handler identity.
+describe('ValidatorsValueHostBase async issue external replacement', () => {
+    let match: AsyncValidatorEvaluateHandler = async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+
+    test('Replaces the issue for the supplied identity even when the error code changes', () => {
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        let incoming = asyncIssue('AvailabilityCheck', 'NameReserved', 'Server says reserved');
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(notifications).toHaveLength(1);
+        expect(notifications[0].issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Keeps an issue with the same code external when it has no async identity', () => {
+        let original = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [original]);
+        let incoming: IssueFound = { errorCode: 'NameTaken', errorMessage: 'Server message', doNotSave: true };
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([original]);
+        expect(setup.valueHost.exposeState.externalIssuesFound).toEqual([incoming]);
+        expect(setup.valueHost.getIssuesFound()).toHaveLength(2);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Keeps a different code without an identity as a separate external issue', () => {
+        let original = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }], [original]);
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorCode: 'NameReserved',
+            errorMessage: 'Server says reserved'
+        }, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([original]);
+        expect(setup.valueHost.exposeState.externalIssuesFound).toEqual([expect.objectContaining({
+            errorCode: 'NameReserved',
+            errorMessage: 'Server says reserved',
+            doNotSave: false
+        })]);
+        expect(setup.valueHost.getIssuesFound()).toHaveLength(2);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('A later successful validation clears a replacement owned by the handler', async () => {
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        let incoming = asyncIssue('AvailabilityCheck', 'NameReserved', 'Server says reserved');
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+
+        await finishAsyncIssueValidation(setup.valueHost, setup.logger);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
+    });
+
+    test('Does not replace either handler when two issues share the external code but no identity is supplied', () => {
+        let first = asyncIssue('AvailabilityCheck', 'NameTaken', 'First');
+        let second = asyncIssue('AlternateCheck', 'NameTaken', 'Second');
+        let setup = setupAsyncIssueHost([
+            { identity: 'AvailabilityCheck', handler: match },
+            { identity: 'AlternateCheck', handler: match }
+        ], [first, second]);
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorCode: 'NameTaken',
+            errorMessage: 'Server message',
+            doNotSave: true
+        }, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([first, second]);
+        expect(setup.valueHost.exposeState.externalIssuesFound).toEqual([expect.objectContaining({
+            errorCode: 'NameTaken',
+            errorMessage: 'Server message'
+        })]);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Uses the supplied identity rather than a matching code from another handler', () => {
+        let first = asyncIssue('AvailabilityCheck', 'NameTaken', 'First');
+        let second = asyncIssue('AlternateCheck', 'OtherCode', 'Second');
+        let setup = setupAsyncIssueHost([
+            { identity: 'AvailabilityCheck', handler: match },
+            { identity: 'AlternateCheck', handler: match }
+        ], [first, second]);
+        let incoming = asyncIssue('AlternateCheck', 'NameTaken', 'Server message');
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([first, expect.objectContaining(incoming)]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Keeps an identified issue external when that handler has no existing issue', () => {
+        let standard = createValidatorConfig({ conditionType: NeverMatchesConditionType });
+        standard.errorCode = 'NameTaken';
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }], [], [standard]);
+        let incoming = asyncIssue('AvailabilityCheck', 'NameTaken', 'Server message');
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toBeNull();
+        expect(setup.valueHost.exposeState.externalIssuesFound).toEqual([incoming]);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Does not let a standard validator claim an identified async issue with the same code', () => {
+        let standard = createValidatorConfig({ conditionType: NeverMatchesConditionType });
+        standard.errorCode = 'NameTaken';
+        let original = asyncIssue('AvailabilityCheck', 'OtherCode', 'Old async message');
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }], [original], [standard]);
+        let incoming = asyncIssue('AvailabilityCheck', 'NameTaken', 'Server message');
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('A standard swap without an identity does not replace an async issue with the same code', () => {
+        let standard = createValidatorConfig({ conditionType: NeverMatchesConditionType });
+        standard.errorCode = 'NameTaken';
+        let original = asyncIssue('AvailabilityCheck', 'NameTaken', 'Async message');
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }], [original], [standard]);
+
+        expect(setup.valueHost.addExternalIssueFound({
+            errorCode: 'NameTaken',
+            errorMessage: 'Server message'
+        }, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toHaveLength(2);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual(expect.arrayContaining([
+            original,
+            expect.objectContaining({ errorCode: 'NameTaken', errorMessage: 'Local' })
+        ]));
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Uses a matching identity to replace an issue even when the external issue has no error code', () => {
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        let incoming: IssueFound = {
+            asyncIdentity: 'AvailabilityCheck',
+            errorMessage: 'Server message'
+        };
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            errorMessage: 'Server message'
+        })]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('Repeating the same async swap does not add an external issue or notify again', () => {
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        let incoming = asyncIssue('AvailabilityCheck', 'NameReserved', 'Server message');
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(false);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.valueHost.exposeState.externalIssuesFound ?? null).toBeNull();
+        expect(notifications).toHaveLength(1);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('An async warning replacement does not leave the host invalid or block saving', () => {
+        let setup = setupAsyncIssueHost([{ identity: 'AvailabilityCheck', handler: match }],
+            [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        let incoming: AsyncOwnedIssue = {
+            ...asyncIssue('AvailabilityCheck', 'NameReserved', 'Warning'),
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
+        };
+
+        expect(setup.valueHost.addExternalIssueFound(incoming, false)).toBe(true);
+        expect(setup.valueHost.exposeState.issuesFound).toEqual([expect.objectContaining(incoming)]);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.doNotSave).toBe(false);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+});
 
 
 describe('ValidatorsValueHostBase.getValidator', () => {
@@ -3861,6 +4186,211 @@ describe('ValidatorsValueHostBaseGenerator members', () => {
         expect(state!.issuesFound).toBeNull();
     });
 });
+
+/**
+ * Creates an async configuration for cleanup; the handler is not executed by the generator.
+ */
+function asyncCleanupConfig(identity: string): AsyncValidatorConfig {
+    return {
+        validatorType: ValidatorType.AsyncValidator,
+        handlerIdentity: identity,
+        handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+    };
+}
+
+/**
+ * Prepares previously stored issues and a replacement configuration for cleanup.
+ */
+function setupAsyncCleanup(
+    validatorConfigs: NonNullable<ValidatorsValueHostBaseConfig['validatorConfigs']>,
+    issuesFound: IssueFound[],
+    status: ValidationStatus = ValidationStatus.Invalid
+) {
+    let testItem = new TestValidatorsValueHostGenerator();
+    let config = finishPartialValidatorsValueHostBaseConfig({ validatorConfigs });
+    let state = finishPartialValidatorsValueHostBaseInstanceState({ issuesFound, status });
+    return { testItem, config, state };
+}
+
+// Cleanup must identify an async issue by its handler rather than its changing issue code.
+describe('ValidatorsValueHostBaseGenerator async issue cleanup', () => {
+    test('Retains an async issue when its handler remains configured even though its error code differs', () => {
+        let issue = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [issue]);
+        let external: IssueFound = { errorCode: 'ServerOnly', errorMessage: 'Server issue', doNotSave: false };
+        setup.state.externalIssuesFound = [external];
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([issue]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+        expect(setup.state.externalIssuesFound).toEqual([external]);
+    });
+
+    test('Removes an async issue and requires validation when its handler is removed', () => {
+        let setup = setupAsyncCleanup([], [asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken')]);
+        setup.state.lastStatus = ValidationStatus.Invalid;
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toBeNull();
+        expect(setup.state.status).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.state.lastStatus).toBeUndefined();
+    });
+
+    test('Retains both standard and async issues when both validators remain configured', () => {
+        let standardConfig = createValidatorConfig({ conditionType: ConditionType.RequireText });
+        let standard: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Enter a name',
+            severity: ValidationSeverity.Error
+        };
+        let async = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncCleanup([standardConfig, asyncCleanupConfig('AvailabilityCheck')], [standard, async]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual(expect.arrayContaining([standard, async]));
+        expect(setup.state.issuesFound).toHaveLength(2);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Keeps a standard issue when a configured async validator has no issue', () => {
+        let standardConfig = createValidatorConfig({ conditionType: ConditionType.RequireText });
+        let standard: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Enter a name',
+            severity: ValidationSeverity.Error
+        };
+        let setup = setupAsyncCleanup([standardConfig, asyncCleanupConfig('AvailabilityCheck')], [standard]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([standard]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Rejects an async configuration without an identity instead of claiming a standard issue', () => {
+        let standard: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Enter a name',
+            severity: ValidationSeverity.Error
+        };
+        let setup = setupAsyncCleanup([{ validatorType: ValidatorType.AsyncValidator }], [standard]);
+
+        expect(() => setup.testItem.cleanupInstanceState(setup.state, setup.config))
+            .toThrow(/handlerIdentity/);
+        expect(setup.state.issuesFound).toEqual([standard]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Removes only the issue belonging to the removed async handler', () => {
+        let retained = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let removed = asyncIssue('AlternateCheck', 'AlternateInvalid', 'Alternate invalid');
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [retained, removed]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([retained]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Does not mistake an async issue for a standard issue with the same error code', () => {
+        let standardConfig = createValidatorConfig({ conditionType: ConditionType.RequireText });
+        let async = asyncIssue('RemovedCheck', ConditionType.RequireText, 'Async message');
+        let standard: IssueFound = {
+            errorCode: ConditionType.RequireText,
+            errorMessage: 'Standard message',
+            severity: ValidationSeverity.Error
+        };
+        let setup = setupAsyncCleanup([standardConfig], [async, standard]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([standard]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Retains issues from two configured handlers even when they have the same issue code', () => {
+        let first = asyncIssue('AvailabilityCheck', 'NameTaken', 'First');
+        let second = asyncIssue('AlternateCheck', 'NameTaken', 'Second');
+        let setup = setupAsyncCleanup([
+            asyncCleanupConfig('AvailabilityCheck'),
+            asyncCleanupConfig('AlternateCheck')
+        ], [first, second]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual(expect.arrayContaining([first, second]));
+        expect(setup.state.issuesFound).toHaveLength(2);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Changes Invalid to Valid when only a retained async warning remains', () => {
+        let warning: AsyncOwnedIssue = {
+            ...asyncIssue('AvailabilityCheck', 'NameTaken', 'Warning'),
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
+        };
+        let removed: IssueFound = { errorCode: ConditionType.RequireText, errorMessage: 'Required', severity: ValidationSeverity.Error };
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [warning, removed]);
+        setup.state.lastStatus = ValidationStatus.Invalid;
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([warning]);
+        expect(setup.state.status).toBe(ValidationStatus.Valid);
+        expect(setup.state.lastStatus).toBeUndefined();
+    });
+
+    test('Keeps Invalid when a retained async error remains after a warning is removed', () => {
+        let error = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let removed: IssueFound = { errorCode: ConditionType.RequireText, errorMessage: 'Warning', severity: ValidationSeverity.Warning };
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [error, removed]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([error]);
+        expect(setup.state.status).toBe(ValidationStatus.Invalid);
+    });
+
+    test('Changes Invalid to Valid when an async error is removed and a standard warning remains', () => {
+        let standardConfig = createValidatorConfig({ conditionType: ConditionType.RequireText });
+        let warning: IssueFound = { errorCode: ConditionType.RequireText, errorMessage: 'Warning', severity: ValidationSeverity.Warning };
+        let removed = asyncIssue('RemovedCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncCleanup([standardConfig], [removed, warning]);
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.issuesFound).toEqual([warning]);
+        expect(setup.state.status).toBe(ValidationStatus.Valid);
+    });
+});
+
+// The real manager must pass captured async ownership through generator cleanup during restoration.
+describe('ValidatorsValueHostBaseGenerator async issue restoration integration', () => {
+    test('Retains a captured async issue when the manager recreates its configured ValueHost', () => {
+        let issue = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }], [issue]);
+        let capturedState = setup.valueHostsManager.captureState();
+
+        let restoredManager = new ValueHostsManager({
+            services: setup.services,
+            valueHostConfigs: [setup.config],
+            capturedState
+        });
+        let restored = restoredManager.getValidatorsValueHost('Field1');
+
+        expect(restored).not.toBeNull();
+        expect(restored!.getIssuesFound()).toEqual([issue]);
+        expect(restored!.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+});
+
 describe('dispose', () => {
 
     test('dispose kills many references including state and config', () => {

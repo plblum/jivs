@@ -217,6 +217,13 @@ export interface IssueFound {
      * Defaults to true when undefined.
      */
     doNotSave?: boolean;
+
+    /**
+     * Used only by AsyncValidators to preserve their own handlerIdentity property because the
+     * errorCode will not likely match the handlerIdentity, and some systems need to align
+     * issues by their handlerIdentity rather than the errorCode.
+     */
+    asyncIdentity?: string;
 }
 
 

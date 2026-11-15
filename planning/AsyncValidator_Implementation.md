@@ -449,46 +449,76 @@ The failure marker and final state are prerequisites for future manager completi
 
 ## 7. Issue ownership, cleanup and external replacement
 
-The host currently stores validator issues in `instanceState.issuesFound` and external issues separately. `cleanupInstanceState()` matches stored issue codes to validator config codes. That is insufficient when `AsyncValidatorConfig.handlerIdentity` is `AvailabilityCheck` and the handler returns `NameTaken`.
+### The idea: one issue per async handler
 
-This guide does **not** propose adding an identity property to public `IssueFound`. Instead, the candidate is a separate, serializable companion field on the host's instance state, aligned with `issuesFound` by array index. For example:
+The **owner** is the async validator that produced an issue, identified by its `handlerIdentity`. The ValueHost stores the issue; `ValidatorsValueHostBaseInstanceState` is not the owner.
 
-```ts
-// Illustrative host instance state, not public IssueFound properties.
-issuesFound: [{ errorCode: 'NameTaken', errorMessage: 'Already taken' }],
-validatorIssueOwners: ['AvailabilityCheck']
-```
+An async handler has at most one current issue. Its next issue replaces its previous one, even if the issue's error code changes.
 
-The entry says which validator produced the issue; `IssueFound.errorCode` remains `NameTaken` for localization and external matching. Capture/restore carries the companion field. Cleanup uses the owner to retain or remove the issue when config changes; replacing a matching issue retains the owner; validation and other changes update or remove the issue and corresponding owner together. External issues in the separate external list do not need this ownership entry. Legacy captured state has no companion field: apply existing standard-validator matching where possible, rather than inventing an owner or silently discarding an async issue. The implementation must account for arrays being reordered or edited and handle missing legacy entries safely. An equivalent representation is acceptable if it preserves these invariants and the public issue shape.
+### Put the identity on the issue
 
-For example, before and after the first-match replacement:
+Add an optional property to `IssueFound`; for example:
 
 ```ts
-// Before: two different validators supplied the same issue code.
-issuesFound = [
-    { errorCode: 'NameTaken', errorMessage: 'First message' },
-    { errorCode: 'NameTaken', errorMessage: 'Second message' }
-];
-validatorIssueOwners = ['AvailabilityCheck', 'AlternateCheck'];
-
-// After addExternalIssueFound({ errorCode: 'NameTaken', errorMessage: 'Server message' }, ...):
-issuesFound = [
-    { errorCode: 'NameTaken', errorMessage: 'Server message' },
-    { errorCode: 'NameTaken', errorMessage: 'Second message' }
-];
-validatorIssueOwners = ['AvailabilityCheck', 'AlternateCheck']; // unchanged
+// Proposed addition to IssueFound.
+asyncIdentity?: string;
 ```
 
-These are illustrative state excerpts; actual issue construction must also apply the agreed severity, blocking and notification semantics. They do not imply that all duplicates across both local and external lists are already resolved.
+For a `UserName` field, an issue might look like this:
 
-For `addExternalIssueFound()`:
+```ts
+{
+    asyncIdentity: 'AvailabilityCheck', // who produced it
+    errorCode: 'NameTaken',             // what went wrong
+    errorMessage: 'This name is already in use.'
+}
+```
 
-1. For the new async-validator case, look for an existing issue with the same nonempty **issue** code on the destination host, including validator-owned issues whose validator identity differs.
-2. Replace that async-validator-owned issue with the supplied display-ready issue and retain its validator ownership; subsequent validation can clear it. If multiple issues match, replace the **first** matching issue in the stored `issuesFound` order and retain that issue's owner (Q31); leave other matching issues unchanged. Preserve validator-swap blocking/severity behavior, including non-blocking warnings. Avoid double HTML encoding.
-3. A different code may leave both issues visible. With no matching local issue, retain the established external-issue path and its `determinedLocally` behavior; an absent code is not an implicit match.
-4. Preserve the existing standard-validator swap contract, which can generate the local validator's message instead of using the incoming message. Define how preexisting duplicates across the local and external lists are handled and how severity and `doNotSave` overrides work; do not introduce a success-shaped fallback.
+The host sets the identity when it stores an async result. The handler still supplies the issue code and message. `errorCode` remains the code used for localization; it does not have to equal the identity. Ordinary issues do not need the new property. Since the property is part of the issue, it travels with the issue in captured state and needs no separate, synchronized owner array.
 
-The current host first asks `tryValidatorSwap()` to match validator identity, and only then searches the validator-owned list. Changing the async validator alone cannot implement same-issue-code replacement when that code differs from the identity. Update the host path and test local/external storage, messages, state callbacks and subsequent clearing.
+### Example 1: restoring or changing configuration
+
+`AvailabilityCheck` produced the `NameTaken` issue above. Later, the ValueHost is recreated using its saved state:
+
+| New configuration | Cleanup result |
+| --- | --- |
+| Still contains `AvailabilityCheck` | Keep `NameTaken`. |
+| No longer contains `AvailabilityCheck` | Remove `NameTaken`. |
+
+[`cleanupInstanceState()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) checks the issue's `asyncIdentity` against configured async handler identities. An async handler without a saved issue does not by itself trigger a status change. Standard validators match ordinary issues by error code, but cannot claim an issue with an `asyncIdentity`. When cleanup changes the retained issues, it recalculates the status using the existing rules.
+
+Captured state contains issues, not handler functions; the application must recreate the config and handler. Older or supplied state without an identity cannot reliably identify an async owner from the issue code alone. Do not invent one; the fallback for such state still needs a decision.
+
+### Example 2: a new issue from the same handler
+
+`AvailabilityCheck` previously produced `NameTaken`. The next applicable result from that handler produces `NameReserved` instead.
+
+**Result:** replace `NameTaken` with `NameReserved`. There is still only one issue for `AvailabilityCheck`. A later successful validation can clear the handler's issue.
+
+### Example 3: an external issue
+
+Suppose `issuesFound` contains `NameTaken` for `AvailabilityCheck`, and the server supplies an issue through `addExternalIssueFound()` or `fromValidationPayload()`.
+
+| Incoming issue | Result |
+| --- | --- |
+| `NameReserved`, identity `AvailabilityCheck` | Replace `NameTaken` with `NameReserved`: they belong to the same handler. |
+| `NameTaken`, no identity | Keep it as an external issue; the matching code alone does not establish ownership (Q33). |
+| `NameReserved`, no identity | There is no match. Keep it as an external issue; both messages may be displayed (Q32). |
+
+When an identity is supplied, use it to identify the handler rather than replacing an issue belonging to a different handler just because its error code matches. If there is no matching existing async issue, follow the existing external-issue path; do not guess an owner. Preserve standard-validator swaps by error code without replacing an async-owned issue.
+
+For a replacement, use the incoming display-ready message and retain the handler identity, so later validation and cleanup treat it as that handler's issue. Do not encode or resolve the message again. The exact severity and `doNotSave` override policy still needs to be settled. Preserve the existing standard-validator swap behavior.
+
+### Where the issues live
+
+Validator-owned issues are in `issuesFound`; unmatched external issues are in `externalIssuesFound`. [`getIssuesFound()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) combines them for display. `clearExternalIssuesFound()` clears only the external list; the current `clearValidation()` clears both.
+
+### Implementation checks
+
+- Carry the handler identity from the async validator into its issue, including when Promises finish out of order. Capture and restore it with state.
+- Keep at most one current issue per handler; retain it or remove it during cleanup as shown above.
+- Support async external replacement by identity only. Keep unmatched external issues separate.
+- Test the examples, multiple handlers with the same issue code, later validation, status, warnings, blocking, and notifications. Decide how to handle state without reliable ownership and preexisting duplicates across the two lists.
 
 ## 8. Make conditions synchronous
 
@@ -521,7 +551,7 @@ Suggested implementation order, with review and tests at each step:
 2. Config cloning and builder; verify identity, duplicates and a class payload with required constructor arguments remains the same instance through manager construction, update, merge and callback cloning.
 3. AsyncValidator; verify skip options, enabled state, result combinations, diagnostics and Error logging, issue code/identity distinction, localization, `{Label}`, encoding and disposal.
 4. Host and field integration; verify synchronous priority, warnings/errors/severe, match status, pending notifications, stale runs and dependencies.
-5. Ownership and external replacement; verify captured-state reconstruction, issue codes different from identities, first-match replacement among duplicate issue codes, replacement ownership and validator-versus-external clearing.
+5. Ownership and external replacement; verify captured-state reconstruction, issue codes different from identities, identity-based replacement when issue codes collide, replacement ownership and validator-versus-external clearing.
 6. Condition contract migration; compile all affected packages and migrate existing condition consumers and tests. Verify sync condition behavior and validation ordering.
 7. Documentation, examples and config analysis; then integrate manager completion and submission in their separate projects.
 
@@ -530,8 +560,10 @@ Compile the repository from its root with `npm run compile` before cross-package
 ## Remaining decisions and release gate
 
 - **Q20 — Resolved:** An API failure blocks saving. A separate failure marker is necessary because `skipped` and `Undetermined` alone do not block.
-- **Q28 — Resolved:** Reuse the builder duplicate check for validator identities. That does not prevent distinct handlers returning the same issue code; see Q31.
+- **Q28 — Resolved:** Reuse the builder duplicate check for validator identities. That does not prevent distinct handlers returning the same issue code.
 - **Q29 — Resolved:** An empty handler message for `NoMatch` is a `CodingError`. Localization precedence and localized-template trust policy still need to be specified during implementation.
 - **Q30 — Clarified:** Yes, rejection and malformed results differ from Q20. Q20 concerns an operational failure that the handler catches and reports in a successfully resolved Promise; Q30 concerns a handler violating its contract. The proposed defensive behavior is to log a `CodingError` and keep saving blocked.
-- **Q31 — Resolved:** When two distinct validators return the same issue code, replace the first matching issue in stored order and retain that issue's validator owner.
+- **Q31 — Superseded by Q33:** Async issues are no longer matched by issue code alone.
+- **Q32 — Resolved:** An external issue with no identity and no matching issue code remains external; it can be displayed alongside the async issue.
+- **Q33 — Resolved:** An external issue requires a matching `asyncIdentity` to replace an async-owned issue; an error-code match alone is insufficient.
 - Finish stale-run and final-notification behavior before claiming manager-level completion or submission safety. A field-level validator feature may be built first, but it must not be advertised as a submission-ready gate.

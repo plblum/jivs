@@ -9,7 +9,7 @@ import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
-import { SevereErrorBase, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import
     {
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
@@ -22,7 +22,7 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -445,13 +445,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     }
 
     /*
-    * An IssueFound normally arrives in the externalIssuesFound array via addExternalIssueFound. 
-    * However, it may be overridden by the presence of a Validator already setup with the same errorcode.
-    * In that case, we add or replace an IssueFound in instanceState.issuesFound previously setup.
-    * Our intent: preserve the validator's error messages, and severity (can be overridden).
-    * The validator may not have found the issue on the client side, but the server did, 
-    * so we act like the client-side validator found it, preserving the error message from the client side.
-     */
+    * Standard validators may replace external issues using their error code.
+    * Async issues replace an existing validator issue only when their identities match.
+    */
     public override addExternalIssueFound(error: IssueFound, determinedLocally: boolean, options?: ValidateOptions): boolean
     {
         if (error) {
@@ -460,15 +456,21 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 this.logger.message(LoggingLevel.Warn, () => `IssueFound applied on disabled ValueHost "${this.getName()}"`);                
             }
         
-            // If the errorCode aligns to a validator, create that validator's IssueFound shape instead.
+            const asyncIdentity = error.asyncIdentity;
+            if (asyncIdentity != null &&
+                !this.instanceState.issuesFound?.some(issue => issue.asyncIdentity === asyncIdentity))
+                return super.addExternalIssueFound(error, determinedLocally, options);
+
+            // If the issue aligns to a validator, create that validator's IssueFound shape instead.
             // From this point on, the issue is treated as a validator result, not as an external issue.
             // That means validator semantics apply, including the validator's doNotSave behavior.
             // The external IssueFound likely starts with doNotSave = false
-            if (error.errorCode)
+            if (error.errorCode || asyncIdentity != null)
                 for (let i = 0; i < this.validators().length; i++) {
                     const validator = this.validators()[i];
                     const valResult = validator.tryValidatorSwap(error);
-                    if (valResult) {
+                    if (valResult &&
+                        (asyncIdentity == null || valResult.issueFound?.asyncIdentity === asyncIdentity)) {
                 // We are replacing the external issue with a validator-owned IssueFound.
                 // Preserve an explicit severity override from the external issue, and if that
                 // override makes the issue a warning, also make it non-blocking.
@@ -484,8 +486,19 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                               /* istanbul ignore next */ // defensive. Current code always sets this up
                                 stateToUpdate.issuesFound = [];
                             // replace if the same issuefound exists
-                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++) {
-                                if (stateToUpdate.issuesFound[issueIndex].errorCode === error.errorCode) {
+                            for (let issueIndex = 0; issueIndex < stateToUpdate.issuesFound.length; issueIndex++)
+                            {
+                                const issueFound = stateToUpdate.issuesFound[issueIndex];
+                                if (asyncIdentity != null)
+                                {
+                                    if (issueFound.asyncIdentity === asyncIdentity)
+                                    {
+                                        replacementIndex = issueIndex;
+                                        break;
+                                    }
+                                    continue;
+                                }
+                                if (issueFound.asyncIdentity == null && issueFound.errorCode === error.errorCode) {
                                     replacementIndex = issueIndex;
                                     break;
                                 }
@@ -495,14 +508,17 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                                 stateToUpdate.issuesFound.push(valResult.issueFound!);
                             else
                                 stateToUpdate.issuesFound[replacementIndex] = valResult.issueFound!;
-                            this.setInstanceStateStatus(stateToUpdate, ValidationStatus.Invalid);
+                            const onlyWarnings = asyncIdentity != null &&
+                                stateToUpdate.issuesFound.every(issue => issue.severity === ValidationSeverity.Warning);
+                            this.setInstanceStateStatus(stateToUpdate,
+                                onlyWarnings ? ValidationStatus.Valid : ValidationStatus.Invalid);
                             //NOTE: leave stateToUpdate.group and asyncProcessing alone
                             return stateToUpdate;
                         }, this);
                         if (changed) {
                             this.invokeOnValueHostValidationStateChanged(options);
-                            return true;
                         }
+                        return changed;
                     }
                 }
         }
@@ -556,24 +572,32 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
 
             config.validatorConfigs?.forEach((valConfig) =>
             {
-                // only considers on ValidatorConfig, not AsyncValidatorConfig.
-                // AsyncValidatorConfig is not going to have an external state change.
+                let found: IssueFound | undefined;
                 if (isAsyncValidatorConfig(valConfig))
-                    return;
-                let errorCode: string | null = cleanString(valConfig.errorCode);
-                const vc = valConfig as ValidatorConfig;
-                if (!errorCode && vc.conditionConfig)
-                    errorCode = vc.conditionConfig.conditionType;
-                else if (vc.conditionCreator)
                 {
-                    const cond = vc.conditionCreator(vc);   // return null is actually a configuration bug reported to the user in Validator.Condition
-                    if (cond)
-                        errorCode = cond.conditionType;
+                    const identity = 'handlerIdentity' in valConfig ? valConfig.handlerIdentity : undefined;
+                    assertNotEmptyString(identity, 'handlerIdentity');
+                    found = oldState.find(value => value.asyncIdentity != null && value.asyncIdentity === identity);
+                    if (!found)
+                        return;
                 }
-                if (!errorCode)
-                    /* istanbul ignore next */  // defensive. Current code always establishes an error code
-                    errorCode = ConditionType.Unknown;
-                const found = oldState.find((value) => value.errorCode === errorCode);
+                else
+                {
+                    let errorCode: string | null = cleanString(valConfig.errorCode);
+                    const vc = valConfig as ValidatorConfig;
+                    if (!errorCode && vc.conditionConfig)
+                        errorCode = vc.conditionConfig.conditionType;
+                    else if (vc.conditionCreator)
+                    {
+                        const cond = vc.conditionCreator(vc);   // return null is actually a configuration bug reported to the user in Validator.Condition
+                        if (cond)
+                            errorCode = cond.conditionType;
+                    }
+                    if (!errorCode)
+                        /* istanbul ignore next */  // defensive. Current code always establishes an error code
+                        errorCode = ConditionType.Unknown;
+                    found = oldState.find(value => value.asyncIdentity == null && value.errorCode === errorCode);
+                }
                 if (found) {
                     if (!issuesFound)
                         issuesFound = [];

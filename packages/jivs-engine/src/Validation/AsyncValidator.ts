@@ -89,6 +89,8 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
 
     protected resolveValidationResult(result: AsyncValidatorEvaluationResult): ValidatorValidateResult
     {
+        const identity = this.config.handlerIdentity;
+
         if (result.failedToResolve)
         {
             this.logger.error(result.failedToResolve);
@@ -102,20 +104,19 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
         {
             case ConditionEvaluateResult.NoMatch:
                 if (!result.errorMessage)
-                    throw new CodingError(`Validator ${this.config.handlerIdentity} must return an error message for NoMatch condition`);
+                    throw new CodingError(`Validator ${identity} must return an error message for NoMatch condition`);
                 if (!result.errorCode)
-                    throw new CodingError(`Validator ${this.config.handlerIdentity} must return an error code for NoMatch condition`);
+                    throw new CodingError(`Validator ${identity} must return an error code for NoMatch condition`);
                 let errorMessage = this.resolveErrorMessage(result);
                 let severity = this.resolveSeverity(result.severity);
+                let issueFound = this.createIssueFound();
+                issueFound.doNotSave = severity !== ValidationSeverity.Warning;
+                issueFound.errorCode = result.errorCode ?? this.errorCode;
+                issueFound.errorMessage = errorMessage;
+                issueFound.summaryMessage = errorMessage;
+                issueFound.severity = severity;
                 return {
-                    issueFound: {
-                        doNotSave: severity !== ValidationSeverity.Warning,
-                        errorCode: result.errorCode ?? this.errorCode,
-                        errorMessage: errorMessage,
-                        summaryMessage: errorMessage,
-                        severity: severity,
-                        valueHostName: this.valueHost.getName()
-                    },
+                    issueFound: issueFound,
                     conditionEvaluateResult: result.conditionEvaluateResult
                 };
                 break;
@@ -133,6 +134,7 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
      * if ErrorMessagel10n is setup.
      */
     protected resolveErrorMessage(result: AsyncValidatorEvaluationResult): string {
+        const identity = this.config.handlerIdentity;
         let cultureId = this.valueHostsManager.behaviors.activeCultureId!;
         let errorCode = result.errorCode ?? this.errorCode;
 
@@ -143,7 +145,7 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
             msg = Validator.errorMessageMissing;
             this.logger.log(LoggingLevel.Error, () => {
                 return {
-                    message: `Error message missing for Validator ${this.config.handlerIdentity} using this error code ${errorCode}`,
+                    message: `Error message missing for Validator ${identity} using this error code ${errorCode}`,
                     category: LoggingCategory.Configuration
                 };
             });
@@ -178,8 +180,38 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
      */
     public override tryValidatorSwap(externalIssueFound: IssueFound): ValidatorValidateResult | null
     {
+        if (externalIssueFound.asyncIdentity != null && // null/undefined
+            externalIssueFound.asyncIdentity === this.config.handlerIdentity)
+        {
+            const issueFound = this.createIssueFound();   // set up as if ConditionEvaluateResult.Undetermined
+            issueFound.severity = this.resolveSeverity(externalIssueFound.severity);
+            issueFound.errorMessage = externalIssueFound.errorMessage;
+            issueFound.summaryMessage = externalIssueFound.summaryMessage;
+            issueFound.doNotSave = externalIssueFound.doNotSave || externalIssueFound.severity !== ValidationSeverity.Warning;
+            issueFound.errorCode = externalIssueFound.errorCode ?? this.errorCode;
+            const resultState: ValidatorValidateResult = {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                issueFound: issueFound
+            };
+            return resultState;
+        }
         return null;
     }
+    /**
+     * Creates a base representation of an issue found for an async validator.
+     * @param valueHost 
+     * @returns 
+     */
+    protected createIssueFound(): IssueFound {
+        return {
+            asyncIdentity: this.config.handlerIdentity,
+            valueHostName: this.valueHost.getName(),
+            severity: ValidationSeverity.Error,
+            errorMessage: '',
+            doNotSave: true
+        };
+    }
+
 }
 
 /**
