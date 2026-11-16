@@ -54,7 +54,6 @@ import
     {
         AlwaysMatchesConditionType,
         DisposableConditionType,
-        EvaluatesAsPromiseConditionType,
         IsUndeterminedConditionType,
         NeverMatchesConditionType,
         makeDisposable
@@ -119,7 +118,7 @@ describe('ConditionBase class', () => {
             return super.tryConversion(value, valueLookupKey, conversionLookupKey, services);
         }
 
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
             throw new Error('Method not implemented.');
         }
         protected get defaultCategory(): ConditionCategory {
@@ -128,9 +127,7 @@ describe('ConditionBase class', () => {
         public gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
             throw new Error('Method not implemented.');
         }
-        public publicify_ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
-            return super.ensureNoPromise(result);
-        }
+
         public publicify_logInvalidPropertyData(propertyName: string, errorMessage: string, services: IJivsServices, logLevel : LoggingLevel): void {
             super.logInvalidPropertyData(propertyName, errorMessage, services, logLevel);
         }
@@ -178,7 +175,7 @@ describe('ConditionBase class', () => {
                 super(config);
                 throw new Error('Test Error');
             }
-            evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+            evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
                 throw new Error('Method not implemented.');
             }
             gatherValueHostNames(collection: Set<string>, valueHostsManager: IValueHostsManager): void {
@@ -259,21 +256,6 @@ describe('ConditionBase class', () => {
             });
 
         });
-    });
-    describe('ensureNoPromise', () => {
-        test('ensureNoPromise with ConditionEvaluateResult returns the same result', () => {
-            let setup = setupTest();
-            let result = setup.testItem.publicify_ensureNoPromise(ConditionEvaluateResult.Match);
-            expect(result).toBe(ConditionEvaluateResult.Match);
-        });
-        test('ensureNoPromise with Promise<ConditionEvaluateResult> throws CodingError', () => {
-            let setup = setupTest();
-            let testPromise = new Promise<ConditionEvaluateResult>((resolve, reject) => {
-                resolve(ConditionEvaluateResult.Match);
-            });
-            expect(() => setup.testItem.publicify_ensureNoPromise(testPromise)).toThrow(CodingError);
-        });
-        
     });
     describe('logInvalidPropertyData', () => {
         test('logInvalidPropertyData logs level=error message', () => {
@@ -402,7 +384,7 @@ describe('OneValueConditionBase class', () => {
         public publicify_getValueHost(valueHostName: ValueHostName, valueHostsManager: IValueHostsManager): IValueHost | null {
             return super.getValueHost(valueHostName, valueHostsManager);
         }
-        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
             let vh = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
             return ConditionEvaluateResult.Undetermined;
         }
@@ -2106,21 +2088,6 @@ describe('class AllMatchCondition', () => {
         let logger = services.loggingService as TestingLoggingService;
         expect(logger.findMessage('ConditionType not registered', LoggingLevel.Error, null)).toBeTruthy();
     });
-    test('With 1 child whose evaluate() function returns a Promise throws', () => {
-        let services = new MockJivsServices(true, true);
-        let vhm = new MockValueHostsManager(services);
-        let vh = vhm.addMockFieldValueHost(
-            'Property1', LookupKey.String, 'Label');
-        let config: AllMatchConditionConfig = {
-            conditionType: ConditionType.All,
-            conditionConfigs: [{
-                conditionType: EvaluatesAsPromiseConditionType
-            }]
-        };
-        let testItem = new AllMatchCondition(config);
-
-        expect(() => testItem.evaluate(vh, vhm)).toThrow();
-    });
     test('category is Children', () => {
         let config: AllMatchConditionConfig = {
             conditionType: ConditionType.All,
@@ -2948,7 +2915,7 @@ describe('class NotNullCondition', () => {
 describe('NumberConditionBase', () => {
     class TestNumberConditionBase extends NumberConditionBase<NumberConditionBaseConfig>
     {
-        protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
             return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
         }
         protected get defaultCategory(): ConditionCategory {

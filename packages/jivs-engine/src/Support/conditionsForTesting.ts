@@ -8,7 +8,6 @@
  * - UserSuppliedResultCondition: Returns a result supplied in the config
  * - UserSuppliedResultConditionWithDuringEdit: Returns a result supplied in the config
  *   and implements IEvaluateConditionDuringEdits
- * - EvaluatesAsPromiseCondition: Returns a Promise that resolves to Match
  * - DisposableCondition: Returns a result supplied in the config and implements IDisposable
  * 
  * Add to an existing JivsServices by calling registerTestingOnlyConditions(services.conditionsFactory).
@@ -38,7 +37,6 @@ import { CodingError } from '../Utilities/ErrorHandling';
  * - UserSuppliedResultCondition: Returns a result supplied in the config
  * - UserSuppliedResultConditionWithDuringEdit: Returns a result supplied in the config
  *   and implements IEvaluateConditionDuringEdits
- * - EvaluatesAsPromiseCondition: Returns a Promise that resolves to Match
  * - DisposableCondition: Returns a result supplied in the config and implements IDisposable
  */
 export function registerTestingOnlyConditions(factory: ConditionFactory): void
@@ -50,7 +48,6 @@ export function registerTestingOnlyConditions(factory: ConditionFactory): void
     factory.register(ThrowsSevereExceptionConditionType, (config) => new ThrowsSevereExceptionCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionType, (config) => new UserSuppliedResultCondition(config));
     factory.register<UserSuppliedResultConditionConfig>(UserSuppliedResultConditionWithDuringEditType, (config) => new UserSuppliedResultConditionWithDuringEdit(config));
-    factory.register<ConditionConfig>(EvaluatesAsPromiseConditionType, (config) => new EvaluatesAsPromiseCondition(config));
     factory.register<DisposableConditionConfig>(DisposableConditionType, (config) => new DisposableCondition(config));
     // yes, two conditions of the same class can be registered with different Type names.
     factory.register(NeverMatchesConditionType2, (config) => new NeverMatchesCondition(config));
@@ -71,7 +68,7 @@ export abstract class MockConditionBase<TConfig extends ConditionConfig> impleme
         return this.config.conditionType;
     }
 
-    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult;
 
     public get config(): TConfig {
         return this._config;
@@ -92,7 +89,7 @@ export const AlwaysMatchesConditionType = 'AlwaysMatches';
  */
 export class AlwaysMatchesCondition extends MockConditionBase<ConditionConfig> implements IEvaluateConditionDuringEdits{
  
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
         return ConditionEvaluateResult.Match;
     }
 
@@ -110,7 +107,7 @@ export const NeverMatchesConditionType2 = 'NeverMatches2'; // two type names for
  */
 export class NeverMatchesCondition extends MockConditionBase<ConditionConfig> implements IEvaluateConditionDuringEdits {
 
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
         return ConditionEvaluateResult.NoMatch;
     }
     public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
@@ -127,7 +124,7 @@ export const IsUndeterminedConditionType = 'AlwaysUndetermined';
 export class IsUndeterminedCondition extends MockConditionBase<ConditionConfig>{
     protected get defaultConditionType(): string { return this.config.conditionType; }
     
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
         return ConditionEvaluateResult.Undetermined;
     }
 
@@ -141,7 +138,7 @@ export const ThrowsExceptionConditionType = 'AlwaysThrows';
  */
 export class ThrowsExceptionCondition extends MockConditionBase<ConditionConfig>{
     protected get defaultConditionType(): string { return this.config.conditionType; }    
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
         throw new Error('Always Throws');
     }
 }
@@ -155,7 +152,7 @@ export const ThrowsSevereExceptionConditionType = 'AlwaysThrowsSevere';
  */
 export class ThrowsSevereExceptionCondition extends MockConditionBase<ConditionConfig>{
     protected get defaultConditionType(): string { return this.config.conditionType; }
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult {
         throw new CodingError('Always Throws');
     }
 }
@@ -179,7 +176,7 @@ export interface UserSuppliedResultConditionConfig extends ConditionConfig
  */
 export class UserSuppliedResultCondition extends MockConditionBase<UserSuppliedResultConditionConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         return this.config.result;
     }
 }
@@ -189,23 +186,6 @@ export class UserSuppliedResultConditionWithDuringEdit extends UserSuppliedResul
     public evaluateDuringEdits(text: string, valueHost: IFieldValueHost, services: IJivsServices): ConditionEvaluateResult {
         return this.config.result;
     }
-}
-export const EvaluatesAsPromiseConditionType = 'EvaluatesAsPromise';
-
-/**
- * Custom condition that returns a Promise that resolves to Match, designed for testing validation.
- * This is useful for testing asynchronous conditions.
- * Expected to be registered using EvaluatesAsPromiseConditionType ("EvaluatesAsPromise").
- * The Promise is resolved with ConditionEvaluateResult.Match.
-*/
-export class EvaluatesAsPromiseCondition extends MockConditionBase<ConditionConfig>{
- 
-    public evaluate(valueHost: IValueHost | null, valueHostsResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        return new Promise((resolve) => {
-            resolve(ConditionEvaluateResult.Match);
-        });
-    }
-
 }
 
 export const DisposableConditionType = 'Disposable';
@@ -221,7 +201,7 @@ export interface DisposableConditionConfig extends ConditionConfig
  */
 export class DisposableCondition extends MockConditionBase<DisposableConditionConfig> implements IDisposable
 {
-    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostResolver: IValueHostResolver): ConditionEvaluateResult {
         return this.config.result;
     }
 

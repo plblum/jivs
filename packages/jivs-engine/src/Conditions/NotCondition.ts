@@ -19,7 +19,7 @@ export interface NotConditionConfig extends ConditionWithOneChildBaseConfig
 
 /**
  * Negates the result of a single child condition. Does nothing if the child condition
- * results in Undetermined. Does not support Promises at this time.
+ * results in Undetermined. 
  */
 export class NotCondition extends ConditionWithOneChildBase<NotConditionConfig>
 {
@@ -31,10 +31,9 @@ export class NotCondition extends ConditionWithOneChildBase<NotConditionConfig>
      * @param valueHostsManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         const condition = this.condition(valueHostsManager);
         const result = condition.evaluate(valueHost, valueHostsManager);
-        this.ensureNoPromise(result);
         switch (result) {
             case ConditionEvaluateResult.Match:
                 return ConditionEvaluateResult.NoMatch;

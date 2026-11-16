@@ -11,7 +11,7 @@ import { LookupKey } from "../../src/DataTypes/LookupKeys";
 import { ConditionCategory, ConditionConfig, ConditionEvaluateResult, ICondition } from "../../src/Interfaces/Conditions";
 import { InjectedError, InjectedErrorValidatorErrorCode, ValidatorsValueHostBaseInstanceState, toIValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
-import { IValidatableValueHost, ValueHostValidationStateChangedHandler, ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
+import { ValueHostValidationState } from "../../src/Interfaces/ValidatableValueHostBase";
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
@@ -23,13 +23,6 @@ import {
     ValueHostConfig, ValueHostInstanceState
 } from "../../src/Interfaces/ValueHost";
 import { IValueHostResolver } from "../../src/Interfaces/ValueHostResolver";
-import { DataTypeCheckGeneratorService } from "../../src/Services/DataTypeCheckGeneratorService";
-import { DataTypeComparerService } from "../../src/Services/DataTypeComparerService";
-import { DataTypeConverterService } from "../../src/Services/DataTypeConverterService";
-import { DataTypeFormatterService } from "../../src/Services/DataTypeFormatterService";
-import { DataTypeIdentifierService } from "../../src/Services/DataTypeIdentifierService";
-import { MessageTokenResolverService } from "../../src/Services/MessageTokenResolverService";
-import { JivsServices } from "../../src/Services/JivsServices";
 import { ValueHostsManager } from "../../src/Validation/ValueHostsManager";
 import { Validator } from "../../src/Validation/Validator";
 import { ValidatorsValueHostBase, ValidatorsValueHostBaseGenerator } from "../../src/ValueHosts/ValidatorsValueHostBase";
@@ -38,16 +31,14 @@ import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import {
     AlwaysMatchesConditionType, NeverMatchesConditionType,
     IsUndeterminedConditionType, NeverMatchesConditionType2, UserSuppliedResultConditionType,
-    UserSuppliedResultConditionConfig, registerTestingOnlyConditions,
+    UserSuppliedResultConditionConfig,
     NeverMatchesCondition, ThrowsSevereExceptionConditionType
 } from "../../src/Support/conditionsForTesting";
 import { createJivsServicesForTesting } from '../../src/Support/createJivsServicesForTesting';
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
-import { ConditionWithPromiseTester } from "../Validation/Validator.test";
 import { IDisposable } from "../../src/Interfaces/General_Purpose";
 import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { restoreCapturedState } from '../TestSupport/utilities';
-import { Publicify_ValueHostsManager } from '../TestSupport/Publicify_classes';
 import { EqualToConditionConfig, EqualToCondition } from '../../src/Conditions/ComparisonCondition_classes';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 
@@ -387,32 +378,26 @@ class FailedPromiseValidatorFactory implements IValidatorFactory {
 
 // A severe validation exception must abandon its promises without leaving the host saveable or pending.
 describe('ValidatorsValueHostBase severe validation cleanup', () => {
-    test('A failed replacement invalidates promises from both runs and permits a later retry', async () => {
-        let resolvers: Array<(result: ConditionEvaluateResult) => void> = [];
+    test('A failed replacement invalidates an earlier async run and permits a later retry', async () => {
+        let resolvers: Array<(result: AsyncValidatorEvaluationResult) => void> = [];
         let shouldThrow = false;
         let severeError = new CodingError('Synchronous validator failed');
-        let setup = setupValidatorsValueHostBaseForValidate([
-            {
-                conditionCreator: () => ({
-                    conditionType: 'DeferredCondition',
-                    category: ConditionCategory.Undetermined,
-                    evaluate: () => new Promise<ConditionEvaluateResult>(resolve => { resolvers.push(resolve); })
-                })
-            },
-            {
-                conditionCreator: () => ({
-                    conditionType: 'FailingCondition',
-                    category: ConditionCategory.Undetermined,
-                    evaluate: () => {
-                        if (shouldThrow)
-                            throw severeError;
-                        return ConditionEvaluateResult.Match;
-                    }
-                })
-            }
-        ], null);
-        let logger = new TestingLoggingService(LoggingLevel.Debug);
-        setup.services.loggingService = logger;
+        let setup = setupAsyncIssueHost([{
+            identity: 'DeferredCheck',
+            handler: () => new Promise(resolve => { resolvers.push(resolve); })
+        }], [], [{
+            validatorType: ValidatorType.Validator,
+            conditionConfig: null,
+            conditionCreator: () => ({
+                conditionType: 'FailingCondition',
+                category: ConditionCategory.Undetermined,
+                evaluate: () => {
+                    if (shouldThrow)
+                        throw severeError;
+                    return ConditionEvaluateResult.Match;
+                }
+            })
+        }]);
         let notifications: ValueHostValidationState[] = [];
         setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
@@ -422,7 +407,7 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
 
         shouldThrow = true;
         expect(() => setup.valueHost.validate()).toThrow(severeError);
-        expect(resolvers).toHaveLength(2);
+        expect(resolvers).toHaveLength(1);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.asyncProcessing).toBe(false);
         expect(setup.valueHost.doNotSave).toBe(true);
@@ -430,9 +415,12 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
             status: ValidationStatus.NeedsValidation, doNotSave: true, asyncProcessing: false
         }));
 
-        // Both obsolete promises resolve after the exception; neither may update the host.
-        resolvers[0](ConditionEvaluateResult.NoMatch);
-        resolvers[1](ConditionEvaluateResult.NoMatch);
+        // The obsolete request resolves after the exception and must not update the host.
+        resolvers[0]({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'StaleIssue',
+            errorMessage: 'Must not be applied'
+        });
         await Promise.all(firstPending);
         await new Promise(resolve => setTimeout(resolve, 0));
         expect(first.pending).toBeUndefined();
@@ -443,11 +431,11 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
         shouldThrow = false;
         let retry = setup.valueHost.validate()!;
         let retryPending = [...retry.pending!];
-        resolvers[2](ConditionEvaluateResult.Match);
+        resolvers[1]({ conditionEvaluateResult: ConditionEvaluateResult.Match });
         await Promise.all(retryPending);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
         expect(setup.valueHost.doNotSave).toBe(false);
-        expect(logger.findMessage('Synchronous validator failed', LoggingLevel.Error, LoggingCategory.Exception,
+        expect(setup.logger.findMessage('Synchronous validator failed', LoggingLevel.Error, LoggingCategory.Exception,
             { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
     });
 
@@ -3491,447 +3479,182 @@ describe('validate handles exception from custom Validator class', () => {
     });
 });
 
-function testValidateFunctionWithPromise(
-    validatorConfigs: Array<Partial<ValidatorConfig>> | null,
-    onValidationStateChanged: ValueHostValidationStateChangedHandler,
-    validationGroup?: string | undefined): {
-        services: IJivsServices,
-        vhm: Publicify_ValueHostsManager,
-        vh: TestValidatorsValueHost,
-        promises: Array<Promise<ValidatorValidateResult>>
-    } {
-    let vhd1: ValidatorsValueHostBaseConfig = {
-        name: 'Field1',
-        label: 'Field 1',
-        valueHostType: TestValueHostType,
-        validatorConfigs: finishPartialValidatorConfigs(validatorConfigs ?? null)
-    };
-    let services = new JivsServices('en');
-    supportTestValueHostInServices(services);
-    services.conditionFactory = new ConditionFactory();
-    services.loggingService = new TestingLoggingService();
-    registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-    services.dataTypeComparerService = new DataTypeComparerService();
-    services.dataTypeConverterService = new DataTypeConverterService();
-    services.dataTypeFormatterService = new DataTypeFormatterService();
-    services.dataTypeIdentifierService = new DataTypeIdentifierService();
-    services.dataTypeCheckGeneratorService = new DataTypeCheckGeneratorService();
-    services.dataTypeCheckGeneratorService.enabled = false;
-    services.messageTokenResolverService = new MessageTokenResolverService();
-    let vhm = new Publicify_ValueHostsManager({
-        services: services,
-        valueHostConfigs: []
+// Promise-based validators publish pending and completed states to the host and manager.
+describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
+    test.each([
+        {
+            outcome: 'Match',
+            evaluation: { conditionEvaluateResult: ConditionEvaluateResult.Match },
+            status: ValidationStatus.Valid,
+            issues: null,
+            doNotSave: false
+        },
+        {
+            outcome: 'NoMatch',
+            evaluation: {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken',
+                errorMessage: 'Name is taken'
+            },
+            status: ValidationStatus.Invalid,
+            issues: [{
+                asyncIdentity: 'AvailabilityCheck',
+                valueHostName: 'Field1',
+                errorCode: 'NameTaken',
+                errorMessage: 'Name is taken',
+                summaryMessage: 'Name is taken',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }],
+            doNotSave: true
+        },
+        {
+            outcome: 'Undetermined',
+            evaluation: { conditionEvaluateResult: ConditionEvaluateResult.Undetermined },
+            status: ValidationStatus.Undetermined,
+            issues: null,
+            doNotSave: false
+        }
+    ])('A pending validator resolves as $outcome and publishes its final state', async ({
+        evaluation, status, issues, doNotSave
+    }) => {
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: () => new Promise(resolve => { finish = resolve; })
+        }]);
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        let result = setup.valueHost.validate()!;
+        expect(result.pending).toHaveLength(1);
+        let pending = result.pending![0];
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.valueHostsManager.asyncProcessing).toBe(true);
+        expect(setup.valueHostsManager.doNotSave).toBe(true);
+        expect(notifications).toHaveLength(1);
+        expect(notifications[0]).toEqual(expect.objectContaining({
+            status: ValidationStatus.Undetermined, issuesFound: null,
+            asyncProcessing: true, doNotSave: true
+        }));
+
+        finish(evaluation);
+        let validatorResult = await pending;
+        expect(validatorResult.conditionEvaluateResult).toBe(evaluation.conditionEvaluateResult);
+        expect(validatorResult.issueFound).toEqual(issues?.[0] ?? null);
+        expect(result.pending).toBeUndefined();
+        expect(setup.valueHost.validationStatus).toBe(status);
+        expect(setup.valueHost.getIssuesFound()).toEqual(issues);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.doNotSave).toBe(doNotSave);
+        expect(setup.valueHostsManager.asyncProcessing).toBe(false);
+        expect(setup.valueHostsManager.doNotSave).toBe(doNotSave);
+        expect(notifications).toHaveLength(2);
+        expect(notifications[1]).toEqual(expect.objectContaining({
+            status, issuesFound: issues, asyncProcessing: false, doNotSave
+        }));
+        expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
-    vhm.onValueHostValidationStateChanged = onValidationStateChanged;
-    let vh = vhm.addValueHost(vhd1, null) as TestValidatorsValueHost;
 
-    // let setup = SetupValidatorsValueHostBaseForValidate(validatorConfigs, fieldValueState);
-    // setup.valueHostsManager.onValueHostValidationStateChanged = onValidationStateChanged;
-
-    let vrDetails: ValueHostValidateResult | null = null;
-    expect(() => vrDetails = vh.validate({ group: validationGroup })).not.toThrow();
-    expect(vrDetails).not.toBeNull();
-    expect(vrDetails!.pending).not.toBeNull();
-    return {
-        services: services,
-        vhm: vhm,
-        vh: vh,
-        promises: vrDetails!.pending!
-    };
-}
-async function testOnePendingResult(
-    pending: Promise<ValidatorValidateResult>,
-    expectedValidatorValidateResult: ValidatorValidateResult) {
-    let asyncResult = await pending;
-
-    expect(asyncResult.conditionEvaluateResult).toBe(expectedValidatorValidateResult.conditionEvaluateResult);
-}
-function validateWithAsyncConditions(
-    conditionEvaluateResult: ConditionEvaluateResult,
-    // one entry per promise expected, in the order of the promises
-    expectedValidatorValidateResults: Array<ValidatorValidateResult>,
-    // one entry per expected OnValueHostValidate, in the order expected
-    expectedValidateResults: Array<ValueHostValidateResult>,
-    done: jest.DoneCallback,
-    // place this before the auto generated async condition
-    before?: ValidatorConfig | null,
-    // place this after the auto generated async condition
-    after?: ValidatorConfig | null): void {
-    let ivConfigs: Array<Partial<ValidatorConfig>> = [];
-    if (before)
-        ivConfigs.push(before);
-    ivConfigs.push({
-        conditionConfig: null,
-        conditionCreator: (requester) =>
-            new ConditionWithPromiseTester(
-                conditionEvaluateResult, 0
-            )
-    });
-    if (after)
-        ivConfigs.push(after);
-
-    let doneTime = false;
-    let handlerCount = 0;
-    let onValidateHandler: ValueHostValidationStateChangedHandler =
-        (valueHost: IValidatableValueHost, snapshot: ValueHostValidationState) => {
-            let vhm = (valueHost as TestValidatorsValueHost).valueHostsManager as IValueHostsManager;
-            let evr = expectedValidateResults[handlerCount];
-            expect(snapshot.isValid).toBe(evr.status !== ValidationStatus.Invalid);
-            expect(snapshot.issuesFound).toEqual(evr.issuesFound);
-            if (evr.pending) {
-                expect(snapshot.asyncProcessing).toBe(true);
-                expect(valueHost.asyncProcessing).toBe(true);
-                expect(vhm.asyncProcessing).toBe(true);
-            }
-            else {
-                expect(snapshot.asyncProcessing).toBe(false);
-                expect(valueHost.asyncProcessing).toBe(false);
-                expect(vhm.asyncProcessing).toBe(false);
-            }
-            handlerCount++;
-            if (doneTime) {
-                expect(vhm.doNotSave).toBe(!!evr.pending || evr.status === ValidationStatus.Invalid);
-                if (!evr.pending)
-                    done();
-            }
-            else
-                expect(vhm.doNotSave).toBe(true);
-        };
-
-    let setup = testValidateFunctionWithPromise(ivConfigs, onValidateHandler);
-    expect(setup.promises.length).toBe(expectedValidatorValidateResults.length);
-
-    for (let i = 0; i < setup.promises.length; i++)
-        testOnePendingResult(setup.promises[i], expectedValidatorValidateResults[i]);
-    // Completion is reported by the final validation-state notification.
-    doneTime = true;
-    expect(setup.vhm.doNotSave).toBe(true); // because of Async, regardless of ValidationStatus
-}
-describe('validate with async Conditions', () => {
-    test('With 1 Condition that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
-        (done) => {
-            validateWithAsyncConditions(ConditionEvaluateResult.Match,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
-                }],
-                [
-                    { // onValueHostValidate prior to promise
-                        status: ValidationStatus.Undetermined,
-                        issuesFound: null,
-                        pending: [<any>{}]
-                    },
-                    {   // after promise
-                        status: ValidationStatus.Valid,
-                        issuesFound: null,
-
-                    }
-                ],
-                done);
-        },
-        1500);  // shortened timeout
-    test('With 1 Condition that returns a promise evaluating as NoMatch is ValidatorResult.Invalid, IssuesFound assigned',
-        (done) => {
-            let issueFound: IssueFound = {
-                errorCode: 'TEST',
-                errorMessage: 'Local',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Summary',
-                doNotSave: true
+    test.each(['async-first', 'standard-first'] as const)(
+        'Retains both errors when the %s configuration is listed first',
+        async order => {
+            let finish!: (result: AsyncValidatorEvaluationResult) => void;
+            let asyncConfig: AsyncValidatorConfig = {
+                validatorType: ValidatorType.AsyncValidator,
+                handlerIdentity: 'AvailabilityCheck',
+                handler: () => new Promise(resolve => { finish = resolve; })
             };
+            let standardConfig = createValidatorConfig({ conditionType: NeverMatchesConditionType });
+            let setup = setupValidatorsValueHostBase({
+                validatorConfigs: order === 'async-first' ?
+                    [asyncConfig, standardConfig] : [standardConfig, asyncConfig]
+            });
+            let logger = new TestingLoggingService(LoggingLevel.Debug);
+            setup.services.loggingService = logger;
+            let notifications: ValueHostValidationState[] = [];
+            setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
-            validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                    issueFound: issueFound
-                }],
-                [{  // onValueHostValidate prior to promise
-                    status: ValidationStatus.Undetermined,
-                    issuesFound: null,
-                    pending: [<any>{}]
-                },
-                {   // after promise
-                    status: ValidationStatus.Invalid,
-                    issuesFound: [issueFound]
-                }],
-                done);
-        },
-        1500);  // shortened timeout
-    test('With 1 Condition that returns a promise evaluating as Undetermined is ValidatorResult.Undetermined, IssuesFound = null',
-        (done) => {
-            validateWithAsyncConditions(ConditionEvaluateResult.Undetermined,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                    issueFound: null
-                }],
-                [{
-                    status: ValidationStatus.Undetermined,
-                    issuesFound: null,
-                    pending: [<any>{}]
-                }, {
-                    status: ValidationStatus.Undetermined,
-                    issuesFound: null
-                }],
-                done);
-        },
-        1500);  // shortened timeout
-    test('With 2 Conditions, first is Match, second is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
-        (done) => {
-            validateWithAsyncConditions(ConditionEvaluateResult.Match,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
-                }],
-                [{
-                    status: ValidationStatus.Valid,
-                    issuesFound: null,
-                    pending: [<any>{}]
-                }, {
-                    status: ValidationStatus.Valid,
-                    issuesFound: null
-                }],
-                done,
-                <ValidatorConfig>{
-                    conditionConfig: {
-                        conditionType: AlwaysMatchesConditionType
-                    },
-                    errorMessage: 'Always',
-                });
-        },
-        1500);  // shortened timeout
-    test('With 2 Conditions, second is Match, first is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null',
-        (done) => {
-            validateWithAsyncConditions(ConditionEvaluateResult.Match,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
-                }],
-                [{
-                    status: ValidationStatus.Valid,
-                    issuesFound: null,
-                    pending: [<any>{}]
-                }, {
-                    status: ValidationStatus.Valid,
-                    issuesFound: null
-                }],
-                done,
-                null,
-                <ValidatorConfig>{
-                    conditionConfig: {
-                        conditionType: AlwaysMatchesConditionType
-                    },
-                    errorMessage: 'Always',
-                });
-        },
-        1500);  // shortened timeout
-    test('With 2 Conditions, first is NoMatch, second is async that returns a promise evaluating as Match is ValidatorResult.Valid, IssuesFound = null, result is Invalid with 1 issuefound',
-        (done) => {
-            let issueFound: IssueFound = {
-                errorCode: NeverMatchesConditionType,
-                errorMessage: 'Never',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Summary',
-                doNotSave: true
-            };
-            validateWithAsyncConditions(ConditionEvaluateResult.Match,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
-                }],
-                [
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFound],
-                        pending: [<any>{}]
-                    },
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFound]
-                    }],
-                done,
-                <ValidatorConfig>{
-                    conditionConfig: {
-                        conditionType: NeverMatchesConditionType
-                    },
-                    errorMessage: 'Never',
-                },
-                null);
-        },
-        1500);  // shortened timeout
-    test('With 2 Conditions, first is NoMatch, second is async that returns a promise evaluating as NoMatch, result is Invalid with 2 issues found',
-        (done) => {
-            let issueFoundFromNever: IssueFound = {
-                errorCode: NeverMatchesConditionType,
-                errorMessage: 'Never',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Never Summary',
-                doNotSave: true
-            };
-            let issueFoundFromPromise: IssueFound = {
-                errorCode: 'TEST',
-                errorMessage: 'Local',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Summary',
-                doNotSave: true
-            };
-            validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                    issueFound: issueFoundFromPromise
-                }],
-                [
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFoundFromNever],
-                        pending: [<any>{}]
-                    },
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFoundFromNever, issueFoundFromPromise],
-                    }],
-                done,
-                <ValidatorConfig>{
-                    conditionConfig: {
-                        conditionType: NeverMatchesConditionType
-                    },
-                    errorMessage: 'Never',
-                    summaryMessage: 'Never Summary'
-                });
-        },
-        1500);  // shortened timeout
+            let result = setup.valueHost.validate()!;
+            expect(result.pending).toHaveLength(1);
+            let pending = result.pending![0];
+            expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+            expect(setup.valueHost.getIssuesFound()).toHaveLength(1);
+            expect(setup.valueHostsManager.asyncProcessing).toBe(true);
 
-    test('With 2 Conditions, second is NoMatch, first is async that returns a promise evaluating as NoMatch, result is Invalid with 2 issues found',
-        (done) => {
-            let issueFoundFromNever: IssueFound = {
-                errorCode: NeverMatchesConditionType,
-                errorMessage: 'Never',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Never Summary',
-                doNotSave: true
-            };
-            let issueFoundFromPromise: IssueFound = {
-                errorCode: 'TEST',
-                errorMessage: 'Local',
-                severity: ValidationSeverity.Error,
-                valueHostName: 'Field1',
-                summaryMessage: 'Summary',
-                doNotSave: true
-            };
-            validateWithAsyncConditions(ConditionEvaluateResult.NoMatch,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                    issueFound: issueFoundFromPromise
-                }],
-                [
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFoundFromNever],
-                        pending: [<any>{}]
-                    },
-                    {
-                        status: ValidationStatus.Invalid,
-                        issuesFound: [issueFoundFromNever, issueFoundFromPromise],
-                    }],
-                done,
-                null, // before not assigned
-                <ValidatorConfig>{
-                    conditionConfig: {
-                        conditionType: NeverMatchesConditionType
-                    },
-                    errorMessage: 'Never',
-                    summaryMessage: 'Never Summary'
-                });
-        },
-        1500);  // shortened timeout    
-    test('With 2 async Conditions returning Match, notifications include the final completion',
-        (done) => {
-            validateWithAsyncConditions(ConditionEvaluateResult.Match,
-                [{
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
+            finish({
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken',
+                errorMessage: 'Name is taken'
+            });
+            expect((await pending).conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
+            expect(result.pending).toBeUndefined();
+            expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+            expect(setup.valueHost.doNotSave).toBe(true);
+            expect(setup.valueHostsManager.asyncProcessing).toBe(false);
+            expect(setup.valueHost.getIssuesFound()).toEqual([
+                {
+                    valueHostName: 'Field1', errorCode: NeverMatchesConditionType,
+                    errorMessage: 'Local', summaryMessage: 'Summary',
+                    severity: ValidationSeverity.Error, doNotSave: true
                 },
                 {
-                    conditionEvaluateResult: ConditionEvaluateResult.Match,
-                    issueFound: null
-                }],
-                [{
-                    status: ValidationStatus.Undetermined,
-                    issuesFound: null,
-                    pending: [<any>{}, <any>{}]
-                }, {
-                    status: ValidationStatus.Valid,
-                    issuesFound: null,
-                    pending: [<any>{}]
-                }, {
-                    status: ValidationStatus.Valid,
-                    issuesFound: null
-                }],
-                done,
-                null,
-                <ValidatorConfig> {
-                    validatorType: ValidatorType.Validator,
-                    conditionConfig: null,
-                    conditionCreator: (requester) =>
-                        new ConditionWithPromiseTester(
-                            ConditionEvaluateResult.Match, 0
-                        ),
-                    errorMessage: 'Second'
-                });
-        },
-        1500);  // shortened timeout   
-
-    test('With 1 Condition that whose promise gets rejected doesnt change validation results',
-        (done) => {
-            let vds: ValidatorConfig = {
-                validatorType: ValidatorType.Validator,
-                conditionConfig: null,
-                conditionCreator: (requester) => {
-                    return <ICondition>{
-                        category: ConditionCategory.Undetermined,
-                        conditionType: 'TEST',
-                        evaluate: (valueHost: IValueHost | null,
-                            valueHostResolver: IValueHostResolver) => {
-                            let promise = new Promise<ConditionEvaluateResult>(
-                                (resolve, reject) => {
-                                    reject('REJECTED ERROR');
-                                }
-                            );
-                            return promise;
-                        }
-                    };
-                },
-                errorMessage: 'Error'
-            };
-            // expect the sync process does nothing and thus doesn't call onValidate,
-            // but it does update the state for asyncProcessing=true
-            // Then when the promise completes, it also doesn't call onValidate
-            // but it does update the state for asyncProcessing=false
-            let onValidateHandler: ValueHostValidationStateChangedHandler =
-                (vh, vr) => {
-                    //         fail();
-                };
-            let statecounter = 0;
-
-            let setup = testValidateFunctionWithPromise([vds], onValidateHandler);
-            setup.vhm.onNotifyValueHostInstanceStateChanged = (vh, stateToRetain) =>
-            {
-                statecounter++;
-                if (statecounter === 1)
-                {
-                    let logger = setup.services.loggingService as TestingLoggingService;
-                    expect(logger.findMessage('REJECTED ERROR')).toBeTruthy();
-                    done();
+                    asyncIdentity: 'AvailabilityCheck', valueHostName: 'Field1',
+                    errorCode: 'NameTaken', errorMessage: 'Name is taken', summaryMessage: 'Name is taken',
+                    severity: ValidationSeverity.Error, doNotSave: true
                 }
-            }
-            expect(setup.promises.length).toBe(1);
+            ]);
+            expect(notifications).toHaveLength(2);
+            expect(notifications[1]).toEqual(expect.objectContaining({
+                status: ValidationStatus.Invalid, asyncProcessing: false, doNotSave: true,
+                issuesFound: setup.valueHost.getIssuesFound()
+            }));
+            expect(logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+                { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+            expect(logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+        }
+    );
 
-        },
-        1500);  // shortened timeout    
+    test('Two successful async validators notify while one remains pending and again on completion', async () => {
+        let finishFirst!: (result: AsyncValidatorEvaluationResult) => void;
+        let finishSecond!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupAsyncIssueHost([
+            { identity: 'FirstCheck', handler: () => new Promise(resolve => { finishFirst = resolve; }) },
+            { identity: 'SecondCheck', handler: () => new Promise(resolve => { finishSecond = resolve; }) }
+        ]);
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+        let result = setup.valueHost.validate()!;
+        expect(result.pending).toHaveLength(2);
+        let pending = [...result.pending!];
+
+        finishFirst({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        expect((await pending[0]).conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
+        expect(result.pending).toHaveLength(1);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHostsManager.asyncProcessing).toBe(true);
+        expect(setup.valueHostsManager.doNotSave).toBe(true);
+        expect(notifications).toHaveLength(2);
+        expect(notifications[1]).toEqual(expect.objectContaining({
+            status: ValidationStatus.Valid, issuesFound: null, asyncProcessing: true, doNotSave: true
+        }));
+
+        finishSecond({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        expect((await pending[1]).conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
+        expect(result.pending).toBeUndefined();
+        expect(setup.valueHostsManager.asyncProcessing).toBe(false);
+        expect(setup.valueHostsManager.doNotSave).toBe(false);
+        expect(notifications).toHaveLength(3);
+        expect(notifications[2]).toEqual(expect.objectContaining({
+            status: ValidationStatus.Valid, issuesFound: null, asyncProcessing: false, doNotSave: false
+        }));
+        expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
 });
 
 // clearValidation(): void

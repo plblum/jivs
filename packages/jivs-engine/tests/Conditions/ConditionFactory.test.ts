@@ -70,7 +70,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'Normal'};
         conditionType: string = 'Normal';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;
@@ -79,7 +79,7 @@ describe('lazyLoad', () => {
     {
         config: ConditionConfig = { conditionType: 'LazyLoad'};
         conditionType: string = 'LazyLoad';
-        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+        evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
             throw new Error("Method not implemented.");
         }
         category: ConditionCategory = ConditionCategory.Undetermined;

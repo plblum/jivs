@@ -37,7 +37,7 @@ builder.field('fieldname')
 - Create a plain JavaScript object that matches the `ICondition interface` contract. This is often used for one-off logic.
     ```ts
     let myCondition = <ICondition>{
-        evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult> =>
+        evaluate: (valueHost, valueHostResolver): ConditionEvaluateResult =>
         {
         // evaluate the value(s) and return a ConditionEvaluateResult
         },
@@ -49,7 +49,7 @@ builder.field('fieldname')
     ```ts
     export class MyCondition implements ICondition 
     {
-        public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+        public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult
         {
         // evaluate the value(s) and return a ConditionEvaluateResult
         },

@@ -19,7 +19,6 @@ export interface WhenConditionConfig extends ConditionConfig {
     /**
      * The condition that must be matched for the thenCondition to be evaluated.
      * Value is required.
-     * Avoid using a condition whose evaluate() function returns a Promise. 
      */
     whenToEnableConfig: ConditionConfig;
     /**
@@ -83,14 +82,13 @@ export class WhenCondition extends ConditionBase<WhenConditionConfig> {
      * @param valueHostsManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         const whenCondition = this.whenToEnableCondition(valueHostsManager);
         // Intentially passing null instead of valuehost because we expect the enabler to get its own valuehost.
         const whenResult = whenCondition.evaluate(null, valueHostsManager);
 
         if (whenResult === ConditionEvaluateResult.Match) {
             const result = this.thenCondition(valueHostsManager).evaluate(valueHost, valueHostsManager);
-            this.ensureNoPromise(result);
             return result;
         }
 

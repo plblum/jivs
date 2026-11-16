@@ -3,7 +3,7 @@ All Condition classes implement the `ICondition interface`.
 ```ts
 interface ICondition {
     conditionType: string;
-    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    evaluate(valueHost, valueHostResolver): ConditionEvaluateResult;
     category: ConditionCategory;
 }
 ```

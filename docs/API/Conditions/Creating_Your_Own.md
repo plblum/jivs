@@ -51,7 +51,7 @@ Jivs provides many `Condition classes`, covering typical cases. Often your condi
     {
         public get conditionType(): string {return 'MyConditionType';}
         public get category(): ConditionCategory { return ConditionCategory.Undetermined; }
-        public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+        public evaluate(valueHost, valueHostResolver): ConditionEvaluateResult
         {
             let value = valueHost.getValue() as string;
             if (this.config.configOption === 'A')

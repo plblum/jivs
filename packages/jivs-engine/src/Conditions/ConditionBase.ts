@@ -85,7 +85,7 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
      * to a value host instead.
      * @param valueHostsManager 
      */
-    public abstract evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    public abstract evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 
     /**
      * Data that supports the business rule defined in evaluate().
@@ -211,13 +211,6 @@ export abstract class ConditionBase<TConditionConfig extends ConditionConfig>
         }
         return { value: value, lookupKey: valueLookupKey, failed: false };
     }
-    
-    protected ensureNoPromise(result: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
-        if (result instanceof Promise)
-            throw new CodingError('Promises are not supported for child conditions at this time.');
-        return result;
-    }
-
 
     /**
      * Utility to log when a conditionConfig property is incorrectly setup.
@@ -314,7 +307,7 @@ export class ErrorResponseCondition implements ICondition
      * Exposes the exception that caused this condition to be created.
      */
     public readonly error?: Error;
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         return ConditionEvaluateResult.Undetermined;
     }
 

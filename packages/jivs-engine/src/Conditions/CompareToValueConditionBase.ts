@@ -77,7 +77,7 @@ export interface CompareToValueConditionBaseConfig extends OneValueConditionBase
  */
 export abstract class CompareToValueConditionBase<TConfig extends CompareToValueConditionBaseConfig> extends OneValueConditionBase<TConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value == null)  // null/undefined

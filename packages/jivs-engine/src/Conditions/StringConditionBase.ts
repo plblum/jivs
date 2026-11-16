@@ -47,7 +47,7 @@ export abstract class StringConditionBase<TConditionConfig extends StringConditi
      * This function checks both in valueHost to determine a string source.
      * @param valueHostsManager 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = this.resolveValue(valueHost);
         if (value === undefined)

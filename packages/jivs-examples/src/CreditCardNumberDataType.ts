@@ -83,7 +83,7 @@ export interface CreditCardType
  */
 export class CreditCardNumberCondition extends OneValueConditionBase<CreditCardNumberConditionConfig>
 {
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult
     {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();

@@ -26,7 +26,7 @@ export abstract class NumberConditionBase<TConditionConfig extends NumberConditi
     constructor(config: TConditionConfig) {
         super(config);
     }
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         let value = valueHost.getValue();
         if (typeof value !== 'number') {
@@ -45,5 +45,5 @@ export abstract class NumberConditionBase<TConditionConfig extends NumberConditi
      * @param valueHost 
      * @param valueHostsManager 
      */
-    protected abstract evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>;
+    protected abstract evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult;
 }

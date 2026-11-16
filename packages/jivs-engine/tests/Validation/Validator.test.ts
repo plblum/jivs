@@ -115,35 +115,7 @@ function setupWithField1AndField2(config?: Partial<ValidatorConfig>,
         validator: testItem
     };
 }
-export class ConditionWithPromiseTester implements ICondition {
-    constructor(result: ConditionEvaluateResult, delay: number, error?: string) {
-        this.Result = result;
-        this.Delay = delay;
-        this.Error = error ?? null;
-    }
-    conditionType: string = 'TEST';
-    category: ConditionCategory = ConditionCategory.Undetermined;
 
-    public Result: ConditionEvaluateResult;
-    public Delay: number;
-    public Error: string | null;
-    public evaluate(valueHost: IValueHost, valueHostResolver: IValueHostResolver):
-        ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
-        let self = this;
-        return new Promise<ConditionEvaluateResult>((resolve, reject) => {
-            function finish() {
-                if (self.Error)
-                    reject(self.Error);
-                else
-                    resolve(self.Result);
-            }
-            if (self.Delay)
-                globalThis.setTimeout(finish, self.Delay);
-            else
-                finish();
-        });
-    }
-}
 // constructor(valueHost: IFieldValueHost, config: ValidatorConfig)
 describe('Validator.constructor and initial property values', () => {
     test('valueHost parameter null throws', () => {
@@ -1011,93 +983,6 @@ describe('Validator.validate', () => {
         expect(logger.findMessage('Always throws', LoggingLevel.Error)).toBeTruthy();
     });
 
-    function setupPromiseTest(result: ConditionEvaluateResult, delay: number, error?: string): {
-        vhm: MockValueHostsManager,
-        services: MockJivsServices,
-        vh: IFieldValueHost,
-        testItem: Validator
-    } {
-        let services = new MockJivsServices(false, false);
-        let vhm = new MockValueHostsManager(services);
-        let vh = vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Field 1');
-
-        let config: ValidatorConfig = {
-            validatorType: ValidatorType.Validator,
-            conditionConfig: null,
-            conditionCreator: (requestor) => {
-                return new ConditionWithPromiseTester(result,
-                    delay, error);
-            },
-            errorMessage: 'Local',
-            summaryMessage: 'Summary'
-        };
-
-        let testItem = new Validator(vh, config);
-        return {
-            vhm: vhm,
-            services: services,
-            vh: vh,
-            testItem: testItem
-        };
-    }
-
-    test('Condition using Promise to evaluate as Match results in ValidatorValidateResult setup as Match with no IssuesFound', async () => {
-        let setup = setupPromiseTest(ConditionEvaluateResult.Match, 0);
-        let result = await setup.testItem.validate({});
-        expect(result).toEqual({
-            conditionEvaluateResult: ConditionEvaluateResult.Match,
-            issueFound: null
-        });
-    });
-    test('With delay, Condition using Promise to evaluate as Match results in ValidatorValidateResult setup as Match with no IssuesFound',
-        async () => {
-            let setup = setupPromiseTest(ConditionEvaluateResult.Match, 100);
-            let result = await setup.testItem.validate({});
-            expect(result).toEqual({
-                conditionEvaluateResult: ConditionEvaluateResult.Match,
-                issueFound: null
-            });
-        });
-    test('Condition using Promise to evaluate as NoMatch results in ValidatorValidateResult setup as Match with 1 IssueFound',
-        async () => {
-            let setup = setupPromiseTest(ConditionEvaluateResult.NoMatch, 0);
-            let result = await setup.testItem.validate({});
-            expect(result).toEqual(<ValidatorValidateResult>{
-                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                issueFound: {
-                    errorCode: 'TEST',
-                    errorMessage: 'Local',
-                    summaryMessage: 'Summary',
-                    severity: ValidationSeverity.Error,
-                    valueHostName: 'Field1',
-                    doNotSave: true
-                }
-            });
-        });
-    test('Condition using Promise to evaluate as Undetermined results in ValidatorValidateResult setup as Undetermined with no IssuesFound',
-        async () => {
-            let setup = setupPromiseTest(ConditionEvaluateResult.Undetermined, 0);
-            let result = await setup.testItem.validate({});
-            expect(result).toEqual({
-                conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                issueFound: null
-            });
-        });
-    test('Condition using Promise to generate a rejection calls the catch',
-        async () => {
-     //       expect.assertions(1);
-            let setup = setupPromiseTest(ConditionEvaluateResult.Match, 0, 'ERROR');
-            try {
-                let result = await setup.testItem.validate({});
-                fail();
-            }
-            catch (e) {
-                expect(e).toBe('ERROR');
-                let logger = setup.services.loggingService as TestingLoggingService;
-                expect(logger.findMessage('ERROR', LoggingLevel.Error, null)).toBeTruthy();
-
-            }
-    });
     test('With loggingLevel=Debug, expect validate() to log Starting Validation for error code [errorCode]', () => {
         let setup = setupWithField1AndField2();
         let logger = setup.services.loggingService as TestingLoggingService;

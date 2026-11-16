@@ -101,7 +101,7 @@ export class RequireTextCondition extends OneValueConditionBase<RequireTextCondi
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.RequireText; }    
 
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value === undefined) 
@@ -148,7 +148,7 @@ export class NotNullCondition extends OneValueConditionBase<NotNullConditionConf
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.NotNull; }    
 
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value === undefined) 
@@ -276,7 +276,7 @@ export class RangeCondition extends OneValueConditionBase<RangeConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Range; }
     
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         valueHost = this.ensurePrimaryValueHost(valueHost, valueHostsManager);
         const value = valueHost.getValue();
         if (value == null)  // includes undefined
@@ -538,7 +538,7 @@ export interface PositiveConditionConfig extends NumberConditionBaseConfig
 export class PositiveCondition extends NumberConditionBase<PositiveConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Positive; }    
-    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         return value >= 0 ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     protected get defaultCategory(): ConditionCategory {
@@ -561,7 +561,7 @@ export interface IntegerConditionConfig extends NumberConditionBaseConfig
 export class IntegerCondition extends NumberConditionBase<IntegerConditionConfig>
 {
     public static get DefaultConditionType(): ConditionType { return ConditionType.Integer; }    
-    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         return value === Math.trunc(value) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;
     }
     protected get defaultCategory(): ConditionCategory {
@@ -596,7 +596,7 @@ export class MaxDecimalsCondition extends NumberConditionBase<MaxDecimalsConditi
         if (config.maxDecimals < 1)
             throw new CodingError('maxDecimals must be 1 or higher');
     }
-    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    protected evaluateNumber(value: number, valueHost: IValueHost, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         const poweredValue = value * Math.pow(10, this.config.maxDecimals);
         
         return poweredValue === Math.floor(poweredValue) ? ConditionEvaluateResult.Match : ConditionEvaluateResult.NoMatch;

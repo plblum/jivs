@@ -55,7 +55,7 @@ The suites are exhaustive and white-box-ish, aiming for full coverage of branche
 - **Logging**: verify what was logged (level, category, message, `type`, `data`) not just that nothing broke (see section 5).
 - **Dispose**: after `dispose()`, members throw `TypeError` or services are released; check `.not.toThrow()` on dispose itself.
 - **State/serialization**: capture and restore state through `JSON.parse`d `StateContainer`; round-trip tests (`Round_trip.test.ts`).
-- **Async**: promises / timers use real `globalThis.setTimeout` with small delays (see `ConditionWithPromiseTester` in Validator.test.ts) or `async/await` with `await expect(...).resolves/rejects`. `jest.useFakeTimers` is used only in `Debounce.test.ts`.
+- **Async**: promises / timers use real `globalThis.setTimeout` with small delays or `async/await` with `await expect(...).resolves/rejects`. `jest.useFakeTimers` is used only in `Debounce.test.ts`.
 - **Assertions** are concrete: `toBe` for identity (same instance), `toEqual` for structure, `toBeNull`, `toBeInstanceOf`, `toBeDefined`, `toContain`, `toHaveLength`. Prefer identity checks (`toBe`) when verifying a registered object is returned unchanged.
 
 ## 4. Mocking philosophy: hand-written fakes, not jest mocks
@@ -64,8 +64,8 @@ The suites are exhaustive and white-box-ish, aiming for full coverage of branche
 
 1. **Real objects first.** Prefer instantiating the real class, wired to real (lightweight) services created by `createJivsServicesForTesting()` (from `@plblum/jivs-engine/build/Support/createJivsServicesForTesting`). It registers cultures, conditions, formatters, parsers, and a `TestingLoggingService`.
 2. **Hand-written Mock classes** in `TestSupport/mocks.ts` implementing the interfaces (`MockJivsServices`, `MockValueHostsManager`, `MockValueHost`, `MockFieldValueHost`, ...). They implement the whole interface, store inputs in public underscore fields, and offer helpers like `vhm.addMockFieldValueHost('Field1', LookupKey.String, 'Label1')`. `new MockJivsServices(registerStandardConditions, registerStandardServices, defaultCultureId)`.
-3. **Inline test-double classes** declared at the top of the test file when only that file needs them (e.g. `SubstituteValidatorBuilder`, `ConditionWithPromiseTester`, `TestParentBuilder`).
-4. **Engine "testing" conditions** shipped in `src/Support/conditionsForTesting.ts`: `AlwaysMatchesCondition`, `NeverMatchesCondition`, `IsUndeterminedCondition`, `ThrowsExceptionCondition`, `UserSuppliedResultCondition`, `EvaluatesAsPromiseCondition`, `DisposableCondition`, etc.
+3. **Inline test-double classes** declared at the top of the test file when only that file needs them (e.g. `SubstituteValidatorBuilder`, `TestParentBuilder`).
+4. **Engine "testing" conditions** shipped in `src/Support/conditionsForTesting.ts`: `AlwaysMatchesCondition`, `NeverMatchesCondition`, `IsUndeterminedCondition`, `ThrowsExceptionCondition`, `UserSuppliedResultCondition`, `DisposableCondition`, etc.
 
 ### Publicify pattern (accessing protected members)
 

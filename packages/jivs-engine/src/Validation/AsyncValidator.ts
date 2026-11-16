@@ -248,7 +248,7 @@ class InternalConditionForAsyncValidator implements ICondition
     }
     private _conditionType: string;
 
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult>
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult
     {
         throw new Error('Method not implemented.');
     }

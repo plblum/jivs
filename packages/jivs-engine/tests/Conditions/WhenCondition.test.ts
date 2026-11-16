@@ -7,7 +7,7 @@ import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces
 import { LoggingCategory, LoggingLevel } from "../../src/Interfaces/LoggingService";
 import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
 import {
-    registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, EvaluatesAsPromiseConditionType,
+    registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, 
     resultTypeToConditionType, makeDisposable,
     DisposableConditionType
 } from "../../src/Support/conditionsForTesting";
@@ -141,27 +141,6 @@ describe('WhenCondition', () => {
         
         expect(() => testItem.evaluate(null, vhm)).toThrow(CodingError);
         expect(logger.findMessage('whenToEnableConfig: must be assigned', LoggingLevel.Error, LoggingCategory.Configuration)).toBeTruthy();
-
-    });    
-
-    test('with evaluate returning a promise in child condition, throws', () => {
-        let services = new MockJivsServices(false, true);
-        registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vhm = new MockValueHostsManager(services);
-        let vh = vhm.addMockFieldValueHost(
-            'Property1', LookupKey.String, 'Label');
-
-        let config: WhenConditionConfig = {
-            conditionType: ConditionType.When,
-            whenToEnableConfig: { conditionType: AlwaysMatchesConditionType },
-            thenConfig: {
-                conditionType: EvaluatesAsPromiseConditionType
-            }
-        };
-
-        let testItem = new WhenCondition(config);
-        
-        expect(() => testItem.evaluate(null, vhm)).toThrow();
 
     });    
 

@@ -40,7 +40,7 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
      * @param valueHostsManager 
      * @returns 
      */
-    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult | Promise<ConditionEvaluateResult> {
+    public evaluate(valueHost: IValueHost | null, valueHostsManager: IValueHostsManager): ConditionEvaluateResult {
         const conditions = this.conditions(valueHostsManager);
         if (conditions.length === 0)
             return ConditionEvaluateResult.Undetermined;
@@ -54,8 +54,7 @@ export abstract class EvaluateChildConditionResultsBase<TConfig extends Evaluate
      * @param childResult 
      * @returns 
      */
-    protected cleanupChildResult(childResult: ConditionEvaluateResult | Promise<ConditionEvaluateResult>): ConditionEvaluateResult {
-        this.ensureNoPromise(childResult);
+    protected cleanupChildResult(childResult: ConditionEvaluateResult): ConditionEvaluateResult {
         if (childResult === ConditionEvaluateResult.Undetermined)
             return this.config.treatUndeterminedAs ?? ConditionEvaluateResult.Undetermined;
         return childResult as ConditionEvaluateResult;

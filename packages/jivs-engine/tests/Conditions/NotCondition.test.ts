@@ -4,11 +4,11 @@ import { ConditionType } from "../../src/Conditions/ConditionTypes";
 import { NotCondition, NotConditionConfig } from "../../src/Conditions/NotCondition";
 import { ValueHostName } from "../../src/DataTypes/BasicTypes";
 import { LookupKey } from "../../src/DataTypes/LookupKeys";
-import { ConditionEvaluateResult, ConditionCategory } from "../../src/Interfaces/Conditions";
+import { ConditionCategory, ConditionEvaluateResult } from "../../src/Interfaces/Conditions";
 import { LoggingLevel } from "../../src/Interfaces/LoggingService";
-import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { TestingLoggingService } from "../../src/Support/TestingLoggingService";
-import { registerTestingOnlyConditions, NeverMatchesConditionType, AlwaysMatchesConditionType, IsUndeterminedConditionType, EvaluatesAsPromiseConditionType, makeDisposable, DisposableConditionType } from "../../src/Support/conditionsForTesting";
+import { AlwaysMatchesConditionType, DisposableConditionType, IsUndeterminedConditionType, NeverMatchesConditionType, registerTestingOnlyConditions } from "../../src/Support/conditionsForTesting";
+import { CodingError } from "../../src/Utilities/ErrorHandling";
 import { MockJivsServices, MockValueHostsManager } from "../TestSupport/mocks";
 
 describe('NotCondition', () => {
@@ -104,26 +104,6 @@ describe('NotCondition', () => {
         expect(logger.findMessage('childConditionConfig', LoggingLevel.Error, null)).toBeTruthy();
 
     });    
-    test('with evaluate returning a promise in child condition, throws', () => {
-        let services = new MockJivsServices(false, true);
-        registerTestingOnlyConditions(services.conditionFactory as ConditionFactory);
-        let vhm = new MockValueHostsManager(services);
-        let vh = vhm.addMockFieldValueHost(
-            'Property1', LookupKey.String, 'Label');
-
-        let config: NotConditionConfig = {
-            conditionType: ConditionType.Not,
-            childConditionConfig: {
-                conditionType: EvaluatesAsPromiseConditionType
-            }
-        };
-
-        let testItem = new NotCondition(config);
-        
-        expect(() => testItem.evaluate(null, vhm)).toThrow();
-
-    });    
-
     test('category is Children', () => {
         let config: NotConditionConfig = {
             conditionType: ConditionType.Not,

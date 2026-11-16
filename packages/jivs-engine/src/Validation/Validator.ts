@@ -281,15 +281,7 @@ export class Validator extends ValidatorBase<ValidatorConfig> {
             }
 
             const pendingCER = this.condition.evaluate(this.valueHost, this.valueHostsManager);
-
-            if (pendingCER instanceof Promise) {
-                // Support Async evaluation by letting evaluate() return a promise
-                // When an async process returns, it must take NO action
-                // if the state.asyncProcessing is no longer true.
-                return processPromise(pendingCER);
-            }
-            else
-                return resolveCER(pendingCER as ConditionEvaluateResult);
+            return resolveCER(pendingCER);
 
         }
         catch (e) {
@@ -345,19 +337,7 @@ export class Validator extends ValidatorBase<ValidatorConfig> {
             }
             return resultState;
         }
-        function processPromise(promiseCER: Promise<ConditionEvaluateResult>): Promise<ValidatorValidateResult> {
-            const wrapperPromise = new Promise<ValidatorValidateResult>((resolve, reject) => {
-                promiseCER.then(
-                    (resultingCER) => {
-                        resolve(resolveCER(resultingCER));
-                    },
-                    (reason) => {
-                        self.logger.error(new Error(reason));
-                        reject(reason);
-                    });
-            });
-            return wrapperPromise;
-        }
+
         function bailout(errorMessage: string): ValidatorValidateResult {
             const resultState: ValidatorValidateResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
