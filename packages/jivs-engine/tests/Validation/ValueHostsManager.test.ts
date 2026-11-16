@@ -100,6 +100,63 @@ function setupValueHostsManagerForAddExternalIssueFoundTests(
     };
 }
 
+// Configuration changes must invalidate aggregate state, including during config callbacks.
+describe('ValueHostsManager validation cache after configuration changes', () => {
+    test('Replacing a pending field refreshes the cache before each config callback', () => {
+        let services = new MockJivsServices(true, false);
+        let logger = new TestingLoggingService(LoggingLevel.Debug);
+        services.loggingService = logger;
+        let config = finishPartialFieldValueHostConfig({ name: 'Field1', validatorConfigs: [] });
+        let testItem = new ValueHostsManager({ services, valueHostConfigs: [config] });
+        let field = testItem.getFieldValueHost('Field1') as FieldValueHost;
+        field.updateInstanceState(state => {
+            state.status = ValidationStatus.Valid;
+            state.asyncProcessing = true;
+            return state;
+        }, field);
+        expect(testItem.currentValidationState().asyncProcessing).toBe(true);
+
+        let callbackStates: ValidationState[] = [];
+        testItem.onConfigChanged = manager => { callbackStates.push(manager.currentValidationState()); };
+        let replacement = testItem.addOrUpdateValueHost(config, null) as IFieldValueHost;
+
+        expect(replacement.asyncProcessing).toBe(false);
+        expect(replacement.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(callbackStates).toHaveLength(2);
+        expect(callbackStates[0]).toEqual(expect.objectContaining({ asyncProcessing: false, doNotSave: false }));
+        expect(callbackStates[1]).toEqual(expect.objectContaining({ asyncProcessing: false, doNotSave: true }));
+        expect(testItem.currentValidationState()).toEqual(expect.objectContaining({
+            asyncProcessing: false, doNotSave: true
+        }));
+        expect(logger.findMessage(/addOrUpdateValueHost\(Field1\)/, LoggingLevel.Debug, null,
+            { feature: 'Manager' })).toBeTruthy();
+    });
+
+    test('Adding and discarding a field refreshes the cache before config callbacks', () => {
+        let services = new MockJivsServices(true, false);
+        let logger = new TestingLoggingService(LoggingLevel.Debug);
+        services.loggingService = logger;
+        let testItem = new ValueHostsManager({ services, valueHostConfigs: [] });
+        let config = finishPartialFieldValueHostConfig({ name: 'Field1', validatorConfigs: [] });
+        let initialState: FieldValueHostInstanceState = {
+            name: 'Field1', value: 'value', status: ValidationStatus.NeedsValidation, issuesFound: null
+        };
+        expect(testItem.currentValidationState().doNotSave).toBe(false);
+        let callbackStates: ValidationState[] = [];
+        testItem.onConfigChanged = manager => { callbackStates.push(manager.currentValidationState()); };
+
+        testItem.addValueHost(config, initialState);
+        expect(testItem.currentValidationState().doNotSave).toBe(true);
+        testItem.discardValueHost('Field1');
+        expect(testItem.currentValidationState().doNotSave).toBe(false);
+        expect(callbackStates).toHaveLength(2);
+        expect(callbackStates[0].doNotSave).toBe(true);
+        expect(callbackStates[1].doNotSave).toBe(false);
+        expect(logger.findMessage(/addValueHost\(Field1\)/, LoggingLevel.Debug, null,
+            { feature: 'Manager' })).toBeTruthy();
+    });
+});
+
 //  constructor(setup: ValueHostsManagerConfig)
 describe('constructor and initial property values', () => {
     test('No configs (empty array), an empty state and no callback', () => {

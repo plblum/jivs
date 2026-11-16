@@ -375,7 +375,21 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }, self);
                 return false;
             }
-
+            /**
+             * In async situations, the callback's exception should be caught and logged to prevent unhandled promise rejections.
+             * Prevents callback errors from being mistaken for validator failures.
+             */
+            function notifyAsyncStateChanged(): void
+            {
+                try
+                {
+                    self.invokeOnValueHostValidationStateChanged(options);
+                }
+                catch (error)
+                {
+                    logError(`Async validation notification failed: ${ ensureError(error).message }`);
+                }
+            }
             /**
              * Adds one resolved validator's outcome to this run's shared result and
              * publishes any resulting state change. Called only for the current run,
@@ -393,13 +407,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         requestedStatus = ValidationStatus.Failed;
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
-                        self.invokeOnValueHostValidationStateChanged(options);
+                        notifyAsyncStateChanged();
                 }
                 else if (ivr.skipped)
                 {
                     // A skipped validator cannot clear an earlier failure.
                     if (deleteAsyncProcessFlag())
-                        self.invokeOnValueHostValidationStateChanged(options);
+                        notifyAsyncStateChanged();
                 }
                 else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)
                 {
@@ -423,7 +437,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     result.issuesFound.push(ivr.issueFound);
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
-                        self.invokeOnValueHostValidationStateChanged(options);
+                        notifyAsyncStateChanged();
 
                 }
                 else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.Match)
@@ -437,13 +451,13 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
-                        self.invokeOnValueHostValidationStateChanged(options);
+                        notifyAsyncStateChanged();
                 }
                 else // ConditionEvaluateResult.Undetermined
                 {
                     // Undetermined is not a definitive retry, so retain any failure.
                     if (deleteAsyncProcessFlag())
-                        self.invokeOnValueHostValidationStateChanged(options);
+                        notifyAsyncStateChanged();
                 }
             }
 
@@ -462,10 +476,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                             failedIdentities.add(asyncIdentity);
                             reviseStatusIfFailed();
                             if (updateInstanceStateWithResult(result))
-                                self.invokeOnValueHostValidationStateChanged(options);
+                                notifyAsyncStateChanged();
                         }
                         else if (deleteAsyncProcessFlag())
-                            self.invokeOnValueHostValidationStateChanged(options);
+                            notifyAsyncStateChanged();
                     });
                 }
             ).catch(error => {
@@ -476,12 +490,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
                     {
-                        try {
-                            self.invokeOnValueHostValidationStateChanged(options);
-                        }
-                        catch (notificationError) {
-                            logError(ensureError(notificationError).message);
-                        }
+                        notifyAsyncStateChanged();
                     }
                 }
             });
@@ -492,7 +501,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             // corrected=true only for the validation that moves Invalid->Valid.
             // The previous status is in instanceState.status when validate() is called directly.
             // When a setter ran first, status is NeedsValidation and lastStatus holds the previous status.
-            let isValid = result.status === ValidationStatus.Valid;
+            // As a rule, async validation will not prepare the corrected flag.
+            let isValid = result.status === ValidationStatus.Valid && !result.pending;
             let wasInvalid = self.instanceState.status === ValidationStatus.Invalid ||
                 (self.instanceState.status === ValidationStatus.NeedsValidation &&
                     self.instanceState.lastStatus === ValidationStatus.Invalid);
@@ -747,6 +757,13 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
                         state.status = ValidationStatus.NeedsValidation;
                 }
             }
+        }
+        if (state.asyncProcessing)
+        {
+            delete state.asyncProcessing;
+            delete state.corrected;
+            if (state.status !== ValidationStatus.Failed)
+                state.status = ValidationStatus.NeedsValidation;
         }
 
         if (state.issuesFound) {

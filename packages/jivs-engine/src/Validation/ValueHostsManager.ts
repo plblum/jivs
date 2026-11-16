@@ -423,6 +423,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
             this._lastValueHostInstanceStates.delete(valueHostName);
 
+            this.invalidateValidationStateCache();
             this.invokeOnConfigChanged();
         }
     }
@@ -463,6 +464,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
         this.valueHosts.set(config.name, vh);
         this.valueHostConfigs.set(config.name, config);
+        this.invalidateValidationStateCache();
         this.invokeOnConfigChanged();
         return vh;
     }
@@ -538,8 +540,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      */
     public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
-        this._cachedCurrentValidationState = undefined;
-        this._cachedDuringEdit = undefined;
+        this.invalidateValidationStateCache();
     }
 
     /**
@@ -752,8 +753,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
             if (!options ||
                 (this._cachedCurrentValidationState.group === (options.group ?? undefined) && this._cachedDuringEdit === options.duringEdit))
                 return this._cachedCurrentValidationState;
-            this._cachedCurrentValidationState = undefined;
-            this._cachedDuringEdit = undefined;
+            this.invalidateValidationStateCache();
         }
         this._cachedCurrentValidationState = this.createValidationState(options ?? undefined);
         this._cachedDuringEdit = options?.duringEdit;
@@ -761,6 +761,11 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     }
     private _cachedCurrentValidationState: ValidationState | undefined = undefined;
     private _cachedDuringEdit: boolean | undefined = undefined;
+
+    private invalidateValidationStateCache(): void {
+        this._cachedCurrentValidationState = undefined;
+        this._cachedDuringEdit = undefined;
+    }
 
     protected createValidationState(options?: ValidateOptions): ValidationState
     {

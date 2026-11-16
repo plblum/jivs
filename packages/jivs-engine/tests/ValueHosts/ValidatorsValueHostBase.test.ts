@@ -723,27 +723,136 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
     });
 
-    test('An exception while publishing a settled result is logged and leaves the handler blocked', async () => {
+    test.each([
+        {
+            outcome: 'Match', evaluation: { conditionEvaluateResult: ConditionEvaluateResult.Match },
+            status: ValidationStatus.Valid, doNotSave: false, failed: false
+        },
+        {
+            outcome: 'NoMatch', evaluation: {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken', errorMessage: 'Taken'
+            },
+            status: ValidationStatus.Invalid, doNotSave: true, failed: false
+        },
+        {
+            outcome: 'Undetermined', evaluation: { conditionEvaluateResult: ConditionEvaluateResult.Undetermined },
+            status: ValidationStatus.Undetermined, doNotSave: false, failed: false
+        },
+        {
+            outcome: 'failedToResolve', evaluation: {
+                conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                failedToResolve: new Error('Service offline')
+            },
+            status: ValidationStatus.Failed, doNotSave: true, failed: true
+        }
+    ])('A throwing observer does not change the async $outcome result or receive a retry', async ({
+        evaluation, status, doNotSave, failed
+    }) => {
         let finish!: (result: AsyncValidatorEvaluationResult) => void;
         let setup = setupAsyncIssueHost([{
             identity: 'AvailabilityCheck',
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
-        let pending = [...setup.valueHost.validate()!.pending!];
-        let callbacks = 0;
-        setup.valueHostsManager.onValueHostValidationStateChanged = () => {
-            if (callbacks++ === 0)
-                throw new Error('Observer failed');
+        let result = setup.valueHost.validate()!;
+        let pending = [...result.pending!];
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => {
+            notifications.push(state);
+            throw new Error('Observer failed');
         };
-        finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        finish(evaluation);
         await Promise.all(pending);
+        // Flush the Promise chain's error handler as well as the validator Promise.
         await new Promise(resolve => setTimeout(resolve, 0));
 
+        expect(result.status).toBe(status);
+        expect(setup.valueHost.validationStatus).toBe(status);
+        expect(setup.valueHost.doNotSave).toBe(doNotSave);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(failed ? ['AvailabilityCheck'] : undefined);
+        expect(notifications).toHaveLength(1);
+        expect(notifications[0]).toEqual(expect.objectContaining({ status, doNotSave, asyncProcessing: false }));
+        expect(setup.logger.findMessage('Async validation notification failed: Observer failed',
+            LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        if (failed)
+            expect(setup.logger.findMessage('Service offline', LoggingLevel.Error, LoggingCategory.Exception,
+                { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(failed ? 2 : 1);
+    });
+
+    test('A throwing observer does not change or repeat notification of a rejected async handler', async () => {
+        let reject!: (error: Error) => void;
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: () => new Promise((_, rejectPromise) => { reject = rejectPromise; })
+        }]);
+        let result = setup.valueHost.validate()!;
+        let pending = [...result.pending!];
+        let calls = 0;
+        setup.valueHostsManager.onValueHostValidationStateChanged = () => {
+            calls++;
+            throw new Error('Observer failed');
+        };
+        reject(new Error('Unexpected rejection'));
+        await Promise.allSettled(pending);
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(result.status).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
-        expect(setup.logger.findMessage('Observer failed', LoggingLevel.Error, LoggingCategory.Exception,
+        expect(calls).toBe(1);
+        expect(setup.logger.findMessage('handler failed to resolve: Unexpected rejection', LoggingLevel.Error,
+            LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.findMessage('Async validation notification failed: Observer failed', LoggingLevel.Error,
+            LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(2);
+    });
+
+    test('A malformed async result still blocks saving when its failure notification throws', async () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }]);
+        setup.valueHost.exposeValidators[0].validate = () => Promise.resolve({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            issueFound: null
+        });
+        let result = setup.valueHost.validate()!;
+        let pending = [...result.pending!];
+        let calls = 0;
+        setup.valueHostsManager.onValueHostValidationStateChanged = () => {
+            calls++;
+            throw new Error('Observer failed');
+        };
+        await Promise.all(pending);
+        // The malformed result is processed in a continuation after the validator Promise settles.
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        expect(result.status).toBe(ValidationStatus.Failed);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
+        expect(calls).toBe(1);
+        expect(setup.logger.findMessage('returned NoMatch without an issue', LoggingLevel.Error,
+            LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.findMessage('Async validation notification failed: Observer failed', LoggingLevel.Error,
+            LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(2);
+    });
+
+    test('A synchronous validation observer exception still propagates to the caller', () => {
+        let setup = setupAsyncIssueHost([], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+        setup.valueHostsManager.onValueHostValidationStateChanged = () => { throw new Error('Observer failed'); };
+
+        expect(() => setup.valueHost.validate()).toThrow('Observer failed');
+        expect(setup.logger.findMessage('Validation result: Valid', LoggingLevel.Info, LoggingCategory.Result,
             { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
 
     test('An older failure cannot overwrite a later successful validation', async () => {
@@ -2534,6 +2643,7 @@ describe('injectedErrors', () =>
 
 });
 
+// Corrected identifies synchronous Invalid-to-Valid transitions without anticipating pending results.
 describe('corrected property', () => {
 
     test('Validate without validators, corrected=false', () => {
@@ -2569,6 +2679,77 @@ describe('corrected property', () => {
         setup.valueHost.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
         setup.valueHost.validate();
         expect(setup.valueHost.corrected).toBe(true);
+    });
+    test.each([
+        {
+            outcome: 'Match', editFirst: false,
+            evaluation: { conditionEvaluateResult: ConditionEvaluateResult.Match },
+            finalStatus: ValidationStatus.Valid, finalDoNotSave: false
+        },
+        {
+            outcome: 'NoMatch', editFirst: true,
+            evaluation: {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken', errorMessage: 'Taken'
+            },
+            finalStatus: ValidationStatus.Invalid, finalDoNotSave: true
+        }
+    ])('A synchronous Match does not report corrected while pending or after async $outcome',
+        async ({ editFirst, evaluation, finalStatus, finalDoNotSave }) => {
+            let finish!: (result: AsyncValidatorEvaluationResult) => void;
+            let setup = setupAsyncIssueHost([{
+                identity: 'AvailabilityCheck',
+                handler: () => new Promise(resolve => { finish = resolve; })
+            }], [asyncIssue('AvailabilityCheck', 'OldIssue', 'Previous error')],
+            [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+            if (editFirst)
+                setup.valueHost.setValue('changed');
+            let notifications: ValueHostValidationState[] = [];
+            setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+            let result = setup.valueHost.validate()!;
+            let pending = [...result.pending!];
+            expect(result.status).toBe(ValidationStatus.Valid);
+            expect(result.corrected).toBeUndefined();
+            expect(setup.valueHost.corrected).toBe(false);
+            expect(setup.valueHost.asyncProcessing).toBe(true);
+            expect(setup.valueHost.doNotSave).toBe(true);
+
+            finish(evaluation);
+            await Promise.all(pending);
+            expect(result.status).toBe(finalStatus);
+            expect(result.corrected).toBeUndefined();
+            expect(setup.valueHost.validationStatus).toBe(finalStatus);
+            expect(setup.valueHost.corrected).toBe(false);
+            expect(setup.valueHost.asyncProcessing).toBe(false);
+            expect(setup.valueHost.doNotSave).toBe(finalDoNotSave);
+            expect(notifications.length).toBeGreaterThanOrEqual(2);
+            expect(notifications.every(state => state.corrected === false)).toBe(true);
+            expect(setup.logger.findMessage('Validation result: Valid', LoggingLevel.Info, LoggingCategory.Result,
+                { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+            expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+        });
+    test('A skipped async validator does not suppress a synchronous correction', () => {
+        let calls = 0;
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => {
+                calls++;
+                return { conditionEvaluateResult: ConditionEvaluateResult.Match };
+            }
+        }], [asyncIssue('AvailabilityCheck', 'OldIssue', 'Previous error')],
+        [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+        setup.valueHost.getValidator('AvailabilityCheck')!.setEnabled(false);
+
+        let result = setup.valueHost.validate()!;
+        expect(result.pending).toBeUndefined();
+        expect(result.corrected).toBe(true);
+        expect(setup.valueHost.corrected).toBe(true);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(calls).toBe(0);
+        expect(setup.logger.findMessage('Validation result: Valid', LoggingLevel.Info, LoggingCategory.Result,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
     // Helper for the tests below: starts Invalid, then lets the caller switch to Valid conditions.
     function setupInvalid() {
@@ -4796,8 +4977,34 @@ function setupAsyncCleanup(
     return { testItem, config, state };
 }
 
-// Cleanup must identify an async issue by its handler rather than its changing issue code.
+// Cleanup retains configured handler ownership and removes transient pending state after restoration.
 describe('ValidatorsValueHostBaseGenerator async issue cleanup', () => {
+    test('Clears restored async processing and corrected state and requires validation again', () => {
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [], ValidationStatus.Valid);
+        setup.state.asyncProcessing = true;
+        setup.state.corrected = true;
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.asyncProcessing).toBeUndefined();
+        expect(setup.state.corrected).toBeUndefined();
+        expect(setup.state.status).toBe(ValidationStatus.NeedsValidation);
+    });
+
+    test('Clears restored pending flags but preserves Failed status and configured failure identities', () => {
+        let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [], ValidationStatus.Failed);
+        setup.state.asyncProcessing = true;
+        setup.state.corrected = true;
+        setup.state.failedAsyncIdentities = ['AvailabilityCheck'];
+
+        setup.testItem.cleanupInstanceState(setup.state, setup.config);
+
+        expect(setup.state.asyncProcessing).toBeUndefined();
+        expect(setup.state.corrected).toBeUndefined();
+        expect(setup.state.status).toBe(ValidationStatus.Failed);
+        expect(setup.state.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
+    });
+
     test('Retains an async issue when its handler remains configured even though its error code differs', () => {
         let issue = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
         let setup = setupAsyncCleanup([asyncCleanupConfig('AvailabilityCheck')], [issue]);
@@ -4953,6 +5160,37 @@ describe('ValidatorsValueHostBaseGenerator async issue cleanup', () => {
 
 // The real manager must pass captured async ownership through generator cleanup during restoration.
 describe('ValidatorsValueHostBaseGenerator async issue restoration integration', () => {
+    test('Recreated manager clears captured pending state and requires a fresh validation', () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }]);
+        setup.valueHost.updateInstanceState(state => {
+            state.status = ValidationStatus.Valid;
+            state.asyncProcessing = true;
+            state.corrected = true;
+            return state;
+        }, setup.valueHost);
+        let capturedState = setup.valueHostsManager.captureState();
+
+        let restoredManager = new ValueHostsManager({
+            services: setup.services,
+            valueHostConfigs: [setup.config],
+            capturedState
+        });
+        let restored = restoredManager.getValidatorsValueHost('Field1');
+
+        expect(restored).not.toBeNull();
+        expect(restored!.asyncProcessing).toBe(false);
+        expect(restored!.corrected).toBe(false);
+        expect(restored!.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(restoredManager.currentValidationState()).toEqual(expect.objectContaining({
+            asyncProcessing: false,
+            doNotSave: true
+        }));
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
     test('Retains a captured async issue when the manager recreates its configured ValueHost', () => {
         let issue = asyncIssue('AvailabilityCheck', 'NameTaken', 'Already taken');
         let setup = setupAsyncIssueHost([{

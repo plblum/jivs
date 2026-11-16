@@ -74,6 +74,7 @@ export interface StatefulValueHostValidateResult {
     /**
      * Set to true when the user has fixed all invalid validators.
      * Undefined or false otherwise, including if the status changes after this point.
+     * Validation runs with pending Promises do not set this flag, even after they settle.
      */
     corrected?: boolean;
 }
