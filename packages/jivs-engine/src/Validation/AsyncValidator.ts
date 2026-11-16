@@ -77,7 +77,7 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
         const handlerIdentity = this.config.handlerIdentity;
         const disposalSurvivingLogger = this.logger;
         const handlerResult = new Promise<AsyncValidatorEvaluationResult>(resolve => {
-            resolve(this.config.handler(this.valueHost, this.valueHostsManager, this.config.payload));
+            resolve(this.config.handler(this.valueHost, this.valueHostsManager));
         });
         return handlerResult.then(
             result => {

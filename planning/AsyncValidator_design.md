@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-Design a first-class async validator that can call application code or an API and report at most one `IssueFound`. This is a working design for discussion, not an implementation guide. Proposed API names and signatures below are illustrative until agreed.
+Design a first-class async validator that can call application code or an API and report at most one `IssueFound`. This is a working design for discussion, not an implementation guide. Proposed API names and signatures below are illustrative until agreed. The current two-argument handler and application-managed context supersede earlier payload proposals.
 
 The former async-validation discussion is retained as [obsolete historical material](./asyncCondition_design_OBSOLETE.md), not an active completion design. Manager completion remains separate work. [Submission planning](./Submission_planning.md) addresses the workflow that consumes the completed manager result.
 
@@ -12,9 +12,9 @@ The former async-validation discussion is retained as [obsolete historical mater
 - An async validator reports at most one `IssueFound` using `ValidatorValidateResult.issueFound`.
 - Its issue may specify a `valueHostName` different from its owning field; do not reject it for that reason. Supporting cross-field routing and validators on `ModelValidatorsValueHost` is future work.
 - `AsyncValidatorConfig.handlerIdentity` is a required, stable, user-supplied identity string, exposed as `IValidator.errorCode` and unique among validators on the same ValueHost.
-- A builder method accepts that identity, the application handler, its payload, and optionally dependent ValueHost names. The handler supplies the issue's error code and message.
+- A builder method accepts that identity, the application handler, and optionally dependent ValueHost names. The handler supplies the issue's error code and message.
 - `IssueFound.errorCode` identifies and localizes the issue; it is not the async validator's identity. An external issue with the same issue code replaces the existing issue; different codes may both be displayed.
-- The handler returns a Promise for its own result object. It must catch exceptions and always resolve that Promise successfully, reporting failures in the result. Its payload is supplied through the validator config and can hold application context such as an API wrapper.
+- The handler returns a Promise for its own result object. It must catch exceptions and always resolve that Promise successfully, reporting failures in the result. Application context such as an API wrapper can be captured in a closure or retrieved from manager metadata.
 - Preliminary and `duringEdit` validation skip async validators before invoking their handlers.
 - The handler handles operational failures using `failedToResolve`, `Undetermined` and diagnostic information; the validator logs the failure at Error level, skips issue creation, and the host blocks saving.
 - Async validators are ordered after synchronous validators. Async validation cannot stop already-started validators when its result is `Severe`; the severity may still be reported to the UI.
@@ -76,7 +76,7 @@ sequenceDiagram
     participant S as API or service
     H->>V: validate(options)
     V->>V: Check enabled and applicable options
-    V->>A: Evaluate with host, manager, and payload
+    V->>A: Evaluate with host and manager
     A->>S: Application-defined request
     V-->>H: Promise for ValidatorValidateResult
     S-->>A: Response
@@ -91,7 +91,7 @@ A request failure is diagnostic information, not automatically a validation issu
 
 ## Candidate API
 
-Peter proposes a result object specific to the handler, so application code does not have to set `skipped`, `doNotSave`, or a host's `Invalid` status. The handler returns that object in its Promise rather than receiving it as a parameter. The third parameter provides application context. The following illustrates the resulting three-parameter profile; names and payload typing are not finalized:
+Peter proposes a result object specific to the handler, so application code does not have to set `skipped`, `doNotSave`, or a host's `Invalid` status. The handler returns that object in its Promise rather than receiving it as a parameter. The following historical candidate uses the current two-argument handler shape; consult the implementation guide for the implemented result contract:
 
 ```ts
 // Candidate signatures, not current code.
@@ -106,8 +106,7 @@ interface AsyncValidatorEvaluationResult {
 
 type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
-    valueHostsManager: IValueHostsManager,
-    payload: unknown
+    valueHostsManager: IValueHostsManager
 ) => Promise<AsyncValidatorEvaluationResult>;
 
 interface AsyncValidatorConfig extends ValidatorConfig {
@@ -118,23 +117,19 @@ interface AsyncValidatorConfig extends ValidatorConfig {
     summaryMessage?: never;
     summaryMessagel10n?: never;
     handler: AsyncValidatorEvaluateHandler;
-    payload?: unknown;
     dependencyValueHostNames?: string[];
 }
 ```
 
-`unknown` illustrates an untyped payload that application code must narrow; it is not a decision to impose a specific generic API.
-
-For illustration, the handler maps both validation responses and request failures. `requireAvailabilityApi` is an application-provided payload guard, and `checkAvailability` is a method on that API wrapper. The wrapper is responsible for interpreting HTTP responses and rejecting operational failures; an HTTP error response does not inherently reject `fetch()`.
+For illustration, the handler maps both validation responses and request failures. It captures the application-provided `availabilityApi` in a closure. The wrapper is responsible for interpreting HTTP responses and rejecting operational failures; an HTTP error response does not inherently reject `fetch()`.
 
 ```ts
-// Candidate application code; requireAvailabilityApi is application-owned.
+// Historical candidate application code; availabilityApi is application-owned.
 const evaluateAvailability: AsyncValidatorEvaluateHandler =
-    async (valueHost, valueHostsManager, payload) => {
+    async (valueHost, valueHostsManager) => {
         const value = valueHost.getValue();
         try {
-            const api = requireAvailabilityApi(payload);
-            const response = await api.checkAvailability(value);
+            const response = await availabilityApi.checkAvailability(value);
             if (response.available) {
                 return { conditionEvaluateResult: ConditionEvaluateResult.Match };
             }
@@ -185,17 +180,17 @@ This is a candidate, not an agreed API. An async validator has no `conditionType
 
 The factory should be able to construct the async validator with the same owning ValueHost supplied to the standard validator. A possible change is for registered validator creators to receive both the ValueHost and config. Review and migrate existing registered creators before deciding the exact signature.
 
-The builder needs a path that adds an async validator without demanding a `conditionConfig` or `conditionCreator`. The call supplies the required validator identity, the handler, its payload, and optionally a list of dependencies:
+The builder needs a path that adds an async validator without demanding a `conditionConfig` or `conditionCreator`. The call supplies the required validator identity, the handler, and optionally a list of dependencies:
 
 ```ts
 // Candidate usage, not an existing builder method.
 builder.field('UserName', LookupKey.String)
-    .validatorAsync('AvailabilityCheck', evaluateAvailability, availabilityApi, ['AccountType']);
+    .validatorAsync('AvailabilityCheck', evaluateAvailability, ['AccountType']);
 ```
 
-The first builder parameter is named `identity` and is stored as the config's required `handlerIdentity`. The payload is stored in the config; the factory passes it to the validator, which supplies it to the handler each time it runs. Unlike ordinary validator configuration, neither `AsyncValidatorConfig` nor `validatorAsync()` supplies the issue error code or message: the handler must supply them. Document this difference for end users. The configuration must define whether a payload can be omitted and who owns or disposes it; it must not inadvertently dispose a shared API or database service.
+The first builder parameter is named `identity` and is stored as the config's required `handlerIdentity`. Unlike ordinary validator configuration, neither `AsyncValidatorConfig` nor `validatorAsync()` supplies the issue error code or message: the handler must supply them. Application services belong to the application, not the validator, and can be accessed via a closure or manager metadata.
 
-Neither the handler nor an arbitrary service reference can generally be represented in JSON, so this is application-code configuration. Document restoration and client/server registration and prevent accidental serialization or logging of sensitive payload contents. The impact on duplicate-identity checks is discussed next.
+Neither the handler nor an arbitrary service reference can generally be represented in JSON, so this is application-code configuration. Document restoration and client/server registration and prevent accidental serialization or logging of sensitive application context. The impact on duplicate-identity checks is discussed next.
 
 ### Identity, messages, and swapping
 
@@ -285,7 +280,7 @@ The planned work includes changing `ICondition.evaluate()` from `ConditionEvalua
 - Disabled, preliminary, and `duringEdit` validation do not invoke the handler; normal validation does.
 - A handled API failure logs its code and message at Error level, yields the agreed skipped result and keeps `doNotSave` true after pending work finishes; a later successful retry clears the corresponding failure. A broken handler contract is observable and does not permit saving.
 - Two async validators, and an edit during a pending validation, preserve correct state and do not apply stale results.
-- Factory creation and fluent builder setup supply the required identity, owning ValueHost, callback, payload and dependencies; reject missing or duplicate identities.
+- Factory creation and fluent builder setup supply the required identity, owning ValueHost, callback and dependencies; reject missing or duplicate identities.
 - Enabled overrides remain attached to the same named validator after reconstruction and reordering; lookup works before its handler runs.
 - An issue code distinct from the validator identity is preserved, drives localization, and remains associated with its validator through applicable state cleanup.
 - A matching external issue replaces an existing validator-owned or external issue by issue code, including when that code differs from the async validator identity. Different codes can remain visible; an external issue can be displayed before the async handler has run.

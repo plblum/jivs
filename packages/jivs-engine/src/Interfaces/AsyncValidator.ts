@@ -4,14 +4,14 @@
  * 
  * Differences from synchronous validators:
  * - They return results asynchronously via a Promise.
- * - They can have multiple outcomes with different error codes, thus always must return an errorCode and error message.
+ * - They can have multiple outcomes with different error codes. A NoMatch must include an error code and message.
  *   However, they still support the ErrorMessagesService ability to replace error messages based on those error codes.
  * - Does not use Conditions. User always supplies a function that performs the validation logic asynchronously.
  *   
  * 
  * Expected structures:
- * - AsyncValidatorConfig: Configuration object for the async validator, including the handler function, 
- *   handler identity, and optional payload.
+ * - AsyncValidatorConfig: Configuration object for the async validator, including the handler function
+ *   and handler identity.
  * - AsyncValidatorEvaluationResult: The result returned by the handler function, indicating the outcome of the validation.
  * - ValidatorValidateResult: The result produced by the AsyncValidator class based on the evaluation result, 
  *   including condition evaluation, issues found, and resolution status.
@@ -29,10 +29,10 @@
  *     including any errors or failures to resolve.
  * - User assigns that handler function to AsyncValidatorConfig.handler and provides a name via AsyncValidatorConfig.handlerIdentity.
  *   Both are required configuration values.
- * - Since the async operation often depends on other systems and services that the validator does not have,
- *   the user can provide an object representing that external context via the payload property of AsyncValidatorConfig.
+ * - To access application services, capture them in the handler's closure or retrieve them
+ *   from the ValueHostsManager's metadata. See the validator configuration guide for examples.
  * - The AsyncValidator class itself implements its validate() function to:
- *      - call the handler function provided in the configuration with the appropriate value host, value hosts manager, and payload.
+ *      - call the handler function provided in the configuration with the appropriate value host and value hosts manager.
  *      - handle the Promise returned by the handler.
  *      - If the handler returns ConditionEvaluateResult.Match, it indicates a successful validation and it sets up
  *        a ValidatorValidateResult indicating success. No errorcode or error message is expected.
@@ -54,18 +54,16 @@
  * - It will take these parameters:
  *   - handlerIdentity: string
  *   - handler: AsyncValidatorEvaluateHandler
- *   - payload?: unknown
  *   - dependencyValueHostNames?: ValueHostName[]
  * - It does not take errorcode, errormessage or severity, unlike other validators, because those are all
  *   resolved by the handler function.
  * 
  * Example handler:
  * ```ts
- * // Illustrative application code; AvailabilityApi is application-defined.
- * const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager, payload) => {
+ * // Illustrative application code; availabilityApi is an application-owned service.
+ * const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager) => {
  *     try {
- *         const api = requireAvailabilityApi(payload);
- *         const available = await api.isAvailable(host.getValue());
+ *         const available = await availabilityApi.isAvailable(host.getValue());
  *         return available
  *             ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
  *             : {
@@ -77,7 +75,7 @@
  *     catch (error) {
  *         return {
  *             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
- *             failedToResolve: error as Error
+ *             failedToResolve: error instanceof Error ? error : new Error(String(error))
  *         };
  *     }
  * };
@@ -110,20 +108,11 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
      * It should return a Promise resolving to an AsyncValidatorEvaluationResult indicating the outcome of the validation.
      * Expectations of the function:
      * - Always returns a promise that will always resolve, not reject. 
-     * - All thrown errors must be caught and are expected to return AsyncValidatorEvaluationResult.failedToResolve is assigned
-     *   and an error code and error message.
-     * - All failed API calls should do the same as caught errors, returning AsyncValidatorEvaluationResult.failedToResolve is assigned
-     *   
-     * - Only set errorCode and errorMessage on ConditionEvaluateResult.NoMatch or failedToResolve is assigned.
+     * - Catch exceptions and report failed API calls using AsyncValidatorEvaluationResult.failedToResolve.
+     * - Set errorCode and errorMessage for ConditionEvaluateResult.NoMatch.
      * - The error message can support the "{Label}" token, to be replaced by the field label.
      */
     handler: AsyncValidatorEvaluateHandler;
-    /**
-     * Optional payload to be passed to the handler function during evaluation.
-     * This can be any data that the handler function requires to execute its async process, such
-     * as objects to call upon an API.
-     */
-    payload?: unknown;
     /**
      * Optional array of value host names that this validator depends on.
      * If your function gets values from the ValueHostsManager to perform its validation, 
@@ -136,7 +125,7 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
  * Represents the result of an asynchronous validation evaluation.
  * There are effectively four possible outcomes for an asynchronous validation evaluation:
  * 1. ConditionEvaluateResult.Match: The validation passed successfully.
- * 2. ConditionEvaluateResult.NoMatch: The validation failed, with an optional error code and message.
+ * 2. ConditionEvaluateResult.NoMatch: The validation failed, with a required error code and message.
  * 3. failedToResolve is assigned: The validation could not be completed due to an error or failed API call.
  * 4. ConditionEvaluateResult.Undetermined: The validation could not determine a result, such as input values are missing.
  */
@@ -148,12 +137,12 @@ export interface AsyncValidatorEvaluationResult
     conditionEvaluateResult: ConditionEvaluateResult;
     /**
      * The error code associated with the validation result, if any.
-     * Assign when ConditionEvaluateResult is NoMatch or failedToResolve is assigned.
+     * Required when ConditionEvaluateResult is NoMatch.
      */
     errorCode?: string;
     /**
      * The error message associated with the validation result, if any.
-     * Assign when ConditionEvaluateResult is NoMatch or failedToResolve is assigned.
+     * Required when ConditionEvaluateResult is NoMatch.
      * It can contain the "{Label}" token which will be replaced with the appropriate ValueHost.label during evaluation.
      * The caller will:
      * - Apply HTML encoding.
@@ -171,20 +160,19 @@ export interface AsyncValidatorEvaluationResult
     /**
      * Indicates whether the validation could not be completed due to an error or failed API call.
      * Always assign when an exception occurs or an external API call fails during validation.
-     * When assigned, always set errorcode and errormessage, both which are logged.
+     * The error is logged; a separate error code and message are not required.
      */
     failedToResolve?: Error;
 }
 
 /**
  * Represents the handler function for evaluating an asynchronous validator.
- * It takes the value host, value hosts manager, and an optional payload as input,
+ * It takes the value host and value hosts manager as input,
  * and returns a promise that resolves to an AsyncValidatorEvaluationResult.
  */
 export type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
-    valueHostsManager: IValueHostsManager,
-    payload: unknown
+    valueHostsManager: IValueHostsManager
 ) => Promise<AsyncValidatorEvaluationResult>;
 
 /**

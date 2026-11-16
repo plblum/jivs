@@ -59,20 +59,19 @@ describe('AsyncValidator construction and identity', () => {
     });
 });
 
-// Verify the Promise represents the handler's actual completion and receives its configured context.
+// Verify the Promise represents handler completion and receives only the host and manager.
 describe('AsyncValidator.validate async completion', () => {
-    test('Waits for the handler and returns its NoMatch issue with the configured payload', async () => {
-        let payload = { endpoint: 'availability' };
+    test('Waits for the handler and returns its NoMatch issue with the host and manager', async () => {
         let receivedHost: unknown;
         let receivedManager: unknown;
-        let receivedPayload: unknown;
+        let extraArguments: unknown[] = [];
         let complete!: (result: AsyncValidatorEvaluationResult) => void;
-        let setup = setupValidator((host, manager, context) => {
+        let setup = setupValidator((host, manager, ...extra) => {
             receivedHost = host;
             receivedManager = manager;
-            receivedPayload = context;
+            extraArguments = extra;
             return new Promise(resolve => { complete = resolve; });
-        }, { payload });
+        });
 
         let pending = setup.validator.validate({});
         let settled = false;
@@ -85,7 +84,7 @@ describe('AsyncValidator.validate async completion', () => {
         expect(settled).toBe(false);
         expect(receivedHost).toBe(setup.valueHost);
         expect(receivedManager).toBe(setup.manager);
-        expect(receivedPayload).toBe(payload);
+        expect(extraArguments).toEqual([]);
 
         complete({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
@@ -114,6 +113,48 @@ describe('AsyncValidator.validate async completion', () => {
             conditionEvaluateResult: ConditionEvaluateResult.Match,
             issueFound: null
         });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Allows a handler to use application context captured in a closure', async () => {
+        let context = Object.freeze({ isAvailable: async () => false });
+        let setup = setupValidator(async () => await context.isAvailable()
+            ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
+            : {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameTaken',
+                errorMessage: 'Already taken'
+            });
+
+        let result = await setup.validator.validate({});
+        expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
+        expect(result.issueFound).toEqual(expect.objectContaining({ errorCode: 'NameTaken' }));
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Allows a handler to retrieve shared application context from manager metadata', async () => {
+        let context = Object.freeze({ available: true });
+        let receivedContext: unknown;
+        let setup = setupValidator(async (host, manager) => {
+            receivedContext = manager.getMetadata('app.availability');
+            if (receivedContext !== context)
+                return {
+                    conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                    failedToResolve: new Error('Availability service is not configured')
+                };
+            return {
+                conditionEvaluateResult: (receivedContext as any).available
+                    ? ConditionEvaluateResult.Match
+                    : ConditionEvaluateResult.Undetermined
+            };
+        });
+        setup.manager.setMetadata('app.availability', context);
+
+        await expect(setup.validator.validate({})).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Match,
+            issueFound: null
+        });
+        expect(receivedContext).toBe(context);
         expect(setup.logger.entryCount).toBe(0);
     });
 });

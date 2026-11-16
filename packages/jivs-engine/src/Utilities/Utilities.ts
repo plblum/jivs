@@ -194,7 +194,7 @@ export function deepCleanForJson(value: any, filter?: deepCloneFilter): any {
  * Marks the given object to preserve its reference during calls within deepClone
  * and deepCloneForJson functions.
  * This targets the ValueHostsManager which clones its config. That object
- * contains IJivsServices, payloads for use by AsyncValidators, and other objects that should not be cloned.
+ * contains IJivsServices and may contain other objects that should not be cloned.
  * @param value 
  * @returns 
  */

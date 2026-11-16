@@ -4,7 +4,7 @@
 
 Implementation guide and status record for [AsyncValidator_design.md](./AsyncValidator_design.md). Treat code marked **Current** as implemented behavior; code marked **Proposed** is not a description of the current API.
 
-The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, failure tracking, and cleanup of restored pending flags. The fluent builder method and payload-reference preservation through config cloning are not implemented. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
+The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, failure tracking, and cleanup of restored pending flags. The fluent builder method is not implemented. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
 
 **Not a submission-completion design:** `ValueHostsManager.validate()` is currently synchronous. Manager completion and submission are separate work. Peter has decided that an API failure must make `doNotSave` true and block saving; this guide specifies the field-level state needed to enforce that decision. The manager must eventually wait for the applicable work and read the final blocking state before submission. The former manager/condition exploration is [obsolete](./asyncCondition_design_OBSOLETE.md), not an implementation specification.
 
@@ -18,7 +18,7 @@ The matching-issue ownership decision was confirmed: when an external issue repl
 | Validator and factory | [Validation/AsyncValidator.ts](../packages/jivs-engine/src/Validation/AsyncValidator.ts), [Validation/ValidatorFactory.ts](../packages/jivs-engine/src/Validation/ValidatorFactory.ts) | Implemented; the async validator uses an internal condition shim for existing consumers. |
 | Field host | [ValidatorsValueHostBase.ts](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts), [FieldValueHost.ts](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts) | Async settlement, stale-run protection, issue ownership, failure tracking, and restore cleanup are implemented. |
 | Builder | [ChildBuilders.ts](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts), [ValidatorBuilder.ts](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts) | No dedicated async fluent method yet; `ValidatorBuilder.finish()` still requires a condition. |
-| Configuration cloning | [Utilities.ts](../packages/jivs-engine/src/Utilities/Utilities.ts), [ValueHostsManager.ts](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), builder/merge clone callers | Payload reference identity is not yet preserved or verified across clone paths. |
+| Configuration cloning | [Utilities.ts](../packages/jivs-engine/src/Utilities/Utilities.ts), [ValueHostsManager.ts](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), builder/merge clone callers | The manager marks its services for reference preservation. Async handler context is managed by the application, not stored in validator config. |
 | Conditions | [Interfaces/Conditions.ts](../packages/jivs-engine/src/Interfaces/Conditions.ts), condition bases and implementations | Promise support remains; a synchronous-only migration is separate and unfinished. |
 | Analysis and docs | [ValueHostConfigAnalyzer.ts](../packages/jivs-configanalysis/src/Analyzers/ValueHostConfigAnalyzer.ts), engine/builder docs and examples | Async configs are recognized by config analysis; confirm existing end-user documentation matches the implemented API. |
 
@@ -37,7 +37,6 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig,
     'errorMessagel10n' | 'summaryMessage' | 'summaryMessagel10n'> {
     handler: AsyncValidatorEvaluateHandler;
     handlerIdentity: string;
-    payload?: unknown;
     dependencyValueHostNames?: ValueHostName[];
 }
 ```
@@ -60,12 +59,11 @@ export interface AsyncValidatorEvaluationResult {
 
 export type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
-    valueHostsManager: IValueHostsManager,
-    payload: unknown
+    valueHostsManager: IValueHostsManager
 ) => Promise<AsyncValidatorEvaluationResult>;
 ```
 
-The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. `unknown` is the candidate untyped payload; document narrowing. When `failedToResolve` is assigned, it supplies the diagnostic error for logging, not an issue to display. If a stricter discriminated union is chosen, keep the same observable cases and ease of authoring.
+The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. When `failedToResolve` is assigned, it supplies the diagnostic error for logging, not an issue to display. If a stricter discriminated union is chosen, keep the same observable cases and ease of authoring.
 
 The internal result needs a distinct marker, because `skipped` also describes ordinary exclusions:
 
@@ -93,11 +91,10 @@ The handler's Promise is **always expected to resolve successfully**, including 
 An application handler can distinguish a business rejection from a failed request:
 
 ```ts
-// Illustrative application code; AvailabilityApi is application-defined.
-const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager, payload) => {
+// Illustrative application code; availabilityApi is an application-owned service.
+const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager) => {
     try {
-        const api = requireAvailabilityApi(payload);
-        const available = await api.isAvailable(host.getValue());
+        const available = await availabilityApi.isAvailable(host.getValue());
         return available
             ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
             : {
@@ -109,13 +106,13 @@ const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager
     catch (error) {
         return {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            failedToResolve: error as Error
+            failedToResolve: error instanceof Error ? error : new Error(String(error))
         };
     }
 };
 ```
 
-`requireAvailabilityApi` is an application-defined payload guard. Applications should avoid including secrets in diagnostics. `apierror` here is a diagnostic code, not a displayed issue code.
+The service is captured in the handler's closure. Alternatively, the handler can look up an application service in manager metadata. See the [validator configuration guide](../docs/API/Validators/Configuration.md#async-validators-and-application-context) for both patterns. Applications should avoid including secrets in diagnostics.
 
 ### Condition compatibility
 
@@ -136,7 +133,6 @@ There is currently no dedicated async method in `IValidatorBuilder` or `Validato
 validatorAsync(
     identity: string,
     handler: AsyncValidatorEvaluateHandler,
-    payload?: unknown,
     dependencyValueHostNames?: ValueHostName[]
 ): IValidatorBuilder;
 ```
@@ -144,10 +140,10 @@ validatorAsync(
 ```ts
 // Proposed fluent call; the first parameter is named identity.
 builder.field('UserName', LookupKey.String)
-    .validatorAsync('AvailabilityCheck', evaluateAvailability, availabilityApi, ['AccountType']);
+    .validatorAsync('AvailabilityCheck', evaluateAvailability, ['AccountType']);
 ```
 
-An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, optional `payload`, and optional dependencies. It does not have `conditionConfig`. A builder method will need a separate path because `ValidatorBuilder.finish()` currently requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed builder support.
+An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, and optional dependencies. It does not have `conditionConfig`. A builder method will need a separate path because `ValidatorBuilder.finish()` currently requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed builder support.
 
 The configuration produced by that call is conceptually:
 
@@ -157,7 +153,6 @@ const config: AsyncValidatorConfig = {
     validatorType: ValidatorType.AsyncValidator,
     handlerIdentity: 'AvailabilityCheck',
     handler: evaluateAvailability,
-    payload: availabilityApi,
     dependencyValueHostNames: ['AccountType']
 };
 ```
@@ -190,36 +185,13 @@ End-user documentation must explain the difference from ordinary validators: nei
 
 Audit every `resolveErrorCode()` consumer, including config merging, config analysis, and `FormConfigAdapter`. Returning an async identity is appropriate for validator matching, but it must not be used as if it were the dynamic issue's localization code or as proof that an issue message is configured.
 
-### Payload reference must survive config cloning
+### Application context
 
-This is a necessary integration change, not a documentation-only concern. [`deepClone()`](../packages/jivs-engine/src/Utilities/Utilities.ts) recursively clones objects and calls `new value.constructor()` for class instances. [`ValueHostsManager.safeConfigClone()`](../packages/jivs-engine/src/Validation/ValueHostsManager.ts) and `applyConfig()` clone configs; builder cloning, merge and `onConfigChanged` have additional clone paths. An API wrapper or database reference can therefore be copied, lose required constructor arguments, or throw before the handler runs.
-
-Preserve the exact `payload` reference as opaque application-owned context through **all config cloning paths**, without changing ordinary deep-clone behavior for other config/state fields. A targeted config-aware clone policy is one option: clone the config structure, but treat the payload property of an identified `AsyncValidatorConfig` as an atomic reference before recursive cloning reaches it. Audit all listed clone callers, including direct config and builder paths, merges and config callbacks; do not clone first and restore afterward, because cloning may already have thrown. Do not dispose the shared payload when disposing a validator. Define behavior for cyclic or non-serializable payloads and keep payload contents out of logs.
-
-Configuration with a handler or live payload cannot be reconstructed by JSON alone. Document how the application reattaches them after a round trip; preserve the stable identity.
-
-The invariant is reference identity, not merely equal contents:
-
-```ts
-// Illustrative invariant for every relevant configuration-clone path.
-const original: AsyncValidatorConfig = {
-    validatorType: ValidatorType.AsyncValidator,
-    handlerIdentity: 'AvailabilityCheck',
-    handler: evaluateAvailability,
-    payload: availabilityApi,
-    dependencyValueHostNames: ['AccountType']
-};
-const cloned = cloneConfig(original); // Represents the selected config-aware clone.
-cloned !== original;                                      // true
-cloned.payload === availabilityApi;                       // true
-cloned.dependencyValueHostNames !== original.dependencyValueHostNames; // true
-```
-
-`cloneConfig` above is an illustrative name, not an existing function. Preserving the payload after `deepClone()` is too late: the existing clone can call its constructor before the reference is restored. The existing clone filter also recurses into values it returns, so simply returning the payload from that filter does not preserve its identity.
+The handler captures its context in a closure or reads it from manager metadata rather than storing it in the validator config. The application owns that context and must recreate closures or reattach metadata when recreating the manager; functions and live services cannot be reconstructed from JSON alone. Preserve the stable handler identity and avoid including sensitive context in diagnostics.
 
 ## 4. AsyncValidator lifecycle
 
-The current [`AsyncValidator`](../packages/jivs-engine/src/Validation/AsyncValidator.ts) is constructed with the owning host and config. It uses `handlerIdentity` as its effective validator error code, exposes the host label as its token source, and adds `dependencyValueHostNames` to dependency discovery. The application owns the payload; disposing the validator does not dispose it.
+The current [`AsyncValidator`](../packages/jivs-engine/src/Validation/AsyncValidator.ts) is constructed with the owning host and config. It uses `handlerIdentity` as its effective validator error code, exposes the host label as its token source, and adds `dependencyValueHostNames` to dependency discovery.
 
 `validate(options)` currently:
 
@@ -245,7 +217,7 @@ public validate(options: ValidateOptions): ValidatorValidateResult | Promise<Val
     }
 
     return Promise.resolve()
-        .then(() => this.config.handler(this.valueHost, this.valueHostsManager, this.config.payload))
+        .then(() => this.config.handler(this.valueHost, this.valueHostsManager))
         .then(
             result => this.convertHandlerResult(result),
             error => {
@@ -256,7 +228,7 @@ public validate(options: ValidateOptions): ValidatorValidateResult | Promise<Val
 }
 ```
 
-The handler should resolve with `failedToResolve` for operational failures. An unexpected handler rejection is wrapped in a `CodingError` that preserves its cause and is handled by the host as a blocking validator failure. Payload contents are not included in that diagnostic.
+The handler should resolve with `failedToResolve` for operational failures. An unexpected handler rejection is wrapped in a `CodingError` that preserves its cause and is handled by the host as a blocking validator failure.
 
 The important conversions are:
 
@@ -497,7 +469,7 @@ Follow [Testing Approach](../docs/assets/Testing_Approach.md): the owner selects
 Implementation status and remaining work:
 
 - **Implemented:** async contracts and factory; `AsyncValidator`; async issue identity and replacement; host settlement, failure and stale-run handling; corrected-flag policy; async observer-error handling; restored pending-state cleanup. Targeted engine tests cover these behaviors.
-- **Not implemented:** a dedicated builder method and async identity duplicate checks in builder flows; preserving payload reference identity through configuration cloning; broader end-user examples and documentation.
+- **Not implemented:** a dedicated builder method and async identity duplicate checks in builder flows.
 - **Separate decision:** whether to migrate `ICondition` to synchronous-only behavior. Do not treat that migration as a prerequisite unless explicitly approved.
 - **Separate project:** manager-level asynchronous completion and submission gating. `ValueHostsManager.validate()` remains synchronous and does not by itself guarantee that async validation has finished.
 
