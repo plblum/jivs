@@ -365,6 +365,8 @@ Trace these entry points when reviewing the behavior:
 
 Value changes and clearing remove the old `asyncProcessing` flag; an obsolete settlement cannot clear a newer one. A group-mismatched validation bails out before changing the generation.
 
+After host disposal, an in-flight `AsyncValidator` treats a subsequently resolved result as skipped rather than converting it through its cleared config or disposed host. A resolved `failedToResolve` is still logged, and rejected handler Promises continue to be logged even when stale.
+
 ### 4. Keep a failed request from allowing save
 
 **Problem addressed:** after pending work finishes, an API failure must still block saving (Q20), without adding a displayed `IssueFound`.

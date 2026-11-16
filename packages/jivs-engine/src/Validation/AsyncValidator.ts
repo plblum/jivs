@@ -58,9 +58,11 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
 
     public override dispose(): void
     {
+        this._disposed = true;
         super.dispose();
         this._condition = undefined as any;
     }
+    private _disposed = false;
 
     public validate(options: ValidateOptions): ValidatorValidateResult | Promise<ValidatorValidateResult>
     {
@@ -72,15 +74,29 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
                 skipped: true
             };
 
+        const handlerIdentity = this.config.handlerIdentity;
+        const disposalSurvivingLogger = this.logger;
         const handlerResult = new Promise<AsyncValidatorEvaluationResult>(resolve => {
             resolve(this.config.handler(this.valueHost, this.valueHostsManager, this.config.payload));
         });
         return handlerResult.then(
-            result => this.resolveValidationResult(result),
+            result => {
+                if (this._disposed)
+                {
+                    if (result.failedToResolve)
+                        disposalSurvivingLogger.error(result.failedToResolve);
+                    return {
+                        issueFound: null,
+                        conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                        skipped: true
+                    };
+                }
+                return this.resolveValidationResult(result);
+            },
             error => {
                 const originalError = ensureError(error);
                 throw new CodingError(
-                    `Async validator "${this.config.handlerIdentity}" handler failed to resolve: ${originalError.message}`,
+                    `Async validator "${handlerIdentity}" handler failed to resolve: ${originalError.message}`,
                     { cause: originalError }
                 );
             }

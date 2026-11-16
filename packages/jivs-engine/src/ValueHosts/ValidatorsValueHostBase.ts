@@ -202,7 +202,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         const runGeneration = ++this._validationGeneration;
         const failedIdentities = new Set(this.instanceState.failedAsyncIdentities ?? []);
         let requestedStatus = result.status;
-        let postDisposalLogger = this.logger;   // logError may occur after this.logger is disposed...
+        let disposalSurvivingLogger = this.logger;   // logError may occur after this.logger is disposed...
 
         try {
             try {
@@ -519,7 +519,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         function logError(message: string): void {
-            postDisposalLogger.log(LoggingLevel.Error, (options) => {
+            disposalSurvivingLogger.log(LoggingLevel.Error, (options) => {
                 return {
                     message: message ??
                         /* istanbul ignore next */  // defensive             
