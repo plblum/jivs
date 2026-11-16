@@ -125,7 +125,12 @@ export enum ValidationStatus {
     /**
      * ValueHost is disabled, thus so is validation.
      */
-    Disabled
+    Disabled,
+
+    /**
+     * Validation could not complete because an async validator failed to resolve.
+     */
+    Failed
 }
 
 

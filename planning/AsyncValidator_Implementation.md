@@ -71,7 +71,7 @@ export type AsyncValidatorEvaluateHandler = (
 ) => Promise<AsyncValidatorEvaluationResult>;
 ```
 
-The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. `unknown` is the candidate untyped payload; document narrowing. When `failedToResolve` is true, the same top-level `errorCode` and `errorMessage` contain diagnostic information for logging, not an issue to display. If a stricter discriminated union is chosen, keep the same observable cases and ease of authoring.
+The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. `unknown` is the candidate untyped payload; document narrowing. When `failedToResolve` is assigned, it supplies the diagnostic error for logging, not an issue to display. If a stricter discriminated union is chosen, keep the same observable cases and ease of authoring.
 
 The internal result needs a distinct marker, because `skipped` also describes ordinary exclusions:
 
@@ -92,7 +92,7 @@ This marker is for communication between the validator and its host, not an extr
 | `Match`, no issue/failure | `Match`, `issueFound: null`. |
 | `NoMatch`, nonempty issue code and message | `NoMatch`, one formatted `IssueFound`. |
 | `Undetermined`, no failure | `Undetermined`, `issueFound: null`. |
-| `Undetermined`, `failedToResolve: true`, diagnostic code and message | Log once at `LoggingLevel.Error`; return `Undetermined`, `issueFound: null`, `skipped: true`, and a separate failure marker for the host. The host blocks saving. |
+| `Undetermined`, `failedToResolve: Error` | Log the error and return it in `ValidatorValidateResult.failedToResolve`, with `issueFound: null`. The host blocks saving. |
 
 The handler's Promise is **always expected to resolve successfully**, including on operational failures: the handler must catch exceptions and resolve with a result describing what happened. It must not intentionally throw or reject. Jivs inspects the resolved payload. Validate malformed/missing results and inconsistent combinations explicitly; throw a `CodingError` for a missing or empty `NoMatch` message (Q29), not a successful validation. This is thrown by Jivs while processing an already-resolved handler result, so the resulting validator Promise rejects even though the handler complied with its Promise-resolution rule. An unexpected handler rejection or other contract violation is a programming error, not the normal API-failure path; report it as a `CodingError`, log it, and keep saving blocked rather than recasting it as success. The host must handle the validator rejection without losing the error or producing an unhandled rejection.
 
@@ -314,14 +314,13 @@ The important conversions are:
 // Input: { conditionEvaluateResult: Match }
 { conditionEvaluateResult: ConditionEvaluateResult.Match, issueFound: null }
 
-// Input: { conditionEvaluateResult: Undetermined, failedToResolve: true,
-//          errorCode: 'apierror', errorMessage: 'Service unavailable' }
+// Input: { conditionEvaluateResult: Undetermined,
+//          failedToResolve: new Error('Service unavailable') }
 // Log the diagnostic first; then return:
 {
     conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
     issueFound: null,
-    skipped: true,
-    failedToResolve: true
+    failedToResolve: new Error('Service unavailable')
 }
 
 // Input: NoMatch with errorCode 'NameTaken' and a validated message.
@@ -376,76 +375,97 @@ Here `handlerMessage` and `issueCode` are already-validated strings and `this` i
 
 ## 6. Host validation, ordering and concurrency
 
-Update all host consumers of `validator.condition.category`: `ValidatorsValueHostBase.orderValidators()`, the preliminary required check, `FieldValueHost.generateValidators()` and `required`. Sort synchronous validators first by their existing categories, then async validators in their original relative order. Do not alter standard required or auto-generated data-type behavior.
+This section is a guide to the **host** work, principally in [`ValidatorsValueHostBase.validate()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts#L148). The validator produces a result; the host combines results, keeps state and notifies observers. Work through the examples below one at a time.
 
-Fix the current `processPromise()` behavior as part of this feature:
+### What is already in place
 
-- Process all fulfilled outcomes, including `Match`, `NoMatch`, warning, `Undetermined` and `skipped`, using the same issue/severity rules as the synchronous path. A warning must remain non-blocking and must not mark the host invalid by itself.
-- Update aggregate status after an async `Match`; do not merely clear the pending flag while leaving a successful-only host `Undetermined`.
-- Remove each pending entry and finish processing before signaling completion. When the last pending entry clears, publish the resulting host state and appropriate field/manager notifications, honoring `skipCallback`.
-- Do not let an old run overwrite a newer value, dependency change, validation, cleared state, or disposed/recreated host. A run token/generation or equivalent must invalidate old settlements; ensure pending flags belong to the current run. Prevent an obsolete result from clearing a newer run's pending flag.
-- Handle unexpected rejection and settlement-processing exceptions as observable programming errors, and leave saving blocked. Do not promise a successful save simply because a Promise settled.
+- **Ordering:** [`AsyncValidator.condition`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L51) returns an internal condition with `ConditionCategory.Async`. That category follows all existing categories in [`Conditions.ts`](../packages/jivs-engine/src/Interfaces/Conditions.ts#L171). [`orderValidators()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) sorts by category, so async validators are placed after standard categories, retaining the relative order of equal categories.
+- **Required and data type:** [`FieldValueHost.generateValidators()`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L505) and [`required`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L551) still inspect the condition category. The internal async condition is neither `Require` nor `DataTypeCheck`, so these consumers do not need to be rewritten merely to accommodate `AsyncValidator`. Preserve the existing required, preliminary and auto-generated data-type behavior.
+- **Dependencies:** [`AsyncValidator.gatherValueHostNames()`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L168) adds `dependencyValueHostNames`; [`ValidatorsValueHostBase.gatherValueHostNames()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) collects them.
+- **Failure result:** [`ValidatorValidateResult.failedToResolve`](../packages/jivs-engine/src/Interfaces/Validator.ts#L265) is an optional `Error`. [`AsyncValidator.resolveValidationResult()`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L90) logs and returns it. The host records the handler identity and blocks saving, as described below.
 
-Add dependency names through the existing `gatherValueHostNames()` path. The current dependent-host notification may revalidate the entire host or mark it `NeedsValidation`, depending on the source change options; ensure stale-run protection applies to both.
+The current [`Validator.validate()`](../packages/jivs-engine/src/Validation/Validator.ts#L237) can also return a Promise from a condition. Until the separate migration in section 8 is complete, host Promise changes must continue to support that path, not assume every Promise came from `AsyncValidator`.
 
-A generation token illustrates how to reject an obsolete settlement:
+### 1. Follow the current validation run
 
-```ts
-// Proposed fragment: capture when registering a validator Promise.
-const runGeneration = this.validationGeneration;
-promise.then(
-    result => {
-        if (runGeneration !== this.validationGeneration)
-            return; // A newer validation or invalidation owns the state.
-        this.completeCurrentValidatorPromise(promise, identity, result, options);
-    },
-    error => {
-        if (runGeneration !== this.validationGeneration)
-            return;
-        this.failCurrentValidatorPromise(promise, identity, error, options);
-    }
-);
-```
+Start at [`ValidatorsValueHostBase.validate()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts#L148):
 
-The generation and completion methods are proposed, not existing APIs. Increment the generation when starting a superseding run **and** when an edit, dependency change, clear or disposal invalidates an existing run, even if no replacement validation starts. Current-run completion must update pending entries, failure/issue state and notifications as described above; a rejected obsolete Promise must still be handled without overwriting current state. Preserve any necessary diagnostic reporting for unexpected stale-run rejections.
+1. `validators()` supplies the ordered validators. The `for` loop calls each `iv.validate(options)`.
+2. A synchronous result is applied immediately to the local `result`: issues are added, errors make it `Invalid`, warnings do not block, and a `Match` can make it `Valid`. A synchronous `Severe` issue stops the loop.
+3. A Promise is passed to the **local** `processPromise()` function. The loop continues; it does not wait for that Promise before starting later validators.
+4. `updateInstanceStateWithResult()` copies the current result into host state, including `asyncProcessing` when `result.pending` exists. `validate()` then returns; the returned result's pending array is updated later as Promises settle.
+5. `processPromise()` now applies async matches, warnings and errors, and records async handler failures. It clears the pending flag and notifies when state changes.
 
-### Persisting failed-resolution blocking
+For example, with only `AvailabilityCheck` on a host, `validate()` initially returns with pending work and `Undetermined`. If the handler later returns `Match`, the host becomes `Valid` and no longer pending.
 
-The current [`doNotSave`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) checks pending work, `NeedsValidation`, and blocking issues; after pending clears, an `Undetermined` skipped result without an issue does **not** block. Add an explicit internal failure marker to `ValidatorValidateResult` and process it before the generic `skipped` check. Record the identities of validators whose current resolution failed in serializable host instance state, e.g. `failedAsyncValidatorIdentities?: string[]`, and make the host's `doNotSave` true when this set is nonempty. The name and exact representation are implementation details; a single boolean is insufficient when several async validators fail independently.
+### 2. Apply each result and publish completion
 
-The marker is not a displayed `IssueFound`. On a fresh, authoritative `Match` or `NoMatch` for that same validator, remove its failure identity. A skipped preliminary/during-edit/disabled run, an ordinary `Undetermined` outcome, or another validator's success must not erase it. A stale completion cannot add or clear it. Clearing validation or removing a validator must clean up its corresponding state consistently with existing lifecycle semantics; specify disabled-host handling and test it. Notify observers when failure state or `doNotSave` changes, including when the last Promise settles. Keep the block through instance-state capture/restore, config cleanup and manager aggregation. Test two failures, partial recovery, retries, stale results and mixed sync/async results.
+**Code:** the [result-handling part of the `for` loop](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) and local `processPromise()` inside `ValidatorsValueHostBase.validate()`.
 
-An illustrative state transition, with two independently failing validators:
+The synchronous and Promise paths apply the following rules. A Promise that resolves to `Severe` cannot stop validators that have already started. The Promise path checks `failedToResolve` before `skipped`.
 
-```ts
-// Proposed instance-state data; no displayed IssueFound is needed.
-failedAsyncValidatorIdentities: ['AvailabilityCheck', 'CreditCheck']
+| Result from a current Promise | Host outcome |
+| --- | --- |
+| `Match` | Contribute a successful result; a host with no other determining result becomes `Valid`. |
+| `NoMatch` with warning | Add the warning with `doNotSave: false`. A warning alone makes the host `Valid`, not `Invalid`. |
+| `NoMatch` with error or severe | Add the issue and make the host `Invalid`; it blocks saving. A settled severe issue cannot stop work already started. |
+| `Undetermined` or ordinary `skipped` | Do not create an issue or turn an existing error into success. |
+| `failedToResolve` | Record the failure separately and block saving, as in step 4. |
 
-// AvailabilityCheck later returns Match or NoMatch in a current run:
-failedAsyncValidatorIdentities: ['CreditCheck'] // doNotSave remains true
+Results from several validators must combine: a later `Match` or warning must not erase another validator's error. Preserve each async issue's `asyncIdentity`; use that identity, not its display error code, for the one-issue-per-handler rule in section 7. Do not overwrite changes made to host state while a Promise was pending without considering whether those changes invalidate the run or must be preserved.
 
-// CreditCheck later returns Match or NoMatch in a current run:
-failedAsyncValidatorIdentities: [] // failure no longer blocks; other rules still may
-```
+The last Promise clears `asyncProcessing`. **Still to do:** async transitions to `Valid` need their own `corrected` handling; do not change the existing synchronous `adjustCorrectedFlag()` to solve that case.
 
-Inside the host's settlement processing, inspect the failure **before** treating the result as an ordinary skipped validator. `identity` below comes from the validator whose Promise was started, not from `IssueFound.errorCode`:
+After a state change, [`invokeOnValueHostValidationStateChanged()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) notifies observers unless `skipCallback` is set. [`ValueHostsManager.notifyValueHostInstanceStateChanged()`](../packages/jivs-engine/src/Validation/ValueHostsManager.ts) invalidates the manager's cached state even when callbacks are skipped.
 
-```ts
-// Proposed logic within a current-run instance-state update.
-if (validatorResult.failedToResolve) {
-    addFailedIdentity(stateToUpdate, identity);
-}
-else if (!validatorResult.skipped &&
-    (validatorResult.conditionEvaluateResult === ConditionEvaluateResult.Match ||
-     validatorResult.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)) {
-    removeFailedIdentity(stateToUpdate, identity);
-}
-// Continue applying the result and publishing pending/status changes.
-```
+### 3. Prevent an old run from changing current state
 
-The helper names are illustrative. They must update a serializable array without duplicates and must not mutate a previous immutable snapshot. The rejection path records the same blocking identity before clearing the pending flag and reporting the coding error. Add the failure-state check to `doNotSave` without bypassing existing pending, status, and issue checks; how a disabled host interacts with the retained failure is still to be specified.
+**Problem addressed:** checking only a Promise's local `result.pending` could not stop an older run from updating newer host state.
 
-The failure marker and final state are prerequisites for future manager completion and submission. A manager that reads state before awaiting the relevant run still cannot conclude that submission is safe.
+Example:
+
+1. Validate `alice`; `AvailabilityCheck` starts request A.
+2. Change the field to `alicia` and validate again; request B starts.
+3. B finishes first with `Match`. A then finishes with `NameTaken`.
+4. **Wanted:** A must not add its old issue or clear B's pending flag. This must also hold if the edit did not start B.
+
+**Code:** [`ValidatorsValueHostBase`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) increments `validationGeneration` when a new applicable validation starts, the value changes, validation is cleared, or the host is disposed. `completeThePromise()` checks the captured generation before changing host state. Rejections are logged even for stale runs.
+
+Trace these entry points when reviewing the behavior:
+
+- [`ValidatableValueHostBase.setValue()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts#L75), [`FieldValueHost.setTextValue()`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L223) and [`setValues()`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L451): invalidate when the relevant value changes or is reset. Account for formatting and parsing paths that delegate between setters.
+- [`otherValueHostChangedNotification()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts#L150): a listed dependency can cause either `validate()` or a clear-and-`NeedsValidation` update. Protect both paths, including early-return cases where the host is already `NeedsValidation`.
+- [`clearValidation()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts#L286) and [`setEnabled(false)`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts#L206): invalidate only when the operation applies, respecting group filtering. Disabling uses `clearValidation()`.
+- [`ValidatorsValueHostBase.dispose()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts#L56): invalidate before an old Promise can use the disposed host. A replacement host must not receive results from its predecessor.
+
+Value changes and clearing remove the old `asyncProcessing` flag; an obsolete settlement cannot clear a newer one. A group-mismatched validation bails out before changing the generation.
+
+### 4. Keep a failed request from allowing save
+
+**Problem addressed:** after pending work finishes, an API failure must still block saving (Q20), without adding a displayed `IssueFound`.
+
+**Code:** [`ValidatorsValueHostBaseInstanceState.failedAsyncValidatorIdentities`](../packages/jivs-engine/src/Interfaces/ValidatorsValueHostBase.ts) stores the failed handler identities. The host exposes `ValidationStatus.Failed` while the list is nonempty and the host is enabled; [`doNotSave`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) blocks `Failed`, and `isValid` is false. No `IssueFound` is created for the failure.
+
+In the host's Promise handling, `processPromise()` receives the validator as well as its Promise. For an `AsyncValidator`, its `errorCode` is the handler identity, not the issue's error code:
+
+| Event for the current run | Failure identities afterward |
+| --- | --- |
+| `AvailabilityCheck` and `CreditCheck` both report `failedToResolve` | Both identities are recorded. |
+| `AvailabilityCheck` later returns `Match` or `NoMatch` | Remove only `AvailabilityCheck`; `CreditCheck` still blocks saving. |
+| `CreditCheck` later returns `Match` or `NoMatch` | Remove `CreditCheck`; the failure itself no longer blocks, although another rule may. |
+| A handler is skipped, returns ordinary `Undetermined`, or an old run settles | Do not remove its previously recorded failure. |
+
+The host updates the array through the immutable state-update path. An unexpected async rejection or an exception while applying a settlement is logged and records the same blocking identity. The legacy standard-Validator Promise path retains its separate behavior.
+
+`Failed` takes precedence over an invalid issue, which remains available for display (Q34). Clearing validation retains the identities. Disabling the host temporarily suspends the block; enabling it restores `Failed` (Q35). Capture/restore retains the list, and [`cleanupInstanceState()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) removes identities for handlers no longer configured.
+
+The stored `state.status` keeps the ordinary validation outcome, such as `Invalid`; the public `validationStatus` derives `Failed` from the retained identities. This preserves the ordinary outcome when the last failed handler recovers.
+
+### 5. Verify the workflow
+
+In the existing host tests, exercise the examples above: async-only `Match`; warning, error and mixed results in both completion orders; final pending state and callbacks including `skipCallback`; stale results after each invalidating action; dependency changes with and without revalidation; two independent failures, partial recovery, retries, rejection and state restoration. Include a standard validator whose condition returns a Promise until section 8 removes that capability. Use the existing test guidance and work one class at a time.
+
+[`ValueHostsManager.validate()`](../packages/jivs-engine/src/Validation/ValueHostsManager.ts#L703) still returns a synchronous snapshot. These host changes are prerequisites, not a manager-level completion or submission API: submission must eventually wait for the applicable work and then read the final blocking state.
 
 ## 7. Issue ownership, cleanup and external replacement
 
@@ -566,4 +586,6 @@ Compile the repository from its root with `npm run compile` before cross-package
 - **Q31 — Superseded by Q33:** Async issues are no longer matched by issue code alone.
 - **Q32 — Resolved:** An external issue with no identity and no matching issue code remains external; it can be displayed alongside the async issue.
 - **Q33 — Resolved:** An external issue requires a matching `asyncIdentity` to replace an async-owned issue; an error-code match alone is insufficient.
+- **Q34 — Resolved:** `Failed` takes precedence over `Invalid`; retain invalid issues.
+- **Q35 — Resolved:** Retain failed identities through clearing and disabling. A disabled host does not block saving; re-enabling restores the failure.
 - Finish stale-run and final-notification behavior before claiming manager-level completion or submission safety. A field-level validator feature may be built first, but it must not be advertised as a submission-ready gate.

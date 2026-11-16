@@ -538,6 +538,8 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      */
     public notifyValueHostInstanceStateChanged(valueHost: IValueHost, instanceState: ValueHostInstanceState): void {
         this._lastValueHostInstanceStates.set(instanceState.name, instanceState);
+        this._cachedCurrentValidationState = undefined;
+        this._cachedDuringEdit = undefined;
     }
 
     /**

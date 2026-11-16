@@ -231,7 +231,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
 
     /**
      * Value is setup by calling validate(). It does not run validate() itself.
-     * Returns false when instanceState.status is Invalid. Any other ValidationStatus
+     * Returns false when validationStatus is Invalid or Failed. Any other ValidationStatus
      * return true.
      * This follows an old style validation rule of everything is valid when not explicitly
      * marked invalid. That means when it hasn't be run through validation or was undetermined
@@ -239,7 +239,8 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Recommend using doNotSave for more clarity.
      */
     public get isValid(): boolean {
-        return this.validationStatus !== ValidationStatus.Invalid;
+        const status = this.validationStatus;
+        return status !== ValidationStatus.Invalid && status !== ValidationStatus.Failed;
     }
     /**
      * Result from the latest validation, or an indication
@@ -251,7 +252,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Prior to calling validate() (or setValue()'s validate option),
      * it is NotAttempted.
      * After setValue it is NeedsValidation.
-     * After validate, it may be Valid, Invalid or Undetermined.
+     * After validate, it may be Valid, Invalid, Failed or Undetermined.
      * If ValueHost is disabled, it returns Disabled.
      */
     public get validationStatus(): ValidationStatus {
@@ -358,7 +359,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
     {
         this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NotAttempted);
         stateToUpdate.issuesFound = null;
-        delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
+        delete stateToUpdate.asyncProcessing;
         delete stateToUpdate.externalIssuesFound;
         delete stateToUpdate.corrected;
     }
@@ -367,6 +368,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
      * Rules are:
      *   asyncProcessing=true, doNotSave=true
      *   ValidationStatus=NeedsValidation, doNotSave=true
+     *   ValidationStatus=Failed, doNotSave=true
      *   ValidationStatus=Disabled, doNotSave=false
      *   Any IssuesFound or ExternalIssuesFound with doNotSave=true, doNotSave=true (overridden by ValidationStatus and asyncProcessing)
      *   otherwise false
@@ -376,6 +378,7 @@ export abstract class ValidatableValueHostBase<TConfig extends ValidatableValueH
             return true;
         switch (this.validationStatus) {
             case ValidationStatus.NeedsValidation:
+            case ValidationStatus.Failed:
                 return true;
             case ValidationStatus.Disabled:
                 return false;

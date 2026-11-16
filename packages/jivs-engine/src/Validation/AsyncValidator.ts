@@ -238,7 +238,7 @@ class InternalConditionForAsyncValidator implements ICondition
     }
     public get category(): ConditionCategory
     {
-        return ConditionCategory.Undetermined;
+        return ConditionCategory.Async; // sorts after all standard conditions, including Undetermined
     }
     // Implementation of InternalCondition goes here
 }

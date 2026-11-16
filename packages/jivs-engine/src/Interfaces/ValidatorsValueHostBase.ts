@@ -91,6 +91,12 @@ export function isValidatableValueHostConfig(source: ValueHostConfig): boolean
  */
 export interface ValidatorsValueHostBaseInstanceState extends ValidatableValueHostBaseInstanceState {
     /**
+     * Async handler identities whose most recent authoritative result failed to resolve.
+     * These failures block saving without creating displayed issues.
+     */
+    failedAsyncIdentities?: string[];
+
+    /**
      * Supplied by options.injectedError when calling setValue() or setValues() to provide a way to inject.
      * If they use formatting or parsing, the injectedError will be set to the 
      * errorDetails from the DataTypeParser.

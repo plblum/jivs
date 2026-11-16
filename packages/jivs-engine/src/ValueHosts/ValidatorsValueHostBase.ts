@@ -9,7 +9,7 @@ import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
 import { ValidatorValidateResult, IValidator, ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
-import { SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
 import
     {
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
@@ -22,7 +22,7 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -47,6 +47,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         super(valueHostsManager, config, state);
     }
 
+    // Version token for validation runs: async results may update the host only
+    // while their captured generation matches this one. New runs, value changes,
+    // clearing validation, and disposal invalidate older results; they do not
+    // cancel the underlying async operations.
+    private _validationGeneration = 0;
+
     /**
      * Participates in releasing memory.
      * While not required, the idea is to be a more friendly participant in the ecosystem.
@@ -55,6 +61,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      */
     public override dispose(): void
     {
+        this._validationGeneration++;
         this.config.validatorConfigs = undefined!;
         super.dispose();
         this._validators?.forEach((validator) => { validator.dispose(); });
@@ -64,6 +71,11 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void
     {
         super.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged, options);
+        if (valueChanged)
+        {
+            this._validationGeneration++;
+            delete stateToUpdate.asyncProcessing;
+        }
         if (options && options.injectedError)
             stateToUpdate.injectedError = options.injectedError;
         else
@@ -75,8 +87,21 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
     protected override clearValidationDataFromInstanceState(stateToUpdate: TState): void
     {
+        this._validationGeneration++;
         super.clearValidationDataFromInstanceState(stateToUpdate);
         delete stateToUpdate.injectedError;
+    }
+
+    /**
+     * Extends the rules for determining the validation status to 
+     * return ValidationStatus.Failed if the ValueHost is enabled and either the status is Failed
+     */
+    public override get validationStatus(): ValidationStatus
+    {
+        if (this.isEnabled() && (this.instanceState.status === ValidationStatus.Failed ||
+            this.instanceState.failedAsyncIdentities?.length))
+            return ValidationStatus.Failed;
+        return super.validationStatus;
     }
 
     /**
@@ -136,6 +161,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      * If all were Matched, it returns ValueHostValidateResult.Value and issuesFound=null.
      * If there are no validators, or all validators were skipped (disabled),
      * it returns ValidationStatus.Undetermined.
+     * If an async validator fails to resolve, its identity is retained and the
+     * host reports ValidationStatus.Failed until that validator completes successfully.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
      * 
      * When called an it is disabled, it clears existing data and returns null.
@@ -169,6 +196,14 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (!this.groupsMatch(options.group, false))
             return bailout(`Group names do not match "${options.group}" vs "${this.config.group as any}"`);
 
+        // async validators that are processing are associated with a specific validation generation.
+        // A change of _validationGeneration is because the original value changed or a new validation cycle has started.
+        // Only results from the current generation will be applied to the ValueHost's state.
+        const runGeneration = ++this._validationGeneration;
+        const failedIdentities = new Set(this.instanceState.failedAsyncIdentities ?? []);
+        let requestedStatus = result.status;
+        let postDisposalLogger = this.logger;   // logError may occur after this.logger is disposed...
+
         try {
             try {
                 const validators = this.validators();
@@ -183,7 +218,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     // by updating the state. The state is just missing the results
                     // from this validator. When this completes, it updates the state again.
                     if (potentialIVR instanceof Promise) {
-                        processPromise(potentialIVR);
+                        processPromise(potentialIVR, iv);
                         continue;
                     }
                     // synchronous (normal) processing
@@ -237,12 +272,33 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
                 logError(err.message);
                 if (err instanceof SevereErrorBase)
+                {
+                    if (runGeneration === this._validationGeneration)
+                    {
+                        this._validationGeneration++;
+                        try {
+                            const changed = this.updateInstanceState((stateToUpdate) => {
+                                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
+                                delete stateToUpdate.asyncProcessing;
+                                delete stateToUpdate.corrected;
+                                return stateToUpdate;
+                            }, this);
+                            if (changed)
+                                this.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        catch (cleanupError) {
+                            logError(`Validation cleanup failed: ${ensureError(cleanupError).message}`);
+                        }
+                    }
                     throw err;
+                }
 
                 // resume normal processing with Undetermined state
                 result.status = ValidationStatus.Undetermined;
             }
-            adjustCorrectedFlag();         
+            requestedStatus = result.status;
+            adjustCorrectedFlag();
+            reviseStatusIfFailed();
             if (updateInstanceStateWithResult(result))
                 self.invokeOnValueHostValidationStateChanged(options);
             // when the result hasn't changed from the start, report null as there were no issues found
@@ -260,6 +316,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             });
 
         }
+        function reviseStatusIfFailed(): void {
+            result.status = failedIdentities.size ? ValidationStatus.Failed : requestedStatus;
+            if (failedIdentities.size)
+                delete result.corrected;
+        }
+
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
             return self.updateInstanceState((stateToUpdate) => {
                 if (result.corrected)
@@ -268,8 +330,12 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 }
                 else
                     delete stateToUpdate.corrected;
-                self.setInstanceStateStatus(stateToUpdate, result.status);
+                self.setInstanceStateStatus(stateToUpdate, requestedStatus);
                 stateToUpdate.issuesFound = result.issuesFound;
+                if (failedIdentities.size)
+                    stateToUpdate.failedAsyncIdentities = [...failedIdentities];
+                else
+                    delete stateToUpdate.failedAsyncIdentities;
                 if (options!.group)
                     stateToUpdate.group = options!.group;
                 else
@@ -281,11 +347,9 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 return stateToUpdate;
             }, self);
         }
-        function processPromise(promise: Promise<ValidatorValidateResult>): void {
+        function processPromise(promise: Promise<ValidatorValidateResult>, validator: IValidator): void {
+            const asyncIdentity = validator.condition.category === ConditionCategory.Async ? validator.errorCode : null;
             function completeThePromise(finish: () => void): void {
-                // remove the promise from result.Pending.
-                // We use result.Pending == null to mean no async processes remain.
-                // If Pending is null already, an external action has abandoned the current validation run
                 if (result.pending && result.pending.includes(promise)) {
                     const index = result.pending.indexOf(promise);
                      
@@ -293,15 +357,17 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     if (result.pending.length === 0)
                         delete result.pending;
 
-                    finish();
+                    if (runGeneration === self._validationGeneration)
+                        finish();
                 }
             }
-            function deleteAsyncProcessFlag(): void {
+            function deleteAsyncProcessFlag(): boolean {
                 if (!result.pending)
-                    self.updateInstanceState((stateToUpdate) => {
+                    return self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
                         return stateToUpdate;
                     }, self);
+                return false;
             }
             if (!result.pending)
                 result.pending = [];
@@ -310,26 +376,92 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 (ivr) => {
                     completeThePromise(() => {
                         // the only way we modify the issues, validation result, or ValueHostInstanceState
-                        if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
-                            result.status = ValidationStatus.Invalid;
+                        if (ivr.failedToResolve)
+                        {
+                            if (asyncIdentity !== null)
+                                failedIdentities.add(asyncIdentity);
+                            else
+                                requestedStatus = ValidationStatus.Failed;
+                            reviseStatusIfFailed();
+                            if (updateInstanceStateWithResult(result))
+                                self.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        else if (ivr.skipped)
+                        {
+                            if (deleteAsyncProcessFlag())
+                                self.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)
+                        {
+                            if (!ivr.issueFound)
+                                throw new CodingError(`Validator "${validator.errorCode}" returned NoMatch without an issue`);
+                            if (asyncIdentity !== null)
+                                failedIdentities.delete(asyncIdentity);
+                            if (ivr.issueFound.severity === ValidationSeverity.Warning)
+                            {
+                                ivr.issueFound.doNotSave = false;
+                                if (requestedStatus === ValidationStatus.Undetermined)
+                                    requestedStatus = ValidationStatus.Valid;
+                            }
+                            else if (requestedStatus !== ValidationStatus.Failed)
+                                requestedStatus = ValidationStatus.Invalid;
                             if (!result.issuesFound)
                                 result.issuesFound = [];
-                            result.issuesFound.push(ivr.issueFound!);
+                            result.issuesFound.push(ivr.issueFound);
+                            reviseStatusIfFailed();
                             if (updateInstanceStateWithResult(result))
                                 self.invokeOnValueHostValidationStateChanged(options);
 
                         }
-                        else
-                            deleteAsyncProcessFlag();
+                        else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.Match)
+                        {
+                            if (asyncIdentity !== null)
+                                failedIdentities.delete(asyncIdentity);
+                            if (requestedStatus === ValidationStatus.Undetermined)
+                                requestedStatus = ValidationStatus.Valid;
+
+                            reviseStatusIfFailed();
+                            if (updateInstanceStateWithResult(result))
+                                self.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        else // ConditionEvaluateResult.Undetermined
+                        {
+                            if (deleteAsyncProcessFlag())
+                                self.invokeOnValueHostValidationStateChanged(options);
+                        }
                     });
                 },
                 (failureInfo) => {
+                    logError(failureInfo ? failureInfo.toString() : 'unspecified');
                     completeThePromise(() => {
-                        deleteAsyncProcessFlag();
-                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
+                        if (asyncIdentity !== null)
+                        {
+                            failedIdentities.add(asyncIdentity);
+                            reviseStatusIfFailed();
+                            if (updateInstanceStateWithResult(result))
+                                self.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        else if (deleteAsyncProcessFlag())
+                            self.invokeOnValueHostValidationStateChanged(options);
                     });
                 }
-            );
+            ).catch(error => {
+                logError(ensureError(error).message);
+                if (asyncIdentity !== null && runGeneration === self._validationGeneration)
+                {
+                    failedIdentities.add(asyncIdentity);
+                    reviseStatusIfFailed();
+                    if (updateInstanceStateWithResult(result))
+                    {
+                        try {
+                            self.invokeOnValueHostValidationStateChanged(options);
+                        }
+                        catch (notificationError) {
+                            logError(ensureError(notificationError).message);
+                        }
+                    }
+                }
+            });
             // no change to the ValidationStatus here            
         }
         function adjustCorrectedFlag(): void
@@ -354,7 +486,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         }
 
         function logError(message: string): void {
-            self.logger.log(LoggingLevel.Error, (options) => {
+            postDisposalLogger.log(LoggingLevel.Error, (options) => {
                 return {
                     message: message ??
                         /* istanbul ignore next */  // defensive             
@@ -432,6 +564,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
 
     /**
      * Validators are sorted so category=Require comes first and category=DataTypeCheck second.
+     * AsyncValidators have category=Async, which is last, ensuring they
+     * will always be ordered after standard validators.
      * @param unordered 
      * @returns 
      */
@@ -566,6 +700,31 @@ export abstract class ValidatorsValueHostBaseGenerator extends ValidatableValueH
         let configChanged = false;
         let oldStateCount = 0;
         let issuesFound: Array<IssueFound> | null = null;
+
+        if (state.failedAsyncIdentities?.length)
+        {
+            const configuredIdentities = new Set<string>();
+            config.validatorConfigs?.forEach(valConfig => {
+                if (isAsyncValidatorConfig(valConfig))
+                {
+                    const identity = (valConfig as AsyncValidatorConfig).handlerIdentity;
+                    assertNotEmptyString(identity, 'handlerIdentity');
+                    configuredIdentities.add(identity);
+                }
+            });
+            const retained = state.failedAsyncIdentities.filter(identity => configuredIdentities.has(identity));
+            if (retained.length !== state.failedAsyncIdentities.length)
+            {
+                if (retained.length)
+                    state.failedAsyncIdentities = retained;
+                else
+                {
+                    delete state.failedAsyncIdentities;
+                    if (state.status !== ValidationStatus.Invalid)
+                        state.status = ValidationStatus.NeedsValidation;
+                }
+            }
+        }
 
         if (state.issuesFound) {
             const oldState = state.issuesFound;

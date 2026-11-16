@@ -201,7 +201,13 @@ export enum ConditionCategory {
     /**
      * For anything else.
      */
-    Undetermined
+    Undetermined,
+    /**
+     * For AsyncValidators, which don't have a condition
+     * and are expected to execute last in a valuehost list of validators.
+     * So its after Undetermined.
+     */
+    Async
 }
 
 /**

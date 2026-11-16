@@ -199,7 +199,7 @@ export function isAsyncValidatorConfig(valConfig: ValidatorConfigBase): boolean
         return true;
     let asyncConfig = valConfig as AsyncValidatorConfig;
     if (asyncConfig.handlerIdentity !== undefined &&
-        asyncConfig.handlerIdentity !== undefined
+        asyncConfig.handler !== undefined
     )
         return true;
     return false;
