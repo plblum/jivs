@@ -18,6 +18,7 @@ import { ConditionType } from '@plblum/jivs-engine/build/Conditions/ConditionTyp
 import { NotConditionConfig } from '@plblum/jivs-engine/build/Conditions/NotCondition';
 import { WhenConditionConfig } from '@plblum/jivs-engine/build/Conditions/WhenCondition';
 import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
+import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 import { ConditionConfig, ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices';
@@ -449,6 +450,87 @@ function createValidatorParamsAllProperties<T extends FluentValidatorConfig>(): 
     //        validatorType: 'Validator'
         };
 }
+
+function expectValidatorBuilderErrorLogged(loggingService: TestingLoggingService,
+    message: string): void
+{
+    let logged = loggingService.findMessage(message, LoggingLevel.Error, null,
+        { feature: 'ConfigBuilder', type: 'ValidatorBuilder' });
+    expect(logged).not.toBeNull();
+    expect(logged?.level).toBe(LoggingLevel.Error);
+    expect(logged?.category).toBeUndefined();
+    expect(logged?.message).toBe(message);
+    expect(logged?.type).toBe('ValidatorBuilder');
+    expect(logged?.data).toBeUndefined();
+}
+
+// Confirms async validators are added with their handler and dependencies, and invalid arguments are logged.
+describe('ValidatorBuilder.asyncValidator()', () => {
+    test('adds the async validator config and supports fluent chaining through IValidatorBuilder', () => {
+        let testItem = createVMBuilder().field('Field1');
+        let handler: AsyncValidatorEvaluateHandler = async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        });
+        let dependencyValueHostNames = ['OtherField'];
+
+        let returnedBuilder = testItem.asyncValidator('uniqueIdentity', handler, dependencyValueHostNames);
+        returnedBuilder.requireText();
+
+        expect(returnedBuilder).toBe(testItem);
+        expect(testItem.parentConfig.validatorConfigs).toHaveLength(2);
+        let asyncConfig = testItem.parentConfig.validatorConfigs![0] as AsyncValidatorConfig;
+        expect(asyncConfig).toEqual({
+            validatorType: ValidatorType.AsyncValidator,
+            handlerIdentity: 'uniqueIdentity',
+            handler: handler,
+            dependencyValueHostNames: dependencyValueHostNames
+        });
+    });
+
+    test('adds an async validator config when dependencies are omitted', () => {
+        let testItem = createVMBuilder().field('Field1');
+        let handler: AsyncValidatorEvaluateHandler = async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        });
+
+        testItem.asyncValidator('uniqueIdentity', handler);
+
+        let asyncConfig = testItem.parentConfig.validatorConfigs![0] as AsyncValidatorConfig;
+        expect(asyncConfig.validatorType).toBe(ValidatorType.AsyncValidator);
+        expect(asyncConfig.handlerIdentity).toBe('uniqueIdentity');
+        expect(asyncConfig.handler).toBe(handler);
+        expect(asyncConfig.dependencyValueHostNames).toBeUndefined();
+    });
+
+    test('with an undefined, null, or empty identity logs an error and throws', () => {
+        let loggingService = services.loggingService as TestingLoggingService;
+        let handler: AsyncValidatorEvaluateHandler = async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        });
+        let message = 'ValueHost name "Field1" must have a valid async validator identity.';
+
+        for (let identity of [undefined, null, '']) {
+            let testItem = new ValidatorBuilder(services, createVMConfig());
+            loggingService.clearAll();
+
+            expect(() => testItem.asyncValidator(identity!, handler)).toThrow(message);
+            expectValidatorBuilderErrorLogged(loggingService, message);
+        }
+    });
+
+    test('with an undefined or null handler logs an error and throws', () => {
+        let loggingService = services.loggingService as TestingLoggingService;
+        let message = 'ValueHost name "Field1" must have an async validator handler.';
+
+        for (let handler of [undefined, null]) {
+            let testItem = new ValidatorBuilder(services, createVMConfig());
+            loggingService.clearAll();
+
+            expect(() => testItem.asyncValidator('uniqueIdentity', handler!)).toThrow(message);
+            expectValidatorBuilderErrorLogged(loggingService, message);
+        }
+    });
+});
 
 describe('dataTypeCheck as a validator of a field()', () => {
     test('With no parameters creates ValidatorConfig with DataTypeCheckCondition with only type assigned', () => {

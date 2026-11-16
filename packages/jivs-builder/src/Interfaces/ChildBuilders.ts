@@ -12,20 +12,23 @@
  */
 
 
-import {
-    RegExpConditionConfig,
-    RequireTextConditionConfig,
-    StringLengthConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
-import {
-    EqualToConditionConfig,
-    GreaterThanOrEqualConditionConfig,
-    GreaterThanConditionConfig,
-    LessThanConditionConfig,
-    LessThanOrEqualConditionConfig,
-    NotEqualToConditionConfig
-} from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        EqualToConditionConfig,
+        GreaterThanConditionConfig,
+        GreaterThanOrEqualConditionConfig,
+        LessThanConditionConfig,
+        LessThanOrEqualConditionConfig,
+        NotEqualToConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ComparisonCondition_classes';
+import
+    {
+        RegExpConditionConfig,
+        RequireTextConditionConfig,
+        StringLengthConditionConfig
+    } from '@plblum/jivs-engine/build/Conditions/ConcreteConditions';
 import { ValueHostName } from '@plblum/jivs-engine/build/DataTypes/BasicTypes';
+import { AsyncValidatorEvaluateHandler } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
@@ -158,7 +161,58 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
         summaryMessage?: string | null): IValidatorBuilder;
     customRule(this: any, conditionCreator: (requester: ValidatorConfig) => ICondition | null,
         validatorParameters: FluentValidatorConfig): IValidatorBuilder;
-
+    
+    /**
+     * Async validation is very different from the rest. 
+     * It targets a different situation, where an API is called and that API has to resolve
+     * any errors, including error codes and messages.
+     * When attached to a field, expect it to be executed with the following restrictions:
+     * - Always called after all other validators on the valuehost
+     * - Not when ValidatorOptions.duringEdit or preliminary are true.
+     * 
+     * The validator is built around a function that you supply, instead of using
+     * a Condition to describe its behavior.
+     * @param identity - The unique identifier for the async validator.
+     * This name should be unique from error codes of other validators too
+     * because its used to align the validator with localization and other processes.
+     * @param handler - The function that will be called to evaluate the async validation.
+     * ```ts
+     * type AsyncValidatorEvaluateHandler = (valueHost: IValidatorsValueHost,
+     *      valueHostsManager: IValueHostsManager) => Promise<AsyncValidatorEvaluationResult>;
+     * ```
+     * It should always call resolve with an AsyncValidatorEvaluationResult 
+     * indicating the outcome of the validation, even catching exceptions and reporting them as failed resolutions.
+     * @Example
+     * ```ts
+     * asyncValidator('uniqueIdentity', async (valueHost, valueHostsManager) => {
+     *     // Your async validation logic here
+     * 
+     *     return new Promise<AsyncValidatorEvaluationResult>(async (resolve, reject) => {
+     *         try {
+     *              let result = await apiCall();
+     *              if (!result.isValid) {
+     *                  resolve({ 
+     *                       conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+     *                       errorMessage: 'Validation failed'
+     *                  });
+     *                  return;
+     *              }
+     *              resolve({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+     *         } 
+     *         catch (error) {
+     *              resolve({ 
+     *                  failedToResolve: error as Error,
+     *                  conditionEvaluateResult: ConditionEvaluateResult.Undetermined
+     *              });
+     *         }
+     *     });
+     * });
+     * ```
+     * @param dependencyValueHostNames - An optional array of value host names that this async validator depends on.
+     * Any of these value hosts changing will trigger the async validator to re-evaluate.
+     */
+    asyncValidator(identity: string, handler: AsyncValidatorEvaluateHandler,
+        dependencyValueHostNames?: ValueHostName[]): IValidatorBuilder;    
     /**
      * Adds a DataTypeCheck condition to the validator builder.
      * DataTypeCheck ensures that the value being validated matches the expected data type.
