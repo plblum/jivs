@@ -31,7 +31,7 @@ import
 import { Debouncer } from '../Utilities/Debounce';
 import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
 import { LoggingFacade } from '../Utilities/LoggingFacade';
-import { deepClone, deepEquals } from '../Utilities/Utilities';
+import { deepClone, deepEquals, preserveReferenceOnClone } from '../Utilities/Utilities';
 import { toICalcValueHost } from '../ValueHosts/CalcValueHost';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ModelValidatorsValueHostName, ModelValidatorsValueHostType } from '../ValueHosts/ModelValidatorsValueHost';
@@ -136,11 +136,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
     public static safeConfigClone(config: ValueHostsManagerConfig): ValueHostsManagerConfig {
         // NOTE: We don't keep the original instance of Config to avoid letting the caller edit it while in use.
-        const savedServices = config.services;
-        config.services = null as any; // to ignore during DeepClone
+    //    const savedServices = config.services;
+        preserveReferenceOnClone(config.services);
+    //    config.services = null as any; // to ignore during DeepClone
         const internalConfig = deepClone(config) as ValueHostsManagerConfig;
-        config.services = savedServices;
-        internalConfig.services = savedServices;
+    //    config.services = savedServices;
+    //    internalConfig.services = savedServices;
         return internalConfig;
     }
 

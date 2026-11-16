@@ -74,6 +74,16 @@ export function deepEquals(obj1: any, obj2: any): boolean
     
 }
 
+/**
+ * Creates a deep clone of the given value, optionally using a filter to modify or remove properties.
+ * Handles circular references and preserves references for objects 
+ * marked with preserveReferenceSymbol.
+ * It knows how to clone built-in javascript objects like Date and RegExp.
+ * @param value 
+ * @param alreadyChecked 
+ * @param filter 
+ * @returns 
+ */
 export function deepClone(value: any, alreadyChecked?: Array<any>,
     filter?: deepCloneFilter): any {
     if (typeof value !== 'object' || value === null) {
@@ -82,6 +92,9 @@ export function deepClone(value: any, alreadyChecked?: Array<any>,
     // Handle circular references
     if (alreadyChecked?.includes(value))
         return undefined;
+
+    if ((value as any)[preserveReferenceSymbol])
+        return value;
 
     if (value instanceof Date)
         return new Date(value.getTime());
@@ -117,7 +130,6 @@ export function deepClone(value: any, alreadyChecked?: Array<any>,
     }
 
     return newObject;    
-    
 }
 /**
  * Used by deepClone to modify and remove properties.
@@ -177,6 +189,22 @@ export function cleanForLogging(key: string, value: any, parent: any): any {
 export function deepCleanForJson(value: any, filter?: deepCloneFilter): any {
     return deepClone(value, undefined, filter ?? cleanForLogging);
 }
+
+/**
+ * Marks the given object to preserve its reference during calls within deepClone
+ * and deepCloneForJson functions.
+ * This targets the ValueHostsManager which clones its config. That object
+ * contains IJivsServices, payloads for use by AsyncValidators, and other objects that should not be cloned.
+ * @param value 
+ * @returns 
+ */
+export function preserveReferenceOnClone(value: any): any {
+    if (typeof value === 'object' && value !== null) {
+        (value as any)[preserveReferenceSymbol] = true;
+    }
+    return value;
+}
+const preserveReferenceSymbol = Symbol('preserveReference');
 
 /**
  * Returns the number of keys in the given object.

@@ -1,9 +1,10 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
 import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult } from '../../src/Interfaces/AsyncValidator';
-import { ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
+import { ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggingService';
-import { ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
+import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
 import { ValidatorType } from '../../src/Interfaces/Validator';
+import { ErrorMessagesService } from '../../src/Services/ErrorMessagesService';
 import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { AsyncValidator } from '../../src/Validation/AsyncValidator';
@@ -13,7 +14,7 @@ import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
  * Creates a validator with a field and recording logger for validate() scenarios.
  */
 function setupValidator(handler: AsyncValidatorEvaluateHandler, config?: Partial<AsyncValidatorConfig>) {
-    let services = new MockJivsServices(false, false);
+    let services = new MockJivsServices(false, true);
     let logger = new TestingLoggingService();
     services.loggingService = logger;
     let manager = new MockValueHostsManager(services);
@@ -25,8 +26,38 @@ function setupValidator(handler: AsyncValidatorEvaluateHandler, config?: Partial
         ...config
     });
     logger.clearAll();
-    return { validator, valueHost, manager, logger };
+    return { validator, valueHost, manager, logger, services };
 }
+
+// Configuration identity supplies the validator's stable public identity and async category.
+describe('AsyncValidator construction and identity', () => {
+    test('Rejects missing constructor dependencies, empty identity, and a missing handler', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }));
+        let config: AsyncValidatorConfig = {
+            validatorType: ValidatorType.AsyncValidator,
+            handlerIdentity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        };
+
+        expect(() => new AsyncValidator(null!, config)).toThrow(CodingError);
+        expect(() => new AsyncValidator(setup.valueHost, null!)).toThrow(CodingError);
+        expect(() => new AsyncValidator(setup.valueHost, { ...config, handlerIdentity: '' })).toThrow(CodingError);
+        expect(() => new AsyncValidator(setup.valueHost, { ...config, handler: null! })).toThrow(CodingError);
+    });
+
+    test('Uses the configured identity for its error code and async condition category', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }), { handlerIdentity: 'AccountAvailability' });
+
+        expect(setup.validator.errorCode).toBe('AccountAvailability');
+        expect(setup.validator.conditionType).toBe('AccountAvailability');
+        expect(setup.validator.condition.conditionType).toBe('AccountAvailability');
+        expect(setup.validator.condition.category).toBe(ConditionCategory.Async);
+    });
+});
 
 // Verify the Promise represents the handler's actual completion and receives its configured context.
 describe('AsyncValidator.validate async completion', () => {
@@ -64,8 +95,11 @@ describe('AsyncValidator.validate async completion', () => {
         let result = await observed;
         expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
         expect(result.issueFound).toEqual(expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            valueHostName: 'Field1',
             errorCode: 'NameTaken',
             errorMessage: 'Already taken',
+            summaryMessage: 'Already taken',
             severity: ValidationSeverity.Error,
             doNotSave: true
         }));
@@ -80,6 +114,73 @@ describe('AsyncValidator.validate async completion', () => {
             conditionEvaluateResult: ConditionEvaluateResult.Match,
             issueFound: null
         });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+});
+
+// Handler-provided severities control the issue severity and blocking flag.
+describe('AsyncValidator.validate severity', () => {
+    test.each([
+        { severity: ValidationSeverity.Warning, doNotSave: false },
+        { severity: ValidationSeverity.Severe, doNotSave: true }
+    ])('Returns severity $severity with doNotSave=$doNotSave', async ({ severity, doNotSave }) => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'NameTaken',
+            errorMessage: 'Already taken',
+            severity
+        }));
+
+        let result = await setup.validator.validate({});
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            errorCode: 'NameTaken',
+            severity,
+            doNotSave
+        }));
+        expect(setup.logger.entryCount).toBe(0);
+    });
+});
+
+// Localized messages use the issue code, are HTML-encoded, then have tokens resolved.
+describe('AsyncValidator.validate message resolution', () => {
+    test('Uses the issue code and data type to select a localized template before encoding and resolving tokens', async () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'NameTaken',
+            errorMessage: 'Handler fallback'
+        }));
+        let messages = setup.services.errorMessagesService as ErrorMessagesService;
+        messages.registerErrorMessage('NameTaken', LookupKey.String, {
+            en: '<strong>{Label}</strong> is unavailable'
+        });
+        messages.registerErrorMessage('AvailabilityCheck', null, {
+            en: 'The validator identity is not the issue code'
+        });
+
+        let result = await setup.validator.validate({});
+
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorCode: 'NameTaken',
+            errorMessage: '&lt;strong&gt;Label1&lt;/strong&gt; is unavailable',
+            summaryMessage: '&lt;strong&gt;Label1&lt;/strong&gt; is unavailable'
+        }));
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('HTML-encodes and resolves tokens in the handler fallback message', async () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'NameTaken',
+            errorMessage: '<strong>{Label}</strong> is unavailable'
+        }));
+
+        let result = await setup.validator.validate({});
+
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorMessage: '&lt;strong&gt;Label1&lt;/strong&gt; is unavailable',
+            summaryMessage: '&lt;strong&gt;Label1&lt;/strong&gt; is unavailable'
+        }));
         expect(setup.logger.entryCount).toBe(0);
     });
 });
@@ -162,6 +263,140 @@ describe('AsyncValidator.validate failures', () => {
             errorMessage: ''
         }));
         await expect(setup.validator.validate({})).rejects.toThrow(CodingError);
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Rejects with a CodingError when a NoMatch result has no error code', async () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorMessage: 'Missing code'
+        }));
+
+        await expect(setup.validator.validate({})).rejects.toThrow(CodingError);
+        expect(setup.logger.entryCount).toBe(0);
+    });
+});
+
+// Async validators discover only their declared dependencies and swap issues by identity.
+describe('AsyncValidator dependencies and external issue swaps', () => {
+    test('Adds each configured dependency name to the supplied collection', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }), { dependencyValueHostNames: ['Field2', 'Field3', 'Field2'] });
+        let names = new Set<string>();
+
+        expect(() => setup.validator.gatherValueHostNames(names, setup.manager)).not.toThrow();
+        expect(names).toEqual(new Set(['Field2', 'Field3']));
+    });
+
+    test('Leaves the collection unchanged when no dependencies are configured', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }));
+        let names = new Set<string>(['Existing']);
+
+        setup.validator.gatherValueHostNames(names, setup.manager);
+
+        expect(names).toEqual(new Set(['Existing']));
+    });
+
+    test('Swaps an issue only when its async identity matches and preserves its display data', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }));
+        let incoming: IssueFound = {
+            asyncIdentity: 'AvailabilityCheck',
+            errorCode: 'NameReserved',
+            errorMessage: 'Already reserved',
+            summaryMessage: 'Reserved',
+            severity: ValidationSeverity.Warning,
+            doNotSave: false
+        };
+
+        let result = setup.validator.tryValidatorSwap(incoming);
+
+        expect(result).toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            issueFound: expect.objectContaining({
+                asyncIdentity: 'AvailabilityCheck',
+                valueHostName: 'Field1',
+                errorCode: 'NameReserved',
+                errorMessage: 'Already reserved',
+                summaryMessage: 'Reserved',
+                severity: ValidationSeverity.Warning,
+                doNotSave: false
+            })
+        });
+        expect(setup.validator.tryValidatorSwap({
+            ...incoming,
+            asyncIdentity: 'AnotherCheck'
+        })).toBeNull();
+        expect(setup.validator.tryValidatorSwap({
+            errorCode: 'NameReserved',
+            errorMessage: 'Already reserved'
+        })).toBeNull();
+    });
+});
+
+// Results arriving after disposal must not be converted through cleared validator state.
+describe('AsyncValidator.dispose with pending handlers', () => {
+    test('Returns a skipped result when a pending handler resolves after disposal', async () => {
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupValidator(() => new Promise(resolve => { finish = resolve; }));
+        let pending = setup.validator.validate({});
+
+        setup.validator.dispose();
+        finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+
+        await expect(pending).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null,
+            skipped: true
+        });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Still logs a resolved operational failure after disposal', async () => {
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupValidator(() => new Promise(resolve => { finish = resolve; }));
+        let failure = new Error('Late service failure');
+        let pending = setup.validator.validate({});
+
+        setup.validator.dispose();
+        finish({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: failure
+        });
+
+        await expect(pending).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null,
+            skipped: true
+        });
+        expect(setup.logger.captured).toHaveLength(1);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error,
+            category: LoggingCategory.Exception,
+            message: 'Late service failure',
+            feature: 'Validator',
+            type: 'AsyncValidator',
+            identity: ['Field1', 'AvailabilityCheck']
+        }));
+    });
+
+    test('Preserves handler rejection details when the validator is disposed while pending', async () => {
+        let reject!: (error: Error) => void;
+        let failure = new Error('Late handler rejection');
+        let setup = setupValidator(() => new Promise((_, rejectPromise) => { reject = rejectPromise; }));
+        let pending = setup.validator.validate({});
+
+        setup.validator.dispose();
+        reject(failure);
+
+        await expect(pending).rejects.toMatchObject({
+            message: expect.stringContaining('AvailabilityCheck'),
+            cause: failure
+        });
         expect(setup.logger.entryCount).toBe(0);
     });
 });
