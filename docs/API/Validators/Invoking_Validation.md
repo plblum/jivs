@@ -77,6 +77,8 @@ These properties are all related to validation:
 
 ### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on `ValueHostsManager`.
+
+The following immediate submission check applies when validation is synchronous. If async validators are configured, `validate()` returns before they finish; see [Waiting for validation](./Async_Validators.md#waiting-for-validation).
 ```ts
 let status = vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)

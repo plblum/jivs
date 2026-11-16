@@ -4,7 +4,7 @@
 
 Implementation guide and status record for [AsyncValidator_design.md](./AsyncValidator_design.md). Treat code marked **Current** as implemented behavior; code marked **Proposed** is not a description of the current API.
 
-The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, failure tracking, and cleanup of restored pending flags. The fluent builder method is not implemented. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
+The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, failure tracking, cleanup of restored pending flags, and a fluent builder method. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
 
 **Not a submission-completion design:** `ValueHostsManager.validate()` is currently synchronous. Manager completion and submission are separate work. Peter has decided that an API failure must make `doNotSave` true and block saving; this guide specifies the field-level state needed to enforce that decision. The manager must eventually wait for the applicable work and read the final blocking state before submission. The former manager/condition exploration is [obsolete](./asyncCondition_design_OBSOLETE.md), not an implementation specification.
 
@@ -17,7 +17,7 @@ The matching-issue ownership decision was confirmed: when an external issue repl
 | Contracts and type identity | [Interfaces/AsyncValidator.ts](../packages/jivs-engine/src/Interfaces/AsyncValidator.ts), [Interfaces/Validator.ts](../packages/jivs-engine/src/Interfaces/Validator.ts) | Implemented as `ValidatorType.AsyncValidator`; `IValidator` still requires a condition. |
 | Validator and factory | [Validation/AsyncValidator.ts](../packages/jivs-engine/src/Validation/AsyncValidator.ts), [Validation/ValidatorFactory.ts](../packages/jivs-engine/src/Validation/ValidatorFactory.ts) | Implemented; the async validator uses an internal condition shim for existing consumers. |
 | Field host | [ValidatorsValueHostBase.ts](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts), [FieldValueHost.ts](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts) | Async settlement, stale-run protection, issue ownership, failure tracking, and restore cleanup are implemented. |
-| Builder | [ChildBuilders.ts](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts), [ValidatorBuilder.ts](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts) | No dedicated async fluent method yet; `ValidatorBuilder.finish()` still requires a condition. |
+| Builder | [ChildBuilders.ts](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts), [ValidatorBuilder.ts](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts) | `asyncValidator()` adds async configs without `finish()`; duplicate identity checks remain unfinished. |
 | Configuration cloning | [Utilities.ts](../packages/jivs-engine/src/Utilities/Utilities.ts), [ValueHostsManager.ts](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), builder/merge clone callers | The manager marks its services for reference preservation. Async handler context is managed by the application, not stored in validator config. |
 | Conditions | [Interfaces/Conditions.ts](../packages/jivs-engine/src/Interfaces/Conditions.ts), condition bases and implementations | Promise support remains; a synchronous-only migration is separate and unfinished. |
 | Analysis and docs | [ValueHostConfigAnalyzer.ts](../packages/jivs-configanalysis/src/Analyzers/ValueHostConfigAnalyzer.ts), engine/builder docs and examples | Async configs are recognized by config analysis; confirm existing end-user documentation matches the implemented API. |
@@ -41,7 +41,7 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig,
 }
 ```
 
-`AsyncValidatorConfig` omits condition and standard-message properties. The `handlerIdentity` becomes `IValidator.errorCode` and is used for enabled-state keys, lookup and issue ownership; the handler supplies the separate issue error code. The constructor checks for a nonempty identity and a handler. Builder-level duplicate validation is not yet available because there is no async builder method. `isAsyncValidatorConfig()` also recognizes subclasses that have their own validator type but provide both `handlerIdentity` and `handler`.
+`AsyncValidatorConfig` omits condition and standard-message properties. The `handlerIdentity` becomes `IValidator.errorCode` and is used for enabled-state keys, lookup and issue ownership; the handler supplies the separate issue error code. The constructor checks for a nonempty identity and a handler. The builder does not yet check async identity duplicates. `isAsyncValidatorConfig()` also recognizes subclasses that have their own validator type but provide both `handlerIdentity` and `handler`.
 
 The identity is stable before the handler runs and backs `IValidator.errorCode`, enabled overrides, validator lookup and config matching. Applications recreating configuration after a round trip must use the same identity. Allow the same identity on different ValueHosts.
 
@@ -126,11 +126,11 @@ The async registration casts the base config to `AsyncValidatorConfig`; the `Asy
 
 ## 3. Builder and configuration
 
-There is currently no dedicated async method in `IValidatorBuilder` or `ValidatorBuilder`. The following signature and call remain a proposal for that unfinished builder integration:
+`IValidatorBuilder` and `ValidatorBuilder` expose the following async method:
 
 ```ts
-// Proposed IValidatorBuilder signature.
-validatorAsync(
+// Current IValidatorBuilder signature.
+asyncValidator(
     identity: string,
     handler: AsyncValidatorEvaluateHandler,
     dependencyValueHostNames?: ValueHostName[]
@@ -138,12 +138,12 @@ validatorAsync(
 ```
 
 ```ts
-// Proposed fluent call; the first parameter is named identity.
+// Fluent call; the first parameter is named identity.
 builder.field('UserName', LookupKey.String)
-    .validatorAsync('AvailabilityCheck', evaluateAvailability, ['AccountType']);
+    .asyncValidator('AvailabilityCheck', evaluateAvailability, ['AccountType']);
 ```
 
-An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, and optional dependencies. It does not have `conditionConfig`. A builder method will need a separate path because `ValidatorBuilder.finish()` currently requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed builder support.
+An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, and optional dependencies. It does not have `conditionConfig`. The async builder method adds it separately because `ValidatorBuilder.finish()` requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed duplicate checking.
 
 The configuration produced by that call is conceptually:
 
@@ -170,7 +170,7 @@ if (this.parentConfig.validatorConfigs!.find((ivConfig) => {
     this.reportError(new Error(`ValueHost name "${this._parentConfig.name}" with errorCode ${errorCode} already defined.`));
 ```
 
-When adding the async builder path, identity resolution should use `handlerIdentity` for async configs and the existing rules for standard validators. The duplicate check must compare the resolved identity/code across both kinds. The runtime config analyzer currently recognizes async configs separately and reports whether the identity and handler are supplied.
+When adding duplicate checking, identity resolution should use `handlerIdentity` for async configs and the existing rules for standard validators. The duplicate check must compare the resolved identity/code across both kinds. The runtime config analyzer currently recognizes async configs separately and reports whether the identity and handler are supplied.
 
 ```ts
 // Proposed fragment at the start of resolveErrorCode().
@@ -179,9 +179,9 @@ if (isAsyncValidatorConfig(ivConfig))
 // Continue with the existing errorCode/conditionType resolution.
 ```
 
-The eventual builder path must distinguish malformed async configs from standard configs: a config declaring `ValidatorType.AsyncValidator` but lacking `handlerIdentity` should report an error, not fall back to `ConditionType.Unknown`. The current runtime constructor checks the identity and handler, but builder-specific validation is not implemented.
+The builder checks that the async identity and handler are present. Duplicate checking and any broader validation of directly supplied configs remain separate work.
 
-End-user documentation must explain the difference from ordinary validators: neither `AsyncValidatorConfig` nor `validatorAsync()` supplies the validation issue's error code or message; the handler must provide both for `NoMatch`. The configured `handlerIdentity` identifies the validator and is not the issue's localization code. Existing inherited standard-validator message/error-code config properties must not silently override the handler's values.
+End-user documentation must explain the difference from ordinary validators: neither `AsyncValidatorConfig` nor `asyncValidator()` supplies the validation issue's error code or message; the handler must provide both for `NoMatch`. The configured `handlerIdentity` identifies the validator and is not the issue's localization code. Existing inherited standard-validator message/error-code config properties must not silently override the handler's values.
 
 Audit every `resolveErrorCode()` consumer, including config merging, config analysis, and `FormConfigAdapter`. Returning an async identity is appropriate for validator matching, but it must not be used as if it were the dynamic issue's localization code or as proof that an issue message is configured.
 
@@ -469,7 +469,7 @@ Follow [Testing Approach](../docs/assets/Testing_Approach.md): the owner selects
 Implementation status and remaining work:
 
 - **Implemented:** async contracts and factory; `AsyncValidator`; async issue identity and replacement; host settlement, failure and stale-run handling; corrected-flag policy; async observer-error handling; restored pending-state cleanup. Targeted engine tests cover these behaviors.
-- **Not implemented:** a dedicated builder method and async identity duplicate checks in builder flows.
+- **Not implemented:** async identity duplicate checks in builder flows.
 - **Separate decision:** whether to migrate `ICondition` to synchronous-only behavior. Do not treat that migration as a prerequisite unless explicitly approved.
 - **Separate project:** manager-level asynchronous completion and submission gating. `ValueHostsManager.validate()` remains synchronous and does not by itself guarantee that async validation has finished.
 
@@ -478,7 +478,7 @@ Compile the repository from its root with `npm run compile` before cross-package
 ## Remaining decisions and release gate
 
 - **Q20 — Resolved:** An API failure blocks saving. A separate failure marker is necessary because `skipped` and `Undetermined` alone do not block.
-- **Q28 — Decision resolved; builder work pending:** Async handler identities must not duplicate another validator's identity/error code on the same host. The current builder has no async fluent method and does not enforce this cross-type rule for directly supplied async configs.
+- **Q28 — Decision resolved; duplicate checks pending:** Async handler identities must not duplicate another validator's identity/error code on the same host. The builder does not currently enforce this rule for async configs.
 - **Q29 — Resolved:** Missing or empty `NoMatch` code/message throws `CodingError`. Current localization selects the active-culture error message or handler fallback, encodes the selected message, resolves tokens, and uses that resolved text for both error and summary. Whitespace-only values are not currently rejected.
 - **Q30 — Implemented:** Operational failures reported through `failedToResolve` are logged and block saving. Handler rejections are wrapped in `CodingError`; missing NoMatch fields throw `CodingError`. The host logs settlement errors and keeps saving blocked.
 - **Q31 — Superseded by Q33:** Async issues are no longer matched by issue code alone.
