@@ -348,11 +348,15 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             }, self);
         }
         function processPromise(promise: Promise<ValidatorValidateResult>, validator: IValidator): void {
+            // Legacy Validators can also return Promises, but only AsyncValidators have
+            // an identity that can be retained as a failure and cleared by a later retry.
             const asyncIdentity = validator.condition.category === ConditionCategory.Async ? validator.errorCode : null;
             function completeThePromise(finish: () => void): void {
                 if (result.pending && result.pending.includes(promise)) {
                     const index = result.pending.indexOf(promise);
                      
+                    // Settle this run's pending list even when the run is obsolete. An
+                    // obsolete completion must not change the current host state.
                     result.pending.splice(index, 1);
                     if (result.pending.length === 0)
                         delete result.pending;
@@ -362,6 +366,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 }
             }
             function deleteAsyncProcessFlag(): boolean {
+                // Skipped and Undetermined results have no status or issue to publish.
+                // Only the last pending result needs to update the host's pending flag.
                 if (!result.pending)
                     return self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
@@ -369,67 +375,84 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }, self);
                 return false;
             }
+
+            /**
+             * Adds one resolved validator's outcome to this run's shared result and
+             * publishes any resulting state change. Called only for the current run,
+             * after completeThePromise has removed this Promise from pending.
+             */
+            function applyResolvedValidatorResult(ivr: ValidatorValidateResult): void
+            {
+                if (ivr.failedToResolve)
+                {
+                    // A failed async handler blocks saving without creating a user-facing
+                    // issue. Legacy Promise validators instead record Failed as the status.
+                    if (asyncIdentity !== null)
+                        failedIdentities.add(asyncIdentity);
+                    else
+                        requestedStatus = ValidationStatus.Failed;
+                    reviseStatusIfFailed();
+                    if (updateInstanceStateWithResult(result))
+                        self.invokeOnValueHostValidationStateChanged(options);
+                }
+                else if (ivr.skipped)
+                {
+                    // A skipped validator cannot clear an earlier failure.
+                    if (deleteAsyncProcessFlag())
+                        self.invokeOnValueHostValidationStateChanged(options);
+                }
+                else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)
+                {
+                    if (!ivr.issueFound)
+                        throw new CodingError(`Validator "${ validator.errorCode }" returned NoMatch without an issue`);
+                    // A definitive result clears this handler's failure, even when it
+                    // reports an issue. Other handlers' failures remain in effect.
+                    if (asyncIdentity !== null)
+                        failedIdentities.delete(asyncIdentity);
+                    if (ivr.issueFound.severity === ValidationSeverity.Warning)
+                    {
+                        // Warnings do not block saving and must not override an invalid status.
+                        ivr.issueFound.doNotSave = false;
+                        if (requestedStatus === ValidationStatus.Undetermined)
+                            requestedStatus = ValidationStatus.Valid;
+                    }
+                    else if (requestedStatus !== ValidationStatus.Failed)
+                        requestedStatus = ValidationStatus.Invalid;
+                    if (!result.issuesFound)
+                        result.issuesFound = [];
+                    result.issuesFound.push(ivr.issueFound);
+                    reviseStatusIfFailed();
+                    if (updateInstanceStateWithResult(result))
+                        self.invokeOnValueHostValidationStateChanged(options);
+
+                }
+                else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.Match)
+                {
+                    // Match clears only this handler's failure and cannot override
+                    // a more significant status already produced by another validator.
+                    if (asyncIdentity !== null)
+                        failedIdentities.delete(asyncIdentity);
+                    if (requestedStatus === ValidationStatus.Undetermined)
+                        requestedStatus = ValidationStatus.Valid;
+
+                    reviseStatusIfFailed();
+                    if (updateInstanceStateWithResult(result))
+                        self.invokeOnValueHostValidationStateChanged(options);
+                }
+                else // ConditionEvaluateResult.Undetermined
+                {
+                    // Undetermined is not a definitive retry, so retain any failure.
+                    if (deleteAsyncProcessFlag())
+                        self.invokeOnValueHostValidationStateChanged(options);
+                }
+            }
+
             if (!result.pending)
                 result.pending = [];
             result.pending.push(promise);
             promise.then(
                 (ivr) => {
-                    completeThePromise(() => {
-                        // the only way we modify the issues, validation result, or ValueHostInstanceState
-                        if (ivr.failedToResolve)
-                        {
-                            if (asyncIdentity !== null)
-                                failedIdentities.add(asyncIdentity);
-                            else
-                                requestedStatus = ValidationStatus.Failed;
-                            reviseStatusIfFailed();
-                            if (updateInstanceStateWithResult(result))
-                                self.invokeOnValueHostValidationStateChanged(options);
-                        }
-                        else if (ivr.skipped)
-                        {
-                            if (deleteAsyncProcessFlag())
-                                self.invokeOnValueHostValidationStateChanged(options);
-                        }
-                        else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)
-                        {
-                            if (!ivr.issueFound)
-                                throw new CodingError(`Validator "${validator.errorCode}" returned NoMatch without an issue`);
-                            if (asyncIdentity !== null)
-                                failedIdentities.delete(asyncIdentity);
-                            if (ivr.issueFound.severity === ValidationSeverity.Warning)
-                            {
-                                ivr.issueFound.doNotSave = false;
-                                if (requestedStatus === ValidationStatus.Undetermined)
-                                    requestedStatus = ValidationStatus.Valid;
-                            }
-                            else if (requestedStatus !== ValidationStatus.Failed)
-                                requestedStatus = ValidationStatus.Invalid;
-                            if (!result.issuesFound)
-                                result.issuesFound = [];
-                            result.issuesFound.push(ivr.issueFound);
-                            reviseStatusIfFailed();
-                            if (updateInstanceStateWithResult(result))
-                                self.invokeOnValueHostValidationStateChanged(options);
-
-                        }
-                        else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                        {
-                            if (asyncIdentity !== null)
-                                failedIdentities.delete(asyncIdentity);
-                            if (requestedStatus === ValidationStatus.Undetermined)
-                                requestedStatus = ValidationStatus.Valid;
-
-                            reviseStatusIfFailed();
-                            if (updateInstanceStateWithResult(result))
-                                self.invokeOnValueHostValidationStateChanged(options);
-                        }
-                        else // ConditionEvaluateResult.Undetermined
-                        {
-                            if (deleteAsyncProcessFlag())
-                                self.invokeOnValueHostValidationStateChanged(options);
-                        }
-                    });
+                    completeThePromise(() => applyResolvedValidatorResult(ivr));
                 },
                 (failureInfo) => {
                     logError(failureInfo ? failureInfo.toString() : 'unspecified');
