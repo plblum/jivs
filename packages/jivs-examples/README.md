@@ -68,15 +68,14 @@ Provides classes to support date entered with just month and day, such as for an
 - LookupKey="Anniversary"
 
 ## More Examples
-- RelativeDate_class.ts - You have a class called RelativeDate that you use to return 
-  a Date object based on rules relative to today, such as "yesterday" or "1 month ago".
-  You want Jivs to see it as if it was a Date object in validation rules.
-  It introduces a LookupKey ("RelativeDate"), `DataTypeIdentifier`, and `DataTypeConverter`.
 - TimeSpan_class.ts - You have a class called TimeSpan that you use to represent
   a value of hours, minutes, and seconds.
   You want it to be available in conditions as if its a single number, either a number of 
   hours or number of seconds.
   It introduces a LookupKey ("TimeSpan"), `DataTypeIdentifier`, and two `DataTypeConverters`.  
+- Calculating_relative_dates.ts - You have a class called RelativeDate that you use to return 
+  a Date object based on rules relative to today, such as "yesterday" or "1 month ago".
+  Shows how wrapping it in a CalcValueHost lets you use its calculated value.
 - EvenNumberCondition.ts - For learning how to build a condition, create a new Condition that will require even numbers.
   Introduces a ConditionType ("EvenNumber"), a Condition class, and support within the Builder object.
 - DifferenceBetweenDates.ts - Demonstrates the use of a `CalcValueHost` to help build a condition

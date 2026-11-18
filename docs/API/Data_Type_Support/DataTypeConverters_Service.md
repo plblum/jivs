@@ -71,7 +71,6 @@ Use these resources to help when implementing a DataTypeConverter:
     ```ts
         builder.field('MarriageDate', 'Anniversary', { label: 'Marriage date'});
     ```
-- [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) defines the class RelativeDate and provides conversion from RelativeDate to a Date object.
 - [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts) defines the class TimeSpan and provides conversion from TimeSpan to a number of seconds.
 
 

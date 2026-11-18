@@ -118,6 +118,9 @@ builder.calc({
 ```
 All parameters and arguments are [discussed below](#configuration-parameters-of-all-valuehosts).
 
+For an example that shows calculating a date relative to today, see:
+[https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Calculating_relative_dates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Calculating_relative_dates.ts)
+
 ### Configuration parameters of all ValueHosts
 Here are the arguments and parameters for all `ValueHosts` described above.
 - `name` – The `ValueHost` name. Required. See [Naming each ValueHost](./Home.md#naming-each-valuehost).

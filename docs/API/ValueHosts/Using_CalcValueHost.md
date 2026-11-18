@@ -29,7 +29,10 @@ builder.calc('TimesTen', LookupKey.Integer,
    });
 ```
 
-See a practical example here: [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
+See a practical examples here: 
+- [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/DifferenceBetweenDates.ts)
+
+- [https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Calculating_relative_dates.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/Calculating_relative_dates.ts)
 
 ### Pairing a CalcValueHost with a FieldValueHost
 A `CalcValueHost` can provide a calculated value for other value hosts, but it does not provide field-level validation or UI display on its own. To validate the calculated result or display it in the UI, pair it with a `FieldValueHost`.

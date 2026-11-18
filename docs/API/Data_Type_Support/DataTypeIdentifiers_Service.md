@@ -5,7 +5,6 @@ Add your own when you have a class representing some data together with its own 
 
 ## Creating your own DataTypeIdentifiers
 Use these resources to help when implementing a `DataTypeIdentifier`:
-- [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) defines the class RelativeDate and an associated `DataTypeIdentifier`.
 - [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts) defines the class TimeSpan and an associated `DataTypeIdentifier`.
 
 ## Registering a DataTypeIdentifier

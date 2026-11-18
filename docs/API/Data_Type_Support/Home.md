@@ -62,7 +62,7 @@ Here are some use cases for creating your own Lookup Key:
     + Auto generating data type check validators
 - Extracting some data from the native value, like the day of week from a Date object. Check out [jivs-examples/src/MonthYearConverter.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/MonthYearConverter.ts).
     + Converting, to get the Date.day property.
-- A class that you store as a single entity, like class NumberWithUnits { value: number, units: string }. Check out [jivs-examples/src/RelativeDate_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/RelativeDate_class.ts) and [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts)
+- A class that you store as a single entity, like class NumberWithUnits { value: number, units: string }. Check out [jivs-examples/src/TimeSpan_class.ts](https://github.com/plblum/jivs/blob/main/packages/jivs-examples/src/TimeSpan_class.ts)
     + Identifing, to recognize your class
     + Converting, to get a value you can use in comparing, such as the NumberWithUnits.value.
     + Comparing, to compare two instances of the same class
