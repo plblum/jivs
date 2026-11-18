@@ -63,12 +63,18 @@ export function deepEquals(obj1: any, obj2: any): boolean
     if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
         return Object.is(obj1, obj2);
     // adapted from https://stackoverflow.com/questions/22266826/how-can-i-do-a-shallow-comparison-of-the-properties-of-two-objects-with-javascri
+    // determine if both are classes with different constructors
+    if (obj1.constructor !== obj2.constructor)
+        return false;
+    if (obj1 instanceof Date && obj2 instanceof Date)
+        return Object.is(obj1.getTime(), obj2.getTime());   // two invalid dates (NaN) are equal
+
     const keys1 = Object.keys(obj1);
     if (keys1.length !== Object.keys(obj2).length)
         return false;
      
     return keys1.every(key => 
-        obj2.hasOwnProperty(key) && deepEquals(obj1[key], obj2[key])
+        Object.prototype.hasOwnProperty.call(obj2, key) && deepEquals(obj1[key], obj2[key])
     );  
     /* eslint-ensable no-prototype-builtins */
     

@@ -79,6 +79,69 @@ describe('Utilities.deepEquals', () => {
         expect(deepEquals({ b: [] }, { b: [1] })).toBe(false);
         expect(deepEquals({ b: [1, 2] }, { b: [2, 1] })).toBe(false);
     });          
+    test('Dates with the same time are equal, even when they are different instances', () => {
+        expect(deepEquals(new Date(Date.UTC(2000, 5, 1)), new Date(Date.UTC(2000, 5, 1)))).toBe(true);
+        let d = new Date(Date.UTC(2000, 5, 1));
+        expect(deepEquals(d, d)).toBe(true);
+        expect(deepEquals(new Date(NaN), new Date(NaN))).toBe(true);
+    });
+    test('Dates with different times are not equal', () => {
+        expect(deepEquals(new Date(Date.UTC(2000, 5, 1)), new Date(Date.UTC(2000, 5, 2)))).toBe(false);
+        expect(deepEquals(new Date(Date.UTC(2000, 5, 1)), new Date(Date.UTC(2000, 5, 1) + 1))).toBe(false);
+        expect(deepEquals(new Date(NaN), new Date(0))).toBe(false);
+    });
+    test('Date compared to non-Date objects or primitives is not equal', () => {
+        let d = new Date(0);
+        expect(deepEquals(d, {})).toBe(false);
+        expect(deepEquals({}, d)).toBe(false);
+        expect(deepEquals(d, 0)).toBe(false);
+        expect(deepEquals(d, d.toISOString())).toBe(false);
+        expect(deepEquals(d, null)).toBe(false);
+        expect(deepEquals(undefined, d)).toBe(false);
+    });
+    test('Dates nested in objects and arrays are compared by time', () => {
+        expect(deepEquals({ a: new Date(0) }, { a: new Date(0) })).toBe(true);
+        expect(deepEquals({ a: new Date(0) }, { a: new Date(1) })).toBe(false);
+        expect(deepEquals([new Date(0)], [new Date(0)])).toBe(true);
+        expect(deepEquals([new Date(0)], [new Date(1)])).toBe(false);
+    });
+    test('Class instances of the same class with same property values are equal', () => {
+        class A { x = 1; }
+        expect(deepEquals(new A(), new A())).toBe(true);
+        let a2 = new A();
+        a2.x = 2;
+        expect(deepEquals(new A(), a2)).toBe(false);
+    });
+    test('Class instances of different classes are not equal, even with identical properties', () => {
+        class A { x = 1; }
+        class B { x = 1; }
+        class SubA extends A { }
+        expect(deepEquals(new A(), new B())).toBe(false);
+        expect(deepEquals(new A(), new SubA())).toBe(false);
+        expect(deepEquals(new SubA(), new A())).toBe(false);
+    });
+    test('Class instance versus plain object is not equal even with identical properties', () => {
+        class A { x = 1; }
+        expect(deepEquals(new A(), { x: 1 })).toBe(false);
+        expect(deepEquals({ x: 1 }, new A())).toBe(false);
+    });
+    test('Nested class instances of different classes make the parents not equal', () => {
+        class A { x = 1; }
+        class B { x = 1; }
+        expect(deepEquals({ c: new A() }, { c: new A() })).toBe(true);
+        expect(deepEquals({ c: new A() }, { c: new B() })).toBe(false);
+    });
+    test('Array versus plain object is not equal', () => {
+        expect(deepEquals([], {})).toBe(false);
+        expect(deepEquals({ 0: 1 }, [1])).toBe(false);
+    });
+    test('Objects without a prototype can be compared', () => {
+        let o1 = Object.create(null); o1.a = 1;
+        let o2 = Object.create(null); o2.a = 1;
+        expect(deepEquals(o1, o2)).toBe(true);
+        o2.a = 2;
+        expect(deepEquals(o1, o2)).toBe(false);
+    });
 });
 
 // function deepClone<T>(value: any): any

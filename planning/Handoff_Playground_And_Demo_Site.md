@@ -1,6 +1,6 @@
 # Hand-off: jivs-ui-demos (playground + demo site)
 
-Read this, then `Jivs-dom_Implementation_Design.md`, then `planning/Testing_Approach.md` (before any test work) and `packages/jivs-ui-demos/planning.md` (site decisions and lessons learned).
+Read this, then `Jivs-dom_Implementation_Design.md`, then `docs/assets/Testing_Approach.md` (before any test work) and `packages/jivs-ui-demos/planning.md` (site decisions and lessons learned).
 
 ## What we are building
 **jivs-ui-demos** (`packages/jivs-ui-demos`, private Vite multi-page site) shows jivs-dom driven by the real Jivs engine. It is for exploration, documentation support and promotion. It is not the product documentation (a later phase).
@@ -34,7 +34,7 @@ Just a list of ideas:
 ## Working agreements
 - The user decides priorities. "Assess, don't change" means no edits. He sometimes codes it himself and asks for review and tests.
 - Question numbering: Q01, Q02, ...
-- Tests: follow `planning/Testing_Approach.md` (hand-written fakes and `Publicify_` subclasses, `expect()` only, comments above `describe`).
+- Tests: follow `docs/assets/Testing_Approach.md` (hand-written fakes and `Publicify_` subclasses, `expect()` only, comments above `describe`).
 - Windows, Node v22.1.0. Vite is pinned to 6.3.5 (Vite 8 fails on this Node).
 
 ## Commands
