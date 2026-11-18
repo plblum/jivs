@@ -1,20 +1,20 @@
-# Async Validation Design
+# Async ValueHostsManager Validation Planning
 
 ## Purpose and status
 
 This document explores how a full `ValueHostsManager` validation can complete asynchronous validators before reporting its final result, while preserving the field-level validation experience during editing. It supports the submission work in [Submission_planning.md](./Submission_planning.md), but focuses on the validation engine rather than the rest of the submission workflow.
 
-This is a brainstorming document. Neither Peter's proposal nor the alternatives below are decisions yet. Code excerpts labeled **current** are from the repository; illustrations labeled **candidate** are sketches for discussion, not implementation instructions.
+This is a design document for the unfinished manager-level completion work. The async validator itself is implemented; see [AsyncValidator_Implementation.md](./AsyncValidator_Implementation.md) for its API and field-host behavior. Code excerpts labeled **current** describe the repository; illustrations labeled **candidate** are sketches for discussion, not implementation instructions. Decisions recorded below are settled; unresolved choices are explicitly marked open.
 
-The immediate goal is to make *host completion* concrete, then verify candidate designs against the current behavior and the cases below. We are not yet implementing changes.
+The immediate goal is to make *host completion* concrete, then select and verify a manager design against current behavior and the cases below. This document does not itself specify the already-implemented `AsyncValidator`.
 
 Peter separated the larger effort into three projects:
 
-1. Design a first-class async validator and builder support; see [AsyncValidator_design.md](./AsyncValidator_design.md).
+1. Design and implement the first-class async validator; see [AsyncValidator_Implementation.md](./AsyncValidator_Implementation.md).
 2. Make `ValueHostsManager.validate()` asynchronous and have it invoke the completion operation internally, including the agreed final notification behavior.
 3. Design the submission workflows.
 
-The current discussion focuses on project 1 before returning to project 2. Failure behavior and completion handling connect the first two projects and must be designed consistently.
+This document focuses on project 2. Failure behavior and completion handling connect the validator and manager projects and must remain consistent.
 
 ## The proposed direction
 
@@ -29,9 +29,9 @@ Peter's initial idea is:
 
 2. `ValueHostsManager.validate()` collects the host promises and waits for their completion before producing its final result. Peter suggested using `Promise.allSettled()` so the manager can account for every host even if one fails.
 3. Field validation during editing can still start async work in the background. The presence of async processing continues to block submission.
-4. A manager validation should provide a single completion notification when its work completes. The exact relationship between that notification and other field or manager notifications remains to be specified.
+4. A manager validation should provide a completion notification when its work completes. Whether that is the only manager notification for the invocation, and how it relates to field notifications, remains to be specified.
 
-Peter has since decided that the **manager** method should always return a Promise, including when all hosts are synchronous. The host return contract remains under discussion. We need to demonstrate that the overall design handles completion, failures, callbacks, and changes made while waiting; returning a Promise alone does not establish those guarantees.
+**Decision (Q07):** The **manager** method always returns a Promise, including when all participating hosts are synchronous. The host return contract and how the manager observes processed host completion remain open. The design must also address failures, callbacks, and changes made while waiting; returning a Promise alone does not establish those guarantees.
 
 ## Current behavior
 
@@ -93,22 +93,22 @@ The core of the current completion logic is:
 ```ts
 // Current code, excerpted from processPromise().
 function completeThePromise(finish: () => void): void {
-    // remove the promise from result.Pending.
-    // We use result.Pending == null to mean no async processes remain.
-    // If Pending is null already, an external action has abandoned the current validation run
     if (result.pending && result.pending.includes(promise)) {
         const index = result.pending.indexOf(promise);
 
+        // Always settle this run's local pending list, but only apply a result
+        // when this is still the host's current validation generation.
         result.pending.splice(index, 1);
         if (result.pending.length === 0)
             delete result.pending;
 
-        finish();
+        if (runGeneration === self._validationGeneration)
+            finish();
     }
 }
 ```
 
-The handler then calls `finish()` to apply the particular result or handle its failure. For example, the current `NoMatch` path adds an issue, updates host state, and may notify listeners. Other outcomes use `deleteAsyncProcessFlag()`, which clears the state flag only after no promises remain.
+The handler then calls `finish()` to apply the particular result or handle its failure. For example, the current `NoMatch` path adds an issue, updates host state, and notifies listeners when state changes. Other outcomes use `deleteAsyncProcessFlag()`, which clears the state flag only after no promises remain; current async completion paths notify when that state update changes the host.
 
 Separately, while the host's `asyncProcessing` state is true, its [`doNotSave`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) is true. That is how background field validation can prevent saving while it runs.
 
@@ -174,7 +174,7 @@ sequenceDiagram
     Note over M: Wait for other hosts, then make final snapshot
 ```
 
-This describes one host run. It does not yet resolve what happens if another validation or an edit supersedes that run.
+This describes one host run. If another validation or relevant edit supersedes it, the old run's Promise still settles, but its result is not applied to current host state.
 
 ## Candidates to evaluate
 
@@ -243,22 +243,22 @@ if (result?.pending)
     pendingValidators.push(...result.pending);
 ```
 
-The manager could copy these promises while running the loop, await `Promise.allSettled(pendingValidators)`, inspect failures, and then create its final state. A separate internal helper could perform the wait; the public manager `validate()` would remain the single entry point that starts validation and returns `Promise<ValidationState>`. No separate public method is required unless another use case needs one.
+The manager could copy these promises while running the loop, await `Promise.allSettled(pendingValidators)`, inspect failures, and then create its final state. A separate internal helper could perform the wait; the public manager `validate()` would remain the single entry point that starts validation and returns `Promise<ValidationState>`. No separate public method is required unless another use case needs one. `AsyncValidator` skips its handler before invocation when `preliminary` or `duringEdit` is true; standard `Validator` conditions can still return Promises and remain supported by the host.
 
 This approach is worth testing against the actual code rather than rejecting it because the promises are “raw”:
 
 1. `processPromise()` attaches a host processing handler to each validator promise before the host returns that promise in `result.pending`.
 2. The manager would attach its `allSettled` handlers afterward. For the current handlers' synchronous `finish()` processing, Promise reaction ordering means the host handler runs first for that settlement.
-3. This suggests the manager's wait can observe the state **after ordinary host processing**, without changing the host return type. We should prove this for both successful and rejected validators with targeted tests during implementation.
-4. There is a limitation: `processPromise()` does not retain or return the Promise produced by its own `.then(...)`. If the host's settlement handler itself throws—for example, during a callback—the original validator Promise can still be fulfilled while the handler's separate Promise rejects. `allSettled()` on the original promises would not report that processing failure. Capturing the processing promises or otherwise propagating those failures would require an internal change, even if the public host `validate()` signature stays unchanged.
+3. This suggests the manager's wait can observe the state **after ordinary host processing**, without changing the host return type. It still needs targeted tests for successful and rejected validators.
+4. There is a limitation: `processPromise()` does not retain or return the Promise produced by its own `.then(...).catch(...)`. If host settlement processing itself throws, the original validator Promise's settlement does not guarantee that the host's subsequent catch has finished. `allSettled()` on the original promises may therefore run before that processing-error path completes. Capturing the processing promises or otherwise propagating them would require an internal change, even if the public host `validate()` signature stays unchanged. Async observer exceptions are now caught and logged by `notifyAsyncStateChanged()`, so they no longer cause this particular processing failure; other state/result-processing failures still need a defined path.
 
-Capturing the promises returned by **this manager validation run** is also different from finding all work already pending from earlier edits. The earlier edit's returned result may no longer be available to the manager. Peter's current Q10 direction is that submission stops when async processing was already present and the user submits again later; if we keep that policy, a manager-run collector need not join those earlier promises for submission. Handling an existing pending run for other uses of a standalone `allCompleted()` would still need a separately exposed run registry or completion signal.
+Capturing the promises returned by **this manager validation run** is also different from finding all work already pending from earlier edits. The earlier edit's returned result may no longer be available to the manager. Peter suggested that submission should stop when async processing was already present, and the user should submit again after it completes; this is a candidate policy, not yet a recorded Q10 decision. If adopted, a manager-run collector need not join those earlier promises for submission. Handling an existing pending run for other uses of a standalone `allCompleted()` would still need a separately exposed run registry or completion signal.
 
-Other unresolved concerns remain: a `NoMatch` warning and a `Match` must update the host correctly before the final snapshot; async rejection must not become a successful save; concurrent edits must not authorize stale values; and the manager and field notification policies must be defined. None of these is solved merely by collecting promises. They also do not establish that the overall approach cannot work.
+Other unresolved concerns remain: manager completion must await host result processing, manager-level failure/throw policy needs definition, concurrent changes during the manager's own wait need a safe completion result, and the manager versus field notification policy must be defined. None of these is solved merely by collecting promises.
 
 ### Manager aggregation common to both candidates
 
-`Promise.allSettled()` can wait until all collected host-completion promises settle, including if some reject. It does **not** make a rejected host successful: the manager must inspect the settled results, report failures according to the agreed policy, and avoid returning a save-allowed result for incomplete validation.
+`Promise.allSettled()` can wait until all collected promises settle, including if some reject. It does **not** by itself guarantee that the host's follow-up processing chain has completed. It also does not determine the manager's policy for thrown/processing errors. A failure reported through `failedToResolve` or an `AsyncValidator` rejection is recorded by the host and makes its final state block saving; the manager must not turn that state into save-allowed. See [AsyncValidator_Implementation.md](./AsyncValidator_Implementation.md) for field-level failure semantics.
 
 The following is intentionally pseudocode; `reportValidationFailure` is not an existing API and its behavior has not been decided:
 
@@ -283,8 +283,8 @@ This sketch shows the API relationship, not a proven implementation. In particul
 | One pending validator | Manager completion occurs after its host has processed the outcome. |
 | Multiple pending validators on one host | Host completion waits for all of that run's validators, regardless of completion order. |
 | Pending validators on multiple hosts | Manager completion waits for every participating host, not just the first one. |
-| Async `Match`, `NoMatch`, warning, or `Undetermined` | Final result, blocking behavior, and field presentation are correct for each outcome. |
-| Validator rejects or processing throws | Failure is visible; it must not become a successful save by default. Other started work must be accounted for. |
+| Async `Match`, `NoMatch`, warning, or `Undetermined` | Confirm the manager's final result reflects the host's implemented status and blocking behavior for each outcome. |
+| Validator rejects or processing throws | `AsyncValidator` operational failures and rejected handler Promises are recorded as blocking host failures. Define how the manager waits for all started work and how it reports other host-processing failures. |
 | Disabled, skipped, preliminary, and grouped validation | Only intended hosts and validators participate; existing option behavior remains explicit. |
 | `skipCallback` and notification timing | Respect the option and define field versus manager callbacks, including a single manager completion notification if that is the chosen guarantee. |
 | Background field validation | Calling from an edit still updates state and UI without requiring the event handler to wait; any rejection is handled. |
@@ -293,95 +293,32 @@ This sketch shows the API relationship, not a proven implementation. In particul
 
 `Promise.allSettled()` addresses the earlier concern that `Promise.all()` reports a rejection before the remaining work has settled. Failure reporting and cleanup still need an explicit policy.
 
-## Current behavior requiring closer review
+## Field-level concerns: current status
 
-- In the current async `NoMatch` branch, the host sets `result.status = ValidationStatus.Invalid` directly. The synchronous path distinguishes warning severity and makes warnings non-blocking. Async warnings need to be evaluated against the intended behavior.
-    PETER HERE: Are we talking about this code not supporting Warning?:
-    ```ts
-    completeThePromise(() => {
-        // the only way we modify the issues, validation result, or ValueHostInstanceState
-        if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
-            result.status = ValidationStatus.Invalid;
-            if (!result.issuesFound)
-                result.issuesFound = [];
-            result.issuesFound.push(ivr.issueFound!);
-            if (updateInstanceStateWithResult(result))
-                self.invokeOnValueHostValidationStateChanged(options);
-        }
-        else
-            deleteAsyncProcessFlag();
-    });
+The following items were raised during the initial host review. They are no longer open host bugs; their fixes are in [`ValidatorsValueHostBase`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) and covered by its tests. The manager design must build on these semantics rather than restating the old behavior.
 
-    ```
+1. **Async warning status — fixed.** An async `NoMatch` warning is added as an issue with `doNotSave: false`. If no other validator has made the result invalid, the host status is `Valid`; a warning does not overwrite an existing invalid result.
+2. **Completion notification — fixed at host level.** When settlement changes host state, including clearing `asyncProcessing` after `Match`, `Undetermined`, skipped completion, or failure, the host invokes its async-safe notification helper. Synchronous observer exceptions during an async notification are logged and do not become validator failures or trigger a second notification. A callback deferred by the manager's debouncer runs later and is not caught by this host helper.
+3. **Stale run — fixed at host level.** A host validation generation is incremented by a new validation, relevant value change, validation clear, and disposal. A settled run always drains its own local pending list, but only the current generation may update host state. This prevents an old run from overwriting current validation state. It does not by itself define what a manager Promise should report if an edit supersedes a participating host while the manager is waiting.
+4. **Preliminary validation — implemented for `AsyncValidator`.** It returns a skipped result before invoking its handler. Standard `Validator` can still wrap a Promise-returning condition, so preliminary mode does not imply that every legacy standard-validator Promise is avoided.
 
-- When async work finishes without `NoMatch`, the current path clears `asyncProcessing` but does not invoke `invokeOnValueHostValidationStateChanged()` there. We need to determine how listeners learn that pending work has ended and how the final host status is established.
+## Manager notification question
 
-    PETER HERE: In the above snippet for completeThePromise, it is invoked. What am I missing?
+One manager validation can currently trigger the manager callback at host-start/state changes, at the manager's existing post-loop notification, and again as host Promises complete. Debouncing may combine calls but does not guarantee exactly one callback after all work. Here, a **completion notification** means an `onValidationStateChanged` callback attributable to a manager validation invocation, after all participating host work has been processed; the Promise resolving with the final snapshot is separate.
 
-- The pending list belongs to the local `result` for a run. The current source comment says clearing validation state abandons pending work, but the visible list is in that local result. We should trace and verify the actual invalidation behavior before relying on that comment for overlapping edits or runs.
-
-    PETER HERE: Point out the code.
-
-- The manager's current host notifications and its own explicit final notification can both reach `onValidationStateChanged`. Debouncing reduces calls, but it is not an explicit once-per-run completion guarantee. Also, independent edits while a manager run is pending may legitimately produce their own notifications; the scope of any single-callback promise must be precise.
-
-    PETER HERE: Unclear. Restate the technical problem.
-
-- `ValueHostsManager.valuesInitialized()` calls manager validation without awaiting it. Other consumers use its immediate return value, including examples and the Angular wrapper. A changed return type has consequences beyond tests, even if an all-synchronous run still returns immediately.
-
-    PETER HERE: This inspired my chat comment about skipping async validation during preliminary: true.
-
-### Responses to Peter's code questions
-
-**Async warnings.** Yes, the `NoMatch` code Peter quoted is the branch in question. It unconditionally assigns `ValidationStatus.Invalid` for any async `NoMatch`; unlike the synchronous path, it does not branch on `ivr.issueFound.severity`. The issue itself is created by `Validator` with its warning severity and `doNotSave = false`, so it is important to distinguish the host's `Invalid` status from whether that issue actually blocks saving. The mismatch is not a claim that the warning disappears or necessarily sets `doNotSave = true`; its resulting state and UI behavior need to be verified.
-
-Peter here: this is a formal bug and should be filed in this file written up that way.
-
-**The callback in the quoted branch.** Peter is right that the `NoMatch` path calls `invokeOnValueHostValidationStateChanged(options)` when the state changes. The concern applies to the **other** branch:
-
-```ts
-// Current code, excerpted from processPromise().
-if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch) {
-    // ... update result ...
-    if (updateInstanceStateWithResult(result))
-        self.invokeOnValueHostValidationStateChanged(options);
-}
-else
-    deleteAsyncProcessFlag();
-```
-
-In the `else` path, including an async `Match`, `deleteAsyncProcessFlag()` clears the flag when the last promise finishes but does not itself call that notification method. Likewise, the rejection path clears the flag and logs without calling that method. Other notifications might have occurred for other reasons; the narrower point is that these paths do not directly notify through this method when the flag is cleared.
-
-Peter here: this is a formal bug and should be filed in this file written up that way.
-
-**The pending-list comment.** [`clearValidationDataFromInstanceState()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) contains:
-
-```ts
-// Current code, excerpted from clearValidationDataFromInstanceState().
-delete stateToUpdate.asyncProcessing;   // any active promises here will finish except will not update state due to Pending = null or at least lacking the same promise instance in this array
-```
-
-But `completeThePromise()` checks `result.pending` on the **local result object**, not `stateToUpdate.asyncProcessing`. Deleting the state flag does not, by itself, delete that local array. We should trace all relevant clear/change paths and reproduce the behavior before concluding whether an old run can update state after a newer action.
-
-**The manager callback issue.** A host invokes [`invokeOnValueHostValidationStateChanged()`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) on state changes. That method calls both the manager's `notifyValidationStateChanged()` and the field-level callback. Meanwhile, [`ValueHostsManager.validate()`](../packages/jivs-engine/src/Validation/ValueHostsManager.ts) explicitly calls `notifyValidationStateChanged()` after its host loop. A host whose async result changes state can call it again later. Thus a single manager validation invocation can cause multiple calls to the manager notification mechanism: host start, manager's own snapshot, and host async completion. The existing debouncer can merge some calls, but timing and its configuration affect that; it is not the same as a guaranteed single final notification.
-
-For discussion, a **completion notification** means the final call to `onValidationStateChanged` attributable to the manager validation invocation, after its participating hosts have completed. It is separate from the Promise resolving with the final snapshot. We still need to decide whether there should be intermediate form-level notifications for that same invocation, and how to keep unrelated edit notifications working while the manager is waiting. The existing `skipCallback` option suppresses both field and manager notifications when used by a host, so it cannot by itself preserve field callbacks while suppressing only manager callbacks.
+Still to decide: should that invocation produce only one manager-level callback, or may it produce intermediate manager notifications plus a final completion callback? Field-level notifications should continue to update individual displays, and unrelated edit notifications during the wait should not be suppressed. `skipCallback` is not sufficient by itself because it suppresses both field and manager notifications.
 
 ### Preliminary validation and async work
 
-Peter has decided that `preliminary: true` will skip async validators before their handlers are invoked, particularly when `valuesInitialized()` performs preliminary validation. The current [`ValidateOptions.preliminary`](../packages/jivs-engine/src/Interfaces/Validation.ts) describes initial validation and avoiding premature required-field messages; it does not currently specify this behavior.
+`preliminary: true` skips the implemented [`AsyncValidator`](../packages/jivs-engine/src/Validation/AsyncValidator.ts) before its handler is invoked. Since this behavior is an accepted decision, the [`ValidateOptions.preliminary`](../packages/jivs-engine/src/Interfaces/Validation.ts) documentation should describe it. The `duringEdit` documentation should also note that `AsyncValidator` is skipped in that mode.
 
-With the current implementation, [`Validator.validate()`](../packages/jivs-engine/src/Validation/Validator.ts) calls `condition.evaluate()` and then checks whether the returned value is a Promise. At that point any request may already be underway. Ignoring the Promise afterward would not prevent that work. The [async validator design](./AsyncValidator_design.md) provides an identifiable validator that can be skipped before invocation.
+The standard [`Validator.validate()`](../packages/jivs-engine/src/Validation/Validator.ts) evaluates its condition, which can still return a Promise. Thus a Promise-returning standard condition may already have started work during preliminary validation; the skip-before-handler guarantee applies to `AsyncValidator`, not to those legacy conditions.
 
-A final submission must run applicable validators even if they were skipped during preliminary validation. Initialization and other fire-and-forget call sites still need to handle the manager's Promise and any failures appropriately.
+A final submission must run applicable `AsyncValidator`s even if they were skipped during preliminary validation. Initialization and other fire-and-forget call sites still need to handle the manager's Promise and any failures appropriately.
 
-### Bugs identified for this work
+### Previously reported field-level bugs — resolved
 
-Peter has identified the following as formal bugs to address and test while designing this work:
-
-1. **Async warning is treated as invalid.** In `ValidatorsValueHostBase.processPromise()`, an async `NoMatch` sets `result.status` to `Invalid` without the synchronous path's warning-severity handling. The warning's own `doNotSave` may still be false; the bug is the inconsistent host status and its effects on consumers.
-2. **Async completion can clear pending status without notification.** When the final async validator completes through the non-`NoMatch` path, `deleteAsyncProcessFlag()` clears `asyncProcessing` without invoking the normal ValueHost validation-state callback. The rejection path does the same. Consumers may not receive a notification that pending processing ended. The fix must specify field and form notification behavior and respect `skipCallback`.
-
-The stale-run concern described above remains a separate investigation, not yet a confirmed bug in this list.
+The async warning status, missing completion notifications, and stale-run concerns are resolved in the current host implementation as summarized under [Field-level concerns](#field-level-concerns-current-status). They should not be carried forward as bugs for the manager implementation. New manager-level tests should still verify that its final snapshot reflects those host outcomes.
 
 ## Questions for discussion
 
@@ -398,7 +335,7 @@ Promise in every case. Let's not make this more complex:
 ```
 It should just be:
 ```ts
-    vhm.validate().resolve((validationState)=>{
+    vhm.validate().then((validationState)=>{
         if (!validationState.doNotSave)
         {
             // continue saving.
@@ -410,17 +347,17 @@ It should just be:
 
 ### Q08 — Meaning of completion notification
 
-For a manager validation run, should the single completion notification be one `onValidationStateChanged` callback after all participating hosts have finished? Field callbacks may still be needed to update individual displays, and independent edits during the wait may generate separate notifications.
+For a manager validation run, should there be exactly one `onValidationStateChanged` callback after all participating hosts have finished, or may there also be intermediate callbacks during that invocation? Field callbacks should still be able to update individual displays, and independent edits during the wait may generate their own notifications.
 
-Define "completion notification".
+Here, "completion notification" means a manager callback attributable to that validation invocation, after participating host outcomes have been processed. It is separate from the manager Promise resolving with the final snapshot. The desired number of callbacks and how to distinguish unrelated edit notifications remain open.
 
 ### Q09 — Failure of async validation
 
 When an async validator rejects, what should callers and the UI observe? In particular, how should submission be prevented, how should the failure be reported, and should the manager wait for other started validators before reporting it?
 
-Exceptions bubble up to ValidatorsValueHostBase.validate, line 234 where they are logged and return Undetermined.
+**Field-level behavior resolved:** `AsyncValidator` handlers should report operational failures by resolving with `failedToResolve`. The validator logs the error; the host records the handler identity as failed, and `doNotSave` remains true without displaying a validation issue. A rejected handler Promise is treated as a contract failure: `AsyncValidator` wraps it in `CodingError`, and the host logs it and records the same blocking failure identity. These outcomes do not escape the host's async settlement path as a successful validation. See [AsyncValidator_Implementation.md](./AsyncValidator_Implementation.md#4-keep-a-failed-request-from-allowing-save).
 
-**Clarification:** The host's catch handles synchronous exceptions that reach it. Async Promise rejections follow a separate handler in `processPromise()`. Peter's handler contract now handles operational failures without rejection, as described in [AsyncValidator_design.md](./AsyncValidator_design.md#failure-and-completion). How those logged, skipped failures affect submission remains open.
+**Manager-level policy still open:** The manager must wait for all started work and return a final blocking snapshot for failures recorded by the host. It remains to decide whether unrelated failures in host result-processing should reject `ValueHostsManager.validate()` or be represented in a `ValidationState`, and how those failures are surfaced to the caller.
 
 ### Q10 — Changes while waiting
 
@@ -428,10 +365,10 @@ If a value or a relevant validation configuration changes while manager validati
 
 These questions are starting points, not assumptions that the listed choices are exhaustive. We can work through the actual host implementation and alternatives before deciding.
 
-The question is if this can happen inside of ValueHostsManager.validate(), where it does both the first and second attempt. If outside, a call to ValueHostsManager.validate() is planned to stop immediately upon asyncProcessing = true. The user will need to submit a second time. If this is only during user interactivity, both attempts will run and it may be returned in an odd order, assigning the results incorrectly. So we may have to deal with that separately.
+Peter's earlier note raises two cases to distinguish: a manager-owned validation attempt might retry internally after a value change, while a submission attempted during async work from user interactivity might stop immediately and require the user to submit again after completion. The latter is a candidate policy, not a recorded Q10 decision. Interactive overlapping runs still need a defined outcome so old results cannot be assigned to new values.
 
 ### Q11 — Async validators during preliminary validation
 
-Should preliminary validation skip selected async validators, and if so, how does the system know which validators to skip **before** invoking them? This is separate from ensuring final submission runs the required validators.
+The implemented behavior skips all `AsyncValidator`s before their handlers are invoked when `preliminary` or `duringEdit` is true; there is no per-validator selection option. This is separate from ensuring final submission runs applicable async validators.
 
-**Decision recorded:** Skip async validators during preliminary validation before invoking their handlers. Normal submission validation still runs applicable validators.
+**Decision recorded and implemented:** Skip `AsyncValidator` during preliminary and during-edit validation. Normal submission validation still runs applicable async validators. Promise-returning legacy standard conditions are not covered by this skip.
