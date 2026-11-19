@@ -133,17 +133,19 @@ The async registration casts the base config to `AsyncValidatorConfig`; the `Asy
 asyncValidator(
     identity: string,
     handler: AsyncValidatorEvaluateHandler,
-    dependencyValueHostNames?: ValueHostName[]
+    options?: FluentAsyncValidatorConfig
 ): IValidatorBuilder;
 ```
 
 ```ts
 // Fluent call; the first parameter is named identity.
 builder.field('UserName', LookupKey.String)
-    .asyncValidator('AvailabilityCheck', evaluateAvailability, ['AccountType']);
+    .asyncValidator('AvailabilityCheck', evaluateAvailability, {
+        dependencyValueHostNames: ['AccountType']
+    });
 ```
 
-An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, and optional dependencies. It does not have `conditionConfig`. The async builder method adds it separately because `ValidatorBuilder.finish()` requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed duplicate checking.
+An async config has `validatorType: ValidatorType.AsyncValidator`, `handlerIdentity`, `handler`, and optional dependencies. The builder also stores `restartWhenPending`, `skipOnModelLevelValidation`, and `timeout` supplied in the options object; their runtime behavior remains future work. The previous third-argument dependency array is no longer supported. It does not have `conditionConfig`. The async builder method adds it separately because `ValidatorBuilder.finish()` requires a condition. Duplicate checking must compare the async identity with ordinary validators' resolved error codes and with other async identities; the current builder does not provide that validation. Q28 records the chosen duplicate rule, not completed duplicate checking.
 
 The configuration produced by that call is conceptually:
 

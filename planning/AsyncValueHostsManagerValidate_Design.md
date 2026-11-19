@@ -47,10 +47,10 @@ it as an argument to `validate()`.
 
 A candidate `PendingContext` associates the validator, its operation, and
 `valueState`, a map from ValueHost name to the captured `changeCounter`.
-The context retains the validator Promise and its `AbortController`; the
-validator manages timeout and handler processing for that operation. The
-exact public shape, registration sequence, and cancellation method are not
-yet final. The Q20 sketch below shows a simpler direction.
+The host retains the validator Promise and captured inputs; the validator
+owns the current operation's `AbortController` and manages timeout and
+handler processing. The exact registration and cancellation protocol is
+not yet final. The Q20 sketch below shows the wrapper direction.
 
 The handler retains its existing `valueHost` and `valueHostsManager`
 parameters, with an `AbortSignal` added. It reads values using the existing
@@ -75,20 +75,20 @@ needed for the final state, including error handling.
 ### Configuration and dependency contract
 
 `AsyncValidatorConfig` retains `handler`, `handlerIdentity`, and
-`dependencyValueHostNames`, and gains `restartWhenPending` and a timeout
-override. `MustFinish` is the pending-policy default; it supersedes the
-earlier Q02 default of supersede. The exact builder options type and API are
-part of the implementation design; the builder needs to expose the new
-optional configuration while preserving the dependencies feature.
+`dependencyValueHostNames`, and now includes `restartWhenPending`,
+`skipOnModelLevelValidation`, and a timeout override. These configuration
+properties and the builder options object exist; their new runtime behaviors
+are not implemented yet. `WhenInputsChanged` is the specified default.
 
 ```ts
 // Illustrative additions to AsyncValidatorConfig.
 dependencyValueHostNames?: ValueHostName[];
-restartWhenPending?: RestartWhenPending; // defaults to MustFinish
+restartWhenPending?: RestartWhenPending; // defaults to WhenInputsChanged
+skipOnModelLevelValidation?: boolean; // defaults to false
 timeout?: number; // milliseconds; overrides the global default
 ```
 
-The proposed builder shape accepts an options object:
+The builder accepts an options object:
 
 ```ts
 asyncValidator(
@@ -98,11 +98,11 @@ asyncValidator(
 ): IValidatorBuilder;
 ```
 
-The options contain async configuration other than `handlerIdentity` and
-`handler`, which are supplied separately. Compatibility with the current
-third-argument dependency array remains to be decided.
+The options contain async configuration other than `validatorType`,
+`handlerIdentity`, and `handler`, which are supplied separately. The former
+third-argument dependency array is replaced by this options object.
 
-With `restartWhenPending=MustFinish`, the active promise is retained only if
+With `restartWhenPending=WhenInputsChanged`, the active promise is retained only if
 the source values it uses have not changed. Before starting a handler, capture
 the owning ValueHost's counter and the counters of all explicitly declared
 dependency ValueHosts in the pending context.
@@ -131,25 +131,26 @@ or dynamic-cache invalidation is needed for dependency discovery.
 
 These policies apply when manager-level validation encounters this validator:
 
-1. **`MustFinish`** (default): reuse the existing promise if the captured
+1. **`WhenInputsChanged`** (default): reuse the existing promise if the captured
    owner and dependency counters are unchanged. If any input counter differs,
-   act as `Restart`.
-2. **`Restart`:** request cancellation of the old operation, exclude its
+   restart the operation.
+2. **`Always`:** request cancellation of the old operation, exclude its
    result from this pass, and start fresh work in the validation pass. A
    cancellation request does not guarantee that the old handler has stopped.
-3. **`SkipOnModelLevelValidation`:** request cancellation of existing work,
-   do not use its result for this pass, and skip starting the handler during
-   manager-level validation. This supports a case such as authoritative
-   server-side validation. The validation options must indicate that
-   manager-level validation is occurring.
+
+The independent **`skipOnModelLevelValidation`** option can be combined with
+either restart policy. When true, manager-level validation requests
+cancellation of existing work, does not use its result, and skips starting
+the handler for this pass. This takes precedence over the restart policy and
+supports a case such as authoritative server-side validation.
 
 The old operation still has a completion process. Exactly how cancelled
 operations are settled, retained or removed, and prevented from publishing
 stale results remains open. These rules describe manager-level validation;
 behavior for other validation calls must also be specified without changing
-field-level UX accidentally. The proposed `requestCancel` entry point lets the
-ValueHost or manager ask the validator to apply its policy; its exact
-parameters and return type remain open.
+field-level UX accidentally. The proposed `cancelPending` entry point lets the
+ValueHost request cancellation from the validator; the exact registration and
+cancellation protocol remains open.
 
 ### Cancellation and timeout
 
@@ -174,11 +175,11 @@ message and localization message code supply a localized model-level
 code, not an AsyncValidator-specific code. An issue is not required merely to
 block saving.
 
-The home and exact defaults of global timeout and message settings remain
-open: `ValueHostsManager.behaviors` and global properties on `AsyncValidator`
-are candidates. `IJivsServices` currently has no global settings service.
-The exact result and cleanup protocol remains open; waiting on the raw handler
-Promise alone cannot enforce the timeout.
+`IJivsServices.settings.asyncValidation` now supplies the default timeout
+(5000 ms) and timeout message; `AsyncValidation.TimeoutMessage` is the
+localization key. These settings are not consumed by AsyncValidator yet.
+The exact result and cleanup protocol remains open; waiting on the raw
+handler Promise alone cannot enforce the timeout.
 
 ### Q20: handler wrapper, cancellation, and timeout
 
@@ -219,17 +220,15 @@ const checkAvailability: AsyncValidatorEvaluateHandler =
 #### Who owns and calls what
 
 The proposed `PendingContext` is kept by `ValidatorsValueHostBase`; it
-associates the AsyncValidator and the Promise it returned with a controller
-and the input counters. The manager asks the host about its contexts; it does
-not manage the controller. How the context and controller are registered
-between AsyncValidator and the host remains an open contract detail.
+associates the AsyncValidator and the Promise it returned with the input
+counters. The validator owns its current controller. How the host registers
+the context and safely requests cancellation remains an open contract detail.
 
 ```ts
 // Illustrative shape; not a finalized public interface.
 interface PendingContext {
     validator: AsyncValidator;
     promise: Promise<ValidatorValidateResult>;
-    controller: AbortController;
     valueState: Map<ValueHostName, number>;
 }
 ```
@@ -351,7 +350,7 @@ them; neither automatically settles an uncooperative handler Promise.
 
 #### Host and manager integration still to design
 
-- The host must associate a reused `MustFinish` Promise with its current
+- The host must associate a reused `WhenInputsChanged` Promise with its current
   validation generation and ignore obsolete generations without dropping the
   current result.
 - Cancelling an old operation must not clear a replacement's state. A skipped
@@ -427,11 +426,11 @@ every custom type, including computed values.
 Revisit general native-value change detection after the async design.
 `DataTypeComparerService` and conversion support are possible building blocks,
 not a chosen solution. Until addressed, a missed native-value change can
-prevent a counter from advancing and therefore affect `MustFinish`.
+prevent a counter from advancing and therefore affect `WhenInputsChanged`.
 
 ## Additional ValueHost changes
 
-`ValidatorsValueHostBase` introduces a read-only `hasAsyncValidators` property,
+`ValidatorsValueHostBase` now has a read-only `hasAsyncValidators` property,
 resolved from validator configurations on first request without constructing
 validator instances. It identifies hosts that can have async work, not whether
 any work is currently pending. The host separately retains its actual pending
@@ -462,7 +461,7 @@ groups, and `group` is typed as an optional string, not `null`.
 
 A defined group serves as the model-validation indicator. Consequently, a
 direct ValueHost validation with a defined group is also treated as
-model-level validation, including for `SkipOnModelLevelValidation`. An
+model-level validation, including for `skipOnModelLevelValidation`. An
 undefined group on a direct ValueHost call does not indicate model-level
 validation.
 
@@ -478,11 +477,11 @@ AsyncValidator design. The two earlier drafts below are historical.
       search. A separate manager-wide active-operation count is not needed
       for this design.
    2. For each host's existing pending context, ask its AsyncValidator to
-      apply its configured policy. `MustFinish` retains unchanged work;
-      changed inputs act as `Restart`.
-      `Restart` requests cancellation and replaces the old work.
-      `SkipOnModelLevelValidation` requests cancellation, ignores the old
-      result for this pass, and skips that validator during the pass.
+      apply its configured policy. `WhenInputsChanged` retains unchanged
+      work and restarts when inputs changed; `Always` restarts.
+      Independently, `skipOnModelLevelValidation` takes precedence: it
+      requests cancellation, ignores the old result for this pass, and skips
+      that validator during the pass.
    3. A host can report the contexts retained for this pass, or no contexts
       if none remain. Cancellation requests are not proof of settlement;
       cleanup must remain correct for old and replacement operations, including
@@ -500,17 +499,17 @@ AsyncValidator design. The two earlier drafts below are historical.
       reused result to be lost, nor permit an obsolete result to overwrite
       current state.
    4. Before invoking an AsyncValidator, the host reuses its context retained
-      under `MustFinish` instead of invoking `validate()` again. An arbitrary
+      under `WhenInputsChanged` instead of invoking `validate()` again. An arbitrary
       pending context is not enough: only one selected for reuse by the
-      policy is eligible. `Restart` starts a new operation, and
-      `SkipOnModelLevelValidation` skips the validator for this pass.
+      policy is eligible. `Always` starts a new operation, and
+      `skipOnModelLevelValidation` skips the validator for this pass.
    5. Account for a retained operation settling or its inputs changing
       between preflight and the host's validation loop. The exact handling
       remains to be designed.
 3. **Wait and report.**
    1. With no participating async operations, fulfill with the final state
       without an async wait. Otherwise perform one `Promise.allSettled()`
-      over reused and new work; there is no separate MustFinish preflight
+      over reused and new work; there is no separate pending-work preflight
       wait.
    2. Ensure each awaited completion includes the host processing needed to
       produce the final state, including failures in that processing.
@@ -539,8 +538,8 @@ prerequisite for blocking.
   waiting, without authorizing a save against stale inputs.
 - How unexpected startup and host-processing failures are logged and
   represented in a fulfilled, blocking state.
-- How the global timeout and localized timeout-message settings are hosted,
-  their defaults, and the cleanup of any timeout summary issues.
+- How to consume the global timeout and localized timeout-message settings,
+  and clean up any timeout summary issues.
 - How counter checks handle replaced/restored hosts and calculated values
   that can change due to inputs outside declared ValueHosts.
 - Exact contracts and builder signatures, including compatibility of the
@@ -550,11 +549,11 @@ prerequisite for blocking.
 
 - No async validators; one validator; several on one host or different hosts;
   group and preliminary filtering.
-- Unchanged `MustFinish` reuses one promise and publishes its result for the
+- Unchanged `WhenInputsChanged` reuses one promise and publishes its result for the
   current host generation; changed owner or declared dependency restarts it.
 - Reset advances the counter but clears `isChanged`; declared fields used
   through nested calculations cause notifications and counter changes.
-- `Restart` and `SkipOnModelLevelValidation` do not allow late results to
+- `Always` and `skipOnModelLevelValidation` do not allow late results to
   overwrite current state, even when cancellation is ignored.
 - Match, no-match, warning, undetermined, failure, rejection, timeout, and
   host-processing errors all produce the intended state and notifications.

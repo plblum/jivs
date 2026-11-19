@@ -76,8 +76,9 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
 
         const handlerIdentity = this.config.handlerIdentity;
         const disposalSurvivingLogger = this.logger;
+        let tempAbortSignal = new AbortController().signal; //!!! REPLACE WHEN FORMALLY CODED AbortController
         const handlerResult = new Promise<AsyncValidatorEvaluationResult>(resolve => {
-            resolve(this.config.handler(this.valueHost, this.valueHostsManager));
+            resolve(this.config.handler(this.valueHost, this.valueHostsManager, tempAbortSignal));
         });
         return handlerResult.then(
             result => {

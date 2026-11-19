@@ -197,7 +197,10 @@ Several async validators can be pending at once and may finish in a different or
 
 ## Depend on another ValueHost
 
-If a handler reads another ValueHost, list that ValueHost's name in the optional third builder argument. This lets Jivs recognize that a change to the other value affects the owning field's validation.
+If a handler reads another ValueHost, list that ValueHost's name in
+`dependencyValueHostNames` in the optional third builder argument. This lets
+Jivs recognize that a change to the other value affects the owning field's
+validation.
 
 ```ts
 interface AccountAvailabilityApi {
@@ -230,10 +233,17 @@ const evaluateAccountName: AsyncValidatorEvaluateHandler = async (valueHost, man
 };
 
 builder.field('UserName', LookupKey.String, { label: 'User name' })
-    .asyncValidator('AccountNameCheck', evaluateAccountName, ['AccountType']);
+    .asyncValidator('AccountNameCheck', evaluateAccountName, {
+        dependencyValueHostNames: ['AccountType']
+    });
 ```
 
 When a listed dependency changes after the owning ValueHost has been validated, Jivs can revalidate it if the change requests validation; otherwise it marks the owning ValueHost as needing validation.
+
+The builder also accepts `restartWhenPending`, `skipOnModelLevelValidation`,
+and `timeout` in this options object. These properties are stored in the
+configuration, but their cancellation, skipping, and timeout behavior is not
+implemented yet.
 
 ## Waiting for validation
 

@@ -32,6 +32,7 @@ import { AsyncValidatorEvaluateHandler } from '@plblum/jivs-engine/build/Interfa
 import { ConditionConfig, ICondition } from '@plblum/jivs-engine/build/Interfaces/Conditions';
 import { FieldValueHostConfig } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { AsyncValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 import { FluentValidatorConfig } from './ValueHostConfigBuilders';
 
 
@@ -193,6 +194,7 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      *              if (!result.isValid) {
      *                  resolve({ 
      *                       conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+     *                       errorCode: 'ValidationFailed',
      *                       errorMessage: 'Validation failed'
      *                  });
      *                  return;
@@ -206,13 +208,19 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      *              });
      *         }
      *     });
+     * },
+     * {// options object
+     *     restartWhenPending: RestartWhenPending.WhenInputsChanged,
+     *     skipOnModelLevelValidation: true,
+     *     dependencyValueHostNames: ['someValueHostName'],
+     *     timeout: 100
      * });
      * ```
-     * @param dependencyValueHostNames - An optional array of value host names that this async validator depends on.
-     * Any of these value hosts changing will trigger the async validator to re-evaluate.
+     * @param asyncValidatorConfig - Optional async validator configuration, including dependencyValueHostNames.
+     * The pending-policy, model-level skip, and timeout options are stored but not yet applied.
      */
     asyncValidator(identity: string, handler: AsyncValidatorEvaluateHandler,
-        dependencyValueHostNames?: ValueHostName[]): IValidatorBuilder;    
+        asyncValidatorConfig?: FluentAsyncValidatorConfig): IValidatorBuilder;
     /**
      * Adds a DataTypeCheck condition to the validator builder.
      * DataTypeCheck ensures that the value being validated matches the expected data type.
@@ -1496,3 +1504,6 @@ export interface SetConfigOptions {
     applyValueHostName?: boolean;
 }
 
+export type FluentAsyncValidatorConfig = Omit<AsyncValidatorConfig, 'validatorType' | 'handlerIdentity' | 'handler'>
+{
+}

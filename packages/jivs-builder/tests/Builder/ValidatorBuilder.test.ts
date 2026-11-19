@@ -25,12 +25,13 @@ import { IJivsServices } from '@plblum/jivs-engine/build/Interfaces/JivsServices
 import { LoggingLevel } from '@plblum/jivs-engine/build/Interfaces/LoggingService';
 import { ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { ValidatorConfig } from '@plblum/jivs-engine/build/Interfaces/Validator';
+import { RestartWhenPending } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
 import { ValueHostType } from '@plblum/jivs-engine/build/Interfaces/ValueHostFactory';
 import { TestingLoggingService } from '@plblum/jivs-engine/build/Support/TestingLoggingService';
 import { createJivsServicesForTesting } from '@plblum/jivs-engine/build/Support/createJivsServicesForTesting';
 import { ConditionBuilder } from '../../src/Builder/ConditionBuilder';
 import { ValueHostsManagerConfigBuilder } from '../../src/Builder/ValueHostsManagerConfigBuilder';
-import { FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
+import { FluentAsyncValidatorConfig, FluentDataTypeCheckValidatorConfig, IBuilderConfigHost, IValidatorBuilder } from '../../src/Interfaces/ChildBuilders';
 import { FluentValidatorConfig } from '../../src/Interfaces/ValueHostConfigBuilders';
 import { FluentOverloadArgs, ValidatorBuilder, valueHost } from './../../src/Builder/ValidatorBuilder';
 import { BuildersFactoryInstaller } from './../../src/Services/BuildersFactoryInstaller';
@@ -471,9 +472,14 @@ describe('ValidatorBuilder.asyncValidator()', () => {
         let handler: AsyncValidatorEvaluateHandler = async () => ({
             conditionEvaluateResult: ConditionEvaluateResult.Match
         });
-        let dependencyValueHostNames = ['OtherField'];
+        let options: FluentAsyncValidatorConfig = {
+            dependencyValueHostNames: ['OtherField'],
+            skipOnModelLevelValidation: false,
+            restartWhenPending: RestartWhenPending.WhenInputsChanged,
+            timeout: 200
+        };
 
-        let returnedBuilder = testItem.asyncValidator('uniqueIdentity', handler, dependencyValueHostNames);
+        let returnedBuilder = testItem.asyncValidator('uniqueIdentity', handler, options);
         returnedBuilder.requireText();
 
         expect(returnedBuilder).toBe(testItem);
@@ -483,11 +489,11 @@ describe('ValidatorBuilder.asyncValidator()', () => {
             validatorType: ValidatorType.AsyncValidator,
             handlerIdentity: 'uniqueIdentity',
             handler: handler,
-            dependencyValueHostNames: dependencyValueHostNames
+            ...options
         });
     });
 
-    test('adds an async validator config when dependencies are omitted', () => {
+    test('adds an async validator config when options are omitted', () => {
         let testItem = createVMBuilder().field('Field1');
         let handler: AsyncValidatorEvaluateHandler = async () => ({
             conditionEvaluateResult: ConditionEvaluateResult.Match

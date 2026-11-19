@@ -3,10 +3,12 @@
 ## Status and scope
 
 Implementation guide for [AsyncValueHostsManagerValidate_Design.md](./AsyncValueHostsManagerValidate_Design.md).
-The snippets below are **proposed**, not current APIs. They show changes to
-existing objects; named helper calls in orchestration snippets specify work
-to implement, not methods that already exist. The design still has decisions
-listed in [Decisions before implementation](#decisions-before-implementation).
+Configuration options, the builder options object, global settings, and
+`hasAsyncValidators` exist. Their pending-policy and timeout behavior is not
+implemented yet. Other snippets below are **proposed**, not current APIs;
+named helper calls in orchestration snippets specify work to implement.
+The design still has decisions listed in
+[Decisions before implementation](#decisions-before-implementation).
 
 The order below delivers `AsyncValidator` behavior first, then host
 coordination, then manager orchestration. Do not change synchronous
@@ -16,12 +18,12 @@ coordination, then manager orchestration. Do not change synchronous
 
 | Object | Work |
 | --- | --- |
-| [AsyncValidator interfaces](../packages/jivs-engine/src/Interfaces/AsyncValidator.ts) | Handler signal, policy and timeout configuration. |
+| [AsyncValidator interfaces](../packages/jivs-engine/src/Interfaces/AsyncValidator.ts) | Policy and timeout configuration exists; add the handler signal. |
 | [AsyncValidator](../packages/jivs-engine/src/Validation/AsyncValidator.ts) | Invoke and wrap the handler; timeout, abort and error conversion. |
-| [ValidatorsValueHostBase](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) | Own contexts, select reuse/restart/skip, apply async results and protect current state. |
+| [ValidatorsValueHostBase](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) | `hasAsyncValidators` exists; add context ownership, selection and completion. |
 | [Validation interfaces](../packages/jivs-engine/src/Interfaces/Validation.ts) | Host completion records; manager still returns `ValidationState`. |
 | [ValueHostsManager](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), [manager interface](../packages/jivs-engine/src/Interfaces/ValueHostsManager.ts) | Await host processing, protect against obsolete runs, return and notify the final state. |
-| [ValidatorBuilder](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts), [builder interface](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts) | Expose options while retaining existing dependency-array calls. |
+| [ValidatorBuilder](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts), [builder interface](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts) | The options-object form exists; it replaces the previous dependency-array argument. |
 
 ```text
 manager.validate()
@@ -35,39 +37,42 @@ manager.validate()
 
 ## 1. Contracts and configuration
 
-**Problem:** A handler cannot receive cancellation, and a manager pass cannot
-choose what to do with existing work.
+**Problem:** Configuration can describe pending behavior, but the validator
+does not yet use it and the handler cannot receive cancellation.
 
-**Solution:** Extend the async-specific configuration. The enum and settings
-names below are proposed; `MustFinish` is the agreed default.
+**Solution:** Use the existing configuration and add the proposed signal
+parameter. `WhenInputsChanged` is the specified default.
 
 ```ts
+// Current enum.
 export enum RestartWhenPending {
-    MustFinish = 'MustFinish',
-    Restart = 'Restart',
-    SkipOnModelLevelValidation = 'SkipOnModelLevelValidation'
+    WhenInputsChanged = 0,
+    Always = 1
 }
 
+// Proposed handler signature; currently it has only the first two parameters.
 export type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
     valueHostsManager: IValueHostsManager,
-    signal: AbortSignal
+    abortSignal: AbortSignal
 ) => Promise<AsyncValidatorEvaluationResult>;
 
+// Current async-specific configuration, abbreviated.
 export interface AsyncValidatorConfig /* existing members remain */ {
     handlerIdentity: string;
     handler: AsyncValidatorEvaluateHandler;
     dependencyValueHostNames?: ValueHostName[];
     restartWhenPending?: RestartWhenPending;
+    skipOnModelLevelValidation?: boolean;
     timeout?: number; // milliseconds
 }
 ```
 
-The actual interface must retain its existing `Omit<ValidatorConfig, ...>`
-base. Existing two-argument handlers remain assignable to the new handler
-type. An explicitly returned `failedToResolve` still works. A thrown error or
-rejection becomes a logged, blocking failure instead of requiring a handler
-to catch it.
+The actual interface retains its existing `Omit<ValidatorConfig, ...>` base.
+Existing two-argument handlers remain assignable when the signal is added.
+An explicitly returned `failedToResolve` still works. The proposed wrapper
+will convert a thrown error or rejection to a logged, blocking failure.
+Until then, handlers must follow the current always-resolve contract.
 
 Keep the current union on `IValidator.validate()`:
 
@@ -82,13 +87,15 @@ can also return Promises; manager waiting must not silently exclude them.
 
 ### Builder compatibility
 
-**Problem:** Introduce additional options into asyncValidator (breaking changes supported)
+**Problem:** Introduce additional options into asyncValidator (breaking changes supported).
 
-**Solution:** Introduce FluentAsyncValidatorConfig with dependencyValueHostNames, restartWhenPending, and timeout from AsyncValidatorConfig, and replace parameters on asyncValidator.
+**Solution:** The builder now accepts `FluentAsyncValidatorConfig`, including
+`dependencyValueHostNames`, `restartWhenPending`,
+`skipOnModelLevelValidation`, and `timeout`.
 
 ```ts
-export type FluentAsyncValidatorConfig = Pick<AsyncValidatorConfig,
-    'dependencyValueHostNames' | 'restartWhenPending' | 'timeout'>;
+export type FluentAsyncValidatorConfig = Omit<AsyncValidatorConfig,
+    'validatorType' | 'handler' | 'handlerIdentity'>;
 
 asyncValidator(
     identity: string,
@@ -106,26 +113,30 @@ const config: AsyncValidatorConfig = {
 };
 ```
 
-Retain the existing identity and handler checks. Reject invalid policy or
-timeout values explicitly; do not silently turn an invalid timeout into a
-default. The concrete timeout default and settings location remain open.
+The builder checks the identity and handler and stores the supplied options.
+It does not yet validate the new options or implement their behavior. Add
+explicit checks for invalid policy or timeout values when implementing them.
+The previous third-argument array is a breaking change: use
+`{ dependencyValueHostNames: [...] }` instead.
 
 ### Timeout settings
 
 The intended precedence is:
 
 ```ts
-const timeoutMs = asyncConfig.timeout ?? globalAsyncValidationTimeout;
+const timeoutMs = asyncConfig.timeout ?? services.settings.asyncValidation.timeout;
 ```
 
-Each operation gets its own timer; reuse does not restart it. Require a
-finite positive duration within the supported timer range. Choose and document
-the global default and settings location before implementing this expression;
-`ValueHostsManager.behaviors` is a candidate, not an agreed API.
+`initJivsGlobalSettings()` currently supplies 5000 ms and the message
+`Async validation timed out.`; `asyncValidationTimeoutMessagel10n` supplies
+the localization key `AsyncValidation.TimeoutMessage`. The settings exist but
+are not yet consumed by AsyncValidator. Each operation will get its own timer; reuse will not
+restart it. Require a finite positive duration within the supported timer
+range when implementing timeout handling.
 
 ## 2. Host-owned context and input versions
 
-**Problem:** When using restartWhenPending=MustFinish, must determine if any of the inputs used since the last validation have changed so that we can know if we can retain the existing promise or effectively restart.
+**Problem:** When using restartWhenPending=WhenInputsChanged, must determine if any of the inputs used since the last validation have changed so that we can know if we can retain the existing promise or effectively restart.
 
 **Solution:** Each validation attempt captures all change counters from the dependencyValueHostNames and compares them to the prior run to detect changes. Each ValidatorsValueHostBase maintains a map of all AsyncValidators that have running promises.
 
@@ -374,22 +385,22 @@ allowing an old operation to clear or overwrite a replacement.
 
 **Solution:** Select the operation in the host's validator loop, immediately
 before that validator would run. This closes the gap between a separate
-preflight and actual invocation. The host can still expose
-`hasAsyncValidators`, derived from `config.validatorConfigs` using
-`isAsyncValidatorConfig()`, without constructing validators.
+preflight and actual invocation. The existing `hasAsyncValidators` property
+is derived from `config.validatorConfigs` using `isAsyncValidatorConfig()`,
+without constructing validators.
 
 ```ts
 // Decision made by ValidatorsValueHostBase for a model-level validation.
 const context = this._pendingAsyncValidators.get(validator);
-switch (validator.restartWhenPending) {
-    case RestartWhenPending.SkipOnModelLevelValidation:
-        if (context)
-            this.cancelContext(context);
-        // Do not invoke or reuse this validator in this pass.
-        break;
+if (validator.skipOnModelLevelValidation && options.group !== undefined) {
+    if (context)
+        this.cancelContext(context);
+    continue; // skip this validator, not the rest of the ValueHost
+}
+switch (validator.restartWhenPending ?? RestartWhenPending.WhenInputsChanged) {
 
-    case RestartWhenPending.MustFinish:
-        if (context && inputsUnchanged(context.inputs, this.valueHostsManager)) {
+    case RestartWhenPending.WhenInputsChanged:
+        if (context && countersUnchanged(context.inputs, this.valueHostsManager)) {
             // Attach context.promise to THIS run's host result processing.
             reuse(context);
             break;
@@ -399,7 +410,7 @@ switch (validator.restartWhenPending) {
         startNew();
         break;
 
-    case RestartWhenPending.Restart:
+    case RestartWhenPending.Always:
         if (context)
             this.cancelContext(context);
         startNew();
@@ -411,6 +422,7 @@ For this design, `options.group !== undefined` identifies a model-level call,
 including direct host calls with `group: ''` or `'*'`. For a manager call,
 pass `group: options?.group ?? '*'` to hosts. Apply selection only to
 validators the existing group/preliminary/enabled rules would actually run.
+`skipOnModelLevelValidation` takes precedence over either restart policy.
 Define the separate field-level policy before implementing; do not silently
 change its existing UX.
 
@@ -638,8 +650,9 @@ const timeoutIssue: IssueFound = {
 };
 ```
 
-The constant, message settings, localization path, group association and
-specific storage API remain to be selected. Clear only the engine-owned issue
+The message setting and localization key exist in `JivsGlobalSettings`; the
+issue error code, localization path, group association and specific storage
+API remain to be selected. Clear only the engine-owned issue
 for the retried/cleared operation; support simultaneous timeouts. Do **not**
 use manager `addExternalIssuesFound()` as a shortcut: it clears all previous
 external issues. Ensure summary queries and notifications see the issue even
@@ -686,9 +699,11 @@ const checkAvailability: AsyncValidatorEvaluateHandler =
   work or side effects to stop. After abort or timeout Jivs may proceed
   without waiting for application cleanup and ignores late validation results.
   Handlers must guard their own multistep work and side effects.
-- Explain the three policies, default `MustFinish`, timeout settings, and
-  `doNotSave` versus `isValid`. `SkipOnModelLevelValidation` is suitable only
-  when the application has an authoritative replacement validation.
+- Explain the two restart policies, default `WhenInputsChanged`, and the
+  independent `skipOnModelLevelValidation` option, which takes precedence
+  during model-level validation. Explain timeout settings and `doNotSave`
+  versus `isValid`. Skip is suitable only when the application has an
+  authoritative replacement validation.
 - Declare all other ValueHosts read by the handler. Include a calculation
   host and every underlying field, including nested calculation inputs.
   External state and missed declarations are not tracked.
@@ -729,15 +744,15 @@ counter work:
 | Area | Required behavior |
 | --- | --- |
 | AsyncValidator | Normal outcomes, explicit failure, sync throw, rejection, malformed result, logger behavior, timeout, abort before/during handler, late expected and unexpected failures, timer/listener cleanup, disposal, handler that never settles. |
-| Host | `MustFinish` reuse and changed inputs; `Restart`; skip; owner/dependency replacement; missing dependency; reentrant startup; field-level behavior; multiple validators; generation and identity protection; rejected host processing; state and notification updates. |
+| Host | `WhenInputsChanged` reuse and changed inputs; `Always`; skip; owner/dependency replacement; missing dependency; reentrant startup; field-level behavior; multiple validators; generation and identity protection; rejected host processing; state and notification updates. |
 | Manager | No async work; multiple hosts and validators; groups and preliminary; waits for host processing; overlapping runs, edits, reset, clear, replacement and disposal while waiting; rejected startup/processing and notification; always fulfilled and blocked when obsolete. |
 | Timeout summary | With and without a message, localization, group visibility, multiple timeouts, retry/clear cleanup, and preservation of external/server issues. |
-| Builder and migration | Array and options forms, invalid settings, Promise return types, affected examples and wrapper consumers. |
+| Builder and migration | Options-object form, invalid settings, Promise return types, affected examples and wrapper consumers. |
 
 ## Decisions before implementation
 
-1. Choose global timeout default, location, timeout-message settings and
-   localization/issue ownership. Timeout itself and blocking are required.
+1. Implement the existing global timeout and message settings; choose
+   localization and issue ownership. Timeout itself and blocking are required.
 2. Choose field-level pending policy; manager-level policies above are agreed.
 3. Finalize internal context registration and public pending-result
    compatibility, including custom validators and custom hosts.

@@ -53,7 +53,7 @@ import
         ConditionBuilderHandler,
         ConditionWithChildrenBuilderHandler,
         FluentAllMatchValidatorConfig,
-        FluentAnyMatchValidatorConfig, FluentCountMatchesValidatorConfig,
+        FluentAnyMatchValidatorConfig, FluentAsyncValidatorConfig, FluentCountMatchesValidatorConfig,
         FluentDataTypeCheckValidatorConfig,
         FluentEqualToValidatorConfig,
         FluentGreaterThanOrEqualValidatorConfig,
@@ -288,6 +288,7 @@ export class ValidatorBuilder
      *              if (!result.isValid) {
      *                  resolve({ 
      *                       conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+     *                       errorCode: 'ValidationFailed',
      *                       errorMessage: 'Validation failed'
      *                  });
      *                  return;
@@ -301,23 +302,30 @@ export class ValidatorBuilder
      *              });
      *         }
      *     });
+     * },
+     * {
+     *     restartWhenPending: RestartWhenPending.WhenInputsChanged,
+     *     skipOnModelLevelValidation: true,
+     *     dependencyValueHostNames: ['someValueHostName'],
+     *     timeout: 100
      * });
      * ```
-     * @param dependencyValueHostNames - An optional array of value host names that this async validator depends on.
-     * Any of these value hosts changing will trigger the async validator to re-evaluate.
+     * @param asyncValidatorConfig - Optional async validator configuration, including dependencyValueHostNames.
+     * The pending-policy, model-level skip, and timeout options are stored but not yet applied.
      */
     public asyncValidator(identity: string, handler: AsyncValidatorEvaluateHandler,
-        dependencyValueHostNames?: ValueHostName[]) : IValidatorBuilder
+        asyncValidatorConfig?: FluentAsyncValidatorConfig) : IValidatorBuilder
     {
         if (identity === undefined || identity === null || identity === '')
             this.reportError(new Error(`ValueHost name "${ this._parentConfig.name }" must have a valid async validator identity.`));    // throws
         if (handler === undefined || handler === null)
             this.reportError(new Error(`ValueHost name "${ this._parentConfig.name }" must have an async validator handler.`));    // throws
+        asyncValidatorConfig = asyncValidatorConfig ?? {};
         const ivDesc: AsyncValidatorConfig = {
+            ...asyncValidatorConfig,
             validatorType: ValidatorType.AsyncValidator,
             handlerIdentity: identity,
-            handler: handler,
-            dependencyValueHostNames: dependencyValueHostNames
+            handler: handler
         };
         this.parentConfig.validatorConfigs!.push(ivDesc);
         return this;    // chain!

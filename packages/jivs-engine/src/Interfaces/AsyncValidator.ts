@@ -49,21 +49,22 @@
  *        and ValidatorValidateResult.failedToResolve is assigned.
  *        The caller should treat this case as IsValid = false, doNotSave = true, blocking further processing.
  * 
- * Planned Builder support:
+ * Builder support:
  * - ValueHostConfigBuilder.asyncValidator() will allow adding an async validator to a value host configuration.
  * - It will take these parameters:
  *   - handlerIdentity: string
  *   - handler: AsyncValidatorEvaluateHandler
- *   - dependencyValueHostNames?: ValueHostName[]
+ *   - options?: { remaining AsyncValidatorConfig properties }
  * - It does not take errorcode, errormessage or severity, unlike other validators, because those are all
  *   resolved by the handler function.
  * 
  * Example handler:
  * ```ts
  * // Illustrative application code; availabilityApi is an application-owned service.
- * const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager) => {
+ * const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager, abortSignal) => {
  *     try {
- *         const available = await availabilityApi.isAvailable(host.getValue());
+ *         const available = await availabilityApi.isAvailable(host.getValue(), abortSignal);
+ *         
  *         return available
  *             ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
  *             : {
@@ -119,6 +120,53 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
      * list the names of those value hosts. When those value hosts change, the validator may be re-evaluated accordingly.
      */
     dependencyValueHostNames?: ValueHostName[];
+
+    /**
+     * Planned behavior when AsyncValidator.validate() is called
+     * but there is already a pending validation in progress.
+     * If undefined, it uses RestartWhenPending.WhenInputsChanged as the default behavior.
+     * Currently stored in configuration but not applied during validation.
+     */
+    restartWhenPending?: RestartWhenPending;
+
+    /**
+     * Planned control over whether this validator should be skipped during model-level validation.
+     * If true, the validator will not be executed as part of model-level validation.
+     * Only use it if the server side covers the same validation, making it unnecessary to
+     * wait for client-side validation.
+     * If undefined or false, the validator will be executed during model-level validation.
+     * Currently stored in configuration but not applied during validation.
+     */
+    skipOnModelLevelValidation?: boolean;
+
+    /**
+     * The planned maximum time, in milliseconds, for an async evaluation.
+     * If the evaluation does not complete within this time, it will act as an error
+     * that blocks validation. Its value will default to IJivsServices.settings.asyncValidation.timeout.
+     * An error message written to the Validation Summary will come from
+     * IJivsServices.settings.asyncValidation.timeoutMessage
+     * and can be localized with this key: 'AsyncValidation.TimeoutMessage'
+     * Currently stored in configuration but not applied during validation.
+     */
+    timeout?: number;
+}
+
+/**
+ * Supports AsyncValidatorConfig.restartWhenPending property
+ * to indicate what happens when AsyncValidator.validate() is called but it already
+ * has a pending validation in progress.
+ */
+export enum RestartWhenPending
+{
+    /**
+     * Indicates that the validator should restart only when the inputs have changed
+     * since the last validation. If not, the validator will not restart and will continue with the pending validation.
+     */
+    WhenInputsChanged = 0,
+    /**
+     * Indicates that the validator should always restart regardless of input changes.
+     */
+    Always = 1
 }
 
 /**
@@ -169,10 +217,12 @@ export interface AsyncValidatorEvaluationResult
  * Represents the handler function for evaluating an asynchronous validator.
  * It takes the value host and value hosts manager as input,
  * and returns a promise that resolves to an AsyncValidatorEvaluationResult.
+ * The abortSignal can be used to cancel the asynchronous operation if needed.
  */
 export type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
-    valueHostsManager: IValueHostsManager
+    valueHostsManager: IValueHostsManager,
+    abortSignal: AbortSignal
 ) => Promise<AsyncValidatorEvaluationResult>;
 
 /**
