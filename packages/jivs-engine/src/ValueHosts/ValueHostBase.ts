@@ -210,7 +210,10 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
 
     protected additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void {
         if (options.reset)
-            stateToUpdate.changeCounter = 0;
+        {
+            stateToUpdate.baseChangeCounter = (stateToUpdate.changeCounter ?? 0) + 1;
+            stateToUpdate.changeCounter = stateToUpdate.baseChangeCounter;
+        }
         else if (valueChanged)
             stateToUpdate.changeCounter = (stateToUpdate.changeCounter ?? 0) + 1;
     }
@@ -253,8 +256,19 @@ export abstract class ValueHostBase<TConfig extends ValueHostConfig,
      * up the form, you want to avoid showing Category=Require validators. Those should appear only
      * if the user edits, or when the user attempts to submit.
      */
-    public get isChanged(): boolean {
-        return (this.instanceState.changeCounter ?? 0) > 0;
+    public get isChanged(): boolean
+    {
+        let baseline = this.instanceState.baseChangeCounter ?? 0;
+        return (this.instanceState.changeCounter ?? 0) - baseline > baseline;
+    }
+    /**
+     * Returns the number of times the ValueHost's value has changed.
+     * This counter increments with each change, providing a way to track modifications over time.
+     * The isChanged flag is related, but also takes into account a base counter (isChanged = this.changeCounter - base > base)
+     * and is updated by Validating with SetValueOptions.reset = true.
+     */
+    public get changeCounter(): number {
+        return this.instanceState.changeCounter ?? 0;
     }
 
     /**

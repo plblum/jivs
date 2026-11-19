@@ -168,6 +168,8 @@ export class MockValueHost implements IValueHost
 
     isChanged: boolean = false;
 
+    changeCounter: number = 0;
+
     readOnly: boolean = false;
 
     isEnabled(): boolean {

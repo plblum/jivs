@@ -199,6 +199,14 @@ export interface IValueHost<TOptions extends SetValueOptions = SetValueOptions>
      * for the ValueHostsManager to manage and persist state.
      */
     _captureState(stateContainer: StateContainer): void;
+
+    /**
+     * Returns the number of times the ValueHost's value has changed.
+     * This counter increments with each change, providing a way to track modifications over time.
+     * The isChanged flag is related, but also takes into account a base counter (isChanged = this.changeCounter - base > base)
+     * and is updated by Validating with SetValueOptions.reset = true.
+     */
+    readonly changeCounter: number;
 }
 
 /**
@@ -233,7 +241,7 @@ export interface SetValueOptions {
     /**
      * Indicates that the value is new, as if the field has never been edited.
      * Reset the field's changed and validation states as if the field has never been edited.
-     * - Sets ValueHost.IsChanged to false
+     * - Sets ValueHost.IsChanged to false by changing the base counter to match the current changeCounter.
      * - Calls ValidatableValueHost.clearValidation()
      * - Retains the values supplied but will always trigger the onTextValueChanged and
      *   onValueChanged callbacks because you are supplying a value that is effectively new.
@@ -306,6 +314,15 @@ export interface ValueHostInstanceState {
      * When 0 or undefined, it means no changes have been made. 
      */
     changeCounter?: number;
+
+    /**
+     * The base change counter used to determine if the ValueHost has been modified.
+     * When the baseChangeCounter matches the changeCounter, the ValueHost is considered unchanged.
+     * It initially is undefined, which is the value of 0.
+     * It gets updated whenever a setValue operation occurs with the option.Reset set to true.
+     * This allows the ValueHost to track changes relative to a known baseline.
+     */
+    baseChangeCounter?: number;
 
     /**
      * Storage associated with ValueHost.saveIntoInstanceState/getFromInstanceState

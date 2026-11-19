@@ -4646,6 +4646,7 @@ describe('toIValidatorsValueHost function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        changeCounter: number = 0;
         corrected: boolean = false;
         get currentValidationState(): ValueHostValidationState {
             return { isValid: this.isValid, doNotSave: this.doNotSave, status: this.validationStatus, issuesFound: this.issues, asyncProcessing: false, corrected: false };

@@ -11,6 +11,7 @@ import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
 import { CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { SimpleValueType } from '../Interfaces/DataTypeConverterService';
 import { LookupKey } from '../DataTypes/LookupKeys';
+import { deepEquals } from '../Utilities/Utilities';
 
 
 /**
@@ -113,7 +114,22 @@ export class CalcValueHost<TConfig extends CalcValueHostConfig = CalcValueHostCo
             {
                 try
                 {
-                    return this.config.calcFn(this, this.valueHostsManager);
+                    let value = this.config.calcFn(this, this.valueHostsManager);
+                    let valueChanged = !deepEquals(value, this.instanceState.value);
+                    this.updateInstanceState((stateToUpdate) =>
+                    {
+                        if (valueChanged)
+                        {
+                            stateToUpdate.value = value;
+                        }
+                        // used to bump the change counter, but we leave callbacks for the consumer like FieldValueHost
+                        this.additionalInstanceStateUpdatesOnSetValue(stateToUpdate, valueChanged,
+                            {
+                                skipValueChangedCallback: true
+                            } as TOptions);
+                        return stateToUpdate;
+                    }, this);
+                    return value;
                 }
                 catch (ex)
                 {

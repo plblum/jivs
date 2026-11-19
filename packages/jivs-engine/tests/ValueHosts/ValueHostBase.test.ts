@@ -69,6 +69,11 @@ class PublicifiedValueHostBase extends ValueHostBase<ValueHostConfig, IPublicifi
         this.logger.error(error, gatherFn);
     }
 
+    public get exposeBaseChangeCounter(): number
+    {
+        return this.instanceState.baseChangeCounter ?? 0;
+    }
+
 }
 /**
  * This implementation of IValueHostGenerator is actually tested in ValueHostFactory.tests.ts
@@ -189,6 +194,10 @@ describe('constructor and resulting property values', () =>
         expect(testItem!.exposeState.name).toBe('Field1');
         expect(testItem!.exposeState.enabled).toBeUndefined();
         expect(testItem!.valueHostsManager).toBe(vhm);
+        expect(testItem!.changeCounter).toBe(0);
+        expect(testItem!.exposeBaseChangeCounter).toBe(0);
+        expect(testItem!.exposeState.baseChangeCounter).toBeUndefined();
+        expect(testItem!.exposeState.changeCounter).toBeUndefined();
     });
 
     test('constructor with Config.dataType undefined results in getDataType = null', () =>
@@ -374,9 +383,12 @@ describe('setValue', () =>
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(true);
+        expect(testItem.changeCounter).toBe(1);
+        expect(testItem.exposeBaseChangeCounter).toBe(0);
         let restoredState = restoreValueHostState(setup);
         expect(restoredState.vh?.length).toBe(1);
         expect(restoredState.vh?.[0].changeCounter).toBe(1);
+        expect(restoredState.vh?.[0].baseChangeCounter).toBeUndefined();
     });
     test('Value was not changed. State did not change', () =>
     {
@@ -387,9 +399,12 @@ describe('setValue', () =>
         expect(() => testItem.setValue(finalValue)).not.toThrow();
         expect(testItem.getValue()).toBe(finalValue);
         expect(testItem.isChanged).toBe(false);
+        expect(testItem.changeCounter).toBe(0);
+        expect(testItem.exposeBaseChangeCounter).toBe(0);
         let restoredState = restoreValueHostState(setup);
         expect(restoredState.vh?.length).toBe(1);
         expect(restoredState.vh?.[0].changeCounter).toBeUndefined();
+        expect(restoredState.vh?.[0].baseChangeCounter).toBeUndefined();
     });
     test('Value was changed with option.Reset = true. State changes, but IsChanged is false.', () =>
     {
@@ -404,9 +419,34 @@ describe('setValue', () =>
         let restoredState = restoreValueHostState(setup);
         expect(restoredState.vh?.length).toBe(1);
         expect(restoredState.vh?.[0].value).toBe(finalValue);
-        expect(restoredState.vh?.[0].changeCounter).toBe(0);
+        // changeCounter and baseChangeCounter should reflect the update
+        expect(restoredState.vh?.[0].baseChangeCounter).toBe(1);
+        expect(restoredState.vh?.[0].changeCounter).toBe(1);
         expect(restoredState.vh?.[0].name).toBe('Field1');
     });
+    test('reset used after 3 sets reflected in isChanged=false and change counters', () =>
+    {
+        const initialValue = 100;
+        const secondValue = 150;
+        const thirdValue = 200;
+        const finalValue = 250;
+
+        let setup = setupValueHost({}, initialValue);
+        let testItem = setup.valueHost;
+
+        testItem.setValue(secondValue);
+        expect(testItem.isChanged).toBe(true);
+        expect(testItem.changeCounter).toBe(1);
+        expect(testItem.exposeBaseChangeCounter).toBe(0);
+        testItem.setValue(thirdValue);
+        expect(testItem.isChanged).toBe(true);
+        expect(testItem.changeCounter).toBe(2);
+        expect(testItem.exposeBaseChangeCounter).toBe(0);
+        testItem.setValue(finalValue, { reset: true });
+        expect(testItem.isChanged).toBe(false);
+        expect(testItem.changeCounter).toBe(3);
+        expect(testItem.exposeBaseChangeCounter).toBe(3);
+    }); 
     test('Value was changed. OnValueChanged called.', () =>
     {
         const initialValue = 100;

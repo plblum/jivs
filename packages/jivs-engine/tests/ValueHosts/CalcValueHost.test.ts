@@ -61,10 +61,15 @@ describe('CalcValueHost constructor', () => {
         expect(testItem!.getName()).toBe('Field1');
         expect(testItem!.getLabel()).toBe('Label1');
         expect(testItem!.getDataType()).toBeNull();
-        expect(testItem!.getValue()).toBe(1);
         expect(testItem!.isChanged).toBe(false);
+        expect(testItem!.changeCounter).toBe(0);
         expect(testItem!.readOnly).toBe(true);
         expect(testItem!.dependencyValueHostNames).toBeUndefined();
+
+        // now run the calc
+        expect(testItem!.getValue()).toBe(1);
+        expect(testItem!.changeCounter).toBe(1);
+        expect(testItem!.isChanged).toBe(true);
     });
 
     test('dependencyValueHostNames returns the configured dependencies', () => {
@@ -204,6 +209,8 @@ describe('getValue using the calcFn', () => {
         let testItem = vhm.getValueHost('Field1');
         expect(testItem).toBeInstanceOf(CalcValueHost);
         expect(testItem!.getValue()).toBe(1);
+        expect(testItem!.changeCounter).toBe(1);
+        expect(testItem!.isChanged).toBe(true);
     });
     test('Through ValueHostsManager, TestCalcFunctionReturnsValueOfField1 always returns the value from Field1', () => {
         let services = createJivsServicesForTesting();
@@ -229,8 +236,44 @@ describe('getValue using the calcFn', () => {
         expect(testItem!.getValue()).toBeUndefined();
         field1ValueHost!.setValue('B');
         expect(testItem!.getValue()).toBe('B');
+        expect(testItem!.changeCounter).toBe(1);
+        expect(testItem!.isChanged).toBe(true);
 
     });    
+    // value did not change on the second try leaving changeCounter and isChanged as is.
+    test('value did not change on the second try leaves changeCounter and isChanged as is', () => {
+        let services = createJivsServicesForTesting();
+        let vhm = new ValueHostsManager({
+            services: services,
+            valueHostConfigs: [ 
+                {
+                    name: 'Field1',
+                    valueHostType: ValueHostType.Static,
+                    dataType: LookupKey.String
+                },
+                <CalcValueHostConfig>{
+                    name: 'Field2',
+                    valueHostType: ValueHostType.Calc,
+                    calcFn: TestCalcFunctionReturnsValueOfField1
+                }
+            ]
+        });
+        let testItem = vhm.getValueHost('Field2');
+        expect(testItem).toBeInstanceOf(CalcValueHost);
+        let field1ValueHost = vhm.getValueHost('Field1');
+
+        expect(testItem!.getValue()).toBeUndefined();
+        field1ValueHost!.setValue('B');
+        expect(testItem!.getValue()).toBe('B');
+        expect(testItem!.changeCounter).toBe(1);
+        expect(testItem!.isChanged).toBe(true);
+
+        // call getValue again without changing Field1
+        expect(testItem!.getValue()).toBe('B');
+        expect(testItem!.changeCounter).toBe(1);
+        expect(testItem!.isChanged).toBe(true);
+    });
+
     test('Through ValueHostsManager, function that calls getValue on itself throws', () => {
         let services = createJivsServicesForTesting();
         let vhm = new ValueHostsManager({
@@ -478,6 +521,7 @@ describe('toICalcValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        changeCounter: number = 0;
         readOnly: boolean = false;
         isEnabled(): boolean {
             throw new Error("Method not implemented.");

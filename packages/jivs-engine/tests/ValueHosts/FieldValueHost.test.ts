@@ -3235,6 +3235,7 @@ describe('toIFieldValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        changeCounter: number = 0;
         readOnly: boolean = false;
         isCalculated: boolean = false;
         calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {

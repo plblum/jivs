@@ -229,6 +229,7 @@ describe('toIStaticValueHost function', () => {
             throw new Error("Method not implemented.");
         }
         isChanged: boolean = false;
+        changeCounter: number = 0;
         readOnly: boolean = false;
         isEnabled(): boolean {
             throw new Error("Method not implemented.");

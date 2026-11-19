@@ -1955,6 +1955,7 @@ describe('toIValidatableValueHost', () => {
                 throw new Error('Function not implemented.');
             },
             isChanged: false,
+            changeCounter: 0,
 
             getName: function (): string {
                 throw new Error('Function not implemented.');
@@ -2276,6 +2277,7 @@ describe('toIValidatableValueHost function', () => {
         }
     
         isChanged: boolean = false;
+        changeCounter: number = 0;
         readOnly: boolean = false;
         isEnabled(): boolean {
             throw new Error("Method not implemented.");
