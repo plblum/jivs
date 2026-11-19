@@ -15,7 +15,7 @@ import { ValueHostValidationState } from "../../src/Interfaces/ValidatableValueH
 import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, ValidateOptions, IssueFound, ValidationState } from "../../src/Interfaces/Validation";
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
-import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorType, ValidatorValidateResult } from "../../src/Interfaces/Validator";
+import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorConfigBase, ValidatorType, ValidatorValidateResult } from "../../src/Interfaces/Validator";
 import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult } from "../../src/Interfaces/AsyncValidator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
@@ -1744,6 +1744,88 @@ describe('ValidatorsValueHostBase async issue external replacement', () => {
         expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
 });
+describe('hasAsyncValidators', () =>
+{
+    function testHandler(valueHost: IValidatorsValueHost,
+        valueHostsManager: IValueHostsManager,
+        signal: AbortSignal
+    ) : Promise<AsyncValidatorEvaluationResult>
+    {
+        return Promise.resolve({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        });
+    }
+
+    test('Initially hasAsyncValidators is false', () => {
+        let setup = setupValidatorsValueHostBase();
+        expect(setup.valueHost.hasAsyncValidators).toBe(false);
+    });
+    test('After adding an async validator, hasAsyncValidators becomes true', () => {
+        let ivConfigs: Array<Partial<ValidatorConfigBase>> = [
+            <AsyncValidatorConfig>{
+                validatorType: ValidatorType.AsyncValidator,
+                handler: testHandler,
+                handlerIdentity: 'testHandler'
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
+        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
+        expect(setup.valueHost.hasAsyncValidators).toBe(true);
+    });
+    test('Validators are all sync resolves as false', () => {
+        let ivConfigs: Array<Partial<ValidatorConfigBase>> = [
+            <ValidatorConfig>{
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
+        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
+        expect(setup.valueHost.hasAsyncValidators).toBe(false);
+    });
+    // mixture
+    test('Mixture of sync and async validators', () => {
+        let ivConfigs: Array<Partial<ValidatorConfigBase>> = [
+            <ValidatorConfig>{
+                conditionConfig: {
+                    conditionType: ConditionType.RequireText
+                }
+            },
+            <AsyncValidatorConfig>{
+                validatorType: ValidatorType.AsyncValidator,
+                handler: testHandler,
+                handlerIdentity: 'testHandler'
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
+        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
+        expect(setup.valueHost.hasAsyncValidators).toBe(true);
+    });
+    // asyncValidatorConfig has handler and handlerIdentity but validatorType is different
+    test('Async validator config with different validatorType still async when it has handler and handlerIdentity properties', () => {
+        let ivConfigs: Array<Partial<ValidatorConfigBase>> = [
+            <AsyncValidatorConfig>{
+                validatorType: 'Test',
+                handler: testHandler,
+                handlerIdentity: 'testHandler'
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
+        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
+        expect(setup.valueHost.hasAsyncValidators).toBe(true);
+    });
+    test('Async validator config without handler or handlerIdentity is not counted as async', () => {
+        let ivConfigs: Array<Partial<ValidatorConfigBase>> = [
+            <AsyncValidatorConfig>{
+                validatorType: 'Test'
+            }
+        ];
+        let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
+        let setup = setupValidatorsValueHostBaseForValidate(ivConfigs, state);
+        expect(setup.valueHost.hasAsyncValidators).toBe(false);
+    });
+});
 
 
 describe('ValidatorsValueHostBase.getValidator', () => {
@@ -1924,6 +2006,7 @@ describe('constructor and resulting property values', () => {
         expect(testItem!.isValid).toBe(true);
         expect(testItem!.asyncProcessing).toBe(false);
         expect(testItem!.corrected).toBe(false);        
+        expect(testItem!.hasAsyncValidators).toBe(false);
     });
 });
 
@@ -4646,6 +4729,7 @@ describe('toIValidatorsValueHost function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        hasAsyncValidators: boolean = false;
         changeCounter: number = 0;
         corrected: boolean = false;
         get currentValidationState(): ValueHostValidationState {

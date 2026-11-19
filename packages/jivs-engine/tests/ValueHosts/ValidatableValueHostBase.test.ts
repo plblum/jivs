@@ -2222,6 +2222,7 @@ describe('toIValidatableValueHost function', () => {
         isValid: boolean = true;
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
+        hasAsyncValidators: boolean = false;
         corrected: boolean = false;
         get currentValidationState(): ValueHostValidationState {
             throw new Error("Method not implemented.");

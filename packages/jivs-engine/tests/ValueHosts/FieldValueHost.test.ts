@@ -3143,6 +3143,7 @@ describe('toIFieldValueHost function', () => {
         validationStatus: ValidationStatus = ValidationStatus.NotAttempted;
         asyncProcessing: boolean = false;
         corrected: boolean = false;
+        hasAsyncValidators: boolean = false;
 
         addExternalIssuesFound(issuesFound: IssueFound[], determinedLocally: boolean, options?: ValidateOptions | undefined): boolean {
             throw new Error("Method not implemented.");

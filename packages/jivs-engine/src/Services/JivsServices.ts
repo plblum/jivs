@@ -18,7 +18,7 @@
 
 import { CodingError } from '../Utilities/ErrorHandling';
 import type { IValidatorFactory } from '../Interfaces/Validator';
-import { ServiceName, type IJivsServices } from '../Interfaces/JivsServices';
+import { JivsGlobalSettings, ServiceName, type IJivsServices } from '../Interfaces/JivsServices';
 import { ValidatorFactory } from '../Validation/ValidatorFactory';
 import { IDataTypeCheckGeneratorService } from '../Interfaces/DataTypeCheckGeneratorService';
 import { IDataTypeFormatterService } from '../Interfaces/DataTypeFormatterService';
@@ -29,6 +29,7 @@ import { ValidatorConfigMergeService } from './ConfigMergeService';
 import { ICachingService } from '../Interfaces/CachingService';
 import { CachingService } from './CachingService';
 import type { ILoggingService } from '../Interfaces/LoggingService';
+import { initJivsGlobalSettings } from '../Interfaces/JivsServices';
 import { IValueHostFactory } from '../Interfaces/ValueHostFactory';
 import { ValueHostFactory, registerStandardValueHostGenerators } from '../ValueHosts/ValueHostFactory';
 import { ConsoleLoggingService } from './ConsoleLoggingService';
@@ -70,6 +71,19 @@ export class JivsServices extends Services implements IJivsServices
         const service = new CultureService(defaultCultureId);
         this.setService(ServiceName.culture, service);        
     }
+
+    /**
+     * Global settings for the Jivs system.
+     * These settings can be accessed and modified as needed.
+     */
+    public get settings(): JivsGlobalSettings {
+       if (!this._settings) {
+           this._settings = initJivsGlobalSettings();
+       }
+       return this._settings;
+    }
+    private _settings?: JivsGlobalSettings = undefined;
+    
     /**
      * Service to create Culture objects.
      */

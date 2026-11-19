@@ -546,6 +546,18 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
     private _validators: Array<IValidator> | null = null;
+    
+    /**
+     * Determines if this ValidatorsValueHostBase has any asynchronous validators.
+     * @returns True if there are async validators, false otherwise.
+     */
+    public get hasAsyncValidators(): boolean {
+        if (this._hasAsyncValidators === undefined) {
+            this._hasAsyncValidators = this.config.validatorConfigs?.some(v => isAsyncValidatorConfig(v)) ?? false;
+        }
+        return this._hasAsyncValidators;
+    }
+    private _hasAsyncValidators: boolean | undefined = undefined;
 
     /**
      * Adds an injected error validator to the beginning of the validators array if an injected error exists.

@@ -365,6 +365,7 @@ them; neither automatically settles an uncooperative handler Promise.
 
 
 ## ValueHost changes for input counters
+_This work has been completed._
 
 To support AsyncValidator's ability to detect changed dependency values, we'll leverage the existing changeCounter feature of ValueHost. But it needs extensive improvements.
 
@@ -390,6 +391,8 @@ is still to be designed. Counter tracking is only as reliable as the
 underlying value-change detection.
 
 ### CalcValueHost
+_This work has been completed._
+
 CalcValueHost must also participate with the changeCounter feature.
 
 `CalcValueHost.getValue()` currently calculates on demand and does not update

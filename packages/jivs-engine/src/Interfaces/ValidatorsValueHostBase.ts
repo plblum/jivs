@@ -26,6 +26,12 @@ export interface IValidatorsValueHost<TOptions extends ValidatorsValueHostSetVal
     getValidator(errorCode: string): IValidator | null;
 
     /**
+     * Determines if this ValidatorsValueHostBase has any asynchronous validators.
+     * @returns True if there are async validators, false otherwise.
+     */
+    readonly hasAsyncValidators: boolean;
+
+    /**
      * Returns the InjectedError supplied by the latest call to setTextValue() or setValues().
      * Its null when not supplied or has been cleared.
      */

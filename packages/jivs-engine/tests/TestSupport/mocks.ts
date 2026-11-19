@@ -13,7 +13,7 @@ import
         FieldValueHostSetValueOptions,
         IFieldValueHost, TextValueChangedHandler
     } from "../../src/Interfaces/FieldValueHost";
-import { type IJivsServices } from "../../src/Interfaces/JivsServices";
+import { initJivsGlobalSettings, JivsGlobalSettings, type IJivsServices } from "../../src/Interfaces/JivsServices";
 import { LoggingLevel, type ILoggingService } from "../../src/Interfaces/LoggingService";
 import { IMessageTokenResolverService } from "../../src/Interfaces/MessageTokenResolverService";
 import { IErrorMessagesService } from "../../src/Interfaces/ErrorMessagesService";
@@ -264,6 +264,7 @@ export class MockFieldValueHost extends MockValueHost
     asyncProcessing: boolean = false;
     corrected: boolean = false;
     isCalculated: boolean = false;
+    hasAsyncValidators: boolean = false;
     calculate(options: FieldValueHostSetValueOptions, valueHostIdThatChanged?: ValueHostName): boolean {
         throw new Error("Method not implemented.");
     }
@@ -436,7 +437,16 @@ export class MockJivsServices implements IJivsServices
             sa.services = this;
     }
 
-    private _services: { [serviceName: string]: any } = {};
+    private _services: { [serviceName: string]: any; } = {};
+    
+    public get settings(): JivsGlobalSettings
+    {
+        if (!this._settings) {
+            this._settings = initJivsGlobalSettings();
+        }
+        return this._settings;
+    }
+    private _settings?: JivsGlobalSettings = undefined;
     
 
     public get cultureService(): ICultureService {

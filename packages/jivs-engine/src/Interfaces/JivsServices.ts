@@ -35,6 +35,10 @@ import { IObjectFinderService } from './ObjectFinderService';
  */
 export interface IJivsServices extends IServices {
 
+    /**
+     * Global settings for the Jivs.
+     */
+    settings: JivsGlobalSettings;
 
     /**
      * Service to get the ILoggingService instance that replaces
@@ -253,4 +257,42 @@ export enum ServiceName {
      */
     objectFinder = 'ObjectFinder'
 
+}
+/**
+ * Hosts global settings. Find it in IJivsServices.settings.
+ * NOTE: Jivs-dom has its own in IJivsDomServices.options.
+ */
+export interface JivsGlobalSettings
+{
+    asyncValidation: AsyncValidationSettings;
+}
+export interface AsyncValidationSettings
+{
+    /**
+     * Timeout for async validation in milliseconds.
+     * Can be overridden on individual AsyncValidators.
+     */
+    timeout: number;
+    /**
+     * Message to display when async validation times out.
+     * This message is added to the model-level messages shown in the Validation Summary.
+     * It can be localized by using the localization key: 'AsyncValidation.TimeoutMessage'
+     */
+    timeoutMessage: string;
+}
+
+/**
+ * Localization key for the async validation timeout message in 
+ * JivsGlobalSettings.asyncValidation.timeoutMessage.
+ */
+export const asyncValidationTimeoutMessagel10n = 'AsyncValidation.TimeoutMessage';
+
+export function initJivsGlobalSettings(): JivsGlobalSettings
+{
+    return {
+        asyncValidation: {
+            timeout: 5000,  // in ms
+            timeoutMessage: 'Async validation timed out.'
+        }
+    };
 }

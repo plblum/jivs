@@ -28,10 +28,11 @@ import { ObjectFinderService } from '../../src/Services/ObjectFinderService';
 
 
 describe('constructor and initial properties, many taken from ValGlobals', () => {
-    test('Has parameters', () => {
+    test('No parameters', () => {
 // NOTE: Ignores services that were covered by JivsServices
         let testItem = new JivsServices();
       
+        expect(testItem.settings).toBeInstanceOf(Object); // Assuming JivsGlobalSettings is an object
         let x: any;
         expect(() => x = testItem.conditionFactory).toThrow(/ConditionFactory/);
         expect(() => x = testItem.dataTypeComparerService).toThrow(/dataTypeComparerService/);
