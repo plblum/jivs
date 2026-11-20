@@ -8,100 +8,107 @@ Unlike the usual validators, an async validator uses a handler function rather t
 
 ### Quick start
 
-This template creates a Promise and resolves it when the operation finishes. Replace `callMyAPI` with your own service call and adapt its result to your application's response.
+There are two actions:
+1. Build a handler function
+2. Connect your handler function with the `builder`.
 
-1. Create a handler that evaluates the value and returns a Promise with a result:
-    ```ts
-    import { AsyncValidatorEvaluationResult } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
-    import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
-    import { IValidatorsValueHost } from '@plblum/jivs-engine/build/Interfaces/ValidatorsValueHostBase';
-    import { IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-
-    // Replace this declaration with your application's API function.
-    declare function callMyAPI(value: number): Promise<{
-        isValid: boolean;
-        errorCode: string;
-        errorMessage: string;
-    }>;
-
-    function myAsyncFn(
-        valueHost: IValidatorsValueHost,
-        valueHostsManager: IValueHostsManager,
-        abortSignal: AbortSignal
-    ): Promise<AsyncValidatorEvaluationResult> {
-        return new Promise<AsyncValidatorEvaluationResult>((resolve) => {
-            const reportFailure = (error: unknown) => {
-                resolve({
-                    conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                    failedToResolve: error instanceof Error ? error : new Error(String(error)),
-                    // the next two can be omitted and they will use global settings
-                    errorCode: 'AvailabilityCheckUnavailable',
-                    errorMessage: 'We could not verify availability right now. Please try again.'
-                });
-            };
-
-            try {
-                const value = valueHost.getValue();
-            // if we don't have a useful value, return Undetermined.
-                if (typeof value !== 'number') {
-                    resolve({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined });
-                    return;
-                }
-
-            // Async process: here is emulates an API call
-                callMyAPI(value).then((result) => {
-                    if (result.isValid)
-                        resolve({ conditionEvaluateResult: ConditionEvaluateResult.Match });
-                    else
-                        resolve({
-                            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-                            errorCode: result.errorCode,
-                            errorMessage: result.errorMessage
-                        });
-                }).catch(reportFailure);
-            }
-            catch (error) {
-                reportFailure(error);
-            }
-        });
-    }
-    ```
-
-    A `NoMatch` must include a nonempty error code and message. The `try/catch` handles synchronous exceptions, while the API Promise's `.catch()` handles rejections and exceptions in its `.then()` callback. Both resolve the handler's Promise with `failedToResolve`. The API function must report request failures as rejections; for example, `fetch()` does not reject merely because the server returns an HTTP error status.
-
-2. Attach the handler to a field using the builder:
-    ```ts
-    builder.field('fieldname', LookupKey.Integer)
-        .asyncValidator('My_Async_Function', myAsyncFn);
-    ```
-
-    Import `LookupKey` from `@plblum/jivs-engine/build/DataTypes/LookupKeys`. Choose a stable identity that is unique among validators and their error codes on this ValueHost.
-
-### Using async/await
-
-Use `asyncValidator()` in the same fluent chain as other field validators. The following example captures an application-owned API in a handler. The API's `isAvailable()` method returns a Promise for a boolean and rejects when the request cannot be completed.
+Assume `builder` and `availabilityApi` are supplied by your application. The handler reads the field value, awaits the check, and returns a result:
 
 ```ts
-import { LookupKey } from '@plblum/jivs-engine/build/DataTypes/LookupKeys';
-import { AsyncValidatorEvaluateHandler } from '@plblum/jivs-engine/build/Interfaces/AsyncValidator';
-import { ConditionEvaluateResult } from '@plblum/jivs-engine/build/Interfaces/Conditions';
+const checkAvailability = async (valueHost, valueHostsManager, abortSignal) => {
+    const name = valueHost.getValue();
+    if (typeof name !== 'string' || name.length === 0)
+        return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+    const level = valueHostsManager.getValueHost('level').getValue();
+    if (typeof level !== 'number' || level < 0)
+        return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
 
-interface AvailabilityApi {
-    isAvailable(name: string): Promise<boolean>;
-}
+    const result = await availabilityApi.isAvailable(name, level, abortSignal);
+    if (result.error)
+        throw new Error(result.error);
+    return result.available
+        ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
+        : {
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'NameTaken',
+            errorMessage: '{Label} is already in use.'
+        };
+};
 
+builder.field('UserName', LookupKey.String, { label: 'User name' })
+    .asyncValidator('AvailabilityCheck', checkAvailability);
+```
+## The handler function
+
+`AsyncValidatorEvaluateHandler` is the function type accepted by
+`asyncValidator()`. It receives the owning `ValueHost`, the `ValueHostsManager`,
+and an `AbortSignal`, and returns a `Promise` that resolves to an
+`AsyncValidatorEvaluationResult`:
+
+```ts
+export type AsyncValidatorEvaluateHandler = (
+    valueHost: IValidatorsValueHost,
+    valueHostsManager: IValueHostsManager,
+    abortSignal: AbortSignal
+) => Promise<AsyncValidatorEvaluationResult>;
+```
+
+The _valueHost_ provides the value being validated. 
+```ts
+const name = valueHost.getValue();                                           
+if (typeof name !== 'string' || name.length === 0)                           
+    return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+```
+> Always validate retrieved values are legal for your handler's needs. Return ConditionEvaluateResult.Undetermined if not.
+
+Use the _valueHostsManager_ when the check depends on other ValueHosts. 
+```ts
+const level = valueHostsManager.getValueHost('level').getValue();
+if (typeof level !== 'number' || level < 0)
+    return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+```
+
+The _abortSignal_ requests cooperative cancellation; pass it to APIs that support cancellation. We already have it setup to abort after a time limit.
+```ts
+const result = await availabilityApi.isAvailable(name, level, abortSignal);
+```
+The [AbortSignal class](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) is built into modern browsers.
+
+Cancellation is not itself a validation failure. If a request is ignored or completes after its
+result is obsolete, Jivs does not apply that result to current ValueHost
+state, but the application's work may continue. When a timeout occurs, Jivs
+produces the blocking failure issue first, then aborts the signal to request
+that the underlying work stop.
+
+## Building your handler
+Let's revisit the example from the earlier Quick Start. This time with two coding patterns: async/await and promise-chain. Use their comments for guidance.
+
+### Async/await pattern
+```ts
 function createAvailabilityHandler(api: AvailabilityApi): AsyncValidatorEvaluateHandler {
-    return async (valueHost, valueHostsManager) => {
+    return async (valueHost, _valueHostsManager, abortSignal) => {
         try {
+        // get input values for your API
+        // Validate them returning immediately with Undetermined if invalid.
             const name = valueHost.getValue();
             if (typeof name !== 'string' || name.length === 0)
                 return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
-
-            const available = await api.isAvailable(name);
-            return available
+            const level = valueHostsManager.getValueHost('level').getValue();
+            if (typeof level !== 'number' || level < 0)
+                return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+        // execute the async api function
+            const result = await api.isAvailable(name, level, abortSignal);
+        // offload returned errors either by throwing or returning 
+        // a result with its failedToResolve property setup
+            if (result.error)
+                throw new Error(result.error);        
+        // Evaluate the result to determine if its valid (Match) or not (NoMatch)
+        // Return a result reflecting each.
+            return result.available
                 ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
                 : {
                     conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                // Always supply both errorCode and errorMessage
                     errorCode: 'NameTaken',
                     errorMessage: '{Label} is already in use.'
                 };
@@ -109,91 +116,106 @@ function createAvailabilityHandler(api: AvailabilityApi): AsyncValidatorEvaluate
         catch (error) {
             return {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                failedToResolve: error instanceof Error ? error : new Error(String(error)),
-                // the next two can be omitted and they will use global settings
-                errorCode: 'AvailabilityCheckUnavailable',
-                errorMessage: 'We could not verify availability right now. Please try again.'
+                failedToResolve: error instanceof Error ? error : new Error(String(error))
             };
         }
     };
 }
 ```
+#### Async/await notes
+- Add every valueHost name that you use as inputs into the `dependencyValueHostsName` option when setting up the `AsyncValidator`.
+- Always validate your inputs and return `ConditionEvaluateResult.Undetermined` when they fail.
+- Use the abortSignal in API calls that support it.
+- Use `throw new Error('message')` to report a failure. Our `AsyncValidator` will catch it and prepare the `AsyncValidatorEvaluateHandler` from it.
 
-In your ValueHost configuration, pass the handler and a stable identity to the builder:
+- Catch thrown errors from API calls if you want to return specific error codes and error messages within `AsyncValidatorEvaluationResult`.
+
+### Promise-chain pattern
+
+This version has the same behavior and results, but handles completion with
+`.then()` and `.catch()` instead of `await`:
 
 ```ts
-builder.field('UserName', LookupKey.String, { label: 'User name' })
-    .requireText('Enter a user name.')
-    .asyncValidator('AvailabilityCheck', createAvailabilityHandler(availabilityApi));
+function createAvailabilityHandler(api: AvailabilityApi): AsyncValidatorEvaluateHandler {
+    return (valueHost, _valueHostsManager, abortSignal) => Promise.resolve()
+        .then(() => {
+        // get input values for your API
+        // Validate them returning immediately with Undetermined if invalid.  
+            const name = valueHost.getValue();
+            if (typeof name !== 'string' || name.length === 0)
+                return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+            const level = valueHostsManager.getValueHost('level').getValue();
+            if (typeof level !== 'number' || level < 0)
+                return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
+        // execute the async api function
+            return api.isAvailable(name, level, abortSignal).then(result =>
+            // offload returned errors either by throwing or returning 
+            // a result with its failedToResolve property setup
+                if (result.error)
+                    throw new Error(result.error);                   
+        // Evaluate the result to determine if its valid (Match) or not (NoMatch)
+        // Return a result reflecting each.
+                result.available
+                    ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
+                    : {
+                        conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                        errorCode: 'NameTaken',
+                        errorMessage: '{Label} is already in use.'
+                    });
+        })
+        .catch(error => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: error instanceof Error ? error : new Error(String(error))
+        }));
+}
 ```
+#### Promise-chain notes
+- Add every valueHost name that you use as inputs into the `dependencyValueHostsName` option when setting up the `AsyncValidator`.
+- Always validate your inputs and return `ConditionEvaluateResult.Undetermined` when they fail.
+- Use the abortSignal in API calls that support it.
+- Catch thrown errors from API calls if you want to return specific error codes and error messages within `AsyncValidatorEvaluationResult`.
 
-Here `builder` is the configuration builder and `availabilityApi` is your application's implementation of `AvailabilityApi`. The identity `AvailabilityCheck` identifies the validator; `NameTaken` identifies a particular issue it reports. Keep the identity stable when recreating the configuration, and choose a name unique among validators and their error codes on the same ValueHost.
+### Return AsyncValidatorEvaluationResult
 
-## Return a result
-
-The handler must return a Promise that resolves to an `AsyncValidatorEvaluationResult`. An `async` function does this when it returns a result object.
+The handler returns an `AsyncValidatorEvaluationResult`. Its members are:
 
 ```ts
-export interface AsyncValidatorEvaluationResult
-{
-    /**
-     * The result of the condition evaluation.
-     */
+export interface AsyncValidatorEvaluationResult {
     conditionEvaluateResult: ConditionEvaluateResult;
-    /**
-     * The error code associated with the validation result, if any.
-     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
-     * optionally identifies the operational-failure issue and its localization lookup.
-     */
-    errorCode?: string;
-    /**
-     * The error message associated with the validation result, if any.
-     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
-     * optionally provides unlocalized fallback text for the operational-failure issue.
-     * It can contain the "{Label}" token which will be replaced with the appropriate ValueHost.label during evaluation.
-     * The caller will:
-     * - Apply HTML encoding.
-     * - Localize or otherwise process the error message through the ErrorMessagesService based on the errorCode.
-     * - Replace the "{Label}" token with the appropriate ValueHost.label.
-     */
-    errorMessage?: string;
-    /**
-     * The severity level of the validation result, if any.
-     * If not supplied, it uses ValidationSeverity = Error.
-     * For failedToResolve, Warning is normalized to Error because the operation blocks saving.
-     * While you can supply ValidationSeverity = Severe, its feature is limited as it cannot stop processing
-     * later validators in the ValueHost. Its use is to land in the IssueFound object for its consumers.
-     */
-    severity?: ValidationSeverity;
-    /**
-     * Indicates whether the validation could not be completed due to an error or failed API call.
-     * Always assign when an exception occurs or an external API call fails during validation.
-     * The Error is logged and never displayed. To customize the user-facing issue, also provide
-     * errorCode, errorMessage, and/or severity. Missing values use AsyncValidatorConfig and global
-     * async-validation fallbacks.
-     */
     failedToResolve?: Error;
+    errorCode?: string;
+    errorMessage?: string;
+    severity?: ValidationSeverity;
 }
 ```
 
-| Result | Meaning |
-| --- | --- |
-| `conditionEvaluateResult: ConditionEvaluateResult.Match` | The check passed; no issue is created. |
-| `conditionEvaluateResult: ConditionEvaluateResult.NoMatch` | The check found an issue. Supply a nonempty `errorCode` and `errorMessage`. |
-| `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` | The check could not determine a result, for example because an input is missing. No issue is created. |
-| `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` and `failedToResolve: Error` | The operation failed. Jivs logs the `Error` internally, creates a blocking field issue, and keeps the host in `ValidationStatus.Failed`. |
+#### Result detail properties
+- **`conditionEvaluateResult`** — Required. Use `Match` when the check passes,
+  `NoMatch` when it finds a validation issue, or `Undetermined` when it cannot
+  evaluate the input.
+- **`failedToResolve`** — Assign a diagnostic `Error` indicating the operation
+  could not complete. Jivs logs it internally and does not display its message.
 
-Use `failedToResolve` for an operational failure, not for an ordinary validation rejection. The handler may also supply `errorCode`, `errorMessage`, and `severity` for the displayed failure issue. These values take precedence over `failedToResolveErrorCode`, `failedToResolveErrorMessage`, and `failedToResolveSeverity` in `AsyncValidatorConfig`, which in turn take precedence over the global async-validation settings. If the handler throws, its Promise rejects, or it times out, Jivs uses those config/global fallbacks. The underlying `Error` is never shown to the user; avoid including secrets in diagnostic errors.
+| conditionEvaluateResult | failedToResolve | Meaning |
+| --- | --- | --- |
+| `Match` | No | The check passed; no issue is created. |
+| `NoMatch` | No | The check found an issue. Supply a nonempty `errorCode` and `errorMessage`. |
+| `Undetermined` | No | The check could not determine a result, for example because an input is missing. No issue is created. |
+| `Undetermined` | Yes | The operation failed. Jivs logs the `Error`, creates a blocking field issue, and keeps the host in `ValidationStatus.Failed`. |
 
-The default global message is "We couldn't complete this check right now. Please try again." Its error code is `AsyncValidationFailed`; register localized text for that code through `ErrorMessagesService`. `errorMessage` values are unlocalized fallback text, with no separate l10n property. A failure's effective severity defaults to `Error`; a resolved `Warning` is normalized to `Error` because a failed operation blocks saving.
+#### Create an issue shown to the user
+Always assign `errorCode` and `errorMessage` when `conditionEvaluateResult=NoMatch`. They become an `IssueFound` to appear in the Error Display and Validation Summary widgets.
+When failedToResolve is setup, it too will create an `IssueFound`. If you don't supply them here, Jivs will locate them either from the options you used to setup the AsyncValidator or from global settings.
+- **`errorCode`** — Provides an identity for the error, and is used to localize with the [ErrorMessagesService](../JivsServices/ErrorMessagesService.md).
+- **`errorMessage`** — Provides the error message. It may include `{Label}`.
+- **`severity`** — Optional; defaults to `Error`. For ordinary `NoMatch`, a
+  `Warning` is displayed without blocking by itself, while `Severe` blocks
+  saving but cannot stop validators already started. For `failedToResolve`,
+  `Warning` is normalized to `Error` because the operation blocks saving.
 
-For `NoMatch`, an optional `severity` can be `ValidationSeverity.Error`, `Warning`, or `Severe`. It defaults to `Error`. A warning is displayed but does not itself block saving. `Severe` blocks saving, but an async result arrives too late to stop validators that have already started.
+##### NoMatch error info
 
-After an operational failure, the ValueHost reports `ValidationStatus.Failed`. The failure issue is associated with the handler through `asyncIdentity`; its `errorCode` remains the issue/localization code. A later `Match` or `NoMatch` from the same handler clears the failure issue and marker; a skipped or ordinary `Undetermined` result does not. Other validation issues or failures can still block saving.
-
-## Error messages and identity
-
-The handler can report different error codes for different outcomes. Jivs uses the returned `errorCode`, not the validator's identity, to look up a localized message through [ErrorMessagesService](../JivsServices/ErrorMessagesService.md). If there is no matching localized message, Jivs uses the handler's `errorMessage`. Supply a nonempty fallback even when a localized message is registered.
+The handler can report different error codes for different outcomes. Jivs uses the returned `errorCode`, not the validator's identity, to look up a localized message through [ErrorMessagesService](../JivsServices/ErrorMessagesService.md). If there is no matching localized message, an ordinary `NoMatch` uses the handler's `errorMessage`.
 
 For example, the `NameTaken` result above can use this registration:
 
@@ -204,52 +226,47 @@ errorMessagesService.registerErrorMessage('NameTaken', LookupKey.String, {
 });
 ```
 
-Jivs HTML-encodes the selected message, then resolves tokens such as `{Label}`. The resulting text is used for both the field error and summary message; an async handler does not supply a separate summary. Token replacement safety depends on the configured message-token resolver, so follow the [presentation prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md) for HTML.
-
-## Requirements when writing a function
-- Return a Promise resolving to a result. For operational errors, throw or
-  reject, or explicitly return a failure like this:
-    ```ts
-    resolve({
-        failedToResolve: error,
-        conditionEvaluateResult: ConditionEvaluateResult.Undetermined
+##### failedToResolve error info on AsyncValidator
+```ts
+builder.field('UserName', LookupKey.String, { label: 'User name' })
+    .asyncValidator('AvailabilityCheck', createAvailabilityHandler(availabilityApi), {
+        failedToResolveErrorCode: 'AvailabilityCheckUnavailable',
+        failedToResolveErrorMessage: 'We could not verify {Label} right now. Please try again.',
+        failedToResolveSeverity: ValidationSeverity.Error
     });
-    ```
-- When the data is valid, return:
-    ```ts
-    resolve({
-        conditionEvaluateResult: ConditionEvaluateResult.Match
+```
+
+##### failedToResolve error info in global settings
+Global settings are part of the JivsServices object which you setup in the `createJivsServices()` function.
+```ts
+// within createJivsServices
+services.globalSettings.asyncValidator.failedToResolveErrorMessage = 'message';
+services.globalSettings.asyncValidator.failedToResolveErrorCode = 'code';
+services.globalSettings.asyncValidator.failedToResolveSeverity = ValidationSeverity.Severe;
+```
+
+## Connect your handle within the Builder
+
+The builder offers this function on its field() member:
+```ts
+builder.field(parameters).asyncValidator(identity: string, handler: AsyncValidatorEvaluateHandler, options);
+```
+
+Use the handler in a field configuration just like the quick-start example:
+
+```ts
+builder.field('UserName', LookupKey.String, { label: 'User name' })
+    .requireText('Enter a user name.')
+    .asyncValidator('AvailabilityCheck', createAvailabilityHandler(availabilityApi),
+    {
+        // options
     });
-    ```
-- When the data is invalid, return:
-    ```ts
-    resolve({
-        conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
-        errorCode: 'an error code',
-        errorMessage: 'an error message'
-    });
-    ```    
-- When the values used to call your API are not acceptable, such as they require a value but are empty, return:
-    ```ts
-    resolve({
-        conditionEvaluateResult: ConditionEvaluateResult.Undetermined
-    });
-    ```    
+```
+- _identity_ - 
+- _handler_ -
+- _options_ - 
 
-## When async validators run
-
-Async validators run after the standard validators on the same ValueHost, regardless of their order in the builder chain. 
-
-Several async validators can be pending at once and may finish in a different order than they started. When a newer validation or a value change makes a previous result obsolete, Jivs does not apply the old result to the current ValueHost state. Jivs can request cancellation by aborting the signal passed as the handler's third argument. Pass it to APIs that support cancellation, for example `fetch(url, { signal })`. Cancellation is cooperative: the handler must stop its own side effects when necessary.
-
-## When async validators do not run
-
-- A preceding validator that reports an issue with `ValidationSeverity=Severe` issue will stop validation before an async handler starts. Expect both RequiredText and any DataTypeCheck validation to use `Severe` and block the async handler.
-- ValueHost or Validator is disabled
-- `ValidateOptions.duringEdit` = true
-- `ValidateOptions.preliminary` = true
-
-## Depend on another ValueHost
+### Your handler depends on another ValueHost
 
 If a handler reads another ValueHost, list that ValueHost's name in
 `dependencyValueHostNames` in the optional third builder argument. This lets
@@ -258,18 +275,18 @@ validation.
 
 ```ts
 interface AccountAvailabilityApi {
-    isAvailableForAccountType(name: string, accountType: string): Promise<boolean>;
+    isAvailableForAccountType(name: string, accountType: string, signal: AbortSignal): Promise<boolean>;
 }
 
 // accountAvailabilityApi is an application-provided AccountAvailabilityApi.
-const evaluateAccountName: AsyncValidatorEvaluateHandler = async (valueHost, manager) => {
+const evaluateAccountName: AsyncValidatorEvaluateHandler = async (valueHost, manager, abortSignal) => {
     const name = valueHost.getValue();
     const accountType = manager.getValueHost('AccountType')?.getValue();
     if (typeof name !== 'string' || typeof accountType !== 'string')
         return { conditionEvaluateResult: ConditionEvaluateResult.Undetermined };
 
     try {
-        const available = await accountAvailabilityApi.isAvailableForAccountType(name, accountType);
+        const available = await accountAvailabilityApi.isAvailableForAccountType(name, accountType, abortSignal);
         return available
             ? { conditionEvaluateResult: ConditionEvaluateResult.Match }
             : {
@@ -301,6 +318,20 @@ dependencies are unchanged; `Always` restarts it. Model-level skip cancels
 pending work and skips this validator. The timeout defaults to 5000 ms and
 produces the same logged, blocking failure issue as other operational errors;
 there is no timeout-specific message.
+
+
+## When async validators run
+
+Async validators run after the standard validators on the same ValueHost, regardless of their order in the builder chain. 
+
+Several async validators can be pending at once and may finish in a different order than they started. When a newer validation or a value change makes a previous result obsolete, Jivs does not apply the old result to the current ValueHost state. Jivs can request cancellation by aborting the signal passed as the handler's third argument. Pass it to APIs that support cancellation, for example `fetch(url, { signal })`. Cancellation is cooperative: the handler must stop its own side effects when necessary.
+
+## When async validators do not run
+
+- A preceding validator that reports an issue with `ValidationSeverity=Severe` issue will stop validation before an async handler starts. Expect both RequiredText and any DataTypeCheck validation to use `Severe` and block the async handler.
+- ValueHost or Validator is disabled
+- `ValidateOptions.duringEdit` = true
+- `ValidateOptions.preliminary` = true
 
 ## Waiting for validation
 
