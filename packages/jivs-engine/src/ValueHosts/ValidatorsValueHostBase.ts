@@ -431,12 +431,23 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             {
                 if (ivr.failedToResolve)
                 {
-                    // A failed async handler blocks saving without creating a user-facing
-                    // issue. Legacy Promise validators instead record Failed as the status.
                     if (asyncIdentity !== null)
                         failedIdentities.add(asyncIdentity);
                     else
                         requestedStatus = ValidationStatus.Failed;
+                    if (ivr.issueFound)
+                    {
+                        const issueFound = ivr.issueFound;
+                        issueFound.doNotSave = true;
+                        if (!result.issuesFound)
+                            result.issuesFound = [];
+                        const existingIndex = asyncIdentity === null ? -1 :
+                            result.issuesFound.findIndex(issue => issue.asyncIdentity === asyncIdentity);
+                        if (existingIndex < 0)
+                            result.issuesFound.push(issueFound);
+                        else
+                            result.issuesFound[existingIndex] = issueFound;
+                    }
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
                         notifyAsyncStateChanged();

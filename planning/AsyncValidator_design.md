@@ -2,7 +2,7 @@
 
 ## Purpose and status
 
-Design a first-class async validator that can call application code or an API and report at most one `IssueFound`. This is a working design for discussion, not an implementation guide. Proposed API names and signatures below are illustrative until agreed. The current two-argument handler and application-managed context supersede earlier payload proposals.
+Design a first-class async validator that can call application code or an API and report at most one `IssueFound`. This is a working design for discussion, not an implementation guide. Proposed API names and signatures below are illustrative until agreed. The current handler signature and application-managed context supersede earlier payload proposals.
 
 The former async-validation discussion is retained as [obsolete historical material](./asyncCondition_design_OBSOLETE.md), not an active completion design. Manager completion remains separate work. [Submission planning](./Submission_planning.md) addresses the workflow that consumes the completed manager result.
 
@@ -14,9 +14,9 @@ The former async-validation discussion is retained as [obsolete historical mater
 - `AsyncValidatorConfig.handlerIdentity` is a required, stable, user-supplied identity string, exposed as `IValidator.errorCode` and unique among validators on the same ValueHost.
 - A builder method accepts that identity, the application handler, and optionally dependent ValueHost names. The handler supplies the issue's error code and message.
 - `IssueFound.errorCode` identifies and localizes the issue; it is not the async validator's identity. An external issue with the same issue code replaces the existing issue; different codes may both be displayed.
-- The handler returns a Promise for its own result object. It must catch exceptions and always resolve that Promise successfully, reporting failures in the result. Application context such as an API wrapper can be captured in a closure or retrieved from manager metadata.
+- The handler returns a Promise for its own result object. It should report operational failures through `failedToResolve` when it can provide more specific display details; Jivs also converts unexpected rejections and timeouts into blocking failures. Application context such as an API wrapper can be captured in a closure or retrieved from manager metadata.
 - Preliminary and `duringEdit` validation skip async validators before invoking their handlers.
-- The handler handles operational failures using `failedToResolve`, `Undetermined` and diagnostic information; the validator logs the failure at Error level, skips issue creation, and the host blocks saving.
+- The handler reports operational failures using `failedToResolve` and `Undetermined`; the validator logs the underlying `Error`, creates a blocking validator-owned issue using handler/config/global message fallbacks, and the host retains the failed identity for blocking and recovery.
 - Async validators are ordered after synchronous validators. Async validation cannot stop already-started validators when its result is `Severe`; the severity may still be reported to the UI.
 - Jivs handles message localization after receiving an issue result; the async validator supports only the `{Label}` message token.
 - Jivs HTML-encodes the handler's `errorMessage` before using it as message text and before resolving tokens; the handler supplies unencoded text.
@@ -39,6 +39,7 @@ export interface ValidatorValidateResult {
     conditionEvaluateResult: ConditionEvaluateResult;
     issueFound: IssueFound | null;
     skipped?: boolean;
+    failedToResolve?: Error;
 }
 ```
 
@@ -91,7 +92,7 @@ A request failure is diagnostic information, not automatically a validation issu
 
 ## Candidate API
 
-Peter proposes a result object specific to the handler, so application code does not have to set `skipped`, `doNotSave`, or a host's `Invalid` status. The handler returns that object in its Promise rather than receiving it as a parameter. The following historical candidate uses the current two-argument handler shape; consult the implementation guide for the implemented result contract:
+Peter proposes a result object specific to the handler, so application code does not have to set `skipped`, `doNotSave`, or a host's `Invalid` status. The handler returns that object in its Promise rather than receiving it as a parameter. The following historical candidate is retained for context; consult the implementation guide for the current handler signature and result contract:
 
 ```ts
 // Candidate signatures, not current code.
@@ -143,15 +144,19 @@ const evaluateAvailability: AsyncValidatorEvaluateHandler =
         catch (failure) {
             return {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                failedToResolve: true,
-                errorCode: 'apierror',
-                errorMessage: failure instanceof Error ? failure.message : String(failure)
+                failedToResolve: failure instanceof Error ? failure : new Error(String(failure)),
+                errorCode: 'AvailabilityCheckUnavailable',
+                errorMessage: 'We could not verify availability right now. Please try again.'
             };
         }
     };
 ```
 
-Here `apierror` is a diagnostic code for a failed operation, not a validation issue error code. The validator logs the diagnostic and produces a skipped result with a separate failure marker; the host blocks saving. The exception message is not displayed as a field error. Applications should avoid including secrets or sensitive response details in diagnostic messages.
+The handler-supplied code and message customize the displayed failure issue;
+the underlying `Error` is logged internally and never shown. If no details are
+supplied, the validator config and global async-validation settings provide
+fallbacks. Applications should avoid including secrets or sensitive response
+details in diagnostic errors.
 
 The handler may use the manager where needed; it should capture the inputs it needs before awaiting so that its request and result refer to the same values. Capturing inputs is not a substitute for the host's stale-run protection.
 
@@ -162,9 +167,18 @@ The handler may use the manager where needed; it should capture the inputs it ne
 | `Match`, no issue or failure data | Return `Match` with no `IssueFound`. |
 | `NoMatch`, with validation error code and message | Build one `IssueFound`, including optional destination and severity, and return `NoMatch`. The error code is required; there is no condition type to supply a fallback. |
 | `Undetermined`, no failure data | Return `Undetermined` with no issue when the handler legitimately could not evaluate. |
-| `Undetermined`, `failedToResolve: true`, with diagnostic code and message | Log at Error level and return `Undetermined` with no issue, `skipped: true`, and a separate marker so the host blocks saving. |
+| `Undetermined`, `failedToResolve: Error`, optionally with safe issue details | Log the `Error` internally and return `Undetermined` with a blocking validator-owned issue. The host retains the handler identity as a separate failure/recovery marker. |
 
-This is a candidate shape, not finalized TypeScript. The handler is required to catch exceptions and always resolve its Promise successfully; it must communicate a failed operation through the result, not a rejection. Validate the returned object so a missing result or an inconsistent combination cannot silently become success. In particular, `NoMatch` needs a nonempty error code and nonempty message; an empty message is a `CodingError` (Q29). When `failedToResolve` is true the top-level code and message are diagnostic, not validation-issue data. Jivs, not the handler, determines `skipped`, blocking, and host status. Diagnostic failure codes are separate from validator identity and issue codes.
+This is a candidate shape, not finalized TypeScript. A handler should return
+`failedToResolve` when it can provide more specific safe issue details; Jivs
+also converts unexpected throws, rejections, and timeouts into the same
+blocking failure issue using config/global fallbacks. Validate the returned
+object so a missing result or an inconsistent combination cannot silently
+become success. In particular, `NoMatch` needs a nonempty error code and
+nonempty message; an empty message is a `CodingError` (Q29). On failure, the
+top-level code and message are issue details, while `failedToResolve` remains
+diagnostic. Jivs, not the handler, determines `skipped`, blocking, and host
+status. The issue's error code remains distinct from validator identity.
 
 The existing host sets `Invalid` for an async `NoMatch` even when its issue is a warning; that host bug must be fixed so the new validator participates correctly. An unset `IssueFound.doNotSave` defaults to blocking, so the warning's non-blocking behavior must be explicit, not inferred from severity alone.
 
@@ -265,9 +279,20 @@ Async validators will be ordered after synchronous validators. This lets an earl
 
 ### Failure and completion
 
-The application handler catches operational failures, reports `failedToResolve: true`, `Undetermined` and diagnostic code/message, and resolves its Promise normally. The `AsyncValidator` logs that diagnostic at `LoggingLevel.Error` and converts it to a skipped result with no issue and a failure marker. The host records the failed validator and blocks saving. Logging should happen once at the validator boundary; malformed handler output or an unexpected thrown error is a programming error and must not disappear silently or allow saving.
+The application handler can report an operational failure with
+`failedToResolve: Error`, `Undetermined`, and safe issue details. The
+`AsyncValidator` logs the underlying `Error` internally and creates a
+validator-owned blocking issue using handler/config/global fallback values.
+The host publishes that issue, retains the failed handler identity, and blocks
+saving. Unexpected throws, Promise rejections, and timeouts use the same
+fallback path. The exception message is never exposed as the user-facing
+message.
 
-The validator returns its Promise to the host immediately. The host tracks it in the existing pending mechanism; manager validation waits as designed separately. **Q20 decision:** an API failure blocks saving. `skipped`/`Undetermined` plus logging does not itself block saving in the current engine, so host state and `doNotSave` need the separate failure marker described in the implementation guide. Manager completion remains separate work.
+The validator returns its Promise to the host immediately. The host tracks it
+in the existing pending mechanism; manager validation waits as designed
+separately. **Q20 decision:** an API failure blocks saving through the
+separate failure marker, while the issue explains the block. Manager
+completion remains separate work.
 
 ### Work plan: condition contract cleanup
 

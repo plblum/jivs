@@ -736,7 +736,7 @@ describe('ValidatorsValueHostBase pending async policies', () => {
     });
 });
 
-// Failed async checks block saving without creating an issue for the user to correct.
+// Failed async checks block saving and expose a safe issue through the ValueHost and manager.
 describe('ValidatorsValueHostBase async resolution failures', () => {
     test('A legacy Promise explicitly reporting failedToResolve also blocks saving', async () => {
         let setup = setupValidatorsValueHostBaseForValidate([
@@ -755,16 +755,17 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         expect(logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result)).toBeTruthy();
     });
 
-    test('Records a failed handler, reports Failed and notifies without displaying an issue', async () => {
-        let setup = setupAsyncIssueHost([{
-            identity: 'AvailabilityCheck',
-            handler: async () => ({
-                conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                failedToResolve: new Error('Availability service unavailable')
-            })
-        }]);
+    test('Records a failed handler, displays its safe issue, and includes it in the manager snapshot', async () => {
+        let failure = new Error('Availability service unavailable');
+        let setup = setupAsyncDependencyHost(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: failure,
+            errorCode: 'AvailabilityCheckUnavailable',
+            errorMessage: 'Unable to verify this account right now.'
+        }));
         let notifications: ValueHostValidationState[] = [];
-        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+        let manager = setup.valueHost.valueHostsManager as ValueHostsManager;
+        manager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
         let result = setup.valueHost.validate()!;
         await Promise.all([...result.pending!]);
@@ -774,13 +775,36 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         expect(setup.valueHost.isValid).toBe(false);
         expect(setup.valueHost.doNotSave).toBe(true);
         expect(setup.valueHost.asyncProcessing).toBe(false);
-        expect(setup.valueHost.getIssuesFound()).toBeNull();
-        expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
+        expect(setup.valueHost.getIssuesFound()).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                asyncIdentity: 'DependentCheck',
+                valueHostName: 'Field1',
+                errorCode: 'AvailabilityCheckUnavailable',
+                errorMessage: 'Unable to verify this account right now.',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            })
+        ]));
+        expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['DependentCheck']);
+        expect(manager.doNotSave).toBe(true);
+        expect(manager.getIssuesFound()).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                asyncIdentity: 'DependentCheck',
+                errorCode: 'AvailabilityCheckUnavailable',
+                errorMessage: 'Unable to verify this account right now.'
+            })
+        ]));
+        expect(manager.currentValidationState().issuesFound).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                asyncIdentity: 'DependentCheck',
+                errorCode: 'AvailabilityCheckUnavailable'
+            })
+        ]));
         expect(notifications[notifications.length - 1]).toEqual(expect.objectContaining({
             status: ValidationStatus.Failed, doNotSave: true, asyncProcessing: false
         }));
         expect(setup.logger.findMessage('Availability service unavailable', LoggingLevel.Error,
-            LoggingCategory.Exception, { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
+            LoggingCategory.Exception, { feature: 'Validator', identity: 'DependentCheck' })).toBeTruthy();
     });
 
     test('A skipped failed handler remains blocked while another handler succeeds, then its own retry clears it', async () => {
@@ -942,7 +966,14 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         let result = setup.valueHost.validate()!;
         await Promise.all([...result.pending!]);
 
-        expect(setup.valueHost.getIssuesFound()).toEqual([expect.objectContaining({ errorCode: NeverMatchesConditionType })]);
+        expect(setup.valueHost.getIssuesFound()).toEqual(expect.arrayContaining([
+            expect.objectContaining({ errorCode: NeverMatchesConditionType }),
+            expect.objectContaining({
+                asyncIdentity: 'AvailabilityCheck',
+                errorCode: 'AsyncValidationFailed',
+                doNotSave: true
+            })
+        ]));
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
         setup.valueHost.addExternalIssueFound({ errorCode: 'ServerOnly', errorMessage: 'Server issue', doNotSave: false }, false);
@@ -977,7 +1008,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
     });
 
-    test('A rejected handler is logged and blocks saving without an issue', async () => {
+    test('A rejected handler is logged, blocks saving, and shows the global failure issue', async () => {
         let setup = setupAsyncIssueHost([{
             identity: 'AvailabilityCheck',
             handler: async () => { throw new Error('Unexpected rejection'); }
@@ -987,7 +1018,14 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
-        expect(setup.valueHost.getIssuesFound()).toBeNull();
+        expect(setup.valueHost.getIssuesFound()).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                asyncIdentity: 'AvailabilityCheck',
+                errorCode: 'AsyncValidationFailed',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            })
+        ]));
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
         expect(setup.logger.findMessage('Unexpected rejection', LoggingLevel.Error,
             LoggingCategory.Exception, { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();

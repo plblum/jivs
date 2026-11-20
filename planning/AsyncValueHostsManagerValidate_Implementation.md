@@ -123,16 +123,16 @@ The previous third-argument array is a breaking change: use
 
 ### Timeout settings
 
-The intended precedence is:
+The timeout duration precedence is:
 
 ```ts
 const timeoutMs = asyncConfig.timeout ?? services.settings.asyncValidation.timeout;
 ```
 
-`initJivsGlobalSettings()` currently supplies 5000 ms and the message
-`Async validation timed out.`; `asyncValidationTimeoutMessagel10n` supplies
-the localization key `AsyncValidation.TimeoutMessage`. AsyncValidator consumes the timeout;
-the summary message remains to be implemented. Each operation gets its own
+`initJivsGlobalSettings()` supplies a 5000 ms timeout and the generic
+failed-resolution issue defaults. An `AsyncValidator` timeout uses the same
+blocking, validator-owned issue as other operational failures; there is no
+timeout-specific message or localization key. Each operation gets its own
 timer; reuse does not restart it. The duration must be finite and positive
 within the supported timer range.
 
@@ -656,32 +656,11 @@ initialization and callback timing or explicitly migrate its contract.
 
 ### Timeout issue for the Validation Summary
 
-**Problem:** Timeout must block even without a displayed issue. When a global
-message is configured, a model-level timeout issue must also be displayed and
-later removed without clearing application or server issues.
-
-**Solution:** Keep timeout failure on the originating host via
-`failedAsyncIdentities`; maintain a separate engine-owned timeout issue per
-operation or equivalent keyed ownership. Aggregate it into model-level
-`getIssuesFound` / `ValidationState` for the relevant group:
-
-```ts
-const timeoutIssue: IssueFound = {
-    valueHostName: ModelValidatorsValueHostName,
-    errorCode: ASYNC_VALIDATION_TIMEOUT_ERROR_CODE,
-    errorMessage: localizedTimeoutMessage,
-    severity: ValidationSeverity.Error,
-    doNotSave: true
-};
-```
-
-The message setting and localization key exist in `JivsGlobalSettings`; the
-issue error code, localization path, group association and specific storage
-API remain to be selected. Clear only the engine-owned issue
-for the retried/cleared operation; support simultaneous timeouts. Do **not**
-use manager `addExternalIssuesFound()` as a shortcut: it clears all previous
-external issues. Ensure summary queries and notifications see the issue even
-when no `ModelValidatorsValueHost` existed before the timeout.
+Per-validator timeouts are already reported by `AsyncValidator` as
+validator-owned blocking issues on the originating ValueHost. They require no
+separate model-level timeout issue or timeout-specific message. A distinct
+manager-level deadline, if introduced for waiting on a group of validators,
+would be a separate feature and is not specified here.
 
 ## 6. Migration and end-user documentation
 

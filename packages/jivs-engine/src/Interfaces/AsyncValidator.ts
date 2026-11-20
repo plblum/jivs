@@ -110,11 +110,27 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
      * Expectations of the function:
      * - Return a promise resolving to a result. Unexpected throws and rejections are logged
      *   and reported as blocking failures.
-     * - An operational failure can also be reported using AsyncValidatorEvaluationResult.failedToResolve.
+     * - An operational failure can be reported using AsyncValidatorEvaluationResult.failedToResolve.
+     *   Supply errorCode, errorMessage, and severity to customize its displayed issue; otherwise
+     *   the AsyncValidatorConfig and global async-validation settings provide fallbacks.
      * - Set errorCode and errorMessage for ConditionEvaluateResult.NoMatch.
      * - The error message can support the "{Label}" token, to be replaced by the field label.
      */
     handler: AsyncValidatorEvaluateHandler;
+    /**
+     * Fallback issue code for an operational failure when the handler result does not supply one.
+     * The code is used to look up a localized message through ErrorMessagesService.
+     */
+    failedToResolveErrorCode?: string;
+    /**
+     * Unlocalized fallback issue text for an operational failure when the handler result does not supply one.
+     */
+    failedToResolveErrorMessage?: string;
+    /**
+     * Fallback severity for an operational failure when the handler result does not supply one.
+     * Warning is normalized to Error because an unresolved failure blocks saving.
+     */
+    failedToResolveSeverity?: ValidationSeverity;
     /**
      * Optional array of value host names that this validator depends on.
      * If your function gets values from the ValueHostsManager to perform its validation, 
@@ -142,10 +158,8 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
      * The maximum time, in milliseconds, for an async evaluation.
      * If the evaluation does not complete within this time, it will act as an error
      * that blocks validation. Its value will default to IJivsServices.settings.asyncValidation.timeout.
-     * An error message written to the Validation Summary will come from
-     * IJivsServices.settings.asyncValidation.timeoutMessage
-     * and can be localized with this key: 'AsyncValidation.TimeoutMessage'
-     * Timeout handling blocks saving; the Validation Summary message is not implemented yet.
+     * The failure issue uses the same handler, validator-config, and global message fallbacks as
+     * other failedToResolve outcomes.
      */
     timeout?: number;
 }
@@ -184,12 +198,14 @@ export interface AsyncValidatorEvaluationResult
     conditionEvaluateResult: ConditionEvaluateResult;
     /**
      * The error code associated with the validation result, if any.
-     * Required when ConditionEvaluateResult is NoMatch.
+     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
+     * optionally identifies the operational-failure issue and its localization lookup.
      */
     errorCode?: string;
     /**
      * The error message associated with the validation result, if any.
-     * Required when ConditionEvaluateResult is NoMatch.
+     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
+     * optionally provides unlocalized fallback text for the operational-failure issue.
      * It can contain the "{Label}" token which will be replaced with the appropriate ValueHost.label during evaluation.
      * The caller will:
      * - Apply HTML encoding.
@@ -200,6 +216,7 @@ export interface AsyncValidatorEvaluationResult
     /**
      * The severity level of the validation result, if any.
      * If not supplied, it uses ValidationSeverity = Error.
+     * For failedToResolve, Warning is normalized to Error because the operation blocks saving.
      * While you can supply ValidationSeverity = Severe, its feature is limited as it cannot stop processing
      * later validators in the ValueHost. Its use is to land in the IssueFound object for its consumers.
      */
@@ -207,7 +224,9 @@ export interface AsyncValidatorEvaluationResult
     /**
      * Indicates whether the validation could not be completed due to an error or failed API call.
      * Always assign when an exception occurs or an external API call fails during validation.
-     * The error is logged; a separate error code and message are not required.
+     * The Error is logged and never displayed. To customize the user-facing issue, also provide
+     * errorCode, errorMessage, and/or severity. Missing values use AsyncValidatorConfig and global
+     * async-validation fallbacks.
      */
     failedToResolve?: Error;
 }

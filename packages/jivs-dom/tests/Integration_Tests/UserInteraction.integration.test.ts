@@ -13,6 +13,7 @@ import { FieldContainerPresentation } from '../../src/FieldPresentations/FieldCo
 import { LabelPresentation } from '../../src/FieldPresentations/LabelPresentation';
 import { RequiredIndicatorPresentation } from '../../src/FieldPresentations/RequiredIndicatorPresentation';
 import { TextInputPresentation } from '../../src/FieldPresentations/TextInputPresentation';
+import { DataTypeParserBase, NumberParserBase } from '@plblum/jivs-engine/src/DataTypes/DataTypeParserBase';
 
 /**
  * Purpose: To test user interactions with form fields, including validation, required behavior, and popup handling.
@@ -596,7 +597,7 @@ describe('DataTypeCheck versus a value validator', () =>
         userEdits(t, c.unparseable);
         expectElementsMatchValidationState(t, c.identity, ValidationStatus.Invalid);
         expect(issues(t, c.identity).map(i => [i.errorCode, i.severity]))
-            .toEqual([[ConditionType.DataTypeCheck, ValidationSeverity.Severe]]);
+            .toEqual([[DataTypeParserBase.ParserErrorCode, ValidationSeverity.Severe]]);
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
@@ -682,9 +683,9 @@ describe('Unparseable text across a sequence of edits', () =>
 
         userEdits(t, 'abc');
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
-        expectIssueCodes(t, identity, [ConditionType.DataTypeCheck]);
+        expectIssueCodes(t, identity, [DataTypeParserBase.ParserErrorCode]);
         expect(severities()).toEqual([ValidationSeverity.Severe]);
-        expect(error.textContent).toBe('TYPE-MSG');
+        expect(error.textContent).toBe(NumberParserBase.badNumberMessage);
 
         userEdits(t, '150');
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
@@ -701,9 +702,9 @@ describe('Unparseable text across a sequence of edits', () =>
 
         userEdits(t, 'xyz');
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
-        expectIssueCodes(t, identity, [ConditionType.DataTypeCheck]);
+        expectIssueCodes(t, identity, [DataTypeParserBase.ParserErrorCode]);
         expect(severities()).toEqual([ValidationSeverity.Severe]);
-        expect(error.textContent).toBe('TYPE-MSG');
+        expect(error.textContent).toBe(NumberParserBase.badNumberMessage);        
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 });
@@ -803,8 +804,8 @@ describe('jivs-validated and jivs-corrected classes across a sequence of edits',
             configureServices: (services) =>
             {
                 let factory = services.domServices.fieldPresentationFactory;
-                factory.register('TextInput', (el) => new TextInputPresentation(el, options));
-                factory.register('inputEditor', (el) => new TextInputPresentation(el, options));
+                factory.register('TextInput', (el) => new TextInputPresentation(el as HTMLInputElement, options));
+                factory.register('inputEditor', (el) => new TextInputPresentation(el as HTMLInputElement, options));
                 factory.register('Label', (el) => new LabelPresentation(el, options));
                 factory.register('RequiredIndicator', (el) => new RequiredIndicatorPresentation(el, options));
                 factory.register('FieldContainer', (el) => new FieldContainerPresentation(el, options));

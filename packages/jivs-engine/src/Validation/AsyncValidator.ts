@@ -153,6 +153,7 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
         const operation = new AsyncValidationOperation(
             context, this.config, this.services, this.logger,
             result => this.resolveValidationResult(result),
+            error => this.createFailedToResolveResult(error),
             () => this.forgetIfCurrent(context));
         // Register before invoking the handler, which may synchronously reenter validation.
         this._pendingContext = context;
@@ -168,11 +169,7 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
         if (result.failedToResolve)
         {
             this.logger.error(result.failedToResolve);
-            return {
-                issueFound: null,
-                conditionEvaluateResult: result.conditionEvaluateResult,
-                failedToResolve: result.failedToResolve
-            };
+            return this.createFailedToResolveResult(result.failedToResolve, result);
         }
         switch (result.conditionEvaluateResult)
         {
@@ -199,6 +196,43 @@ export class AsyncValidator extends ValidatorBase<AsyncValidatorConfig>
                     conditionEvaluateResult: result.conditionEvaluateResult
                 }
         }
+    }
+
+    protected createFailedToResolveResult(
+        error: Error,
+        failureDetails?: Pick<AsyncValidatorEvaluationResult, 'errorCode' | 'errorMessage' | 'severity'>
+    ): ValidatorValidateResult
+    {
+        const settings = this.services.settings.asyncValidation;
+        const errorCode = failureDetails?.errorCode ||
+            this.config.failedToResolveErrorCode ||
+            settings.failedToResolveErrorCode;
+        const messageResult: AsyncValidatorEvaluationResult = {
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            errorCode,
+            errorMessage: failureDetails?.errorMessage ||
+                this.config.failedToResolveErrorMessage ||
+                settings.failedToResolveErrorMessage
+        };
+        const errorMessage = this.resolveErrorMessage(messageResult);
+        let severity = this.resolveSeverity(
+            failureDetails?.severity ??
+                this.config.failedToResolveSeverity ??
+                settings.failedToResolveSeverity);
+        if (severity === ValidationSeverity.Warning)
+            severity = ValidationSeverity.Error;
+
+        const issueFound = this.createIssueFound();
+        issueFound.errorCode = errorCode;
+        issueFound.errorMessage = errorMessage;
+        issueFound.summaryMessage = errorMessage;
+        issueFound.severity = severity;
+        issueFound.doNotSave = true;
+        return {
+            issueFound,
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: error
+        };
     }
 
     /**
@@ -308,6 +342,7 @@ class AsyncValidationOperation
         private readonly services: IJivsServices,
         private readonly logger: LoggingFacade,
         private readonly resolveResult: (result: AsyncValidatorEvaluationResult) => ValidatorValidateResult,
+        private readonly createFailureResult: (error: Error) => ValidatorValidateResult,
         private readonly forget: () => void)
     {
         this.context.promise = new Promise<ValidatorValidateResult>(resolve => { this.resolvePending = resolve; });
@@ -345,7 +380,7 @@ class AsyncValidationOperation
     private handleTimeout(): void
     {
         const error = new Error('Async validation timed out');
-        if (this.finish(failed(error)))
+        if (this.finish(this.createFailureResult(error)))
         {
             reportFailureSafely(error, this.logger);
             // Settle as a failure before aborting, so abort cannot turn it into a skip.
@@ -385,7 +420,7 @@ class AsyncValidationOperation
             return;
         }
         const error = ensureError(reason);
-        this.finish(failed(error));
+        this.finish(this.createFailureResult(error));
         reportFailureSafely(error, this.logger);
     }
 
@@ -401,15 +436,6 @@ class AsyncValidationOperation
         this.resolvePending(result);
         return true;
     }
-}
-
-function failed(error: Error): ValidatorValidateResult
-{
-    return {
-        conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-        issueFound: null,
-        failedToResolve: error
-    };
 }
 
 function skipped(): ValidatorValidateResult

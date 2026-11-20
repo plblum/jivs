@@ -8,6 +8,7 @@ import { TestForm, createTestForm } from './TestingSupport/CreateTestForm';
 import { expectElementsMatchValidationState, expectIssueCodes, installForm } from './TestingSupport/FieldFeedbackExpectations';
 import { createDefaultTestFieldRepository } from './TestingSupport/TestFieldRepository';
 import { useCleanDocument } from './TestingSupport/TestFileSupport';
+import { DataTypeParserBase } from '@plblum/jivs-engine/src/DataTypes/DataTypeParserBase';
 
 /**
  * Purpose: a Server Page round trip. The user edits a form, the app saves vhm.captureState() in a hidden input
@@ -294,7 +295,7 @@ describe('RoundTrip: invalid text survives', () =>
 
         expect((t.element('editor', numberField) as unknown as HTMLInputElement).value).toBe('abc');
         expectElementsMatchValidationState(t, numberField, ValidationStatus.Invalid);
-        expectIssueCodes(t, numberField, [ConditionType.DataTypeCheck]);
+        expectIssueCodes(t, numberField, [DataTypeParserBase.ParserErrorCode]);
         expect(t.element('summary').classList.contains('jivs-has-issues')).toBe(true);
         expect(t.services.loggingService.entryCount).toBe(0);
     });
@@ -488,7 +489,7 @@ describe('RoundTrip: the captured state does not match the regenerated page', ()
         expect(t.vhm.getFieldValueHost(field1)).toBeNull();
         expect(t.vhm.getFieldValueHost(numberField)!.getTextValue()).toBe('abc');
         expectElementsMatchValidationState(t, numberField, ValidationStatus.Invalid);
-        expectIssueCodes(t, numberField, [ConditionType.DataTypeCheck]);
+        expectIssueCodes(t, numberField, [DataTypeParserBase.ParserErrorCode]);
         expect(Object.keys(heard.fieldStatuses)).toEqual([numberField]);
         expect(t.element('summary').classList.contains('jivs-has-issues')).toBe(true);
         expect(t.services.loggingService.entryCount).toBe(0);

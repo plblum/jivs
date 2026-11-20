@@ -27,6 +27,7 @@ import { IConditionFactory } from './Conditions';
 import { IValueHostConfigMergeService } from './ConfigMergeService';
 import { IValueAdapterService } from './ValueAdapterService';
 import { IObjectFinderService } from './ObjectFinderService';
+import { ValidationSeverity } from './Validation';
 
 /**
  * Full interface representation of JivsServices.
@@ -274,25 +275,29 @@ export interface AsyncValidationSettings
      */
     timeout: number;
     /**
-     * Message to display when async validation times out.
-     * This message is added to the model-level messages shown in the Validation Summary.
-     * It can be localized by using the localization key: 'AsyncValidation.TimeoutMessage'
+     * Default error code for an async validation operation that fails to resolve.
+     * This is used to look up a localized message through ErrorMessagesService.
      */
-    timeoutMessage: string;
+    failedToResolveErrorCode: string;
+    /**
+     * Unlocalized fallback message for an async validation operation that fails to resolve.
+     */
+    failedToResolveErrorMessage: string;
+    /**
+     * Default severity for an async validation operation that fails to resolve.
+     * Warning is normalized to Error because the failure blocks saving.
+     */
+    failedToResolveSeverity: ValidationSeverity;
 }
-
-/**
- * Localization key for the async validation timeout message in 
- * JivsGlobalSettings.asyncValidation.timeoutMessage.
- */
-export const asyncValidationTimeoutMessagel10n = 'AsyncValidation.TimeoutMessage';
 
 export function initJivsGlobalSettings(): JivsGlobalSettings
 {
     return {
         asyncValidation: {
             timeout: 5000,  // in ms
-            timeoutMessage: 'Async validation timed out.'
+            failedToResolveErrorCode: 'AsyncValidationFailed',
+            failedToResolveErrorMessage: "We couldn't complete this check right now. Please try again.",
+            failedToResolveSeverity: ValidationSeverity.Error
         }
     };
 }

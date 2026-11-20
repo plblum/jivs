@@ -4,7 +4,7 @@
 
 Implementation guide and status record for [AsyncValidator_design.md](./AsyncValidator_design.md). Treat code marked **Current** as implemented behavior; code marked **Proposed** is not a description of the current API.
 
-The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, failure tracking, cleanup of restored pending flags, and a fluent builder method. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
+The engine now has `AsyncValidator`, its config/result contracts, factory registration, handler-based issue ownership, field-host settlement and stale-run handling, user-facing issues for unresolved failures, failure tracking, cleanup of restored pending flags, and a fluent builder method. `ICondition.evaluate()` still supports Promises; making conditions synchronous is a separate, unfinished migration and is not required for the current `AsyncValidator` implementation.
 
 **Not a submission-completion design:** `ValueHostsManager.validate()` is currently synchronous. Manager completion and submission are separate work. Peter has decided that an API failure must make `doNotSave` true and block saving; this guide specifies the field-level state needed to enforce that decision. The manager must eventually wait for the applicable work and read the final blocking state before submission. The former manager/condition exploration is [obsolete](./asyncCondition_design_OBSOLETE.md), not an implementation specification.
 
@@ -37,6 +37,9 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig,
     'errorMessagel10n' | 'summaryMessage' | 'summaryMessagel10n'> {
     handler: AsyncValidatorEvaluateHandler;
     handlerIdentity: string;
+    failedToResolveErrorCode?: string;
+    failedToResolveErrorMessage?: string;
+    failedToResolveSeverity?: ValidationSeverity;
     dependencyValueHostNames?: ValueHostName[];
 }
 ```
@@ -63,7 +66,7 @@ export type AsyncValidatorEvaluateHandler = (
 ) => Promise<AsyncValidatorEvaluationResult>;
 ```
 
-The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. When `failedToResolve` is assigned, it supplies the diagnostic error for logging, not an issue to display. If a stricter discriminated union is chosen, keep the same observable cases and ease of authoring.
+The handler does not populate `skipped`, `doNotSave`, host status or `IssueFound`; the validator creates the engine result. When `failedToResolve` is assigned, the `Error` is diagnostic and remains internal. The handler may also supply `errorCode`, `errorMessage`, and `severity` for a blocking display issue; omitted values use the validator config and global async-validation fallbacks. Warning severity is normalized to Error.
 
 The internal result needs a distinct marker, because `skipped` also describes ordinary exclusions:
 
@@ -84,9 +87,9 @@ This marker is for communication between the validator and its host, not an extr
 | `Match`, no issue/failure | `Match`, `issueFound: null`. |
 | `NoMatch`, with truthy issue code and message | `NoMatch`, one formatted `IssueFound`; missing code or message throws `CodingError`. |
 | `Undetermined`, no failure | `Undetermined`, `issueFound: null`. |
-| `failedToResolve: Error` | Log the error and return it in `ValidatorValidateResult.failedToResolve`, with `issueFound: null`. The host blocks saving. The current implementation does not require a separate error code or message for this case. |
+| `failedToResolve: Error` | Log the diagnostic error and return it in `ValidatorValidateResult.failedToResolve` with a validator-owned blocking `IssueFound`. Use handler details first, then config/global defaults. |
 
-The handler's Promise is **always expected to resolve successfully**, including on operational failures: the handler must catch exceptions and resolve with a result describing what happened. It must not intentionally throw or reject. At runtime, Jivs checks that a `NoMatch` result has a truthy error code and message and throws a `CodingError` if either is missing or empty. Other result-shape and combination validation is not performed; the implementation relies on the TypeScript interface for `conditionEvaluateResult`, and an absent value falls through as a non-`NoMatch` result. An unexpected handler rejection is a programming error, not the normal API-failure path; it is wrapped in a `CodingError` and the host keeps saving blocked. The host must handle the validator rejection without losing the error or producing an unhandled rejection.
+Handlers should resolve with `failedToResolve` for operational failures when they can provide a useful safe message. Unexpected throws or Promise rejections are also caught and converted into blocking failures with config/global fallback messages; the underlying error remains diagnostic. At runtime, Jivs checks that a `NoMatch` result has a truthy error code and message and throws a `CodingError` if either is missing or empty. Other result-shape and combination validation is not performed; the implementation relies on the TypeScript interface for `conditionEvaluateResult`, and an absent value falls through as a non-`NoMatch` result.
 
 An application handler can distinguish a business rejection from a failed request:
 
@@ -106,7 +109,10 @@ const evaluateAvailability: AsyncValidatorEvaluateHandler = async (host, manager
     catch (error) {
         return {
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            failedToResolve: error instanceof Error ? error : new Error(String(error))
+            failedToResolve: error instanceof Error ? error : new Error(String(error)),
+        // the next two can be omitted and they will use global settings
+            errorCode: 'AvailabilityCheckUnavailable',
+            errorMessage: 'We could not verify availability right now. Please try again.'
         };
     }
 };
@@ -200,8 +206,8 @@ The current [`AsyncValidator`](../packages/jivs-engine/src/Validation/AsyncValid
 1. Returns an immediate skipped `Undetermined` result when disabled, preliminary, or during edit; otherwise invokes the handler and returns a Promise.
 2. Converts `NoMatch` into one issue owned by the configured host, with the handler's required `errorCode` and `errorMessage`, and resolved severity. There is no handler-supplied destination or cross-field routing.
 3. Defaults severity to `Error` (the internal condition is `Async`) and sets `doNotSave` false only for `Warning`. A settled `Severe` issue cannot stop validators already started.
-4. Logs `failedToResolve` at Error level and returns that error in the engine result with no displayed issue. The host records the async identity and blocks saving.
-5. Wraps a handler rejection in `CodingError`. Missing NoMatch fields also throw `CodingError`; any other unexpected result-conversion exception rejects the Promise and the host logs it and keeps saving blocked.
+4. Logs `failedToResolve` at Error level, creates a blocking display issue from result/config/global values, and returns the original error in the engine result. The host records the async identity and blocks saving.
+5. Converts handler rejections, timeouts, and result-conversion failures into blocking operational failures using the configured fallback issue. Missing NoMatch fields still produce a logged `CodingError`.
 
 The current implementation does not evaluate `enablerConfig`, although that property is inherited from `ValidatorConfigBase`. Decide whether async configs should support enablers or reject/omit that property before presenting enabler behavior as supported.
 
@@ -222,15 +228,15 @@ public validate(options: ValidateOptions): ValidatorValidateResult | Promise<Val
         .then(() => this.config.handler(this.valueHost, this.valueHostsManager))
         .then(
             result => this.convertHandlerResult(result),
-            error => {
-                const detail = describeHandlerRejection(error);
-                throw new CodingError(`Async validator handler rejected its Promise: ${detail}`);
-            }
+            error => this.createFailedToResolveResult(ensureError(error))
         );
 }
 ```
 
-The handler should resolve with `failedToResolve` for operational failures. An unexpected handler rejection is wrapped in a `CodingError` that preserves its cause and is handled by the host as a blocking validator failure.
+This pseudocode is illustrative; the current `AsyncValidationOperation`
+converts an unexpected rejection through the same failure-result path. The
+original `Error` remains diagnostic, and the returned result includes the
+blocking fallback issue.
 
 The important conversions are:
 
@@ -244,7 +250,7 @@ The important conversions are:
 // Log the diagnostic first; then return:
 {
     conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-    issueFound: null,
+    issueFound: failureIssue, // validator-owned issue using handler/config/global details
     failedToResolve: new Error('Service unavailable')
 }
 
@@ -279,7 +285,7 @@ This section records the current **host** behavior, principally in [`ValidatorsV
 - **Ordering:** [`AsyncValidator.condition`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L51) returns an internal condition with `ConditionCategory.Async`. That category follows all existing categories in [`Conditions.ts`](../packages/jivs-engine/src/Interfaces/Conditions.ts#L171). [`orderValidators()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) sorts by category, so async validators are placed after standard categories, retaining the relative order of equal categories.
 - **Required and data type:** [`FieldValueHost.generateValidators()`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L505) and [`required`](../packages/jivs-engine/src/ValueHosts/FieldValueHost.ts#L551) still inspect the condition category. The internal async condition is neither `Require` nor `DataTypeCheck`, so these consumers do not need to be rewritten merely to accommodate `AsyncValidator`. Preserve the existing required, preliminary and auto-generated data-type behavior.
 - **Dependencies:** [`AsyncValidator.gatherValueHostNames()`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L168) adds `dependencyValueHostNames`; [`ValidatorsValueHostBase.gatherValueHostNames()`](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) collects them.
-- **Failure result:** [`ValidatorValidateResult.failedToResolve`](../packages/jivs-engine/src/Interfaces/Validator.ts#L265) is an optional `Error`. [`AsyncValidator.resolveValidationResult()`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L90) logs and returns it. The host records the handler identity and blocks saving, as described below.
+- **Failure result:** [`ValidatorValidateResult.failedToResolve`](../packages/jivs-engine/src/Interfaces/Validator.ts#L265) is an optional `Error`. [`AsyncValidator.resolveValidationResult()`](../packages/jivs-engine/src/Validation/AsyncValidator.ts#L90) logs and returns it with a validator-owned fallback issue. The host stores that issue, records the handler identity, and blocks saving, as described below.
 - **Async observer errors:** Synchronous exceptions thrown during an async completion notification are caught and logged by `notifyAsyncStateChanged()`. They do not become an async-validator failure or cause a second notification. A debounced callback that runs later is outside this guard.
 - **Restored pending state:** When captured state has `asyncProcessing` set, `ValidatorsValueHostBaseGenerator.cleanupInstanceState()` removes it and `corrected`. It changes status to `NeedsValidation`, except when status is already `Failed`; configured failure identities remain. Generator cleanup and manager recreation now have focused tests.
 
@@ -309,7 +315,7 @@ The synchronous and Promise paths apply the following rules. A Promise that reso
 | `NoMatch` with warning | Add the warning with `doNotSave: false`. A warning alone makes the host `Valid`, not `Invalid`. |
 | `NoMatch` with error or severe | Add the issue and make the host `Invalid`; it blocks saving. A settled severe issue cannot stop work already started. |
 | `Undetermined` or ordinary `skipped` | Do not create an issue or turn an existing error into success. |
-| `failedToResolve` | Record the failure separately and block saving, as in step 4. |
+| `failedToResolve` | Record the failure identity, add its blocking display issue, and block saving, as in step 4. |
 
 Results from several validators must combine: a later `Match` or warning must not erase another validator's error. Preserve each async issue's `asyncIdentity`; use that identity, not its display error code, for the one-issue-per-handler rule in section 7. Async completion writes the run's validator-owned `issuesFound` back to host state; it does not merge validator-owned issues added or replaced while the run was pending. This rare race is an accepted limitation for now. Do not add run-time issue reconciliation unless a concrete use case justifies the added complexity. Unmatched issues in `externalIssuesFound` remain separate and are not overwritten by that assignment.
 
@@ -343,9 +349,9 @@ After host disposal, an in-flight `AsyncValidator` treats a subsequently resolve
 
 ### 4. Keep a failed request from allowing save
 
-**Problem addressed:** after pending work finishes, an API failure must still block saving (Q20), without adding a displayed `IssueFound`.
+**Problem addressed:** after pending work finishes, an API failure must still block saving (Q20) and explain the block without displaying the diagnostic `Error`.
 
-**Code:** [`ValidatorsValueHostBaseInstanceState.failedAsyncIdentities`](../packages/jivs-engine/src/Interfaces/ValidatorsValueHostBase.ts) stores the failed handler identities. The host exposes `ValidationStatus.Failed` while the list is nonempty and the host is enabled; [`doNotSave`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) blocks `Failed`, and `isValid` is false. No `IssueFound` is created for the failure.
+**Code:** [`ValidatorsValueHostBaseInstanceState.failedAsyncIdentities`](../packages/jivs-engine/src/Interfaces/ValidatorsValueHostBase.ts) stores the failed handler identities. The host exposes `ValidationStatus.Failed` while the list is nonempty and the host is enabled; [`doNotSave`](../packages/jivs-engine/src/ValueHosts/ValidatableValueHostBase.ts) blocks `Failed`, and `isValid` is false. A separate validator-owned `IssueFound` carries the safe user-facing message into the host and Validation Summary.
 
 In the host's Promise handling, `processPromise()` receives the validator as well as its Promise. For an `AsyncValidator`, its `errorCode` is the handler identity, not the issue's error code:
 
@@ -482,7 +488,7 @@ Compile the repository from its root with `npm run compile` before cross-package
 - **Q20 — Resolved:** An API failure blocks saving. A separate failure marker is necessary because `skipped` and `Undetermined` alone do not block.
 - **Q28 — Decision resolved; duplicate checks pending:** Async handler identities must not duplicate another validator's identity/error code on the same host. The builder does not currently enforce this rule for async configs.
 - **Q29 — Resolved:** Missing or empty `NoMatch` code/message throws `CodingError`. Current localization selects the active-culture error message or handler fallback, encodes the selected message, resolves tokens, and uses that resolved text for both error and summary. Whitespace-only values are not currently rejected.
-- **Q30 — Implemented:** Operational failures reported through `failedToResolve` are logged and block saving. Handler rejections are wrapped in `CodingError`; missing NoMatch fields throw `CodingError`. The host logs settlement errors and keeps saving blocked.
+- **Q30 — Implemented:** Operational failures reported through `failedToResolve` are logged, produce a safe validator-owned issue using handler/config/global message fallbacks, and block saving. Handler rejections and timeouts use the same fallback issue. Missing NoMatch fields throw `CodingError`. Warning severity is normalized to Error for unresolved failures.
 - **Q31 — Superseded by Q33:** Async issues are no longer matched by issue code alone.
 - **Q32 — Resolved:** An external issue with no identity and no matching issue code remains external; it can be displayed alongside the async issue.
 - **Q33 — Resolved:** An external issue requires a matching `asyncIdentity` to replace an async-owned issue; an error-code match alone is insufficient.

@@ -26,23 +26,29 @@ This template creates a Promise and resolves it when the operation finishes. Rep
 
     function myAsyncFn(
         valueHost: IValidatorsValueHost,
-        valueHostsManager: IValueHostsManager
+        valueHostsManager: IValueHostsManager,
+        abortSignal: AbortSignal
     ): Promise<AsyncValidatorEvaluationResult> {
         return new Promise<AsyncValidatorEvaluationResult>((resolve) => {
             const reportFailure = (error: unknown) => {
                 resolve({
                     conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                    failedToResolve: error instanceof Error ? error : new Error(String(error))
+                    failedToResolve: error instanceof Error ? error : new Error(String(error)),
+                    // the next two can be omitted and they will use global settings
+                    errorCode: 'AvailabilityCheckUnavailable',
+                    errorMessage: 'We could not verify availability right now. Please try again.'
                 });
             };
 
             try {
                 const value = valueHost.getValue();
+            // if we don't have a useful value, return Undetermined.
                 if (typeof value !== 'number') {
                     resolve({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined });
                     return;
                 }
 
+            // Async process: here is emulates an API call
                 callMyAPI(value).then((result) => {
                     if (result.isValid)
                         resolve({ conditionEvaluateResult: ConditionEvaluateResult.Match });
@@ -103,7 +109,10 @@ function createAvailabilityHandler(api: AvailabilityApi): AsyncValidatorEvaluate
         catch (error) {
             return {
                 conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-                failedToResolve: error instanceof Error ? error : new Error(String(error))
+                failedToResolve: error instanceof Error ? error : new Error(String(error)),
+                // the next two can be omitted and they will use global settings
+                errorCode: 'AvailabilityCheckUnavailable',
+                errorMessage: 'We could not verify availability right now. Please try again.'
             };
         }
     };
@@ -124,18 +133,63 @@ Here `builder` is the configuration builder and `availabilityApi` is your applic
 
 The handler must return a Promise that resolves to an `AsyncValidatorEvaluationResult`. An `async` function does this when it returns a result object.
 
+```ts
+export interface AsyncValidatorEvaluationResult
+{
+    /**
+     * The result of the condition evaluation.
+     */
+    conditionEvaluateResult: ConditionEvaluateResult;
+    /**
+     * The error code associated with the validation result, if any.
+     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
+     * optionally identifies the operational-failure issue and its localization lookup.
+     */
+    errorCode?: string;
+    /**
+     * The error message associated with the validation result, if any.
+     * Required when ConditionEvaluateResult is NoMatch. When failedToResolve is assigned, it
+     * optionally provides unlocalized fallback text for the operational-failure issue.
+     * It can contain the "{Label}" token which will be replaced with the appropriate ValueHost.label during evaluation.
+     * The caller will:
+     * - Apply HTML encoding.
+     * - Localize or otherwise process the error message through the ErrorMessagesService based on the errorCode.
+     * - Replace the "{Label}" token with the appropriate ValueHost.label.
+     */
+    errorMessage?: string;
+    /**
+     * The severity level of the validation result, if any.
+     * If not supplied, it uses ValidationSeverity = Error.
+     * For failedToResolve, Warning is normalized to Error because the operation blocks saving.
+     * While you can supply ValidationSeverity = Severe, its feature is limited as it cannot stop processing
+     * later validators in the ValueHost. Its use is to land in the IssueFound object for its consumers.
+     */
+    severity?: ValidationSeverity;
+    /**
+     * Indicates whether the validation could not be completed due to an error or failed API call.
+     * Always assign when an exception occurs or an external API call fails during validation.
+     * The Error is logged and never displayed. To customize the user-facing issue, also provide
+     * errorCode, errorMessage, and/or severity. Missing values use AsyncValidatorConfig and global
+     * async-validation fallbacks.
+     */
+    failedToResolve?: Error;
+}
+```
+
 | Result | Meaning |
 | --- | --- |
 | `conditionEvaluateResult: ConditionEvaluateResult.Match` | The check passed; no issue is created. |
 | `conditionEvaluateResult: ConditionEvaluateResult.NoMatch` | The check found an issue. Supply a nonempty `errorCode` and `errorMessage`. |
 | `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` | The check could not determine a result, for example because an input is missing. No issue is created. |
-| `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` and `failedToResolve: Error` | The operation failed, such as when a service is unavailable. Jivs logs the error and blocks saving without creating a field issue. |
+| `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` and `failedToResolve: Error` | The operation failed. Jivs logs the `Error` internally, creates a blocking field issue, and keeps the host in `ValidationStatus.Failed`. |
 
-Use `failedToResolve` for an operational failure, not for an ordinary validation rejection. Alternatively, throw an error or reject the handler's Promise: Jivs logs the error and blocks saving. A `NoMatch` missing its code or message also produces a logged, blocking failure. Avoid putting secrets in diagnostic errors.
+Use `failedToResolve` for an operational failure, not for an ordinary validation rejection. The handler may also supply `errorCode`, `errorMessage`, and `severity` for the displayed failure issue. These values take precedence over `failedToResolveErrorCode`, `failedToResolveErrorMessage`, and `failedToResolveSeverity` in `AsyncValidatorConfig`, which in turn take precedence over the global async-validation settings. If the handler throws, its Promise rejects, or it times out, Jivs uses those config/global fallbacks. The underlying `Error` is never shown to the user; avoid including secrets in diagnostic errors.
+
+The default global message is "We couldn't complete this check right now. Please try again." Its error code is `AsyncValidationFailed`; register localized text for that code through `ErrorMessagesService`. `errorMessage` values are unlocalized fallback text, with no separate l10n property. A failure's effective severity defaults to `Error`; a resolved `Warning` is normalized to `Error` because a failed operation blocks saving.
 
 For `NoMatch`, an optional `severity` can be `ValidationSeverity.Error`, `Warning`, or `Severe`. It defaults to `Error`. A warning is displayed but does not itself block saving. `Severe` blocks saving, but an async result arrives too late to stop validators that have already started.
 
-After an operational failure, the ValueHost reports `ValidationStatus.Failed`. A later `Match` or `NoMatch` from the same handler clears that handler's failure; a skipped or `Undetermined` result does not. Other validation issues or failures can still block saving.
+After an operational failure, the ValueHost reports `ValidationStatus.Failed`. The failure issue is associated with the handler through `asyncIdentity`; its `errorCode` remains the issue/localization code. A later `Match` or `NoMatch` from the same handler clears the failure issue and marker; a skipped or ordinary `Undetermined` result does not. Other validation issues or failures can still block saving.
 
 ## Error messages and identity
 
@@ -241,11 +295,12 @@ builder.field('UserName', LookupKey.String, { label: 'User name' })
 When a listed dependency changes after the owning ValueHost has been validated, Jivs can revalidate it if the change requests validation; otherwise it marks the owning ValueHost as needing validation.
 
 The builder also accepts `restartWhenPending`, `skipOnModelLevelValidation`,
-and `timeout` in this options object. A pending validator is reused by default
-when its owner and declared dependencies are unchanged; `Always` restarts it.
-Model-level skip cancels pending work and skips this validator. The timeout
-defaults to 5000 ms and produces a logged, blocking failure. A timeout message
-in the Validation Summary is not yet implemented.
+`timeout`, and the `failedToResolve*` fallback options in this options object.
+A pending validator is reused by default when its owner and declared
+dependencies are unchanged; `Always` restarts it. Model-level skip cancels
+pending work and skips this validator. The timeout defaults to 5000 ms and
+produces the same logged, blocking failure issue as other operational errors;
+there is no timeout-specific message.
 
 ## Waiting for validation
 

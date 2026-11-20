@@ -294,25 +294,74 @@ describe('AsyncValidator.validate exclusions', () => {
     });
 });
 
-// Confirm handled operational errors and broken handler contracts remain distinguishable.
+// Operational failures retain their diagnostic Error while producing a safe blocking issue.
 describe('AsyncValidator.validate failures', () => {
-    test('Returns and logs the Error reported by a successfully resolved handler', async () => {
+    test('Uses handler issue details and localization while keeping the diagnostic Error internal', async () => {
         let failure = new Error('Service unavailable');
         let setup = setupValidator(async () => ({
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            failedToResolve: failure
-        }));
+            failedToResolve: failure,
+            errorCode: 'AvailabilityCheckUnavailable',
+            errorMessage: 'Handler fallback',
+            severity: ValidationSeverity.Warning
+        }), {
+            failedToResolveErrorCode: 'ConfiguredFailure',
+            failedToResolveErrorMessage: 'Configured fallback',
+            failedToResolveSeverity: ValidationSeverity.Severe
+        });
+        let messages = setup.services.errorMessagesService as ErrorMessagesService;
+        messages.registerErrorMessage('AvailabilityCheckUnavailable', LookupKey.String, {
+            en: '<strong>{Label}</strong> could not be verified'
+        });
 
         let result = await setup.validator.validate({});
         expect(result.failedToResolve).toBe(failure);
         expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
-        expect(result.issueFound).toBeNull();
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            asyncIdentity: 'AvailabilityCheck',
+            valueHostName: 'Field1',
+            errorCode: 'AvailabilityCheckUnavailable',
+            errorMessage: '&lt;strong&gt;Label1&lt;/strong&gt; could not be verified',
+            summaryMessage: '&lt;strong&gt;Label1&lt;/strong&gt; could not be verified',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        }));
+        expect(JSON.stringify(result.issueFound)).not.toContain('Service unavailable');
         expect(setup.logger.captured).toHaveLength(1);
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
             level: LoggingLevel.Error,
             category: LoggingCategory.Exception,
             message: 'Service unavailable',
             feature: 'Validator',
+            type: 'AsyncValidator',
+            identity: ['Field1', 'AvailabilityCheck']
+        }));
+    });
+
+    test('Uses validator-configured failure details when the handler supplies none', async () => {
+        let failure = new Error('Private service details');
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: failure
+        }), {
+            failedToResolveErrorCode: 'ConfiguredFailure',
+            failedToResolveErrorMessage: 'Unable to verify {Label}.',
+            failedToResolveSeverity: ValidationSeverity.Warning
+        });
+
+        let result = await setup.validator.validate({});
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorCode: 'ConfiguredFailure',
+            errorMessage: 'Unable to verify Label1.',
+            summaryMessage: 'Unable to verify Label1.',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        }));
+        expect(setup.logger.captured).toHaveLength(1);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error,
+            category: LoggingCategory.Exception,
+            message: 'Private service details',
             type: 'AsyncValidator',
             identity: ['Field1', 'AvailabilityCheck']
         }));
@@ -329,6 +378,12 @@ describe('AsyncValidator.validate failures', () => {
             let result = await setup.validator.validate({});
             expect(result.failedToResolve).toBe(failure);
             expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+            expect(result.issueFound).toEqual(expect.objectContaining({
+                errorCode: 'AsyncValidationFailed',
+                errorMessage: 'We couldn&#39;t complete this check right now. Please try again.',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }));
             expect(setup.logger.captured).toHaveLength(1);
             expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
                 level: LoggingLevel.Error, category: LoggingCategory.Exception,
@@ -372,11 +427,15 @@ describe('AsyncValidator.validate failures', () => {
         let setup = setupValidator(async () => handlerResult);
 
         let result = await setup.validator.validate({});
-        expect(result).toEqual({
+        expect(result).toEqual(expect.objectContaining({
             conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            issueFound: null,
+            issueFound: expect.objectContaining({
+                errorCode: 'AsyncValidationFailed',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }),
             failedToResolve: expect.any(CodingError)
-        });
+        }));
         expect(setup.validator.pendingContext).toBeNull();
         expect(setup.logger.captured).toHaveLength(1);
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
@@ -396,7 +455,12 @@ describe('AsyncValidator.validate failures', () => {
         expect(result.failedToResolve).toBeInstanceOf(Error);
         expect(result.failedToResolve?.message).toBe('Service unavailable');
         expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
-        expect(result.issueFound).toBeNull();
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorCode: 'AsyncValidationFailed',
+            errorMessage: 'We couldn&#39;t complete this check right now. Please try again.',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        }));
         expect(setup.logger.captured).toHaveLength(1);
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
             level: LoggingLevel.Error,
@@ -422,7 +486,11 @@ describe('AsyncValidator.validate failures', () => {
             let result = await setup.validator.validate({});
             expect(result.failedToResolve).toBe(failure);
             expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
-            expect(result.issueFound).toBeNull();
+            expect(result.issueFound).toEqual(expect.objectContaining({
+                errorCode: 'AsyncValidationFailed',
+                severity: ValidationSeverity.Error,
+                doNotSave: true
+            }));
             expect(logger.errorReceived).toBe(failure);
             expect(consoleEntries).toEqual([
                 ['Failed to log async validation failure', failure, loggingFailure]
@@ -741,7 +809,7 @@ describe('AsyncValidator pending operation policies', () => {
         expect(setup.logger.entryCount).toBe(0);
     });
 
-    test('Times out an uncooperative handler, logs the failure, and aborts its signal', async () => {
+    test('Times out an uncooperative handler, returns the global failure issue, logs, and aborts its signal', async () => {
         let signal!: AbortSignal;
         let setup = setupValidator((_host, _manager, abortSignal) => {
             signal = abortSignal;
@@ -749,6 +817,12 @@ describe('AsyncValidator pending operation policies', () => {
         }, { timeout: 10 });
         let result = await setup.validator.validate({});
         expect(result.failedToResolve?.message).toBe('Async validation timed out');
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorCode: 'AsyncValidationFailed',
+            errorMessage: 'We couldn&#39;t complete this check right now. Please try again.',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        }));
         expect(signal.aborted).toBe(true);
         expect(setup.validator.pendingContext).toBeNull();
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
@@ -759,14 +833,19 @@ describe('AsyncValidator pending operation policies', () => {
         expect(setup.logger.entryCount).toBe(1);
     });
 
-    test('Uses the global timeout when the validator has no timeout override', async () => {
+    test('Uses the global timeout and failure issue defaults when the validator has no overrides', async () => {
         let setup = setupValidator(() => new Promise(() => {}));
         setup.services.settings.asyncValidation.timeout = 10;
 
         let result = await setup.validator.validate({});
         expect(result.failedToResolve?.message).toBe('Async validation timed out');
         expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
-        expect(result.issueFound).toBeNull();
+        expect(result.issueFound).toEqual(expect.objectContaining({
+            errorCode: 'AsyncValidationFailed',
+            errorMessage: 'We couldn&#39;t complete this check right now. Please try again.',
+            severity: ValidationSeverity.Error,
+            doNotSave: true
+        }));
         expect(setup.validator.pendingContext).toBeNull();
         expect(setup.logger.captured).toHaveLength(1);
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
@@ -808,7 +887,12 @@ describe('AsyncValidator pending operation policies', () => {
                 expect(elapsed).toBeGreaterThanOrEqual(4900);
                 expect(result.failedToResolve?.message).toBe('Async validation timed out');
                 expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
-                expect(result.issueFound).toBeNull();
+                expect(result.issueFound).toEqual(expect.objectContaining({
+                    errorCode: 'AsyncValidationFailed',
+                    errorMessage: 'We couldn&#39;t complete this check right now. Please try again.',
+                    severity: ValidationSeverity.Error,
+                    doNotSave: true
+                }));
                 expect(setups[index].logger.captured).toHaveLength(1);
                 expect(setups[index].logger.captured[0]).toEqual(expect.objectContaining({
                     level: LoggingLevel.Error, category: LoggingCategory.Exception,

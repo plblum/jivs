@@ -210,19 +210,12 @@ reusing the promise does not restart the timer. Clear the timer on completion
 or timeout. API-specific timeout and cancellation behavior belongs to the
 handler.
 
-A timeout must be logged as an error and must produce a blocking validation
-outcome. A user-facing message is optional. When configured, a global timeout
-message and localization message code supply a localized model-level
-`IssueFound` for the Validation Summary; the issue has a stable timeout error
-code, not an AsyncValidator-specific code. An issue is not required merely to
-block saving.
-
-`IJivsServices.settings.asyncValidation` supplies the default timeout
-(5000 ms) and timeout message; `AsyncValidation.TimeoutMessage` is the
-localization key. AsyncValidator consumes the timeout; the summary message
-is not yet implemented. The manager's exact result and cleanup protocol
-remains open; waiting on the raw handler Promise alone cannot enforce the
-timeout.
+An `AsyncValidator` timeout is logged as an error and produces a blocking
+field-level issue through the same handler/config/global fallback path as
+other operational failures. There is no timeout-specific message or separate
+model-level issue for a per-validator timeout. A distinct manager-level
+deadline, if introduced for waiting on a group of validators, would need its
+own design; waiting on the raw handler Promise alone cannot enforce a timeout.
 
 ### Q20: handler wrapper, cancellation, and timeout
 
