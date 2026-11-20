@@ -66,6 +66,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         super.dispose();
         this._validators?.forEach((validator) => { validator.dispose(); });
         this._validators = undefined!;
+        this._injectedValidator = null;
     }
 
     protected override additionalInstanceStateUpdatesOnSetValue(stateToUpdate: TState, valueChanged: boolean, options: TOptions): void
@@ -76,6 +77,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             this._validationGeneration++;
             delete stateToUpdate.asyncProcessing;
         }
+        if (stateToUpdate.injectedError || options?.injectedError)
+            this._injectedErrorGeneration++;
         if (options && options.injectedError)
             stateToUpdate.injectedError = options.injectedError;
         else
@@ -88,6 +91,8 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     protected override clearValidationDataFromInstanceState(stateToUpdate: TState): void
     {
         this._validationGeneration++;
+        if (stateToUpdate.injectedError)
+            this._injectedErrorGeneration++;
         super.clearValidationDataFromInstanceState(stateToUpdate);
         delete stateToUpdate.injectedError;
     }
@@ -127,6 +132,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         assertNotNull(injectedError, 'injectedError');
         this.updateInstanceState((stateToUpdate) => {
             stateToUpdate.injectedError = injectedError;
+            this._injectedErrorGeneration++;
             return stateToUpdate;
         }, this);
     }
@@ -140,6 +146,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (this.instanceState.injectedError) {
             this.updateInstanceState((stateToUpdate) => {
                 delete stateToUpdate.injectedError;
+                this._injectedErrorGeneration++;
                 return stateToUpdate;
             }, this);
         }
@@ -562,15 +569,20 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
      */
     protected validators(): Array<IValidator> {
         if (this._validators === null)
-        {
             this._validators = this.orderValidators(this.generateValidators());
-            this.tryToAddInjectedErrorValidator(this._validators);
-        }
+        this.resolveInjectedErrorValidator(this._validators);
         return this._validators;
     }
     // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
     private _validators: Array<IValidator> | null = null;
+    // InjectedError becomes the first Validator in _validators, which is a cache
+    // that is expected to be retained for the rest of the lifecycle.
+    // An InjectedErrorValidator doesn't have the same lifecycle needs.
+    // It needs to be discarded and re-added whenever the injected error changes.
+    private _injectedErrorGeneration = 0;
+    private _resolvedInjectedErrorGeneration = -1;
+    private _injectedValidator: IValidator | null = null;
 
     /**
      * Determines if this ValidatorsValueHostBase has any asynchronous validators.
@@ -585,20 +597,29 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     private _hasAsyncValidators: boolean | undefined = undefined;
 
     /**
-     * Adds an injected error validator to the beginning of the validators array if an injected error exists.
-     * The validator's configuration will use Severity=Severe, which will stop further validation processing and require the user to fix the issue before continuing.
-     * The InjectedError object delivers both error message and summary message.
-     * @param validators The array of validators to which the injected error validator will be added.
+     * Keeps the first validator aligned with the current injected error without
+     * replacing the configured validators.
      */
-    protected tryToAddInjectedErrorValidator(validators: Array<IValidator>): void
+    protected resolveInjectedErrorValidator(validators: Array<IValidator>): void
     {
+        if (this._resolvedInjectedErrorGeneration === this._injectedErrorGeneration)
+            return;
+
+        if (this._injectedValidator)
+        {
+            validators.shift();
+            this._injectedValidator.dispose();
+            this._injectedValidator = null;
+        }
+
         let injectedError = this.getInjectedError();
         if (injectedError)
         {
             let validatorConfig: ValidatorConfig = this.createValConfigFromInjectedError(injectedError);
-            const injectedErrorValidator = this.services.validatorFactory.create(this, validatorConfig);
-            validators.unshift(injectedErrorValidator);
+            this._injectedValidator = this.services.validatorFactory.create(this, validatorConfig);
+            validators.unshift(this._injectedValidator);
         }
+        this._resolvedInjectedErrorGeneration = this._injectedErrorGeneration;
     }   
     protected createValConfigFromInjectedError(injectedError: InjectedError): ValidatorConfig
     {
