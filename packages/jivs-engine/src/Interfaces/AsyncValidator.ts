@@ -23,10 +23,9 @@
  * 
  * How to use:
  * - User needs to write a handler function that matches the AsyncValidatorEvaluateHandler type.
- *   - The promise must always resolve with an AsyncValidatorEvaluationResult, even if an error occurs internally
- *     including an exception.
- *   - The resolved AsyncValidatorEvaluationResult should accurately reflect the outcome of the validation, 
- *     including any errors or failures to resolve.
+ *   - Return a promise that resolves with an AsyncValidatorEvaluationResult.
+ *   - Jivs logs unexpected throws and rejections and reports a blocking failure.
+ *   - The supplied AbortSignal can be passed to APIs that support cancellation.
  * - User assigns that handler function to AsyncValidatorConfig.handler and provides a name via AsyncValidatorConfig.handlerIdentity.
  *   Both are required configuration values.
  * - To access application services, capture them in the handler's closure or retrieve them
@@ -86,9 +85,10 @@
 
 import { ValueHostName } from '../DataTypes/BasicTypes';
 import { ConditionEvaluateResult } from './Conditions';
-import { ValidationSeverity } from './Validation';
-import { ValidatorConfig, ValidatorConfigBase, ValidatorType } from './Validator';
+import { ValidateOptions, ValidationSeverity } from './Validation';
+import { IValidator, ValidatorConfig, ValidatorConfigBase, ValidatorType, ValidatorValidateResult } from './Validator';
 import { IValidatorsValueHost } from './ValidatorsValueHostBase';
+import { IValueHost } from './ValueHost';
 import { IValueHostsManager } from './ValueHostsManager';
 
 /**
@@ -108,8 +108,9 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
      * The handler function that performs the asynchronous validation logic.
      * It should return a Promise resolving to an AsyncValidatorEvaluationResult indicating the outcome of the validation.
      * Expectations of the function:
-     * - Always returns a promise that will always resolve, not reject. 
-     * - Catch exceptions and report failed API calls using AsyncValidatorEvaluationResult.failedToResolve.
+     * - Return a promise resolving to a result. Unexpected throws and rejections are logged
+     *   and reported as blocking failures.
+     * - An operational failure can also be reported using AsyncValidatorEvaluationResult.failedToResolve.
      * - Set errorCode and errorMessage for ConditionEvaluateResult.NoMatch.
      * - The error message can support the "{Label}" token, to be replaced by the field label.
      */
@@ -122,31 +123,29 @@ export interface AsyncValidatorConfig extends Omit<ValidatorConfig, 'errorCode' 
     dependencyValueHostNames?: ValueHostName[];
 
     /**
-     * Planned behavior when AsyncValidator.validate() is called
+     * Behavior when AsyncValidator.validate() is called
      * but there is already a pending validation in progress.
      * If undefined, it uses RestartWhenPending.WhenInputsChanged as the default behavior.
-     * Currently stored in configuration but not applied during validation.
      */
     restartWhenPending?: RestartWhenPending;
 
     /**
-     * Planned control over whether this validator should be skipped during model-level validation.
+     * Controls whether this validator should be skipped during model-level validation.
      * If true, the validator will not be executed as part of model-level validation.
      * Only use it if the server side covers the same validation, making it unnecessary to
      * wait for client-side validation.
      * If undefined or false, the validator will be executed during model-level validation.
-     * Currently stored in configuration but not applied during validation.
      */
     skipOnModelLevelValidation?: boolean;
 
     /**
-     * The planned maximum time, in milliseconds, for an async evaluation.
+     * The maximum time, in milliseconds, for an async evaluation.
      * If the evaluation does not complete within this time, it will act as an error
      * that blocks validation. Its value will default to IJivsServices.settings.asyncValidation.timeout.
      * An error message written to the Validation Summary will come from
      * IJivsServices.settings.asyncValidation.timeoutMessage
      * and can be localized with this key: 'AsyncValidation.TimeoutMessage'
-     * Currently stored in configuration but not applied during validation.
+     * Timeout handling blocks saving; the Validation Summary message is not implemented yet.
      */
     timeout?: number;
 }
@@ -217,7 +216,7 @@ export interface AsyncValidatorEvaluationResult
  * Represents the handler function for evaluating an asynchronous validator.
  * It takes the value host and value hosts manager as input,
  * and returns a promise that resolves to an AsyncValidatorEvaluationResult.
- * The abortSignal can be used to cancel the asynchronous operation if needed.
+ * Pass the abortSignal to supported APIs so they can stop work when Jivs cancels.
  */
 export type AsyncValidatorEvaluateHandler = (
     valueHost: IValidatorsValueHost,
@@ -241,4 +240,59 @@ export function isAsyncValidatorConfig(valConfig: ValidatorConfigBase): boolean
     )
         return true;
     return false;
+}
+
+/**
+ * Represents the context for a pending asynchronous validation operation.
+ * Each AsyncValidator owns and exposes its own PendingContext to track its 
+ * ongoing asynchronous validation operation.
+ */
+export interface IPendingContext
+{
+    readonly promise: Promise<ValidatorValidateResult>;
+    readonly abortController: AbortController;
+    inputChanged(valueHostsManager: IValueHostsManager): boolean;
+ //   inputs: CapturedValueHostCounter[];
+    dispose(): void;
+}
+
+/**
+ * Represents an asynchronous validator that extends the base IValidator interface.
+ */
+export interface IAsyncValidator extends IValidator
+{
+    /**
+     * The pending context for this asynchronous validator.
+     * It is null if there is no ongoing asynchronous validation operation.
+     * Its data is considered readonly to consumers of the asynchronous validator
+     * as its entirely managed by the asynchronous validator itself.
+     */
+    readonly pendingContext: IPendingContext | null;
+
+    /**
+     * Call prior to validate() to determine if there is a pending asynchronous validation 
+     * operation that this validator is responsible for.
+     * This will use the AsyncValidatorConfig.restartWhenPending property to 
+     * determine how to handle the pending operation.
+     * When RestartWhenPending.WhenInputsChanged is specified, it will check if 
+     * the input values have changed since the pending operation started.
+     *    - If no change, it returns true indicating the validator is still responsible for the pending operation.
+     *    - If there is a change, it works like restartWhenPending.Always is specified.
+     * When RestartWhenPending.Always is specified, it will close out the pending operation
+     * and return false, indicating the validator is no longer responsible for the pending operation.
+     * 
+     * The caller (ValueHostsManager.validator()) should skip calling its validate()
+     * method if this function returns true, indicating that the validator is still responsible for the pending operation.
+     * 
+     * @param validatorOptions - Uses the isModelLevel property to support its
+     * AsyncValidatorConfig.skipOnModelLevelValidation property.
+     */
+    isPendingResponsible(validatorOptions: ValidateOptions): boolean;
+}
+
+export function isAsyncValidator(validator: IValidator): validator is IAsyncValidator
+{
+    return 'pendingContext' in validator &&
+        'isPendingResponsible' in validator &&
+        typeof validator.isPendingResponsible === 'function';
 }

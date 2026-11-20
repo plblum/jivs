@@ -22,7 +22,7 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { AsyncValidatorConfig, isAsyncValidator, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -211,16 +211,39 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 let validatorsInUse = 0;
 
                 for (let i = 0; !stop && i < validators.length; i++) {
+                    if (runGeneration !== this._validationGeneration)
+                        break;
+
                     const iv = validators[i];
-                    const potentialIVR = iv.validate(options);
+                    let potentialIVR: ValidatorValidateResult | Promise<ValidatorValidateResult>;
+                    if (isAsyncValidator(iv)) {
+                        const reuse = iv.isPendingResponsible(options);
+                        if (runGeneration !== this._validationGeneration)
+                            break;
+
+                        if (reuse) {
+                            const context = iv.pendingContext;
+                            if (!context)
+                                throw new CodingError('Responsible validator has no pending context');
+                            potentialIVR = context.promise;
+                        }
+                        else
+                            potentialIVR = iv.validate(options);
+                    }
+                    else
+                        potentialIVR = iv.validate(options);
                     // promises will update the results later
                     // All other validators in this loop will still finish
                     // by updating the state. The state is just missing the results
                     // from this validator. When this completes, it updates the state again.
                     if (potentialIVR instanceof Promise) {
                         processPromise(potentialIVR, iv);
+                        if (runGeneration !== this._validationGeneration)
+                            break;
                         continue;
                     }
+                    if (runGeneration !== this._validationGeneration)
+                        break;
                     // synchronous (normal) processing
                     const fieldValResult = potentialIVR as ValidatorValidateResult;
                     if (fieldValResult.skipped)
@@ -299,8 +322,10 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             requestedStatus = result.status;
             adjustCorrectedFlag();
             reviseStatusIfFailed();
-            if (updateInstanceStateWithResult(result))
-                self.invokeOnValueHostValidationStateChanged(options);
+            if (runGeneration === this._validationGeneration)
+                if (updateInstanceStateWithResult(result) &&
+                    runGeneration === this._validationGeneration)   // final defense against external changes
+                    self.invokeOnValueHostValidationStateChanged(options);
             // when the result hasn't changed from the start, report null as there were no issues found
             return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
                 result : null;
@@ -546,7 +571,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     // populated by Validators() when null. Set to null by UpdateValueHostConfig
     // to account for changes made there.
     private _validators: Array<IValidator> | null = null;
-    
+
     /**
      * Determines if this ValidatorsValueHostBase has any asynchronous validators.
      * @returns True if there are async validators, false otherwise.

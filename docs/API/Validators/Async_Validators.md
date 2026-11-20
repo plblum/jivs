@@ -131,7 +131,7 @@ The handler must return a Promise that resolves to an `AsyncValidatorEvaluationR
 | `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` | The check could not determine a result, for example because an input is missing. No issue is created. |
 | `conditionEvaluateResult: ConditionEvaluateResult.Undetermined` and `failedToResolve: Error` | The operation failed, such as when a service is unavailable. Jivs logs the error and blocks saving without creating a field issue. |
 
-Use `failedToResolve` for an operational failure, not for an ordinary validation rejection. Catch exceptions and resolve with a result instead of letting the handler throw or reject. An unexpected rejection or a `NoMatch` missing its code or message is a programming error; Jivs logs the failure and keeps saving blocked. Avoid putting secrets in diagnostic errors.
+Use `failedToResolve` for an operational failure, not for an ordinary validation rejection. Alternatively, throw an error or reject the handler's Promise: Jivs logs the error and blocks saving. A `NoMatch` missing its code or message also produces a logged, blocking failure. Avoid putting secrets in diagnostic errors.
 
 For `NoMatch`, an optional `severity` can be `ValidationSeverity.Error`, `Warning`, or `Severe`. It defaults to `Error`. A warning is displayed but does not itself block saving. `Severe` blocks saving, but an async result arrives too late to stop validators that have already started.
 
@@ -153,8 +153,8 @@ errorMessagesService.registerErrorMessage('NameTaken', LookupKey.String, {
 Jivs HTML-encodes the selected message, then resolves tokens such as `{Label}`. The resulting text is used for both the field error and summary message; an async handler does not supply a separate summary. Token replacement safety depends on the configured message-token resolver, so follow the [presentation prerequisites](../../Learning_Jivs/Presentation/Jivs_Presentation_Prerequisites.md) for HTML.
 
 ## Requirements when writing a function
-- Always resolve all situations, never reject.
-- Always catch any error. It must always resolve with a result like this:
+- Return a Promise resolving to a result. For operational errors, throw or
+  reject, or explicitly return a failure like this:
     ```ts
     resolve({
         failedToResolve: error,
@@ -186,7 +186,7 @@ Jivs HTML-encodes the selected message, then resolves tokens such as `{Label}`. 
 
 Async validators run after the standard validators on the same ValueHost, regardless of their order in the builder chain. 
 
-Several async validators can be pending at once and may finish in a different order than they started. When a newer validation or a value change makes a previous result obsolete, Jivs does not apply the old result to the current ValueHost state. This does not cancel the underlying request; cancellation, if needed, belongs to the application.
+Several async validators can be pending at once and may finish in a different order than they started. When a newer validation or a value change makes a previous result obsolete, Jivs does not apply the old result to the current ValueHost state. Jivs can request cancellation by aborting the signal passed as the handler's third argument. Pass it to APIs that support cancellation, for example `fetch(url, { signal })`. Cancellation is cooperative: the handler must stop its own side effects when necessary.
 
 ## When async validators do not run
 
@@ -241,9 +241,11 @@ builder.field('UserName', LookupKey.String, { label: 'User name' })
 When a listed dependency changes after the owning ValueHost has been validated, Jivs can revalidate it if the change requests validation; otherwise it marks the owning ValueHost as needing validation.
 
 The builder also accepts `restartWhenPending`, `skipOnModelLevelValidation`,
-and `timeout` in this options object. These properties are stored in the
-configuration, but their cancellation, skipping, and timeout behavior is not
-implemented yet.
+and `timeout` in this options object. A pending validator is reused by default
+when its owner and declared dependencies are unchanged; `Always` restarts it.
+Model-level skip cancels pending work and skips this validator. The timeout
+defaults to 5000 ms and produces a logged, blocking failure. A timeout message
+in the Validation Summary is not yet implemented.
 
 ## Waiting for validation
 

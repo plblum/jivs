@@ -16,7 +16,7 @@ import { ValueHostValidateResult, ValidationStatus, ValidationSeverity, Validate
 import { IValueHostsManager, StateContainer, ValueHostsManagerConfig } from "../../src/Interfaces/ValueHostsManager";
 import { IJivsServices } from "../../src/Interfaces/JivsServices";
 import { IValidator, IValidatorFactory, ValidatorConfig, ValidatorConfigBase, ValidatorType, ValidatorValidateResult } from "../../src/Interfaces/Validator";
-import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult } from "../../src/Interfaces/AsyncValidator";
+import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult, RestartWhenPending } from "../../src/Interfaces/AsyncValidator";
 import { ValidatorsValueHostBaseConfig, IValidatorsValueHost } from "../../src/Interfaces/ValidatorsValueHostBase";
 import {
     IValueHost, SetValueOptions, ValidTypesForInstanceStateStorage,
@@ -531,6 +531,126 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
         expect(setup.valueHost.doNotSave).toBe(false);
         expect(setup.logger.findMessage('Outer validation failed', LoggingLevel.Error, LoggingCategory.Exception,
             { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+    });
+});
+
+// Obsolete validation loops must stop without cancelling or overwriting newer work.
+describe('ValidatorsValueHostBase reentrant validation loop', () => {
+    test('A nested validation remains pending when the outer synchronous validator returns', async () => {
+        let nestedResult: ValueHostValidateResult | null = null;
+        let isOuterRun = true;
+        let calls = 0;
+        let signal!: AbortSignal;
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupValidatorsValueHostBase({
+            validatorConfigs: [<ValidatorConfig>{
+                validatorType: ValidatorType.Validator,
+                conditionConfig: null,
+                conditionCreator: () => ({
+                    conditionType: 'ReentrantCondition',
+                    category: ConditionCategory.Undetermined,
+                    evaluate: () => {
+                        if (isOuterRun) {
+                            isOuterRun = false;
+                            nestedResult = setup.valueHost.validate();
+                        }
+                        return ConditionEvaluateResult.Match;
+                    }
+                })
+            }, <AsyncValidatorConfig>{
+                validatorType: ValidatorType.AsyncValidator,
+                handlerIdentity: 'AvailabilityCheck',
+                restartWhenPending: RestartWhenPending.Always,
+                handler: (_host, _manager, abortSignal) => {
+                    calls++;
+                    signal = abortSignal;
+                    return new Promise(resolve => { finish = resolve; });
+                }
+            }]
+        });
+        let logger = new TestingLoggingService(LoggingLevel.Debug);
+        setup.services.loggingService = logger;
+
+        setup.valueHost.validate();
+
+        expect(calls).toBe(1);
+        expect(signal.aborted).toBe(false);
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        let pending = [...nestedResult!.pending!];
+        finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        await Promise.all(pending);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('An abort listener can start a newer validation without the older loop restarting it', async () => {
+        let nestedResult: ValueHostValidateResult | null = null;
+        let calls = 0;
+        let latestSignal!: AbortSignal;
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupValidatorsValueHostBase({
+            validatorConfigs: [<AsyncValidatorConfig>{
+                validatorType: ValidatorType.AsyncValidator,
+                handlerIdentity: 'AvailabilityCheck',
+                restartWhenPending: RestartWhenPending.Always,
+                handler: (host, _manager, signal) => {
+                    calls++;
+                    latestSignal = signal;
+                    if (calls === 1)
+                        signal.addEventListener('abort', () => { nestedResult = host.validate(); });
+                    return new Promise(resolve => { finish = resolve; });
+                }
+            }]
+        });
+        let logger = new TestingLoggingService(LoggingLevel.Debug);
+        setup.services.loggingService = logger;
+        let first = [...setup.valueHost.validate()!.pending!];
+
+        setup.valueHost.validate();
+
+        expect(calls).toBe(2);
+        expect(latestSignal.aborted).toBe(false);
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        await Promise.all(first);
+        let pending = [...nestedResult!.pending!];
+        finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        await Promise.all(pending);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('An obsolete Promise remains observed without starting later validators', async () => {
+        let laterCalls = 0;
+        let finish!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupAsyncIssueHost([{
+            identity: 'FirstCheck',
+            handler: host => {
+                host.setValue('changed', { validate: false });
+                return new Promise(resolve => { finish = resolve; });
+            }
+        }, {
+            identity: 'LaterCheck',
+            handler: async () => {
+                laterCalls++;
+                return { conditionEvaluateResult: ConditionEvaluateResult.Match };
+            }
+        }]);
+
+        let result = setup.valueHost.validate()!;
+        let pending = [...result.pending!];
+        expect(laterCalls).toBe(0);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        await Promise.all(pending);
+        expect(result.pending).toBeUndefined();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
 });
 

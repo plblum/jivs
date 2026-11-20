@@ -55,6 +55,14 @@ export interface ValidateOptions
      * When enabled, debounce timing is set with ValueHostsManager.notifyValidationStateChangedDelay.
      */
     disableValidationStateChangedDelay?: boolean;
+
+    /**
+     * When true, the validation is considered at the model level rather than at the individual field level.
+     * It is automatically assigned by a call to ValueHostsManager.validate().
+     * It is generally not set by consumers directly.
+     * If undefined or false, the validation is considered at the individual field level.
+     */
+    isModelLevel?: boolean;
 }
 
 /**

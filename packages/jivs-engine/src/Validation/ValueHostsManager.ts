@@ -705,8 +705,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * The same object is provided through the OnValidated function
      */
     public validate(options?: ValidateOptions): ValidationState {
-        if (!options)
-            options = {};
+        options = { ...options, isModelLevel: true };
 
         for (const vh of this.validatableValueHost())
         {

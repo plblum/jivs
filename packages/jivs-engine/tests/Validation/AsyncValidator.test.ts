@@ -1,5 +1,5 @@
 import { LookupKey } from '../../src/DataTypes/LookupKeys';
-import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult } from '../../src/Interfaces/AsyncValidator';
+import { AsyncValidatorConfig, AsyncValidatorEvaluateHandler, AsyncValidatorEvaluationResult, RestartWhenPending } from '../../src/Interfaces/AsyncValidator';
 import { ConditionCategory, ConditionEvaluateResult } from '../../src/Interfaces/Conditions';
 import { LoggingCategory, LoggingLevel } from '../../src/Interfaces/LoggingService';
 import { IssueFound, ValidateOptions, ValidationSeverity } from '../../src/Interfaces/Validation';
@@ -9,6 +9,19 @@ import { TestingLoggingService } from '../../src/Support/TestingLoggingService';
 import { CodingError } from '../../src/Utilities/ErrorHandling';
 import { AsyncValidator } from '../../src/Validation/AsyncValidator';
 import { MockJivsServices, MockValueHostsManager } from '../TestSupport/mocks';
+
+class ThrowingErrorLoggingService extends TestingLoggingService {
+    public errorReceived: Error | null = null;
+
+    constructor(private readonly loggingFailure: Error) {
+        super();
+    }
+
+    public override logError(error: Error): void {
+        this.errorReceived = error;
+        throw this.loggingFailure;
+    }
+}
 
 /**
  * Creates a validator with a field and recording logger for validate() scenarios.
@@ -59,22 +72,22 @@ describe('AsyncValidator construction and identity', () => {
     });
 });
 
-// Verify the Promise represents handler completion and receives only the host and manager.
+// Verify the Promise represents handler completion and supplies the host, manager, and cancellation signal.
 describe('AsyncValidator.validate async completion', () => {
     test('Waits for the handler and returns its NoMatch issue with the host and manager', async () => {
         let receivedHost: unknown;
         let receivedManager: unknown;
-// THIS TEST NEEDS TO BE REVISED TO SUPPORT AbortSignal as the third argument to the handler.
-//        let extraArguments: unknown[] = [];
+        let receivedSignal!: AbortSignal;
         let complete!: (result: AsyncValidatorEvaluationResult) => void;
-        let setup = setupValidator((host, manager, ...extra) => {
+        let setup = setupValidator((host, manager, signal) => {
             receivedHost = host;
             receivedManager = manager;
-//            extraArguments = extra;
+            receivedSignal = signal;
             return new Promise(resolve => { complete = resolve; });
         });
 
         let pending = setup.validator.validate({});
+        let context = setup.validator.pendingContext!;
         let settled = false;
         let observed = Promise.resolve(pending).then(result => {
             settled = true;
@@ -85,7 +98,8 @@ describe('AsyncValidator.validate async completion', () => {
         expect(settled).toBe(false);
         expect(receivedHost).toBe(setup.valueHost);
         expect(receivedManager).toBe(setup.manager);
-//        expect(extraArguments).toEqual([]);
+        expect(receivedSignal).toBe(context.abortController.signal);
+        expect(receivedSignal.aborted).toBe(false);
 
         complete({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
@@ -103,6 +117,19 @@ describe('AsyncValidator.validate async completion', () => {
             severity: ValidationSeverity.Error,
             doNotSave: true
         }));
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Returns Undetermined without an issue when the handler cannot evaluate', async () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined
+        }));
+
+        await expect(setup.validator.validate({})).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null
+        });
+        expect(setup.validator.pendingContext).toBeNull();
         expect(setup.logger.entryCount).toBe(0);
     });
 
@@ -229,6 +256,17 @@ describe('AsyncValidator.validate message resolution', () => {
 
 // Skipped validations must not start a request or be counted as evaluated validators.
 describe('AsyncValidator.validate exclusions', () => {
+    test('Rejects missing options and validation after disposal', () => {
+        let setup = setupValidator(async () => ({
+            conditionEvaluateResult: ConditionEvaluateResult.Match
+        }));
+
+        expect(() => setup.validator.validate(null!)).toThrow(CodingError);
+        setup.validator.dispose();
+        expect(() => setup.validator.validate({})).toThrow(/AsyncValidator has been disposed/);
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
     test('Skips disabled, preliminary, and during-edit validations without invoking the handler', () => {
         let calls = 0;
         let handler: AsyncValidatorEvaluateHandler = async () => {
@@ -280,7 +318,7 @@ describe('AsyncValidator.validate failures', () => {
         }));
     });
 
-    test('Rejects with a CodingError when the handler rejects or throws', async () => {
+    test('Logs and returns a blocking failure when the handler rejects or throws', async () => {
         let failure = new Error('Unexpected handler failure');
         let handlers: AsyncValidatorEvaluateHandler[] = [
             () => Promise.reject(failure),
@@ -288,34 +326,112 @@ describe('AsyncValidator.validate failures', () => {
         ];
         for (let handler of handlers) {
             let setup = setupValidator(handler);
-            let result = setup.validator.validate({});
-            await expect(result).rejects.toBeInstanceOf(CodingError);
-            await expect(result).rejects.toMatchObject({
-                message: expect.stringContaining('Unexpected handler failure'),
-                cause: failure
-            });
-            expect(setup.logger.entryCount).toBe(0);
+            let result = await setup.validator.validate({});
+            expect(result.failedToResolve).toBe(failure);
+            expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+            expect(setup.logger.captured).toHaveLength(1);
+            expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+                level: LoggingLevel.Error, category: LoggingCategory.Exception,
+                message: 'Unexpected handler failure', type: 'AsyncValidator'
+            }));
         }
     });
 
-    test('Propagates a CodingError produced while converting a malformed NoMatch', async () => {
+    test('Logs and returns a failure for a malformed NoMatch', async () => {
         let setup = setupValidator(async () => ({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
             errorCode: 'NameTaken',
             errorMessage: ''
         }));
-        await expect(setup.validator.validate({})).rejects.toThrow(CodingError);
-        expect(setup.logger.entryCount).toBe(0);
+        let result = await setup.validator.validate({});
+        expect(result.failedToResolve).toBeInstanceOf(CodingError);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error, category: LoggingCategory.Exception,
+            message: expect.stringContaining('must return an error message')
+        }));
     });
 
-    test('Rejects with a CodingError when a NoMatch result has no error code', async () => {
+    test('Logs and returns a failure when a NoMatch result has no error code', async () => {
         let setup = setupValidator(async () => ({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
             errorMessage: 'Missing code'
         }));
 
-        await expect(setup.validator.validate({})).rejects.toThrow(CodingError);
-        expect(setup.logger.entryCount).toBe(0);
+        let result = await setup.validator.validate({});
+        expect(result.failedToResolve).toBeInstanceOf(CodingError);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error, category: LoggingCategory.Exception,
+            message: expect.stringContaining('must return an error code')
+        }));
+    });
+
+    test.each([
+        null!,
+        { conditionEvaluateResult: 999 as ConditionEvaluateResult }
+    ])('Logs and returns a failure for an invalid handler result %#', async handlerResult => {
+        let setup = setupValidator(async () => handlerResult);
+
+        let result = await setup.validator.validate({});
+        expect(result).toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null,
+            failedToResolve: expect.any(CodingError)
+        });
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.captured).toHaveLength(1);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error,
+            category: LoggingCategory.Exception,
+            message: 'Invalid async validator result',
+            feature: 'Validator',
+            type: 'AsyncValidator',
+            identity: ['Field1', 'AvailabilityCheck']
+        }));
+    });
+
+    test('Converts a non-Error rejection to a logged failure', async () => {
+        let setup = setupValidator(() => Promise.reject('Service unavailable'));
+
+        let result = await setup.validator.validate({});
+        expect(result.failedToResolve).toBeInstanceOf(Error);
+        expect(result.failedToResolve?.message).toBe('Service unavailable');
+        expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+        expect(result.issueFound).toBeNull();
+        expect(setup.logger.captured).toHaveLength(1);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error,
+            category: LoggingCategory.Exception,
+            message: 'Service unavailable',
+            feature: 'Validator',
+            type: 'AsyncValidator',
+            identity: ['Field1', 'AvailabilityCheck']
+        }));
+    });
+
+    test('Settles and reports the original failure when the logging service throws', async () => {
+        let failure = new Error('Handler failed');
+        let loggingFailure = new Error('Logger failed');
+        let logger = new ThrowingErrorLoggingService(loggingFailure);
+        let setup = setupValidator(() => Promise.reject(failure));
+        setup.services.loggingService = logger;
+        let consoleEntries: unknown[][] = [];
+        let originalConsoleError = console.error;
+        console.error = (...args: unknown[]) => { consoleEntries.push(args); };
+
+        try {
+            let result = await setup.validator.validate({});
+            expect(result.failedToResolve).toBe(failure);
+            expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+            expect(result.issueFound).toBeNull();
+            expect(logger.errorReceived).toBe(failure);
+            expect(consoleEntries).toEqual([
+                ['Failed to log async validation failure', failure, loggingFailure]
+            ]);
+            expect(setup.validator.pendingContext).toBeNull();
+        }
+        finally {
+            console.error = originalConsoleError;
+        }
     });
 });
 
@@ -415,6 +531,7 @@ describe('AsyncValidator.dispose with pending handlers', () => {
             issueFound: null,
             skipped: true
         });
+        await new Promise(resolve => setTimeout(resolve, 0));
         expect(setup.logger.captured).toHaveLength(1);
         expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
             level: LoggingLevel.Error,
@@ -426,7 +543,7 @@ describe('AsyncValidator.dispose with pending handlers', () => {
         }));
     });
 
-    test('Preserves handler rejection details when the validator is disposed while pending', async () => {
+    test('Logs unexpected handler rejection after disposal without changing the skipped result', async () => {
         let reject!: (error: Error) => void;
         let failure = new Error('Late handler rejection');
         let setup = setupValidator(() => new Promise((_, rejectPromise) => { reject = rejectPromise; }));
@@ -435,10 +552,275 @@ describe('AsyncValidator.dispose with pending handlers', () => {
         setup.validator.dispose();
         reject(failure);
 
-        await expect(pending).rejects.toMatchObject({
-            message: expect.stringContaining('AvailabilityCheck'),
-            cause: failure
+        await expect(pending).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            issueFound: null,
+            skipped: true
         });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error, category: LoggingCategory.Exception,
+            message: 'Late handler rejection'
+        }));
+    });
+});
+
+// Pending operations must be reusable only while their declared inputs remain current.
+describe('AsyncValidator pending operation policies', () => {
+    test('Does not reuse pending work for disabled, preliminary, or during-edit validation', async () => {
+        let enabled = true;
+        let setup = setupValidator(() => new Promise(() => {}), { enabled: () => enabled });
+        let pending = setup.validator.validate({});
+
+        for (let options of [{ preliminary: true }, { duringEdit: true }]) {
+            expect(setup.validator.isPendingResponsible(options)).toBe(false);
+            expect(setup.validator.validate(options)).toMatchObject({ skipped: true });
+        }
+        enabled = false;
+        expect(setup.validator.isPendingResponsible({})).toBe(false);
+        expect(setup.validator.validate({})).toMatchObject({ skipped: true });
+        setup.validator.dispose();
+        await expect(pending).resolves.toMatchObject({ skipped: true });
         expect(setup.logger.entryCount).toBe(0);
     });
+
+    test('Reuses the pending operation and restarts it when the owner changes', async () => {
+        let calls = 0;
+        let setup = setupValidator(() => {
+            calls++;
+            return new Promise(() => {});
+        });
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        let first = setup.validator.validate({});
+        let context = setup.validator.pendingContext!;
+        expect(setup.validator.validate({})).toBe(first);
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(true);
+        expect(calls).toBe(1);
+        setup.valueHost.changeCounter++;
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        await expect(first).resolves.toMatchObject({ skipped: true });
+        expect(context.abortController.signal.aborted).toBe(true);
+        let second = setup.validator.validate({});
+        expect(calls).toBe(2);
+        setup.validator.dispose();
+        await expect(second).resolves.toMatchObject({ skipped: true });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Always restarts, while model-level skip cancels without starting new work', async () => {
+        let calls = 0;
+        let setup = setupValidator(() => {
+            calls++;
+            return new Promise(() => {});
+        }, { restartWhenPending: RestartWhenPending.Always, skipOnModelLevelValidation: true });
+        let first = setup.validator.validate({});
+        expect(setup.validator.isPendingResponsible({})).toBe(false);
+        await expect(first).resolves.toMatchObject({ skipped: true });
+        let second = setup.validator.validate({});
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        await expect(second).resolves.toMatchObject({ skipped: true });
+        expect(setup.validator.validate({ isModelLevel: true })).toMatchObject({ skipped: true });
+        expect(calls).toBe(2);
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Detects a changed dependency and its replacement when choosing pending work', async () => {
+        let setup = setupValidator(() => new Promise(() => {}), {
+            dependencyValueHostNames: ['Field2']
+        });
+        let dependency = setup.manager.addMockFieldValueHost('Field2', LookupKey.String, 'Other');
+        let first = setup.validator.validate({});
+        dependency.changeCounter++;
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        let second = setup.validator.validate({});
+        expect(second).not.toBe(first);
+        await expect(first).resolves.toMatchObject({ skipped: true });
+
+        setup.manager.addMockFieldValueHost('Field2', LookupKey.String, 'Replacement');
+        dependency.getName = () => { throw new Error('Disposed host'); };
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        await expect(second).resolves.toMatchObject({ skipped: true });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Keeps the context Promise accessible after it is disposed', async () => {
+        let setup = setupValidator(() => new Promise(() => {}));
+        let pending = setup.validator.validate({});
+        let context = setup.validator.pendingContext!;
+        context.dispose();
+        expect(context.promise).toBe(pending);
+        await expect(context.promise).resolves.toMatchObject({ skipped: true });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Model-level skip takes precedence over reusing unchanged pending work', async () => {
+        let calls = 0;
+        let setup = setupValidator(() => {
+            calls++;
+            return new Promise(() => {});
+        }, { skipOnModelLevelValidation: true });
+        expect(setup.validator.validate({ isModelLevel: true })).toMatchObject({ skipped: true });
+        let pending = setup.validator.validate({});
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        await expect(pending).resolves.toMatchObject({ skipped: true });
+        expect(setup.validator.validate({ isModelLevel: true })).toMatchObject({ skipped: true });
+        expect(calls).toBe(1);
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Cancellation cleanup does not clear a replacement started by an abort listener', async () => {
+        let setup = setupValidator(() => new Promise(() => {}), {
+            restartWhenPending: RestartWhenPending.Always
+        });
+        let first = setup.validator.validate({});
+        let firstContext = setup.validator.pendingContext!;
+        let replacement: Promise<unknown> | undefined;
+        firstContext.abortController.signal.addEventListener('abort', () => {
+            replacement = Promise.resolve(setup.validator.validate({}));
+        });
+        expect(setup.validator.isPendingResponsible({ isModelLevel: true })).toBe(false);
+        expect(setup.validator.pendingContext).not.toBeNull();
+        expect(setup.validator.pendingContext).not.toBe(firstContext);
+        await expect(first).resolves.toMatchObject({ skipped: true });
+        setup.validator.dispose();
+        await expect(replacement).resolves.toMatchObject({ skipped: true });
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('A cancelled handler resolving late cannot clear or change its replacement', async () => {
+        let completions: Array<(result: AsyncValidatorEvaluationResult) => void> = [];
+        let setup = setupValidator(() => new Promise(resolve => { completions.push(resolve); }), {
+            restartWhenPending: RestartWhenPending.Always
+        });
+        let first = setup.validator.validate({});
+        expect(setup.validator.isPendingResponsible({})).toBe(false);
+        let second = setup.validator.validate({});
+        let replacement = setup.validator.pendingContext;
+
+        await expect(first).resolves.toMatchObject({ skipped: true });
+        completions[0]({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            errorCode: 'Stale',
+            errorMessage: 'Stale result'
+        });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(setup.validator.pendingContext).toBe(replacement);
+        expect(setup.validator.validate({})).toBe(second);
+        completions[1]({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        await expect(second).resolves.toEqual({
+            conditionEvaluateResult: ConditionEvaluateResult.Match,
+            issueFound: null
+        });
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Does not log the expected rejection from an aborted handler', async () => {
+        let setup = setupValidator((_host, _manager, signal) =>
+            new Promise((_resolve, reject) => {
+                signal.addEventListener('abort', () => reject(signal.reason));
+            }));
+        let pending = setup.validator.validate({});
+        setup.validator.dispose();
+        await expect(pending).resolves.toMatchObject({ skipped: true });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test.each([RestartWhenPending.WhenInputsChanged, RestartWhenPending.Always])(
+        'Makes the same pending Promise available during synchronous reentry with policy %s', async policy => {
+        let reentrant: unknown;
+        let setup = setupValidator(() => {
+            reentrant = setup.validator.validate({});
+            return Promise.resolve({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        }, { restartWhenPending: policy });
+        let pending = setup.validator.validate({});
+        expect(reentrant).toBe(pending);
+        await expect(pending).resolves.toMatchObject({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Times out an uncooperative handler, logs the failure, and aborts its signal', async () => {
+        let signal!: AbortSignal;
+        let setup = setupValidator((_host, _manager, abortSignal) => {
+            signal = abortSignal;
+            return new Promise(() => {});
+        }, { timeout: 10 });
+        let result = await setup.validator.validate({});
+        expect(result.failedToResolve?.message).toBe('Async validation timed out');
+        expect(signal.aborted).toBe(true);
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error, category: LoggingCategory.Exception,
+            message: 'Async validation timed out', feature: 'Validator',
+            type: 'AsyncValidator', identity: ['Field1', 'AvailabilityCheck']
+        }));
+        expect(setup.logger.entryCount).toBe(1);
+    });
+
+    test('Uses the global timeout when the validator has no timeout override', async () => {
+        let setup = setupValidator(() => new Promise(() => {}));
+        setup.services.settings.asyncValidation.timeout = 10;
+
+        let result = await setup.validator.validate({});
+        expect(result.failedToResolve?.message).toBe('Async validation timed out');
+        expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+        expect(result.issueFound).toBeNull();
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.captured).toHaveLength(1);
+        expect(setup.logger.captured[0]).toEqual(expect.objectContaining({
+            level: LoggingLevel.Error, category: LoggingCategory.Exception,
+            message: 'Async validation timed out', feature: 'Validator',
+            type: 'AsyncValidator', identity: ['Field1', 'AvailabilityCheck']
+        }));
+    });
+
+    test('Rejects an unresolvable declared dependency before starting the handler', () => {
+        let calls = 0;
+        let setup = setupValidator(async () => {
+            calls++;
+            return { conditionEvaluateResult: ConditionEvaluateResult.Match };
+        }, { dependencyValueHostNames: ['Missing'] });
+        expect(() => setup.validator.validate({})).toThrow(/dependency "Missing" was not found/);
+        expect(calls).toBe(0);
+        expect(setup.validator.pendingContext).toBeNull();
+        expect(setup.logger.entryCount).toBe(0);
+    });
+
+    test('Defaults zero and negative timeout overrides to 5000 ms', async () => {
+        let setups = [0, -1].map(timeout => {
+            let setup = setupValidator(() => new Promise(() => {}), { timeout });
+            setup.services.settings.asyncValidation.timeout = 10;
+            return setup;
+        });
+        let started = performance.now();
+
+        try {
+            // Start both timers together so the fallback can be checked without two five-second waits.
+            let results = await Promise.all(setups.map(setup =>
+                Promise.resolve(setup.validator.validate({})).then(result => ({
+                    result,
+                    elapsed: performance.now() - started
+                }))
+            ));
+            for (let [index, { result, elapsed }] of results.entries()) {
+                expect(elapsed).toBeGreaterThanOrEqual(4900);
+                expect(result.failedToResolve?.message).toBe('Async validation timed out');
+                expect(result.conditionEvaluateResult).toBe(ConditionEvaluateResult.Undetermined);
+                expect(result.issueFound).toBeNull();
+                expect(setups[index].logger.captured).toHaveLength(1);
+                expect(setups[index].logger.captured[0]).toEqual(expect.objectContaining({
+                    level: LoggingLevel.Error, category: LoggingCategory.Exception,
+                    message: 'Async validation timed out', feature: 'Validator',
+                    type: 'AsyncValidator', identity: ['Field1', 'AvailabilityCheck']
+                }));
+            }
+        }
+        finally {
+            for (let setup of setups)
+                setup.validator.dispose();
+        }
+    }, 15000);
+
 });
