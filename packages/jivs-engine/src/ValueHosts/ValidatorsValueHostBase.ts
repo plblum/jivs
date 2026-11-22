@@ -3,13 +3,13 @@
  * @module jivs-engine/ValueHosts/AbstractClasses/ValidatorsValueHostBase
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { LoggingCategory, LoggingLevel } from '../Interfaces/LoggingService';
+import { LoggingLevel } from '../Interfaces/LoggingService';
 import { objectKeysCount, cleanString } from '../Utilities/Utilities';
 import { IValueHostResolver } from '../Interfaces/ValueHostResolver';
 import { ConditionCategory, ConditionEvaluateResult, ICondition } from '../Interfaces/Conditions';
 import { ValidateOptions, ValueHostValidateResult, ValidationStatus, ValidationSeverity, IssueFound } from '../Interfaces/Validation';
-import { ValidatorValidateResult, IValidator, ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
-import { CodingError, SevereErrorBase, assertNotEmptyString, assertNotNull, ensureError } from '../Utilities/ErrorHandling';
+import { IValidator, ValidatorConfig, ValidatorType } from '../Interfaces/Validator';
+import { assertNotEmptyString, assertNotNull } from '../Utilities/ErrorHandling';
 import
     {
         ValidatorsValueHostBaseConfig, ValidatorsValueHostBaseInstanceState,
@@ -22,7 +22,9 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { AsyncValidatorConfig, IPendingContext, isAsyncValidator, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { ValueHostValidationRunner } from './ValueHostValidationRunner';
+import { LoggingFacade } from '../Utilities/LoggingFacade';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -188,411 +190,29 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         if (!this.isEnabled())
         {
             this.clearValidation();
-            this.logger.message(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);            
+            this.logger.message(LoggingLevel.Debug, () => `Validation skipped because ValueHost "${this.getName()}" is disabled`);
             return null;
         }
-        const self = this;
-        if (!options)
-            options = {};
-        this.logger.message(LoggingLevel.Debug, ()=> `Validating ValueHost "${this.getName()}"`);
-        
-        // NOTE: This object instance is important for async validation.
-        // Its properties collect all validator results, including those delayed by async.
-        // By being an object, any closure referring to result will still get those
-        // property changes for all validators completed.
-        const result: ValueHostValidateResult = {
-            status: ValidationStatus.Undetermined,
-            issuesFound: null
-        };
+        options ??= {};
+        this.logger.message(LoggingLevel.Debug, () => `Validating ValueHost "${this.getName()}"`);
+        if (!this.groupsMatch(options.group, false)) {
+            const message = `Group names do not match "${options.group}" vs "${this.config.group as any}"`;
+            this.logger.message(LoggingLevel.Info, () => message);
+            return null;
+        }
 
-        if (!this.groupsMatch(options.group, false))
-            return bailout(`Group names do not match "${options.group}" vs "${this.config.group as any}"`);
-
-        // async validators that are processing are associated with a specific validation generation.
-        // A change of _validationGeneration is because the original value changed or a new validation cycle has started.
-        // Only results from the current generation will be applied to the ValueHost's state.
         const runGeneration = ++this._validationGeneration;
-        const failedIdentities = new Set(this.instanceState.failedAsyncIdentities ?? []);
-        // A retry has not recovered an operational failure until its validator
-        // returns a definitive result. Keep its issue visible in the meantime.
-        const retainedIssues = (this.instanceState.issuesFound ?? [])
-            .filter(issue => issue.asyncIdentity != null && failedIdentities.has(issue.asyncIdentity));
-        result.issuesFound = retainedIssues.length ? retainedIssues : null;
-        let requestedStatus = result.status;
-        let pendingCount = 0;
-        let disposalSurvivingLogger = this.logger;   // logError may occur after this.logger is disposed...
-
-        try {
-            try {
-                const validators = this.validators();
-                let stop = false;
-                for (let i = 0; !stop && i < validators.length; i++) {
-                    if (runGeneration !== this._validationGeneration)
-                        break;
-
-                    const iv = validators[i];
-                    let potentialIVR: ValidatorValidateResult | Promise<ValidatorValidateResult>;
-                    let context: IPendingContext | null = null;
-                    if (isAsyncValidator(iv)) {
-                        const reuse = iv.isPendingResponsible(options);
-                        if (runGeneration !== this._validationGeneration)
-                            break;
-
-                        if (reuse) {
-                            context = iv.pendingContext;
-                            if (!context)
-                                throw new CodingError('Responsible validator has no pending context');
-                            potentialIVR = context.promise;
-                        }
-                        else {
-                            potentialIVR = iv.validate(options);
-                            const current = iv.pendingContext;
-                            if (potentialIVR instanceof Promise && current?.promise === potentialIVR)
-                                context = current;
-                        }
-                    }
-                    else
-                        potentialIVR = iv.validate(options);
-                    if (potentialIVR instanceof Promise) {
-                        const missingContext = isAsyncValidator(iv) && !context;
-                        processPromise(potentialIVR, iv, context, !missingContext);
-                        if (runGeneration !== this._validationGeneration)
-                            break;
-                        if (missingContext) {
-                            logError(`Async validator "${iv.errorCode}" returned a Promise without its pending context`);
-                            failedIdentities.add(iv.errorCode);
-                        }
-                        continue;
-                    }
-                    if (runGeneration !== this._validationGeneration)
-                        break;
-                    stop = processValidatorResult(potentialIVR, iv);
-                }
-            }
-            catch (e) {
-                const err = ensureError(e);                
-
-                logError(err.message);
-                if (err instanceof SevereErrorBase)
-                {
-                    if (runGeneration === this._validationGeneration)
-                    {
-                        this._validationGeneration++;
-                        try {
-                            const changed = this.updateInstanceState((stateToUpdate) => {
-                                this.setInstanceStateStatus(stateToUpdate, ValidationStatus.NeedsValidation);
-                                delete stateToUpdate.asyncProcessing;
-                                delete stateToUpdate.corrected;
-                                return stateToUpdate;
-                            }, this);
-                            if (changed)
-                                this.invokeOnValueHostValidationStateChanged(options);
-                        }
-                        catch (cleanupError) {
-                            logError(`Validation cleanup failed: ${ensureError(cleanupError).message}`);
-                        }
-                    }
-                    throw err;
-                }
-
-                // resume normal processing with Undetermined state
-                result.status = ValidationStatus.Undetermined;
-            }
-            requestedStatus = result.status;
-            adjustCorrectedFlag();
-            reviseStatusIfFailed();
-            if (runGeneration === this._validationGeneration)
-                if (updateInstanceStateWithResult(result) &&
-                    runGeneration === this._validationGeneration)   // final defense against external changes
-                    self.invokeOnValueHostValidationStateChanged(options);
-            // when the result hasn't changed from the start, report null as there were no issues found
-            return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.completions?.length ?
-                result : null;
-        }
-
-        finally {
-            this.logger.log(LoggingLevel.Info, (options) => {
-                return {
-                    message: `Validation result: ${ValidationStatus[result.status]} Issues found:` +
-                        (result.issuesFound ? JSON.stringify(result.issuesFound) : 'none'),
-                    category: LoggingCategory.Result
-                };
-            });
-
-        }
-        function processValidatorResult(fieldValResult: ValidatorValidateResult, validator: IValidator): boolean {
-            if (fieldValResult.skipped)
-                return false;
-            if (fieldValResult.issueFound) {
-                if (options!.preliminary && validator.condition.category === ConditionCategory.Require)
-                    return true;
-                const issue = fieldValResult.issueFound;
-                issue.doNotSave = true;
-                switch (issue.severity) {
-                    case ValidationSeverity.Error:
-                    case ValidationSeverity.Severe:
-                        result.status = ValidationStatus.Invalid;
-                        break;
-                    case ValidationSeverity.Warning:
-                        if (result.status === ValidationStatus.Undetermined)
-                            result.status = ValidationStatus.Valid;
-                        issue.doNotSave = false;
-                        break;
-                }
-                (result.issuesFound ??= []).push(issue);
-                return issue.severity === ValidationSeverity.Severe;
-            }
-            if (result.status === ValidationStatus.Undetermined &&
-                fieldValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                result.status = ValidationStatus.Valid;
-            return false;
-        }
-
-        function reviseStatusIfFailed(): void {
-            result.status = failedIdentities.size ? ValidationStatus.Failed : requestedStatus;
-            if (failedIdentities.size)
-                delete result.corrected;
-        }
-
-        // Only a definitive result from this validator can clear its retained failure.
-        function clearRecoveredFailure(identity: string | null): void {
-            if (identity === null || !failedIdentities.delete(identity))
-                return;
-            const remaining = (result.issuesFound ?? [])
-                .filter(issue => issue.asyncIdentity !== identity);
-            result.issuesFound = remaining.length ? remaining : null;
-        }
-
-        function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
-            return self.updateInstanceState((stateToUpdate) => {
-                if (result.corrected)
-                {
-                    stateToUpdate.corrected = true;
-                }
-                else
-                    delete stateToUpdate.corrected;
-                self.setInstanceStateStatus(stateToUpdate, requestedStatus);
-                stateToUpdate.issuesFound = result.issuesFound;
-                if (failedIdentities.size)
-                    stateToUpdate.failedAsyncIdentities = [...failedIdentities];
-                else
-                    delete stateToUpdate.failedAsyncIdentities;
-                if (options!.group)
-                    stateToUpdate.group = options!.group;
-                else
-                    delete stateToUpdate.group;
-                if (pendingCount)
-                    stateToUpdate.asyncProcessing = true;
-                else
-                    delete stateToUpdate.asyncProcessing;
-                return stateToUpdate;
-            }, self);
-        }
-        function processPromise(promise: Promise<ValidatorValidateResult>, validator: IValidator,
-            context: IPendingContext | null, applyResult: boolean): void {
-            // Legacy Validators can also return Promises, but only AsyncValidators have
-            // an identity that can be retained as a failure and cleared by a later retry.
-            const asyncIdentity = validator.condition.category === ConditionCategory.Async ? validator.errorCode : null;
-            function completeThePromise(finish: () => void): void {
-                pendingCount--;
-                if (context && result.pending) {
-                    const index = result.pending.indexOf(context);
-                    if (index >= 0)
-                        result.pending.splice(index, 1);
-                    if (result.pending.length === 0)
-                        delete result.pending;
-                }
-                if (runGeneration === self._validationGeneration)
-                    finish();
-            }
-            function deleteAsyncProcessFlag(): boolean {
-                // Skipped and Undetermined results have no status or issue to publish.
-                // Only the last pending result needs to update the host's pending flag.
-                if (!pendingCount)
-                    return self.updateInstanceState((stateToUpdate) => {
-                        delete stateToUpdate.asyncProcessing;
-                        return stateToUpdate;
-                    }, self);
-                return false;
-            }
-            /**
-             * In async situations, the callback's exception should be caught and logged to prevent unhandled promise rejections.
-             * Prevents callback errors from being mistaken for validator failures.
-             */
-            function notifyAsyncStateChanged(): void
-            {
-                try
-                {
-                    self.invokeOnValueHostValidationStateChanged(options);
-                }
-                catch (error)
-                {
-                    logError(`Async validation notification failed: ${ ensureError(error).message }`);
-                }
-            }
-            /**
-             * Adds one resolved validator's outcome to this run's shared result and
-             * publishes any resulting state change. Called only for the current run,
-             * after completeThePromise has removed this Promise from pending.
-             */
-            function applyResolvedValidatorResult(ivr: ValidatorValidateResult): void
-            {
-                if (ivr.failedToResolve)
-                {
-                    if (asyncIdentity !== null)
-                        failedIdentities.add(asyncIdentity);
-                    else
-                        requestedStatus = ValidationStatus.Failed;
-                    if (ivr.issueFound)
-                    {
-                        const issueFound = ivr.issueFound;
-                        issueFound.doNotSave = true;
-                        // Published issues may be shared with instance state; replace
-                        // the array so state change detection sees this update.
-                        const issues = [...(result.issuesFound ?? [])];
-                        const existingIndex = asyncIdentity === null ? -1 :
-                            issues.findIndex(issue => issue.asyncIdentity === asyncIdentity);
-                        if (existingIndex < 0)
-                            issues.push(issueFound);
-                        else
-                            issues[existingIndex] = issueFound;
-                        result.issuesFound = issues;
-                    }
-                    reviseStatusIfFailed();
-                    if (updateInstanceStateWithResult(result))
-                        notifyAsyncStateChanged();
-                }
-                else if (ivr.skipped)
-                {
-                    // A skipped validator cannot clear an earlier failure.
-                    if (deleteAsyncProcessFlag())
-                        notifyAsyncStateChanged();
-                }
-                else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.NoMatch)
-                {
-                    if (!ivr.issueFound)
-                        throw new CodingError(`Validator "${ validator.errorCode }" returned NoMatch without an issue`);
-                    // A definitive result clears this handler's failure, even when it
-                    // reports an issue. Other handlers' failures remain in effect.
-                    clearRecoveredFailure(asyncIdentity);
-                    if (ivr.issueFound.severity === ValidationSeverity.Warning)
-                    {
-                        // Warnings do not block saving and must not override an invalid status.
-                        ivr.issueFound.doNotSave = false;
-                        if (requestedStatus === ValidationStatus.Undetermined)
-                            requestedStatus = ValidationStatus.Valid;
-                    }
-                    else if (requestedStatus !== ValidationStatus.Failed)
-                        requestedStatus = ValidationStatus.Invalid;
-                    result.issuesFound = [...(result.issuesFound ?? []), ivr.issueFound];
-                    reviseStatusIfFailed();
-                    if (updateInstanceStateWithResult(result))
-                        notifyAsyncStateChanged();
-
-                }
-                else if (ivr.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                {
-                    // Match clears only this handler's failure and cannot override
-                    // a more significant status already produced by another validator.
-                    clearRecoveredFailure(asyncIdentity);
-                    if (requestedStatus === ValidationStatus.Undetermined)
-                        requestedStatus = ValidationStatus.Valid;
-
-                    reviseStatusIfFailed();
-                    if (updateInstanceStateWithResult(result))
-                        notifyAsyncStateChanged();
-                }
-                else // ConditionEvaluateResult.Undetermined
-                {
-                    // Undetermined is not a definitive retry, so retain any failure.
-                    if (deleteAsyncProcessFlag())
-                        notifyAsyncStateChanged();
-                }
-            }
-
-            pendingCount++;
-            if (context)
-                (result.pending ??= []).push(context);
-            let validatorRejectionHandled = false;
-            const completion = promise.then(
-                (ivr) => {
-                    completeThePromise(() => {
-                        if (applyResult)
-                            applyResolvedValidatorResult(ivr);
-                        else if (deleteAsyncProcessFlag())
-                            notifyAsyncStateChanged();
-                    });
-                },
-                (failureInfo) => {
-                    completeThePromise(() => {
-                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
-                        if (asyncIdentity !== null)
-                            failedIdentities.add(asyncIdentity);
-                        else
-                            requestedStatus = ValidationStatus.Failed;
-                        reviseStatusIfFailed();
-                        if (updateInstanceStateWithResult(result))
-                            notifyAsyncStateChanged();
-                    });
-                    if (runGeneration !== self._validationGeneration)
-                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
-                    validatorRejectionHandled = true;
-                    throw ensureError(failureInfo);
-                }
-            ).catch(error => {
-                if (!validatorRejectionHandled)
-                {
-                    logError(ensureError(error).message);
-                    if (runGeneration === self._validationGeneration)
-                    {
-                        if (asyncIdentity !== null)
-                            failedIdentities.add(asyncIdentity);
-                        else
-                            requestedStatus = ValidationStatus.Failed;
-                        reviseStatusIfFailed();
-                        if (updateInstanceStateWithResult(result))
-                            notifyAsyncStateChanged();
-                    }
-                }
-                throw error;
-            });
-            (result.completions ??= []).push(completion);
-            // Field callers need not await the result; the original Promise remains
-            // rejected for manager callers that do await it.
-            void completion.catch(() => {});
-        }
-        function adjustCorrectedFlag(): void
-        {
-            // corrected=true only for the validation that moves Invalid->Valid.
-            // The previous status is in instanceState.status when validate() is called directly.
-            // When a setter ran first, status is NeedsValidation and lastStatus holds the previous status.
-            // As a rule, async validation will not prepare the corrected flag.
-            let isValid = result.status === ValidationStatus.Valid && !pendingCount;
-            let wasInvalid = self.instanceState.status === ValidationStatus.Invalid ||
-                (self.instanceState.status === ValidationStatus.NeedsValidation &&
-                    self.instanceState.lastStatus === ValidationStatus.Invalid);
-
-            if (wasInvalid && isValid)
-                result.corrected = true;
-            else
-                delete result.corrected;                        
-        }
-
-        function bailout(errorMessage: string): null {
-            self.logger.message(LoggingLevel.Info, () => errorMessage);
-            return null;
-        }
-
-        function logError(message: string): void {
-            disposalSurvivingLogger.log(LoggingLevel.Error, (options) => {
-                return {
-                    message: message ??
-                        /* istanbul ignore next */  // defensive             
-                        'Reason unspecified',
-                    category: LoggingCategory.Exception
-                };
-            });            
-        }
+        const run = new ValueHostValidationRunner<TState>({
+            getState: (): TState => this.instanceState,
+            getGeneration: (): number => this._validationGeneration,
+            invalidateGeneration: (): void => { this._validationGeneration++; },
+            getValidators: (): IValidator[] => this.validators(),
+            getLogger: (): LoggingFacade => this.logger,
+            updateState: (updater): boolean => this.updateInstanceState(updater, this),
+            setStatus: (state, status): void => { this.setInstanceStateStatus(state, status); },
+            notify: (runOptions): void => { this.invokeOnValueHostValidationStateChanged(runOptions); }
+        }, options, runGeneration);
+        return run.execute();
     }
 
     //#region validation
