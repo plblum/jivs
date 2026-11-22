@@ -3,7 +3,7 @@
  * @module jivs-engine/Validation/Types
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
-import { ValidatorValidateResult } from './Validator';
+import { IPendingContext } from './AsyncValidator';
 
 /**
  * Parameter for the validate() function on Validatable ValueHosts and ValueHostsManager.
@@ -91,13 +91,16 @@ export interface StatefulValueHostValidateResult {
  */
 export interface ValueHostValidateResult extends StatefulValueHostValidateResult {
     /**
-     * Any promises returned by Validator.validate()
-     * These still need to finish before supplying their evaluation results.
-     * When either null or undefined, nothing is pending.
-     * There should never be an empty array as the presence of an array
-     * will make the system think there are promises pending.
+     * Participating AsyncValidator contexts whose operations are still pending.
+     * Custom Promise-returning validators do not have a context.
      */
-    pending?: Array<Promise<ValidatorValidateResult>> | null;
+    pending?: Array<IPendingContext> | null;
+    /**
+     * Completions for this host validation run, including custom validators.
+     * Each settles after the host has processed the validator's outcome.
+     * Copy this list to wait for the run; it remains available after settlement.
+     */
+    completions?: Array<Promise<void>> | null;
 }
 
 /**

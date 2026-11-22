@@ -347,7 +347,7 @@ function setupAsyncDependencyHost(handler: AsyncValidatorEvaluateHandler) {
 async function finishAsyncIssueValidation(valueHost: TestValidatorsValueHost, logger: TestingLoggingService) {
     let result = valueHost.validate();
     expect(result?.pending?.length).toBeGreaterThan(0);
-    let pending = [...result!.pending!];
+    let pending = [...result!.completions!];
     await Promise.all(pending);
     expect(logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result)).not.toBeNull();
     expect(logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
@@ -409,7 +409,7 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
         setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
         let first = setup.valueHost.validate()!;
-        let firstPending = [...first.pending!];
+        let firstPending = [...first.completions!];
         expect(setup.valueHost.asyncProcessing).toBe(true);
 
         shouldThrow = true;
@@ -437,7 +437,7 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
 
         shouldThrow = false;
         let retry = setup.valueHost.validate()!;
-        let retryPending = [...retry.pending!];
+        let retryPending = [...retry.completions!];
         resolvers[1]({ conditionEvaluateResult: ConditionEvaluateResult.Match });
         await Promise.all(retryPending);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
@@ -485,7 +485,7 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
             })
         }]);
         let first = setup.valueHost.validate()!;
-        await Promise.all([...first.pending!]);
+        await Promise.all([...first.completions!]);
         let callbacks = 0;
         setup.valueHostsManager.onValueHostValidationStateChanged = () => { callbacks++; };
 
@@ -530,7 +530,7 @@ describe('ValidatorsValueHostBase severe validation cleanup', () => {
         expect(() => setup.valueHost.validate()).toThrow('Outer validation failed');
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.doNotSave).toBe(true);
-        let pending = [...nestedResult!.pending!];
+        let pending = [...nestedResult!.completions!];
         finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
         await Promise.all(pending);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
@@ -584,7 +584,7 @@ describe('ValidatorsValueHostBase reentrant validation loop', () => {
         expect(signal.aborted).toBe(false);
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.doNotSave).toBe(true);
-        let pending = [...nestedResult!.pending!];
+        let pending = [...nestedResult!.completions!];
         finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
         await Promise.all(pending);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
@@ -613,7 +613,7 @@ describe('ValidatorsValueHostBase reentrant validation loop', () => {
         });
         let logger = new TestingLoggingService(LoggingLevel.Debug);
         setup.services.loggingService = logger;
-        let first = [...setup.valueHost.validate()!.pending!];
+        let first = [...setup.valueHost.validate()!.completions!];
 
         setup.valueHost.validate();
 
@@ -622,7 +622,7 @@ describe('ValidatorsValueHostBase reentrant validation loop', () => {
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.doNotSave).toBe(true);
         await Promise.all(first);
-        let pending = [...nestedResult!.pending!];
+        let pending = [...nestedResult!.completions!];
         finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
         await Promise.all(pending);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
@@ -648,7 +648,7 @@ describe('ValidatorsValueHostBase reentrant validation loop', () => {
         }]);
 
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
         expect(laterCalls).toBe(0);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
         expect(setup.valueHost.asyncProcessing).toBe(false);
@@ -675,11 +675,12 @@ describe('ValidatorsValueHostBase pending async policies', () => {
         }]);
 
         let first = setup.valueHost.validate()!;
-        let firstPending = [...first.pending!];
+        let firstPending = [...first.completions!];
         let second = setup.valueHost.validate()!;
-        let secondPending = [...second.pending!];
+        let secondPending = [...second.completions!];
         expect(calls).toBe(1);
-        expect(secondPending[0]).toBe(firstPending[0]);
+        expect(second.pending![0]).toBe(first.pending![0]);
+        expect(secondPending[0]).not.toBe(firstPending[0]);
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.doNotSave).toBe(true);
 
@@ -715,11 +716,13 @@ describe('ValidatorsValueHostBase pending async policies', () => {
         }]);
 
         let first = setup.valueHost.validate()!;
-        let pending = [...first.pending!];
+        let pending = [...first.completions!];
+        let validatorPromise = first.pending![0].promise;
         expect(setup.valueHost.validate({ isModelLevel: true })).toBeNull();
         expect(signal.aborted).toBe(true);
         expect(calls).toBe(1);
-        await expect(pending[0]).resolves.toMatchObject({ skipped: true });
+        await expect(validatorPromise).resolves.toMatchObject({ skipped: true });
+        await Promise.all(pending);
         finish({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
             errorCode: 'Stale',
@@ -736,6 +739,247 @@ describe('ValidatorsValueHostBase pending async policies', () => {
     });
 });
 
+// Per-run completions include custom validator work and settle after the host publishes it.
+describe('ValidatorsValueHostBase host completions', () => {
+    test.each(['custom-first', 'async-first'] as const)(
+        'A custom Promise and an AsyncValidator remain pending independently when %s finishes',
+        async order => {
+            let finishCustom!: (result: ValidatorValidateResult) => void;
+            let finishAsync!: (result: AsyncValidatorEvaluationResult) => void;
+            let setup = setupAsyncIssueHost([{
+                identity: 'AvailabilityCheck',
+                handler: () => new Promise(resolve => { finishAsync = resolve; })
+            }], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+            setup.valueHost.exposeValidators[0].validate = () => new Promise(resolve => { finishCustom = resolve; });
+
+            let result = setup.valueHost.validate()!;
+            let completions = [...result.completions!];
+            expect(result.pending).toHaveLength(1);
+            expect(completions).toHaveLength(2);
+            expect(setup.valueHost.doNotSave).toBe(true);
+
+            if (order === 'custom-first') {
+                finishCustom({ conditionEvaluateResult: ConditionEvaluateResult.Match, issueFound: null });
+                await completions[0];
+                expect(result.pending).toHaveLength(1);
+            }
+            else {
+                finishAsync({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+                await completions[1];
+                expect(result.pending).toBeUndefined();
+            }
+            // A missing context does not mean the custom validator has finished.
+            expect(setup.valueHost.asyncProcessing).toBe(true);
+            expect(setup.valueHost.doNotSave).toBe(true);
+
+            if (order === 'custom-first') {
+                finishAsync({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+                await completions[1];
+            }
+            else {
+                finishCustom({ conditionEvaluateResult: ConditionEvaluateResult.Match, issueFound: null });
+                await completions[0];
+            }
+            expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+            expect(setup.valueHost.asyncProcessing).toBe(false);
+            expect(setup.valueHost.doNotSave).toBe(false);
+            expect(result.pending).toBeUndefined();
+            expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+                { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+            expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+        }
+    );
+
+    test('A custom Promise validator has no context but its completion waits for the issue to be published', async () => {
+        let finish!: (result: ValidatorValidateResult) => void;
+        let setup = setupAsyncIssueHost([], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+        setup.valueHost.exposeValidators[0].validate = () => new Promise(resolve => { finish = resolve; });
+
+        let result = setup.valueHost.validate()!;
+        expect(result.pending).toBeUndefined();
+        expect(result.completions).toHaveLength(1);
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        expect(setup.valueHost.doNotSave).toBe(true);
+
+        finish({
+            conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+            issueFound: {
+                valueHostName: 'Field1', errorCode: 'CustomIssue', errorMessage: 'Invalid',
+                severity: ValidationSeverity.Error, doNotSave: true
+            }
+        });
+        await Promise.all(result.completions!);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.getIssuesFound()).toEqual([
+            expect.objectContaining({ errorCode: 'CustomIssue' })
+        ]);
+        expect(result.completions).toHaveLength(1);
+        expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+    });
+
+    test('A custom Promise rejection is logged, blocks saving, and rejects the host completion', async () => {
+        let reject!: (error: Error) => void;
+        let setup = setupAsyncIssueHost([], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+        setup.valueHost.exposeValidators[0].validate = () => new Promise((_, rejectPromise) => { reject = rejectPromise; });
+        let result = setup.valueHost.validate()!;
+        let completion = result.completions![0];
+
+        reject(new Error('Custom validator failed'));
+        await expect(completion).rejects.toThrow('Custom validator failed');
+
+        expect(result.pending).toBeUndefined();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.logger.findMessage('Error: Custom validator failed', LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(1);
+    });
+
+    test.each(['failure-first', 'warning-first'] as const)(
+        'A custom Promise rejection and an async warning are retained when %s settles first',
+        async order => {
+            let reject!: (error: Error) => void;
+            let finishAsync!: (result: AsyncValidatorEvaluationResult) => void;
+            let setup = setupAsyncIssueHost([{
+                identity: 'AvailabilityCheck',
+                handler: () => new Promise(resolve => { finishAsync = resolve; })
+            }], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
+            setup.valueHost.exposeValidators[0].validate = () => new Promise((_, rejectPromise) => {
+                reject = rejectPromise;
+            });
+            let notifications: ValueHostValidationState[] = [];
+            setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+            let result = setup.valueHost.validate()!;
+            let completions = [...result.completions!];
+            let warning: AsyncValidatorEvaluationResult = {
+                conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
+                errorCode: 'NameWarning', errorMessage: 'Please review',
+                severity: ValidationSeverity.Warning
+            };
+            expect(notifications).toHaveLength(1);
+            if (order === 'failure-first') {
+                reject(new Error('Custom validator failed'));
+                await expect(completions[0]).rejects.toThrow('Custom validator failed');
+                expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
+                expect(setup.valueHost.getIssuesFound()).toBeNull();
+            }
+            else {
+                finishAsync(warning);
+                await completions[1];
+                expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
+                expect(setup.valueHost.getIssuesFound()).toEqual([
+                    expect.objectContaining({ errorCode: 'NameWarning', doNotSave: false })
+                ]);
+            }
+            expect(setup.valueHost.asyncProcessing).toBe(true);
+            expect(setup.valueHost.doNotSave).toBe(true);
+            expect(notifications).toHaveLength(2);
+            expect(notifications[1]).toEqual(expect.objectContaining({ asyncProcessing: true, doNotSave: true }));
+
+            if (order === 'failure-first') {
+                finishAsync(warning);
+                await completions[1];
+            }
+            else {
+                reject(new Error('Custom validator failed'));
+                await expect(completions[0]).rejects.toThrow('Custom validator failed');
+            }
+            expect(result.status).toBe(ValidationStatus.Failed);
+            expect(result.pending).toBeUndefined();
+            expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
+            expect(setup.valueHost.asyncProcessing).toBe(false);
+            expect(setup.valueHost.doNotSave).toBe(true);
+            expect(setup.valueHost.getIssuesFound()).toEqual([
+                expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorCode: 'NameWarning', doNotSave: false })
+            ]);
+            expect(notifications).toHaveLength(3);
+            expect(notifications[2]).toEqual(expect.objectContaining({
+                status: ValidationStatus.Failed, asyncProcessing: false, doNotSave: true,
+                issuesFound: [expect.objectContaining({ errorCode: 'NameWarning' })]
+            }));
+            expect(setup.logger.findMessage('Error: Custom validator failed', LoggingLevel.Error, LoggingCategory.Exception,
+                { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+            expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(1);
+        }
+    );
+
+    test.each(['skipped', 'undetermined'] as const)(
+        'An async %s result does not notify while another validator remains pending',
+        async outcome => {
+            let finishFirst!: (result: AsyncValidatorEvaluationResult) => void;
+            let finishSecond!: (result: AsyncValidatorEvaluationResult) => void;
+            let setup = setupAsyncIssueHost([{
+                identity: 'FirstCheck',
+                handler: () => new Promise(resolve => { finishFirst = resolve; })
+            }, {
+                identity: 'SecondCheck',
+                handler: () => new Promise(resolve => { finishSecond = resolve; })
+            }]);
+            let notifications: ValueHostValidationState[] = [];
+            setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+            let result = setup.valueHost.validate()!;
+            let completions = [...result.completions!];
+            expect(notifications).toHaveLength(1);
+            if (outcome === 'skipped')
+                result.pending![0].abortController.abort();
+            else
+                finishFirst({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined });
+            await completions[0];
+            if (outcome === 'skipped')
+                finishFirst({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined });
+
+            expect(result.pending).toHaveLength(1);
+            expect(setup.valueHost.asyncProcessing).toBe(true);
+            expect(setup.valueHost.doNotSave).toBe(true);
+            expect(notifications).toHaveLength(1);
+
+            finishSecond({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined });
+            await completions[1];
+            expect(result.pending).toBeUndefined();
+            expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
+            expect(setup.valueHost.getIssuesFound()).toBeNull();
+            expect(setup.valueHost.asyncProcessing).toBe(false);
+            expect(setup.valueHost.doNotSave).toBe(false);
+            expect(notifications).toHaveLength(2);
+            expect(notifications[1]).toEqual(expect.objectContaining({
+                status: ValidationStatus.Undetermined, asyncProcessing: false, doNotSave: false
+            }));
+            expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+                { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+            expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
+        }
+    );
+
+    test('An async validator Promise without its context is observed but cannot authorize saving', async () => {
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }]);
+        setup.valueHost.exposeValidators[0].validate = () => Promise.resolve({
+            conditionEvaluateResult: ConditionEvaluateResult.Match, issueFound: null
+        });
+
+        let result = setup.valueHost.validate()!;
+        expect(result.pending).toBeUndefined();
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        await Promise.all(result.completions!);
+
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
+        expect(setup.valueHost.asyncProcessing).toBe(false);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.logger.findMessage('Async validator "AvailabilityCheck" returned a Promise without its pending context',
+            LoggingLevel.Error, LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(1);
+    });
+});
+
 // Failed async checks block saving and expose a safe issue through the ValueHost and manager.
 describe('ValidatorsValueHostBase async resolution failures', () => {
     test('A legacy Promise explicitly reporting failedToResolve also blocks saving', async () => {
@@ -746,7 +990,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         let logger = new TestingLoggingService(LoggingLevel.Debug);
         setup.services.loggingService = logger;
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.isValid).toBe(false);
@@ -768,7 +1012,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         manager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         expect(result.status).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
@@ -825,25 +1069,34 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             }
         ]);
         let first = setup.valueHost.validate()!;
-        await Promise.all([...first.pending!]);
+        await Promise.all([...first.completions!]);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck', 'CreditCheck']);
+        expect(setup.valueHost.getIssuesFound()).toEqual(expect.arrayContaining([
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck' }),
+            expect.objectContaining({ asyncIdentity: 'CreditCheck' })
+        ]));
 
         failAvailability = false;
         setup.valueHost.getValidator('CreditCheck')!.setEnabled(false);
         let second = setup.valueHost.validate()!;
         expect(second.status).toBe(ValidationStatus.Failed);
-        await Promise.all([...second.pending!]);
+        expect(setup.valueHost.getIssuesFound()).toHaveLength(2);
+        await Promise.all([...second.completions!]);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['CreditCheck']);
+        expect(setup.valueHost.getIssuesFound()).toEqual([
+            expect.objectContaining({ asyncIdentity: 'CreditCheck', errorCode: 'AsyncValidationFailed' })
+        ]);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
 
         failCredit = false;
         setup.valueHost.getValidator('CreditCheck')!.setEnabled(true);
         let third = setup.valueHost.validate()!;
-        await Promise.all([...third.pending!]);
+        await Promise.all([...third.completions!]);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toBeUndefined();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
         expect(setup.valueHost.doNotSave).toBe(false);
+        expect(setup.valueHost.getIssuesFound()).toBeNull();
         expect(setup.logger.findMessage('Availability offline', LoggingLevel.Error, LoggingCategory.Exception,
             { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
         expect(setup.logger.findMessage('Credit offline', LoggingLevel.Error, LoggingCategory.Exception,
@@ -854,11 +1107,11 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         let setup = setupAsyncIssueHost([
             {
                 identity: 'AvailabilityCheck',
-                handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+                handler: () => new Promise(() => {})
             },
             {
                 identity: 'CreditCheck',
-                handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+                handler: () => new Promise(() => {})
             }
         ]);
         setup.valueHost.updateInstanceState(state => {
@@ -866,25 +1119,17 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             state.failedAsyncIdentities = ['AvailabilityCheck'];
             return state;
         }, setup.valueHost);
-        let finishers: Array<(result: ValidatorValidateResult) => void> = [];
-        for (let validator of setup.valueHost.exposeValidators)
-            validator.validate = () => new Promise(resolve => { finishers.push(resolve); });
-
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
+        let contexts = [...result.pending!];
         expect(setup.valueHost.asyncProcessing).toBe(true);
 
-        let skippedResult: ValidatorValidateResult = {
-            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
-            issueFound: null,
-            skipped: true
-        };
-        finishers[0](skippedResult);
+        contexts[0].abortController.abort();
         await pending[0];
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
 
-        finishers[1](skippedResult);
+        contexts[1].abortController.abort();
         await pending[1];
 
         expect(result.pending).toBeUndefined();
@@ -907,10 +1152,10 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
                 }
         }]);
         let first = setup.valueHost.validate()!;
-        await Promise.all([...first.pending!]);
+        await Promise.all([...first.completions!]);
         failed = false;
         let retry = setup.valueHost.validate()!;
-        await Promise.all([...retry.pending!]);
+        await Promise.all([...retry.completions!]);
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
         expect(setup.valueHost.doNotSave).toBe(false);
@@ -937,13 +1182,19 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             }
         }]);
         let first = setup.valueHost.validate()!;
-        await Promise.all([...first.pending!]);
+        await Promise.all([...first.completions!]);
+        let failureIssue = setup.valueHost.getIssuesFound();
+        expect(failureIssue).toEqual([
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorCode: 'AsyncValidationFailed' })
+        ]);
         let second = setup.valueHost.validate()!;
-        await Promise.all([...second.pending!]);
+        expect(setup.valueHost.getIssuesFound()).toEqual(failureIssue);
+        await Promise.all([...second.completions!]);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
+        expect(setup.valueHost.getIssuesFound()).toEqual(failureIssue);
         let third = setup.valueHost.validate()!;
-        await Promise.all([...third.pending!]);
+        await Promise.all([...third.completions!]);
 
         expect(setup.valueHost.exposeState.failedAsyncIdentities).toBeUndefined();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
@@ -955,6 +1206,62 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
     });
 
+    test('A repeated failure replaces its message and notifies while another validator remains pending', async () => {
+        let retry = false;
+        let finishFailure!: (result: AsyncValidatorEvaluationResult) => void;
+        let finishOther!: (result: AsyncValidatorEvaluationResult) => void;
+        let setup = setupAsyncIssueHost([{
+            identity: 'AvailabilityCheck',
+            handler: () => retry
+                ? new Promise(resolve => { finishFailure = resolve; })
+                : Promise.resolve({
+                    conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+                    failedToResolve: new Error('First failure'),
+                    errorMessage: 'First message'
+                })
+        }, {
+            identity: 'CreditCheck',
+            handler: () => retry
+                ? new Promise(resolve => { finishOther = resolve; })
+                : Promise.resolve({ conditionEvaluateResult: ConditionEvaluateResult.Match })
+        }]);
+        let first = setup.valueHost.validate()!;
+        await Promise.all(first.completions!);
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        retry = true;
+        let second = setup.valueHost.validate()!;
+        let completions = [...second.completions!];
+        expect(setup.valueHost.getIssuesFound()).toEqual([
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorMessage: 'First message' })
+        ]);
+        let initialNotifications = notifications.length;
+        finishFailure({
+            conditionEvaluateResult: ConditionEvaluateResult.Undetermined,
+            failedToResolve: new Error('Second failure'),
+            errorMessage: 'Second message'
+        });
+        await completions[0];
+
+        expect(setup.valueHost.asyncProcessing).toBe(true);
+        expect(setup.valueHost.getIssuesFound()).toEqual([
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorMessage: 'Second message' })
+        ]);
+        expect(notifications).toHaveLength(initialNotifications + 1);
+        expect(notifications[notifications.length - 1].issuesFound).toEqual([
+            expect.objectContaining({ asyncIdentity: 'AvailabilityCheck', errorMessage: 'Second message' })
+        ]);
+        finishOther({ conditionEvaluateResult: ConditionEvaluateResult.Match });
+        await completions[1];
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(setup.logger.findMessage('First failure', LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
+        expect(setup.logger.findMessage('Second failure', LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'Validator', identity: 'AvailabilityCheck' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(2);
+    });
+
     test('Failed takes precedence over an invalid issue without discarding it', async () => {
         let setup = setupAsyncIssueHost([{
             identity: 'AvailabilityCheck',
@@ -964,7 +1271,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             })
         }], [], [createValidatorConfig({ conditionType: NeverMatchesConditionType })]);
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         expect(setup.valueHost.getIssuesFound()).toEqual(expect.arrayContaining([
             expect.objectContaining({ errorCode: NeverMatchesConditionType }),
@@ -992,7 +1299,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             })
         }]);
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         setup.valueHost.clearValidation();
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
@@ -1014,7 +1321,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             handler: async () => { throw new Error('Unexpected rejection'); }
         }]);
         let result = setup.valueHost.validate()!;
-        await Promise.allSettled([...result.pending!]);
+        await Promise.allSettled([...result.completions!]);
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
@@ -1064,7 +1371,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
         let notifications: ValueHostValidationState[] = [];
         setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => {
             notifications.push(state);
@@ -1098,7 +1405,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             handler: () => new Promise((_, rejectPromise) => { reject = rejectPromise; })
         }]);
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
         let calls = 0;
         setup.valueHostsManager.onValueHostValidationStateChanged = () => {
             calls++;
@@ -1121,31 +1428,26 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(2);
     });
 
-    test('A malformed async result still blocks saving when its failure notification throws', async () => {
-        let setup = setupAsyncIssueHost([{
-            identity: 'AvailabilityCheck',
-            handler: async () => ({ conditionEvaluateResult: ConditionEvaluateResult.Match })
-        }]);
+    test('A malformed Promise result still blocks saving when its failure notification throws', async () => {
+        let setup = setupAsyncIssueHost([], [], [createValidatorConfig({ conditionType: AlwaysMatchesConditionType })]);
         setup.valueHost.exposeValidators[0].validate = () => Promise.resolve({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
             issueFound: null
         });
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
         let calls = 0;
         setup.valueHostsManager.onValueHostValidationStateChanged = () => {
             calls++;
             throw new Error('Observer failed');
         };
-        await Promise.all(pending);
-        // The malformed result is processed in a continuation after the validator Promise settles.
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await expect(pending[0]).rejects.toThrow('returned NoMatch without an issue');
 
         expect(result.status).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Failed);
         expect(setup.valueHost.doNotSave).toBe(true);
         expect(setup.valueHost.asyncProcessing).toBe(false);
-        expect(setup.valueHost.exposeState.failedAsyncIdentities).toEqual(['AvailabilityCheck']);
+        expect(setup.valueHost.exposeState.failedAsyncIdentities).toBeUndefined();
         expect(calls).toBe(1);
         expect(setup.logger.findMessage('returned NoMatch without an issue', LoggingLevel.Error,
             LoggingCategory.Exception, { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
@@ -1178,8 +1480,8 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
                     finishSecond = resolve;
             })
         }]);
-        let first = [...setup.valueHost.validate()!.pending!];
-        let second = [...setup.valueHost.validate()!.pending!];
+        let first = [...setup.valueHost.validate()!.completions!];
+        let second = [...setup.valueHost.validate()!.completions!];
         expect(calls).toBe(2);
         expect(second[0]).not.toBe(first[0]);
         finishSecond({ conditionEvaluateResult: ConditionEvaluateResult.Match });
@@ -1211,8 +1513,8 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
                     finishSecond = resolve;
             })
         }]);
-        let first = [...setup.valueHost.validate()!.pending!];
-        let second = [...setup.valueHost.validate()!.pending!];
+        let first = [...setup.valueHost.validate()!.completions!];
+        let second = [...setup.valueHost.validate()!.completions!];
         expect(calls).toBe(2);
         expect(second[0]).not.toBe(first[0]);
         finishSecond({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined, failedToResolve: new Error('Current failure') });
@@ -1235,7 +1537,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             identity: 'AvailabilityCheck',
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
-        let pending = [...setup.valueHost.validate()!.pending!];
+        let pending = [...setup.valueHost.validate()!.completions!];
         setup.valueHost.setValue('changed');
         expect(setup.valueHost.asyncProcessing).toBe(false);
         finish({ conditionEvaluateResult: ConditionEvaluateResult.Undetermined, failedToResolve: new Error('Old failure') });
@@ -1263,7 +1565,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         });
         let logger = setup.services.loggingService as TestingLoggingService;
         let result = setup.valueHost.validate({ group: 'GroupA' })!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         expect(setup.valueHost.validate({ group: 'GroupB' })).toBeNull();
         expect(calls).toBe(1);
@@ -1296,7 +1598,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             }]
         });
         let result = setup.valueHost.validate({ group: 'GroupA' })!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         expect(setup.valueHost.clearValidation({ group: 'GroupB' })).toBe(false);
         expect(setup.valueHost.asyncProcessing).toBe(true);
@@ -1323,7 +1625,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         expect(setup.valueHost.clearValidation()).toBe(true);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NotAttempted);
@@ -1350,7 +1652,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             identity: 'AvailabilityCheck',
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
-        let pending = [...setup.valueHost.validate()!.pending!];
+        let pending = [...setup.valueHost.validate()!.completions!];
 
         setup.valueHost.setEnabled(false);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Disabled);
@@ -1378,7 +1680,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             identity: 'AvailabilityCheck',
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
-        let pending = [...setup.valueHost.validate()!.pending!];
+        let pending = [...setup.valueHost.validate()!.completions!];
 
         setup.valueHost.dispose();
         finish({ conditionEvaluateResult: ConditionEvaluateResult.Match });
@@ -1393,7 +1695,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             identity: 'AvailabilityCheck',
             handler: () => new Promise(resolve => { finish = resolve; })
         }]);
-        let pending = [...setup.valueHost.validate()!.pending!];
+        let pending = [...setup.valueHost.validate()!.completions!];
 
         setup.valueHost.dispose();
         finish({
@@ -1443,7 +1745,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
         manager.onValueHostValidationStateChanged = () => { callbacks++; };
         let result = host.validate({ skipCallback: true })!;
         expect(manager.currentValidationState().asyncProcessing).toBe(true);
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         expect(callbacks).toBe(0);
         expect(manager.currentValidationState()).toEqual(expect.objectContaining({
@@ -1462,7 +1764,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             })
         }]);
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
         let capturedState = setup.valueHostsManager.captureState();
 
         let restoredManager = new ValueHostsManager({
@@ -1502,7 +1804,7 @@ describe('ValidatorsValueHostBase async resolution failures', () => {
             }
         ]);
         let result = setup.valueHost.validate()!;
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
         let capturedState = setup.valueHostsManager.captureState();
         let config = { ...setup.config, validatorConfigs: [setup.config.validatorConfigs![1]] };
         let manager = new ValueHostsManager({
@@ -1553,7 +1855,7 @@ describe('ValidatorsValueHostBase async result aggregation', () => {
         let result = setup.valueHost.validate()!;
         expect(callOrder).toEqual(['synchronous', 'async']);
         expect(result.pending).toHaveLength(1);
-        await Promise.all([...result.pending!]);
+        await Promise.all([...result.completions!]);
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
         expect(setup.valueHost.asyncProcessing).toBe(false);
@@ -1585,7 +1887,7 @@ describe('ValidatorsValueHostBase async result aggregation', () => {
             handler: () => new Promise(resolve => { finish = resolve; })
         }], [], [createValidatorConfig({ conditionType: NeverMatchesConditionType })]);
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
         finish(evaluation);
@@ -1629,7 +1931,7 @@ describe('ValidatorsValueHostBase async result aggregation', () => {
             let notifications: ValueHostValidationState[] = [];
             setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
             let result = setup.valueHost.validate()!;
-            let pending = [...result.pending!];
+            let pending = [...result.completions!];
             let errorResult: AsyncValidatorEvaluationResult = {
                 conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
                 errorCode: 'NameTaken',
@@ -1700,7 +2002,7 @@ describe('ValidatorsValueHostBase async result aggregation', () => {
             }
         ]);
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         finishSevere({
             conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
@@ -1792,7 +2094,7 @@ describe('ValidatorsValueHostBase async issue ownership', () => {
         ]);
         let result = setup.valueHost.validate();
         expect(result?.pending).toHaveLength(2);
-        let pending = [...result!.pending!];
+        let pending = [...result!.completions!];
 
         finishAlternate({ conditionEvaluateResult: ConditionEvaluateResult.NoMatch, errorCode: 'AlternateInvalid', errorMessage: 'Alternate' });
         await pending[1];
@@ -2307,6 +2609,76 @@ describe('ValidatorsValueHostBase.validate', () => {
         let state: Partial<ValidatorsValueHostBaseInstanceState> = {};
         testValidateFunctionIsNull(ivConfigs, state);
     });
+    test('An ordinary condition exception is logged and leaves the result Undetermined', () => {
+        let setup = setupAsyncIssueHost([], [], [{
+            validatorType: ValidatorType.Validator,
+            errorCode: 'ThrowingCheck',
+            conditionConfig: null,
+            conditionCreator: () => ({
+                conditionType: 'ThrowingCondition',
+                category: ConditionCategory.Undetermined,
+                evaluate: () => { throw new Error('Condition failed'); }
+            })
+        }]);
+
+        expect(setup.valueHost.validate()).toBeNull();
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Undetermined);
+        expect(setup.valueHost.doNotSave).toBe(false);
+        expect(setup.logger.findMessage('Condition failed', LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'Validator', identity: 'ThrowingCheck' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(1);
+    });
+    test('An ordinary condition exception preserves an earlier issue and does not stop later validators', () => {
+        let calls: string[] = [];
+        let setup = setupAsyncIssueHost([], [], [{
+            validatorType: ValidatorType.Validator,
+            errorCode: 'FirstCheck',
+            errorMessage: 'First issue',
+            conditionConfig: null,
+            conditionCreator: () => ({
+                conditionType: 'FirstCondition',
+                category: ConditionCategory.Contents,
+                evaluate: () => { calls.push('first'); return ConditionEvaluateResult.NoMatch; }
+            })
+        }, {
+            validatorType: ValidatorType.Validator,
+            errorCode: 'ThrowingCheck',
+            conditionConfig: null,
+            conditionCreator: () => ({
+                conditionType: 'ThrowingCondition',
+                category: ConditionCategory.Contents,
+                evaluate: () => { calls.push('throwing'); throw new Error('Condition failed'); }
+            })
+        }, {
+            validatorType: ValidatorType.Validator,
+            errorCode: 'LaterCheck',
+            conditionConfig: null,
+            conditionCreator: () => ({
+                conditionType: 'LaterCondition',
+                category: ConditionCategory.Contents,
+                evaluate: () => { calls.push('later'); return ConditionEvaluateResult.Match; }
+            })
+        }]);
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        let result = setup.valueHost.validate()!;
+        expect(calls).toEqual(['first', 'throwing', 'later']);
+        expect(result.status).toBe(ValidationStatus.Invalid);
+        expect(result.issuesFound).toEqual([
+            expect.objectContaining({ errorCode: 'FirstCheck', errorMessage: 'First issue', doNotSave: true })
+        ]);
+        expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
+        expect(setup.valueHost.doNotSave).toBe(true);
+        expect(notifications).toHaveLength(1);
+        expect(notifications[0]).toEqual(expect.objectContaining({
+            status: ValidationStatus.Invalid, doNotSave: true,
+            issuesFound: [expect.objectContaining({ errorCode: 'FirstCheck' })]
+        }));
+        expect(setup.logger.findMessage('Condition failed', LoggingLevel.Error, LoggingCategory.Exception,
+            { feature: 'Validator', identity: 'ThrowingCheck' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toHaveLength(1);
+    });
     test('With 1 Condition that throws logs that throw and throw bubbles up', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
             {
@@ -2645,6 +3017,26 @@ describe('ValidatorsValueHostBase.validate', () => {
             }
         ]);
 
+    });
+    test.each([
+        { conditionType: AlwaysMatchesConditionType, status: ValidationStatus.Valid },
+        { conditionType: NeverMatchesConditionType, status: ValidationStatus.Invalid }
+    ])('Repeating an unchanged $status validation does not notify again', ({ conditionType, status }) => {
+        let setup = setupAsyncIssueHost([], [], [createValidatorConfig({ conditionType })]);
+        let notifications: ValueHostValidationState[] = [];
+        setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
+
+        let first = setup.valueHost.validate()!;
+        expect(first.status).toBe(status);
+        expect(notifications).toHaveLength(1);
+        let second = setup.valueHost.validate()!;
+        expect(second.status).toBe(status);
+        expect(second.issuesFound).toEqual(first.issuesFound);
+        expect(setup.valueHost.validationStatus).toBe(status);
+        expect(notifications).toHaveLength(1);
+        expect(setup.logger.findMessage('Validation result:', LoggingLevel.Info, LoggingCategory.Result,
+            { feature: 'ValueHost', identity: 'Field1' })).toBeTruthy();
+        expect(setup.logger.captured.filter(entry => entry.level >= LoggingLevel.Warn)).toEqual([]);
     });
     test('With loggingLevel=Debug, expect validate() to log Validating ValueHostName [hostname]', () => {
         let ivConfigs: Array<Partial<ValidatorConfig>> = [
@@ -3306,7 +3698,7 @@ describe('injectedErrors', () =>
                 }
             }]);
             let result = setup.valueHost.validate()!;
-            let pending = [...result.pending!];
+            let pending = [...result.completions!];
             let asyncValidator = setup.valueHost.getValidator('AvailabilityCheck');
 
             setup.valueHost.setInjectedError({ errorMessage: 'Injected error' });
@@ -3581,7 +3973,7 @@ describe('corrected property', () => {
             setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
 
             let result = setup.valueHost.validate()!;
-            let pending = [...result.pending!];
+            let pending = [...result.completions!];
             expect(result.status).toBe(ValidationStatus.Valid);
             expect(result.corrected).toBeUndefined();
             expect(setup.valueHost.corrected).toBe(false);
@@ -3946,7 +4338,7 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
 
         let result = setup.valueHost.validate()!;
         expect(result.pending).toHaveLength(1);
-        let pending = result.pending![0];
+        let pending = result.pending![0].promise;
         expect(setup.valueHost.asyncProcessing).toBe(true);
         expect(setup.valueHost.doNotSave).toBe(true);
         expect(setup.valueHostsManager.asyncProcessing).toBe(true);
@@ -3959,6 +4351,7 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
 
         finish(evaluation);
         let validatorResult = await pending;
+        await Promise.all(result.completions!);
         expect(validatorResult.conditionEvaluateResult).toBe(evaluation.conditionEvaluateResult);
         expect(validatorResult.issueFound).toEqual(issues?.[0] ?? null);
         expect(result.pending).toBeUndefined();
@@ -3998,7 +4391,7 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
 
             let result = setup.valueHost.validate()!;
             expect(result.pending).toHaveLength(1);
-            let pending = result.pending![0];
+            let pending = result.pending![0].promise;
             expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
             expect(setup.valueHost.getIssuesFound()).toHaveLength(1);
             expect(setup.valueHostsManager.asyncProcessing).toBe(true);
@@ -4009,6 +4402,7 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
                 errorMessage: 'Name is taken'
             });
             expect((await pending).conditionEvaluateResult).toBe(ConditionEvaluateResult.NoMatch);
+            await Promise.all(result.completions!);
             expect(result.pending).toBeUndefined();
             expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Invalid);
             expect(setup.valueHost.doNotSave).toBe(true);
@@ -4047,10 +4441,10 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
         setup.valueHostsManager.onValueHostValidationStateChanged = (_, state) => { notifications.push(state); };
         let result = setup.valueHost.validate()!;
         expect(result.pending).toHaveLength(2);
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         finishFirst({ conditionEvaluateResult: ConditionEvaluateResult.Match });
-        expect((await pending[0]).conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
+        await pending[0];
         expect(result.pending).toHaveLength(1);
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.Valid);
         expect(setup.valueHostsManager.asyncProcessing).toBe(true);
@@ -4061,7 +4455,7 @@ describe('ValidatorsValueHostBase validation with AsyncValidator', () => {
         }));
 
         finishSecond({ conditionEvaluateResult: ConditionEvaluateResult.Match });
-        expect((await pending[1]).conditionEvaluateResult).toBe(ConditionEvaluateResult.Match);
+        await pending[1];
         expect(result.pending).toBeUndefined();
         expect(setup.valueHostsManager.asyncProcessing).toBe(false);
         expect(setup.valueHostsManager.doNotSave).toBe(false);
@@ -4765,7 +5159,7 @@ describe('ValidatorsValueHostBase async dependency invalidation', () => {
         let finish!: (result: AsyncValidatorEvaluationResult) => void;
         let setup = setupAsyncDependencyHost(() => new Promise(resolve => { finish = resolve; }));
         let result = setup.valueHost.validate()!;
-        let pending = [...result.pending!];
+        let pending = [...result.completions!];
 
         setup.dependency.setValue('changed');
         expect(setup.valueHost.validationStatus).toBe(ValidationStatus.NeedsValidation);
@@ -4793,7 +5187,7 @@ describe('ValidatorsValueHostBase async dependency invalidation', () => {
             return new Promise(resolve => { finishes.push(resolve); });
         });
         let firstResult = setup.valueHost.validate()!;
-        let firstPending = [...firstResult.pending!];
+        let firstPending = [...firstResult.completions!];
 
         setup.dependency.setValue('changed', { validate: true });
         expect(calls).toBe(2);

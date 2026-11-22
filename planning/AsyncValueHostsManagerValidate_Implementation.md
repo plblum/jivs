@@ -4,8 +4,9 @@
 
 Implementation guide for [AsyncValueHostsManagerValidate_Design.md](./AsyncValueHostsManagerValidate_Design.md).
 Configuration, `AsyncValidator` pending policies and timeout, and the
-ValueHost policy handoff are implemented. The manager's async orchestration,
-run-specific host completion, and timeout summary issue remain to be built.
+ValueHost policy handoff and run-specific host completions are implemented.
+The manager's async orchestration remains to be built. AsyncValidator failures,
+including timeouts, already produce validator-owned issues.
 Snippets below are illustrative and may include **proposed** APIs; named
 helper calls in orchestration snippets specify work to implement.
 The design still has decisions listed in
@@ -22,7 +23,7 @@ coordination, then manager orchestration. Do not change synchronous
 | [AsyncValidator interfaces](../packages/jivs-engine/src/Interfaces/AsyncValidator.ts) | Handler signal and configuration exist; introduce `IAsyncValidator` and `PendingContext`. |
 | [AsyncValidator](../packages/jivs-engine/src/Validation/AsyncValidator.ts) | Own the context, select pending work, and wrap the handler for timeout and cancellation. |
 | [ValidatorsValueHostBase](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) | `hasAsyncValidators` exists; collect contexts and process results for the current host run. |
-| [Validation interfaces](../packages/jivs-engine/src/Interfaces/Validation.ts) | Model-level option and `PendingContext` results; manager still returns `ValidationState`. |
+| [Validation interfaces](../packages/jivs-engine/src/Interfaces/Validation.ts) | Model-level option, pending contexts and per-host-run completions; manager still returns `ValidationState`. |
 | [ValueHostsManager](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), [manager interface](../packages/jivs-engine/src/Interfaces/ValueHostsManager.ts) | Await host processing, protect against obsolete runs, return and notify the final state. |
 | [ValidatorBuilder](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts), [builder interface](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts) | The options-object form exists; it replaces the previous dependency-array argument. |
 
@@ -436,104 +437,189 @@ skip applies only when the model-level flag is set. A preceding severe
 validator may stop the loop before an async validator is reached; whether to
 cancel that old work is open.
 
+The host can make the synchronous and asynchronous paths easier to read by
+extracting `processValidatorResult()` and keeping pending-result processing
+in a separate helper:
+
 ```ts
-// Inside ValidatorsValueHostBase's existing validator loop.
-if (isAsyncValidator(validator) &&
-    validator.isPendingResponsible(options)) {
-    const context = validator.pendingContext;
+// Inside the existing validator loop; helpers are described below.
+let validatorResult: ValidatorValidateResult | Promise<ValidatorValidateResult>;
+let context: IPendingContext | null = null;
+
+if (isAsyncValidator(validator) && validator.isPendingResponsible(options)) {
+    if (runGeneration !== this._validationGeneration)
+        break;
+    context = validator.pendingContext;
     if (!context)
         throw new CodingError('Responsible validator has no pending context');
-    processPendingContext(context, validator);
+    validatorResult = context.promise;
 } else {
-    const validatorResult = validator.validate(options);
-    if (isAsyncValidator(validator) && validatorResult instanceof Promise) {
-        const context = validator.pendingContext;
-        if (!context)
-            throw new CodingError('Async validator returned a Promise without a pending context');
-        processPendingContext(context, validator);
-    } else {
-        processValidatorResult(validatorResult, validator);
+    if (runGeneration !== this._validationGeneration)
+        break;
+    validatorResult = validator.validate(options);
+    if (validatorResult instanceof Promise && isAsyncValidator(validator)) {
+        const current = validator.pendingContext;
+        if (current && current.promise === validatorResult)
+            context = current;
     }
+}
+
+if (validatorResult instanceof Promise) {
+    // Observe the returned Promise even if its run became obsolete in validate().
+    processPendingResult(validatorResult, validator, context);
+    if (runGeneration !== this._validationGeneration)
+        break;
+    if (isAsyncValidator(validator) && !context)
+        recordMissingContextFailure(validator);
+} else {
+    if (runGeneration !== this._validationGeneration)
+        break;
+    stop = processValidatorResult(validatorResult, validator);
 }
 ```
 
-Helper names are illustrative: integrate with the existing synchronous
-result handling and `processPromise()` rather than duplicating them. The
-returned Promise and context must belong to the same operation. Resolve
-reentrant cancellation/replacement between `validate()` and context
-collection without attaching a different operation or treating the old
-call as save-allowed. On value changes, reset, dependency notifications,
-clear, disable, replacement and disposal, invalidate the relevant host run
-and apply the chosen context lifecycle rules.
+`processValidatorResult()` extracts the existing synchronous result handling
+and returns whether a severe or preliminary required issue stops the loop.
+`processPendingResult()` adapts the existing `processPromise()` processing;
+do not duplicate its issue, warning, severity, failure identity, pending-flag
+or callback logic. `recordMissingContextFailure()` is an illustrative helper
+that logs and blocks the current run without dropping its completion.
+
+The context can be absent after `validate()` returns: the handler may have
+synchronously caused cancellation or started a replacement operation. Never
+associate the returned Promise with a different context, and do not discard
+the returned Promise or its completion merely because the context is gone.
+If the run is obsolete, its completion observes the outcome but cannot publish
+it. A missing or mismatched context on a still-current run is an integration
+error: log it and ensure the run blocks rather than authorizing a save.
+On value changes, reset, dependency notifications, clear, disable, replacement
+and disposal, invalidate the relevant host run and apply the chosen context
+lifecycle rules.
 
 ### Completion belongs to each host run
 
-**Problem:** `ValueHostValidateResult.pending` currently contains raw
-validator Promises. Waiting for one does not wait for
-`processPromise()` to update the host. A reused validator Promise also needs
-to be applied to the new `_validationGeneration`.
+**Problem:** A validator Promise represents the validator's outcome, not the
+completion of host processing. The same operation may be reused by multiple
+host runs, each of which needs its own processing. Custom `IValidator`
+implementations can return a Promise without providing an `IPendingContext`.
 
-**Solution:** A validator-owned context retains the validator Promise; each
-host run attaches its own processing Promise. The result returned
-synchronously exposes the participating contexts:
+**Solution:** Keep validator-owned contexts separate from the host-run
+completion Promises. Both are exposed on the synchronously returned host result:
 
 ```ts
 export interface ValueHostValidateResult extends StatefulValueHostValidateResult {
-    pending?: PendingContext[] | null;
+    pending?: IPendingContext[] | null;
+    completions?: Promise<void>[] | null;
 }
 ```
 
-Keep `pending` off the stateful base and out of instance state and serialized
-state. This changes a public result shape; audit custom hosts and existing
-callers. Copy pending entries before awaiting because the host may remove them
-during settlement.
+`pending` contains only participating AsyncValidator contexts that could be
+matched to their returned Promises. A custom Promise validator, or an obsolete
+call whose context is no longer available, has no entry there. It is not a
+complete count of the host's pending work.
+
+`completions` contains one Promise per validator Promise for **this host run**,
+including reused work and custom validators. Each completion settles only
+after the corresponding outcome has been processed or rejected as obsolete,
+including handling any processing error. A reused context therefore appears
+in both host results, but each result has a different completion. Do not put
+a mutable run completion on the context.
+
+Keep both properties off the stateful base and out of instance state and
+serialized state. This changes a public result shape; audit custom hosts and
+existing callers. The host maintains a separate per-run count of unfinished
+processing to drive `asyncProcessing`, corrected state, and removal of pending
+contexts; do not infer those from `pending` alone. Retain the completion list
+on the returned result after settlement, so a caller can still observe a
+processing failure. The manager copies the list before waiting.
 
 ```ts
-// Inside the host's validate() closure, for BOTH new and reused work.
-const runGeneration = this._validationGeneration;
-const completion = context.promise.then(
-    validatorResult => {
-        if (runGeneration !== this._validationGeneration)
-            return;
-        applyResolvedValidatorResult(validatorResult);
-    },
-    error => {
-        logValidatorFailure(error);
-        if (runGeneration === this._validationGeneration)
-            recordBlockingFailure(validator, error);
+// Sketch inside processPendingResult(), for new, reused and custom work.
+// remaining and result belong to this particular host validation run.
+remaining++;
+if (context)
+    (result.pending ??= []).push(context);
+
+const outcome = validatorPromise.then(
+    value => ({ fulfilled: true as const, value }),
+    error => ({ fulfilled: false as const, error: ensureError(error) })
+);
+const completion = outcome.then(outcome => {
+    try {
+        removePendingForThisRun(context); // also decrements remaining
+        if (outcome.fulfilled) {
+            if (runGeneration === self._validationGeneration)
+                applyResolvedValidatorResult(outcome.value, validator);
+        } else {
+            logValidatorFailure(outcome.error);
+            if (runGeneration === self._validationGeneration)
+                recordBlockingFailure(validator, outcome.error);
+        }
     }
-).catch(error => {
-    // Includes exceptions in host result processing, not just the handler.
-    logHostProcessingFailure(error);
-    if (runGeneration === this._validationGeneration)
-        recordBlockingFailure(validator, error);
-    throw error; // manager's allSettled also sees the processing failure
+    catch (error) {
+        logHostProcessingFailure(error);
+        if (runGeneration === self._validationGeneration)
+            recordBlockingFailure(validator, error);
+        throw error;
+    }
+    if (!outcome.fulfilled)
+        throw outcome.error; // the manager must also see validator rejection
 });
 
-result.pending ??= [];
-result.pending.push(context);
-registerHostCompletionForThisRun(context, completion);
+(result.completions ??= []).push(completion);
+// Direct field calls may not await the returned result. The rejection is
+// handled here without changing the original Promise awaited by the manager.
+void completion.catch(() => {});
 ```
 
-This is an integration sketch: adapt the existing `processPromise()` closure
-rather than duplicating its issue, warning, severity, `failedAsyncIdentities`,
-pending-flag and callback logic. Remove each run's pending entry before
-publishing state, including obsolete runs. Check both generation and context
-identity before mutating retained contexts or pending state. Always observe
-the completion rejection, including for direct field-level validation.
-Custom Promise-returning validators need equivalent host-processing
-completions and blocking failure behavior. `registerHostCompletionForThisRun`
-is not an existing API: the mechanism for associating completions with a
-specific host run and exposing them to the manager remains open. Do not put
-a single mutable run completion on a reused context where overlapping runs
-could overwrite one another.
+The code above is a control-flow sketch, not a drop-in implementation:
+`removePendingForThisRun` and the error-reporting helpers are illustrative.
+They must use the existing logging and state-update paths and handle failures
+in those paths. The implementation must:
+
+- Decrement the run's pending count and remove only its matching context
+  before publishing the updated host state, including for obsolete runs.
+  Remove `pending` when its last context is removed. Retain `completions`.
+- Register a completion for every returned Promise, even if a reentrant change
+  has made the run obsolete or no matching context can be collected.
+- Handle a rejection from a custom validator as a logged blocking failure,
+  even though it has no async identity. Handle exceptions during host
+  processing similarly. The completion rejects so manager `allSettled` can
+  detect the failure; direct field calls must still observe the rejection.
+- If an error occurs before normal removal, remove that run's pending entry
+  and clear its pending flag as appropriate. Do not let error handling itself
+  silently turn a failed completion into success.
+- Return a non-null host result whenever a completion was registered, even if
+  there is no context and the synchronous status is Undetermined.
+
+For example, the synchronous publish and the final-return check must use the
+complete set of work, not only the AsyncValidator context list:
+
+```ts
+if (remaining > 0)
+    stateToUpdate.asyncProcessing = true;
+else
+    delete stateToUpdate.asyncProcessing;
+
+return result.status !== ValidationStatus.Undetermined ||
+    result.issuesFound !== null || result.completions?.length
+    ? result : null;
+```
+
+If a still-current AsyncValidator's context cannot be matched, report a
+blocking integration failure while continuing to observe its returned Promise.
+An obsolete run must never apply a result or clear a newer run's state.
+The manager must also treat an obsolete call as blocking; merely settling the
+old completion cannot authorize saving.
 
 After an async result updates the host, request
 `valueHostsManager.notifyValidationStateChanged(null, options)` through its
 existing debounced path as well as the host callback. Respect `skipCallback`.
-The manager sends its own final notification after its wait; do not suppress
-unrelated field notifications. Ensure a host callback exception is logged
-without losing the blocking result or leaving a rejected Promise unobserved.
+The existing host callback helper already makes that manager request; avoid
+adding a duplicate. The manager sends its own final notification after its
+wait; do not suppress unrelated field notifications. Ensure a host callback
+exception is logged without losing the blocking result or leaving a rejected
+Promise unobserved.
 
 ## 5. Manager orchestration
 
@@ -582,8 +668,8 @@ async validate(options?: ValidateOptions): Promise<ValidationState> {
                 continue;
 
             const result = vh.validate(hostOptions);
-            if (result)
-                completions.push(...this.collectHostCompletions(vh, result));
+            if (result?.completions)
+                completions.push(...result.completions);
             this.recordHostRun(run, vh);
         }
     }
@@ -617,20 +703,20 @@ Required behavior of the proposed helpers:
 - `recordHostRun`: capture the *generation actually used by that host run*,
   not merely its generation after a reentrant callback. Verify already-visited
   hosts when later synchronous callbacks can change them.
-- `collectHostCompletions`: obtain the completions for this specific host
-  run's participating contexts, including retained and newly started work.
-  The mechanism is not yet designed; awaiting `context.promise` alone is
-  insufficient. Cover Promise-returning custom validators too.
+- Copy `result.completions` from each host immediately after `validate()`
+  returns. These belong to that particular host run and include custom
+  Promise-returning validators; do not await `context.promise` instead.
 - `finishValidationRun`: after all host completions, check identities, counters
   and generations again. If this call was made obsolete, return a **blocking**
   state rather than treating an old skipped Promise as success. Do not
   automatically retry indefinitely. Preserve the caller's group unchanged,
   including undefined, and the existing group filtering.
-- Convert startup, result-processing, snapshot and final-notification errors
-  into a logged blocking result. Existing host `validate()` catches some
-  non-severe synchronous errors and returns `Undetermined`; change that path
-  or add an explicit failure signal for manager calls so such errors cannot
-  become save-allowed.
+- Convert unexpected startup, result-processing, snapshot and final-notification
+  errors into a logged blocking result. An ordinary exception caught while a
+  synchronous condition is evaluated is logged and becomes `Undetermined`;
+  it is not an operational failure for the manager to turn into a block.
+  The validator intentionally rethrows `SevereErrorBase` exceptions; the
+  manager must catch those and return a logged blocking result.
 - If a host starts work and then throws before returning its result, it must
   still observe and clean up those started operations. The manager cannot
   collect completion records from a call that did not return.
@@ -818,20 +904,19 @@ counter work:
 | Area | Required behavior |
 | --- | --- |
 | AsyncValidator | Owned context, both restart policies, skip precedence, defensive pending check, input counters and reentrant startup; normal outcomes, failures, timeout, abort, late errors, cleanup and disposal. |
-| Host | `IAsyncValidator` type guard and context collection; retained and new work; custom validators; multiple validators; generation and identity protection; host-processing failure, state and notifications. |
+| Host | Context collection and per-run completions; reused and new work; custom validators without contexts; multiple validators; reentrant replacement; generation protection; rejected and throwing processing, state and notifications. |
 | Manager | No async work; multiple hosts and validators; unchanged groups and explicit model-level flag; preliminary; waits for host processing; overlapping runs, edits, reset, clear, replacement and disposal while waiting; failures; always fulfilled and blocked when obsolete. |
-| Timeout summary | With and without a message, localization, group visibility, multiple timeouts, retry/clear cleanup, and preservation of external/server issues. |
+| Failure issues | Timeout and other operational failures produce validator-owned issues; cover localization, retry/clear and preservation of external issues. |
 | Builder and migration | Options-object form, invalid settings, Promise return types, affected examples and wrapper consumers. |
 
 ## Decisions before implementation
 
-1. Implement the existing global timeout and message settings; choose
-   localization and issue ownership. Timeout itself and blocking are required.
+1. Timeout and other operational failures use the implemented validator-owned
+   issue design; no separate timeout summary issue is required.
 2. Field-level validation uses the same restart policy; retain model-level skip
    only for calls with the model-level flag.
-3. Finalize validator context registration, the `IAsyncValidator` type
-   guard, and run-specific host completion, including custom validators and
-   custom hosts.
+3. Audit custom hosts and callers for the separate context and per-run
+   completion collections when implementing manager orchestration.
 4. Finalize obsolete-manager-call diagnostics and tracking for restoration,
    reentrancy, overlapping calls and calculation initialization. It must block
    rather than authorize saving stale values.

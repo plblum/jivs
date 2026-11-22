@@ -22,7 +22,7 @@ import { IValueHostsManager } from '../Interfaces/ValueHostsManager';
 import { IValueHost } from '../Interfaces/ValueHost';
 import { ErrorMessagesService } from '../Services/ErrorMessagesService';
 import { resolveErrorCode } from '../Utilities/Validation';
-import { AsyncValidatorConfig, isAsyncValidator, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
+import { AsyncValidatorConfig, IPendingContext, isAsyncValidator, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 
 /**
  * Standard implementation of IValidatorsValueHost. It owns a list of Validators
@@ -208,94 +208,61 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
         // Only results from the current generation will be applied to the ValueHost's state.
         const runGeneration = ++this._validationGeneration;
         const failedIdentities = new Set(this.instanceState.failedAsyncIdentities ?? []);
+        // A retry has not recovered an operational failure until its validator
+        // returns a definitive result. Keep its issue visible in the meantime.
+        const retainedIssues = (this.instanceState.issuesFound ?? [])
+            .filter(issue => issue.asyncIdentity != null && failedIdentities.has(issue.asyncIdentity));
+        result.issuesFound = retainedIssues.length ? retainedIssues : null;
         let requestedStatus = result.status;
+        let pendingCount = 0;
         let disposalSurvivingLogger = this.logger;   // logError may occur after this.logger is disposed...
 
         try {
             try {
                 const validators = this.validators();
                 let stop = false;
-                let validatorsInUse = 0;
-
                 for (let i = 0; !stop && i < validators.length; i++) {
                     if (runGeneration !== this._validationGeneration)
                         break;
 
                     const iv = validators[i];
                     let potentialIVR: ValidatorValidateResult | Promise<ValidatorValidateResult>;
+                    let context: IPendingContext | null = null;
                     if (isAsyncValidator(iv)) {
                         const reuse = iv.isPendingResponsible(options);
                         if (runGeneration !== this._validationGeneration)
                             break;
 
                         if (reuse) {
-                            const context = iv.pendingContext;
+                            context = iv.pendingContext;
                             if (!context)
                                 throw new CodingError('Responsible validator has no pending context');
                             potentialIVR = context.promise;
                         }
-                        else
+                        else {
                             potentialIVR = iv.validate(options);
+                            const current = iv.pendingContext;
+                            if (potentialIVR instanceof Promise && current?.promise === potentialIVR)
+                                context = current;
+                        }
                     }
                     else
                         potentialIVR = iv.validate(options);
-                    // promises will update the results later
-                    // All other validators in this loop will still finish
-                    // by updating the state. The state is just missing the results
-                    // from this validator. When this completes, it updates the state again.
                     if (potentialIVR instanceof Promise) {
-                        processPromise(potentialIVR, iv);
+                        const missingContext = isAsyncValidator(iv) && !context;
+                        processPromise(potentialIVR, iv, context, !missingContext);
                         if (runGeneration !== this._validationGeneration)
                             break;
+                        if (missingContext) {
+                            logError(`Async validator "${iv.errorCode}" returned a Promise without its pending context`);
+                            failedIdentities.add(iv.errorCode);
+                        }
                         continue;
                     }
                     if (runGeneration !== this._validationGeneration)
                         break;
-                    // synchronous (normal) processing
-                    const fieldValResult = potentialIVR as ValidatorValidateResult;
-                    if (fieldValResult.skipped)
-                        continue;
-                    validatorsInUse++;    // eslint-disable-line @typescript-eslint/no-unused-vars
-                    if (fieldValResult.issueFound)
-                    {
-                        // options.preliminary focuses on stopping processing early for required conditions that are invalid
-                        // to avoid reporting required field errors prematurely.
-                        if (options.preliminary && iv.condition.category === ConditionCategory.Require)
-                        {
-                            stop = true;
-                            continue; // don't let it add its issueFound to the result.                        
-                        }
-                        fieldValResult.issueFound.doNotSave = true;
-                        switch (fieldValResult.issueFound.severity) {
-                            case ValidationSeverity.Error:
-                                result.status = ValidationStatus.Invalid;
-                                break;
-                            case ValidationSeverity.Severe:
-                                result.status = ValidationStatus.Invalid;
-                                stop = true;
-                                break;
-                            case ValidationSeverity.Warning:
-                                if (result.status === ValidationStatus.Undetermined)
-                                    result.status = ValidationStatus.Valid;
-                                fieldValResult.issueFound.doNotSave = false;
-                                break;
-                        }
-
-                        if (!result.issuesFound)
-                            result.issuesFound = [];
-                        const issueFound = fieldValResult.issueFound;
-                        result.issuesFound.push(issueFound);
-                            
-                    }
-                    else if (result.status === ValidationStatus.Undetermined)
-                        if (fieldValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
-                            result.status = ValidationStatus.Valid;    // may be overwritten by a later validator
-
+                    stop = processValidatorResult(potentialIVR, iv);
                 }
-                // unnecessary as this should always be the case at this point
-                // if (validatorsInUse === 0)
-                //     result.status = ValidationStatus.Undetermined; 
-
             }
             catch (e) {
                 const err = ensureError(e);                
@@ -334,7 +301,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     runGeneration === this._validationGeneration)   // final defense against external changes
                     self.invokeOnValueHostValidationStateChanged(options);
             // when the result hasn't changed from the start, report null as there were no issues found
-            return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.pending ?
+            return result.status !== ValidationStatus.Undetermined || result.issuesFound !== null || result.completions?.length ?
                 result : null;
         }
 
@@ -348,10 +315,47 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             });
 
         }
+        function processValidatorResult(fieldValResult: ValidatorValidateResult, validator: IValidator): boolean {
+            if (fieldValResult.skipped)
+                return false;
+            if (fieldValResult.issueFound) {
+                if (options!.preliminary && validator.condition.category === ConditionCategory.Require)
+                    return true;
+                const issue = fieldValResult.issueFound;
+                issue.doNotSave = true;
+                switch (issue.severity) {
+                    case ValidationSeverity.Error:
+                    case ValidationSeverity.Severe:
+                        result.status = ValidationStatus.Invalid;
+                        break;
+                    case ValidationSeverity.Warning:
+                        if (result.status === ValidationStatus.Undetermined)
+                            result.status = ValidationStatus.Valid;
+                        issue.doNotSave = false;
+                        break;
+                }
+                (result.issuesFound ??= []).push(issue);
+                return issue.severity === ValidationSeverity.Severe;
+            }
+            if (result.status === ValidationStatus.Undetermined &&
+                fieldValResult.conditionEvaluateResult === ConditionEvaluateResult.Match)
+                result.status = ValidationStatus.Valid;
+            return false;
+        }
+
         function reviseStatusIfFailed(): void {
             result.status = failedIdentities.size ? ValidationStatus.Failed : requestedStatus;
             if (failedIdentities.size)
                 delete result.corrected;
+        }
+
+        // Only a definitive result from this validator can clear its retained failure.
+        function clearRecoveredFailure(identity: string | null): void {
+            if (identity === null || !failedIdentities.delete(identity))
+                return;
+            const remaining = (result.issuesFound ?? [])
+                .filter(issue => issue.asyncIdentity !== identity);
+            result.issuesFound = remaining.length ? remaining : null;
         }
 
         function updateInstanceStateWithResult(result: ValueHostValidateResult): boolean {
@@ -372,35 +376,34 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     stateToUpdate.group = options!.group;
                 else
                     delete stateToUpdate.group;
-                if (result.pending)
+                if (pendingCount)
                     stateToUpdate.asyncProcessing = true;
                 else
                     delete stateToUpdate.asyncProcessing;
                 return stateToUpdate;
             }, self);
         }
-        function processPromise(promise: Promise<ValidatorValidateResult>, validator: IValidator): void {
+        function processPromise(promise: Promise<ValidatorValidateResult>, validator: IValidator,
+            context: IPendingContext | null, applyResult: boolean): void {
             // Legacy Validators can also return Promises, but only AsyncValidators have
             // an identity that can be retained as a failure and cleared by a later retry.
             const asyncIdentity = validator.condition.category === ConditionCategory.Async ? validator.errorCode : null;
             function completeThePromise(finish: () => void): void {
-                if (result.pending && result.pending.includes(promise)) {
-                    const index = result.pending.indexOf(promise);
-                     
-                    // Settle this run's pending list even when the run is obsolete. An
-                    // obsolete completion must not change the current host state.
-                    result.pending.splice(index, 1);
+                pendingCount--;
+                if (context && result.pending) {
+                    const index = result.pending.indexOf(context);
+                    if (index >= 0)
+                        result.pending.splice(index, 1);
                     if (result.pending.length === 0)
                         delete result.pending;
-
-                    if (runGeneration === self._validationGeneration)
-                        finish();
                 }
+                if (runGeneration === self._validationGeneration)
+                    finish();
             }
             function deleteAsyncProcessFlag(): boolean {
                 // Skipped and Undetermined results have no status or issue to publish.
                 // Only the last pending result needs to update the host's pending flag.
-                if (!result.pending)
+                if (!pendingCount)
                     return self.updateInstanceState((stateToUpdate) => {
                         delete stateToUpdate.asyncProcessing;
                         return stateToUpdate;
@@ -439,14 +442,16 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     {
                         const issueFound = ivr.issueFound;
                         issueFound.doNotSave = true;
-                        if (!result.issuesFound)
-                            result.issuesFound = [];
+                        // Published issues may be shared with instance state; replace
+                        // the array so state change detection sees this update.
+                        const issues = [...(result.issuesFound ?? [])];
                         const existingIndex = asyncIdentity === null ? -1 :
-                            result.issuesFound.findIndex(issue => issue.asyncIdentity === asyncIdentity);
+                            issues.findIndex(issue => issue.asyncIdentity === asyncIdentity);
                         if (existingIndex < 0)
-                            result.issuesFound.push(issueFound);
+                            issues.push(issueFound);
                         else
-                            result.issuesFound[existingIndex] = issueFound;
+                            issues[existingIndex] = issueFound;
+                        result.issuesFound = issues;
                     }
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
@@ -464,8 +469,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                         throw new CodingError(`Validator "${ validator.errorCode }" returned NoMatch without an issue`);
                     // A definitive result clears this handler's failure, even when it
                     // reports an issue. Other handlers' failures remain in effect.
-                    if (asyncIdentity !== null)
-                        failedIdentities.delete(asyncIdentity);
+                    clearRecoveredFailure(asyncIdentity);
                     if (ivr.issueFound.severity === ValidationSeverity.Warning)
                     {
                         // Warnings do not block saving and must not override an invalid status.
@@ -475,9 +479,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                     }
                     else if (requestedStatus !== ValidationStatus.Failed)
                         requestedStatus = ValidationStatus.Invalid;
-                    if (!result.issuesFound)
-                        result.issuesFound = [];
-                    result.issuesFound.push(ivr.issueFound);
+                    result.issuesFound = [...(result.issuesFound ?? []), ivr.issueFound];
                     reviseStatusIfFailed();
                     if (updateInstanceStateWithResult(result))
                         notifyAsyncStateChanged();
@@ -487,8 +489,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 {
                     // Match clears only this handler's failure and cannot override
                     // a more significant status already produced by another validator.
-                    if (asyncIdentity !== null)
-                        failedIdentities.delete(asyncIdentity);
+                    clearRecoveredFailure(asyncIdentity);
                     if (requestedStatus === ValidationStatus.Undetermined)
                         requestedStatus = ValidationStatus.Valid;
 
@@ -504,40 +505,56 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
                 }
             }
 
-            if (!result.pending)
-                result.pending = [];
-            result.pending.push(promise);
-            promise.then(
+            pendingCount++;
+            if (context)
+                (result.pending ??= []).push(context);
+            let validatorRejectionHandled = false;
+            const completion = promise.then(
                 (ivr) => {
-                    completeThePromise(() => applyResolvedValidatorResult(ivr));
-                },
-                (failureInfo) => {
-                    logError(failureInfo ? failureInfo.toString() : 'unspecified');
                     completeThePromise(() => {
-                        if (asyncIdentity !== null)
-                        {
-                            failedIdentities.add(asyncIdentity);
-                            reviseStatusIfFailed();
-                            if (updateInstanceStateWithResult(result))
-                                notifyAsyncStateChanged();
-                        }
+                        if (applyResult)
+                            applyResolvedValidatorResult(ivr);
                         else if (deleteAsyncProcessFlag())
                             notifyAsyncStateChanged();
                     });
+                },
+                (failureInfo) => {
+                    completeThePromise(() => {
+                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
+                        if (asyncIdentity !== null)
+                            failedIdentities.add(asyncIdentity);
+                        else
+                            requestedStatus = ValidationStatus.Failed;
+                        reviseStatusIfFailed();
+                        if (updateInstanceStateWithResult(result))
+                            notifyAsyncStateChanged();
+                    });
+                    if (runGeneration !== self._validationGeneration)
+                        logError(failureInfo ? failureInfo.toString() : 'unspecified');
+                    validatorRejectionHandled = true;
+                    throw ensureError(failureInfo);
                 }
             ).catch(error => {
-                logError(ensureError(error).message);
-                if (asyncIdentity !== null && runGeneration === self._validationGeneration)
+                if (!validatorRejectionHandled)
                 {
-                    failedIdentities.add(asyncIdentity);
-                    reviseStatusIfFailed();
-                    if (updateInstanceStateWithResult(result))
+                    logError(ensureError(error).message);
+                    if (runGeneration === self._validationGeneration)
                     {
-                        notifyAsyncStateChanged();
+                        if (asyncIdentity !== null)
+                            failedIdentities.add(asyncIdentity);
+                        else
+                            requestedStatus = ValidationStatus.Failed;
+                        reviseStatusIfFailed();
+                        if (updateInstanceStateWithResult(result))
+                            notifyAsyncStateChanged();
                     }
                 }
+                throw error;
             });
-            // no change to the ValidationStatus here            
+            (result.completions ??= []).push(completion);
+            // Field callers need not await the result; the original Promise remains
+            // rejected for manager callers that do await it.
+            void completion.catch(() => {});
         }
         function adjustCorrectedFlag(): void
         {
@@ -545,7 +562,7 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
             // The previous status is in instanceState.status when validate() is called directly.
             // When a setter ran first, status is NeedsValidation and lastStatus holds the previous status.
             // As a rule, async validation will not prepare the corrected flag.
-            let isValid = result.status === ValidationStatus.Valid && !result.pending;
+            let isValid = result.status === ValidationStatus.Valid && !pendingCount;
             let wasInvalid = self.instanceState.status === ValidationStatus.Invalid ||
                 (self.instanceState.status === ValidationStatus.NeedsValidation &&
                     self.instanceState.lastStatus === ValidationStatus.Invalid);

@@ -217,6 +217,11 @@ failure issue. A `NoMatch` may then leave an ordinary validation issue. A
 skipped or ordinary `Undetermined` result does not prove recovery and should
 retain the failure marker and issue. Stale or canceled work must not alter
 current state. Failures from separate async validators remain independent.
+At the start of a new validation, the host carries forward the existing issues
+whose `asyncIdentity` is still marked failed. A definitive retry removes that
+handler's retained issue before adding any new `NoMatch` issue. Explicit
+`clearValidation()` still clears displayed issues while retaining failure
+markers.
 
 The failure marker remains authoritative for blocking. The issue explains the
 block and makes it visible; it must not become an external issue with the
@@ -251,15 +256,16 @@ if (ivr.failedToResolve) {
 
     const issue = ivr.issueFound;
     if (issue) {
-        if (!result.issuesFound)
-            result.issuesFound = [];
+        issue.doNotSave = true;
+        const issues = [...(result.issuesFound ?? [])];
         const existingIndex = asyncIdentity === null ? -1 :
-            result.issuesFound.findIndex(
+            issues.findIndex(
                 existing => existing.asyncIdentity === asyncIdentity);
         if (existingIndex < 0)
-            result.issuesFound.push(issue);
+            issues.push(issue);
         else
-            result.issuesFound[existingIndex] = issue;
+            issues[existingIndex] = issue;
+        result.issuesFound = issues;
     }
 
     reviseStatusIfFailed();
@@ -270,7 +276,8 @@ if (ivr.failedToResolve) {
 
 The key behavior is to publish the issue before saving the run's state; it is
 not routed through the `NoMatch` branch because operational failure remains
-`Undetermined`.
+`Undetermined`. A new array avoids mutating published instance state before
+change detection and notification.
 
 The manager consumers are compatible with the host storing the issue:
 
