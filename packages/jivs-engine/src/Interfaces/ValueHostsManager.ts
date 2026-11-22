@@ -150,16 +150,22 @@ export interface IValueHostsManager extends IValueHostResolver, IValueHostsManag
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.
      * Updates this ValueHost's InstanceState and notifies parent if changes were made.
+     * The Promise fulfills after participating host completions have been processed.
+     * Unexpected errors and obsolete calls return a blocking state; an obsolete call
+     * does not send its final manager notification. Custom validatable hosts must
+     * protect their own results from independent revalidation or clearing while pending.
      * @param options - Provides guidance on which validators to include.
      * Recommend setting options.preliminary to true if invoking validate() prior to submitting
      * to avoid reporting required field errors prematurely.
      * @returns The ValidationState object, which packages several key
      * pieces of information: isValid, doNotSave, and issues found.
      */
-    validate(options?: ValidateOptions): ValidationState;
+    validate(options?: ValidateOptions): Promise<ValidationState>;
     /**
      * Changes the validation state to itself initial: NotAttempted
      * with no error messages.
+     * Any in-progress manager validation becomes obsolete, even when a group
+     * is specified or no host state changes.
      * @returns true when there was something cleared
      */
     clearValidation(options?: ValidateOptions): boolean;

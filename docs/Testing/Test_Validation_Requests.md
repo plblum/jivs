@@ -34,7 +34,7 @@ function createValueHostsManager(): ValueHostsManager
 ```
 ## Form-wide using ValueHostsManager.validate()
 ```ts
-test('Start and End date are supplied empty strings and report isValid=false', ()=>
+test('Start and End date are supplied empty strings and report isValid=false', async ()=>
 {
     // Arrange
     let vhm = createValueHostsManager();
@@ -43,7 +43,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     vhm.field('EndDate').setValues('', '');
     
     // Act
-    let validationState = vhm.validate();
+    let validationState = await vhm.validate();
     
     // Assert
     expect(validationState.isValid).toBe(false);
@@ -66,7 +66,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     expect(startDateResult.summaryMessage).toBe('the expected summary message');
 });
 ```
-The result of `ValueHostsManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Validation_Types.ValidationState.html) which looks like this:
+The result of `ValueHostsManager.validate()` is a Promise to a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/jivs-engine_Validation_Types.ValidationState.html) which looks like this:
 ```ts
 interface ValidationState {
     isValid: boolean;

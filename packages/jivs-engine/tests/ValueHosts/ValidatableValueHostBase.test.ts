@@ -1201,7 +1201,7 @@ describe('clearExternalIssuesFound', () => {
         let valueChange2 = <ValidatableValueHostBaseInstanceState>state.vh[0];
         expect(valueChange2.externalIssuesFound).toBeUndefined();
     });
-    test('onValueHostValidationStateChanged called', () => {
+    test('onValueHostValidationStateChanged called', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -1226,7 +1226,7 @@ describe('clearExternalIssuesFound', () => {
             ]
         }, null) as TestValidatableValueHost;
 
-        vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
+        await vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
 
         expect(() => vh.addExternalIssueFound({
             errorMessage: 'ERROR',
@@ -1245,7 +1245,7 @@ describe('clearExternalIssuesFound', () => {
             corrected: false
         });
     });    
-    test('onValueHostValidationStateChanged not called from clearBusinessLogic because options.skipCallback=true', () => {
+    test('onValueHostValidationStateChanged not called from clearBusinessLogic because options.skipCallback=true', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -1269,7 +1269,7 @@ describe('clearExternalIssuesFound', () => {
                 }
             ]
         }, null) as TestValidatableValueHost;
-        vhm.validate({ skipCallback: true });
+        await vhm.validate({ skipCallback: true });
 
         vh.addExternalIssueFound({
             errorMessage: 'ERROR',

@@ -423,13 +423,13 @@ describe('validate() baseline', () =>
     });
 
     // Preliminary skips Category=Require, so existing text is checked but missing text is not reported.
-    test('validate({preliminary:true}) reports a failing value but not a missing one', () =>
+    test('validate({preliminary:true}) reports a failing value but not a missing one', async () =>
     {
         let identity = 'String_Range_Required_Length';
         let t = installField(identity);
         // The site loads its model into the ValueHostsManager; reset keeps the field NotAttempted.
         t.vhm.getFieldValueHost(identity)!.setValue('XYZ', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
         expectIssueCodes(t, identity, [ConditionType.Range, ConditionType.StringLength]);
@@ -437,19 +437,19 @@ describe('validate() baseline', () =>
     });
 
     // An empty field: preliminary skips RequireText so nothing is reported; a normal validate() then reports it.
-    test('validate({preliminary:true}) skips RequireText on an empty field; validate() reports it', () =>
+    test('validate({preliminary:true}) skips RequireText on an empty field; validate() reports it', async () =>
     {
         let identity = 'Text_Required_Only';
         let t = installField(identity);
         // An empty editor is text '' (not an unset field), which is what RequireText inspects.
         t.vhm.getFieldValueHost(identity)!.setTextValue('', { reset: true });
 
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, identity, ValidationStatus.Undetermined);
         expectIssueCodes(t, identity, []);
 
-        t.vhm.validate();
+        await t.vhm.validate();
 
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
         expectIssueCodes(t, identity, [ConditionType.RequireText]);
@@ -477,17 +477,17 @@ describe('validate() baseline', () =>
         return { t, a, b };
     }
 
-    test('validate({group}) updates only the fields in that group', () =>
+    test('validate({group}) updates only the fields in that group', async () =>
     {
         let { t, a, b } = installTwoGroups();
 
-        t.vhm.validate({ group: 'GroupA' });
+        await t.vhm.validate({ group: 'GroupA' });
 
         expectElementsMatchValidationState(t, a, ValidationStatus.Invalid);
         expectIssueCodes(t, a, [ConditionType.RequireText]);
         expectElementsMatchValidationState(t, b, ValidationStatus.NotAttempted);
 
-        t.vhm.validate({ group: 'GroupB' });
+        await t.vhm.validate({ group: 'GroupB' });
 
         expectElementsMatchValidationState(t, a, ValidationStatus.Invalid);
         expectElementsMatchValidationState(t, b, ValidationStatus.Invalid);
@@ -502,11 +502,11 @@ describe('validate() baseline', () =>
         { name: "group ''", options: { group: '' } },
         { name: "group '*'", options: { group: '*' } },
         { name: 'group null', options: { group: null as any } }
-    ])('validate() with $name updates the fields of all groups', (c) =>
+    ])('validate() with $name updates the fields of all groups', async (c) =>
     {
         let { t, a, b } = installTwoGroups();
 
-        t.vhm.validate(c.options);
+        await t.vhm.validate(c.options);
 
         expectElementsMatchValidationState(t, a, ValidationStatus.Invalid);
         expectIssueCodes(t, a, [ConditionType.RequireText]);
@@ -517,39 +517,39 @@ describe('validate() baseline', () =>
 
     // The user edits the editor (the change event validates), then the website calls validate().
     // The elements follow the latest state each time.
-    test('validate() after each user edit keeps the elements matching the state', () =>
+    test('validate() after each user edit keeps the elements matching the state', async () =>
     {
         let identity = 'String_Range_Required_Length';
         let t = installField(identity);
 
         userEdits(t, 'XYZ');
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
         expectIssueCodes(t, identity, [ConditionType.Range, ConditionType.StringLength]);
 
         userEdits(t, 'B');
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
         expectIssueCodes(t, identity, []);
 
         userEdits(t, '');
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Invalid);
         expectIssueCodes(t, identity, [ConditionType.RequireText]);
 
         userEdits(t, 'C');
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
         expectIssueCodes(t, identity, []);
 
         // repeat without changes as if the user clicked submit again
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
         expectIssueCodes(t, identity, []);
 
         // repeat with the user entering the same value
         userEdits(t, 'C');
-        t.vhm.validate();
+        await t.vhm.validate();
         expectElementsMatchValidationState(t, identity, ValidationStatus.Valid);
         expectIssueCodes(t, identity, []);
 

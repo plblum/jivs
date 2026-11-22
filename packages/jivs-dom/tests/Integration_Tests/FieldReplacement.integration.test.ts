@@ -160,14 +160,14 @@ function installWithUserEditedInvalidFields(ariaService: boolean = false)
 // and calls validate({ preliminary: true }). The field presentations and the summary must follow the new state.
 describe('FieldReplacement: injecting values into a user-edited form, then validate({ preliminary: true })', () =>
 {
-    test('The reset field and the untouched field are both validated again, and the summary reflects the result', () =>
+    test('The reset field and the untouched field are both validated again, and the summary reflects the result', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
 
         // The reset button restores a valid value in one field. The other field keeps the user's invalid text.
         t.vhm.getFieldValueHost(injectedField)!.setValue('ABC', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
         expectIssueCodes(t, injectedField, []);
@@ -179,14 +179,14 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A required field reset to empty is not validated, so its issues clear, while the untouched field stays invalid', () =>
+    test('A required field reset to empty is not validated, so its issues clear, while the untouched field stays invalid', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
 
         // An empty editor is text '' (not an unset field), which is what RequireText inspects.
         t.vhm.getFieldValueHost(injectedField)!.setTextValue('', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Undetermined);
         expectIssueCodes(t, injectedField, []);
@@ -198,14 +198,14 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('Resetting both fields to valid values clears every issue from the fields and the summary', () =>
+    test('Resetting both fields to valid values clears every issue from the fields and the summary', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
 
         t.vhm.getFieldValueHost(injectedField)!.setValue('ABC', { reset: true });
         t.vhm.getFieldValueHost(existingField)!.setValue('XYZ', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Valid);
         expectElementsMatchValidationState(t, existingField, ValidationStatus.Valid);
@@ -213,14 +213,14 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A reset field that is invalid for a different reason swaps its message in the field and the summary', () =>
+    test('A reset field that is invalid for a different reason swaps its message in the field and the summary', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
 
         // The old text failed the uppercase rule. The replacement is uppercase but too long.
         t.vhm.getFieldValueHost(injectedField)!.setValue('TOOLONGVALUE', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Invalid);
         expectIssueCodes(t, injectedField, [ConditionType.StringLength]);
@@ -231,7 +231,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A valid user-edited form gains an issue when a reset injects a bad value, and the valid field stays valid', () =>
+    test('A valid user-edited form gains an issue when a reset injects a bad value, and the valid field stays valid', async () =>
     {
         const t = createFieldReplacementForm();
         const summary = t.element('summary');
@@ -242,7 +242,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(summary.classList.contains('jivs-has-issues')).toBe(false);
 
         t.vhm.getFieldValueHost(existingField)!.setValue('lower', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expectElementsMatchValidationState(t, existingField, ValidationStatus.Invalid);
         expectIssueCodes(t, existingField, [ConditionType.RegExp]);
@@ -253,12 +253,12 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('After a reset and preliminary pass, a user edit validates normally, including the required check', () =>
+    test('After a reset and preliminary pass, a user edit validates normally, including the required check', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
         t.vhm.getFieldValueHost(injectedField)!.setTextValue('', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Undetermined);
         expect(summary.textContent).not.toContain('INJECTED-REQUIRED');
 
@@ -281,7 +281,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
     });
 
     // With the AriaService on, aria-invalid and aria-errormessage on each editor must follow the reset too.
-    test('aria-invalid and aria-errormessage follow each field through a reset and preliminary validation', () =>
+    test('aria-invalid and aria-errormessage follow each field through a reset and preliminary validation', async () =>
     {
         const t = installWithUserEditedInvalidFields(true);
         const injectedEditor = t.element('editor', injectedField);
@@ -290,7 +290,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(existingEditor.getAttribute('aria-invalid')).toBe('true');
 
         t.vhm.getFieldValueHost(injectedField)!.setValue('ABC', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(injectedEditor.hasAttribute('aria-invalid')).toBe(false);
         expect(injectedEditor.hasAttribute('aria-errormessage')).toBe(false);
@@ -298,7 +298,7 @@ describe('FieldReplacement: injecting values into a user-edited form, then valid
         expect(existingEditor.getAttribute('aria-errormessage')).toBe(t.element('error', existingField).id);
 
         t.vhm.getFieldValueHost(injectedField)!.setValue('lower', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(injectedEditor.getAttribute('aria-invalid')).toBe('true');
         expect(injectedEditor.getAttribute('aria-errormessage')).toBe(t.element('error', injectedField).id);
@@ -351,7 +351,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('The replaced field installs fresh, shows its state after the values step, and responds to the user', () =>
+    test('The replaced field installs fresh, shows its state after the values step, and responds to the user', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
@@ -368,7 +368,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
         // The values step: the site supplies the value for the new editor, then validates preliminary.
         t.vhm.getFieldValueHost(injectedField)!.setValue('lowerX', { reset: true });
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect((newEditor as unknown as HTMLInputElement).value).toBe('lowerX');
         expectElementsMatchValidationState(t, injectedField, ValidationStatus.Invalid);
@@ -410,7 +410,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
     // The ValueHosts hold the user's values and the replaced editor arrives blank. EditorWriter moves ValueHost -> editor,
     // using the editor's adapter directly, so it works even though the ValueHost value does not change.
-    test('EditorWriter with onlyReplacedEditors fills only the replaced editor from its ValueHost, then validate preliminary restores the feedback', () =>
+    test('EditorWriter with onlyReplacedEditors fills only the replaced editor from its ValueHost, then validate preliminary restores the feedback', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
@@ -424,7 +424,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         existingEditor.value = 'typed but not yet sent';
 
         new EditorWriter(t.vhm, { filter: onlyReplacedEditors }).write();
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(newEditor.value).toBe('lower');
         expect(existingEditor.value).toBe('typed but not yet sent');
@@ -457,7 +457,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('EditorWriter reaches a planned field added later, and the field is enabled and shows its value', () =>
+    test('EditorWriter reaches a planned field added later, and the field is enabled and shows its value', async () =>
     {
         const t = createFormWithPlannedField();
         const addedHost = t.vhm.getFieldValueHost(addedField)!;
@@ -468,7 +468,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         addedHost.setValue('lower', { reset: true, skipValueChangedCallback: true });
         expect((t.element('editor', addedField) as unknown as HTMLInputElement).value).toBe('');
         new EditorWriter(t.vhm, { filter: onlyReplacedEditors }).write();
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect((t.element('editor', addedField) as unknown as HTMLInputElement).value).toBe('lower');
         expect(addedHost.isEnabled()).toBe(true);
@@ -490,7 +490,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A field whose editor was removed is disabled, drops out of validation and the summary, and returns when its editor does', () =>
+    test('A field whose editor was removed is disabled, drops out of validation and the summary, and returns when its editor does', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
@@ -502,7 +502,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         const container = t.element('container', injectedField);
         t.replace(container, () => { /* nothing */ });
         FormInstaller.install(t.vhm, t.collector);
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(injectedHost.isEnabled()).toBe(false);
         expect(t.vhm.getFieldValueHost(existingField)!.isEnabled()).toBe(true);
@@ -590,7 +590,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A field left with only its label is treated as having no editor, so it is disabled and out of the summary', () =>
+    test('A field left with only its label is treated as having no editor, so it is disabled and out of the summary', async () =>
     {
         const t = installWithUserEditedInvalidFields();
         const summary = t.element('summary');
@@ -598,7 +598,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
         t.replace(t.element('container', injectedField), page => page.label(injectedField, injectedField));
         FormInstaller.install(t.vhm, t.collector);
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(injectedHost.isEnabled()).toBe(false);
         expect(summary.textContent).not.toContain('INJECTED-UPPER');
@@ -607,7 +607,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('With ARIA on, removing one field keeps the untouched field\'s aria-invalid and aria-errormessage, and it still updates', () =>
+    test('With ARIA on, removing one field keeps the untouched field\'s aria-invalid and aria-errormessage, and it still updates', async () =>
     {
         const t = installWithUserEditedInvalidFields(true);
         const editor = t.element('editor', existingField);
@@ -617,7 +617,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
 
         t.replace(t.element('container', injectedField), () => { /* nothing */ });
         FormInstaller.install(t.vhm, t.collector);
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
 
         expect(editor.getAttribute('aria-invalid')).toBe('true');
         expect(editor.getAttribute('aria-errormessage')).toBe(errorId);
@@ -628,7 +628,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('A planned field with no elements is disabled by the first install and stays out of validation and the summary', () =>
+    test('A planned field with no elements is disabled by the first install and stays out of validation and the summary', async () =>
     {
         const t = createFormWithPlannedField();
         const summary = t.element('summary');
@@ -638,7 +638,7 @@ describe('FieldReplacement: replacing the elements of one field, then installing
         expect(addedHost.isEnabled()).toBe(false);
         expect(t.vhm.getFieldValueHost(injectedField)!.isEnabled()).toBe(true);
         expect(t.vhm.getFieldValueHost(existingField)!.isEnabled()).toBe(true);
-        t.vhm.validate({ preliminary: true });
+        await t.vhm.validate({ preliminary: true });
         expect(summary.textContent).toContain('INJECTED-UPPER');
         expect(summary.textContent).toContain('EXISTING-UPPER');
         expect(summary.textContent).not.toContain('ADDED');

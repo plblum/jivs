@@ -110,13 +110,13 @@ export function configureVMForDifferenceBetweenDates(): IValueHostsManager {
 // This shows it in action.
 // Even better, look at the unit tests in \tests folder as they run the same examples.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function demoSeveralCases(): void {
+async function demoSeveralCases(): Promise<void> {
     let vhm = configureVMForDifferenceBetweenDates();
     vhm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 1)));
     let diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays = 0
-    let result = vhm.validate();
+    let result = await vhm.validate();
     /* 
     result = {
         issuesFound: null,
@@ -126,7 +126,7 @@ function demoSeveralCases(): void {
     vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 10))); 
     diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 9
-    result = vhm.validate();
+    result = await vhm.validate();
     /* 
     result = {
         issuesFound: null,
@@ -136,7 +136,7 @@ function demoSeveralCases(): void {
     vhm.getValueHost('EndDate')?.setValue(new Date(Date.UTC(2000, 0, 11))); 
     diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 10 
-    result = vhm.validate();
+    result = await vhm.validate();
     /* 
     result == {
         issuesFound: [{
@@ -149,7 +149,7 @@ function demoSeveralCases(): void {
     vhm.getValueHost('StartDate')?.setValue(new Date(Date.UTC(2000, 0, 12)));    // start > end
     diffDays = vhm.getValueHost('DiffDays')?.getValue();
     // DiffDays == 1 
-    result = vhm.validate();
+    result = await vhm.validate();
     /* 
     result == {
         issuesFound: [{

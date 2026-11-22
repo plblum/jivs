@@ -267,7 +267,7 @@ export class FormConfigAdapter
      * adapter.field('newfield', { group: 'groupname' });
      * ```
      * @param groupName - validation group name. Same name used in 
-     * ValueHostsManager.validate(groupName) to validate all valuehosts in the group.
+     * ValueHostsManager.validate({ group: groupName }) to validate all valuehosts in the group.
      * @param valueHostNames - names on ValueHosts already declared.
      */
     public assignToGroup(groupName: string, valueHostNames: Array<ValueHostName>): void

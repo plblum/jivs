@@ -167,12 +167,12 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
     factory.setDefaultPresentationName(ElementRole.error, 'InlineError');
 
     // EDITORS
-    factory.register('TextInput', (element) => new TextInputPresentation(element));
-    factory.register('Checkbox', (element) => new CheckboxPresentation(element));
-    factory.register('RadioButtons', (element) => new RadioButtonsPresentation(element));
-    factory.register('Select', (element) => new SelectPresentation(element));
-    factory.register('TextArea', (element) => new TextAreaPresentation(element));
-    factory.register('FileInput', (element) => new FileInputPresentation(element));
+    factory.register('TextInput', (element) => new TextInputPresentation(element as HTMLInputElement));
+    factory.register('Checkbox', (element) => new CheckboxPresentation(element as HTMLInputElement));
+    factory.register('RadioButtons', (element) => new RadioButtonsPresentation(element as HTMLInputElement));
+    factory.register('Select', (element) => new SelectPresentation(element as HTMLSelectElement));
+    factory.register('TextArea', (element) => new TextAreaPresentation(element as HTMLTextAreaElement));
+    factory.register('FileInput', (element) => new FileInputPresentation(element as HTMLInputElement));
     factory.register('Wrapped:TextInput', (element) => new WrappedTextInputPresentation(element));
     factory.register('Wrapped:Checkbox', (element) => new WrappedCheckboxPresentation(element));
     factory.register('Wrapped:RadioButtons', (element) => new WrappedRadioButtonsPresentation(element));
@@ -182,12 +182,12 @@ function registerFieldPresentations(factory: IPresentationFactory<IFieldPresenta
 
     // The editor adapter definitions recommend these names (their built-in defaults).
     // Registered as aliases so that FormInstaller can resolve the recommendation.
-    factory.register('inputEditor', (element) => new TextInputPresentation(element));
-    factory.register('checkboxEditor', (element) => new CheckboxPresentation(element));
-    factory.register('radiobuttonsEditor', (element) => new RadioButtonsPresentation(element));
-    factory.register('selectEditor', (element) => new SelectPresentation(element));
-    factory.register('textareaEditor', (element) => new TextAreaPresentation(element));
-    factory.register('fileInputEditor', (element) => new FileInputPresentation(element));
+    factory.register('inputEditor', (element) => new TextInputPresentation(element as HTMLInputElement));
+    factory.register('checkboxEditor', (element) => new CheckboxPresentation(element as HTMLInputElement));
+    factory.register('radiobuttonsEditor', (element) => new RadioButtonsPresentation(element as HTMLInputElement));
+    factory.register('selectEditor', (element) => new SelectPresentation(element as HTMLSelectElement));
+    factory.register('textareaEditor', (element) => new TextAreaPresentation(element as HTMLTextAreaElement));
+    factory.register('fileInputEditor', (element) => new FileInputPresentation(element as HTMLInputElement));
 
     // LABELS, REQUIRED INDICATORS, AND CONTAINERS
     factory.register('Label', (element) => new LabelPresentation(element));

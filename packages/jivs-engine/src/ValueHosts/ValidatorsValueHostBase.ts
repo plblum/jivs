@@ -53,6 +53,11 @@ export abstract class ValidatorsValueHostBase<TConfig extends ValidatorsValueHos
     // cancel the underlying async operations.
     private _validationGeneration = 0;
 
+    /** Identifies the current validation run and changes when it is invalidated. */
+    public get validationGeneration(): number {
+        return this._validationGeneration;
+    }
+
     /**
      * Participates in releasing memory.
      * While not required, the idea is to be a more friendly participant in the ecosystem.

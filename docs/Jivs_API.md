@@ -2142,7 +2142,7 @@ Your user interface will receive a `ValidationState object` through its `onValid
 It will received `ValueHostValidationState objects` through its `onValueHostValidationStateChanged` callback. Its data is specific to a single `FieldValueHost`, and identifies if there are validation issues. Use those issues, found in IssueFound objects, to display error messages.
 
 #### ValidationState
-The `ValidationState object` is returned by `ValueHostsManager.validate()` and through its `onValidationStateChanged` callback. 
+The `ValidationState object` is returned by the Promise from `ValueHostsManager.validate()` and through its `onValidationStateChanged` callback.
 
 ```ts
 interface ValidationState {
@@ -2170,7 +2170,7 @@ interface ValidationState {
 config.onValidationStateChanged = myValStateChanged;
 let vhm = new ValueHostsManager(config); // assume fully setup with validators
 ...
-let valState = vhm.validate();  // Most likely, you'll let valState come through onValidationStateChanged
+let valState = await vhm.validate();  // You can also observe onValidationStateChanged
 
 function myValStateChanged(valueHostsManager: IValueHostsManager, valState: ValidationState)
 {
@@ -2310,7 +2310,7 @@ These properties are all related to validation:
 #### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on `ValueHostsManager`.
 ```ts
-let status = vhm.validate(); // it will notify elements in your UI of validation changes
+let status = await vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
     // Prevent saving. User has to fix things
 else
@@ -2791,7 +2791,7 @@ function createValueHostsManager(): ValueHostsManager
 ```
 #### Form-wide using ValueHostsManager.validate()
 ```ts
-test('Start and End date are supplied empty strings and report isValid=false', ()=>
+test('Start and End date are supplied empty strings and report isValid=false', async ()=>
 {
     // Arrange
     let vhm = createValueHostsManager();
@@ -2800,7 +2800,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     vhm.field('EndDate').setValues('', '');
     
     // Act
-    let validationState = vhm.validate();
+    let validationState = await vhm.validate();
     
     // Assert
     expect(validationState.isValid).toBe(false);
@@ -2823,7 +2823,7 @@ test('Start and End date are supplied empty strings and report isValid=false', (
     expect(startDateResult.summaryMessage).toBe('the expected summary message');
 });
 ```
-The result of `ValueHostsManager.validate()` is a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
+The result of `ValueHostsManager.validate()` is a Promise resolving to a [ValidationState object](http://jivs.peterblum.com/typedoc/interfaces/Validation_Types.ValidationState.html) which looks like this:
 ```ts
 interface ValidationState {
     isValid: boolean;

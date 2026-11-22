@@ -742,7 +742,9 @@ document.getElementById('preview-fill-invalid')!.addEventListener('click', () =>
 document.getElementById('preview-fill-valid')!.addEventListener('click', () =>
     enterSample(true));
 document.getElementById('preview-validate')!.addEventListener('click', () =>
-    vhm?.validate());
+{
+    void vhm?.validate();
+});
 document.getElementById('preview-validate-preliminary')!.addEventListener('click', () =>
 {
     vhm?.clearValidation(); // because prelim intentionally skips trying anything on fields that have existing validation issues

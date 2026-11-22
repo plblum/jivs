@@ -9,7 +9,7 @@ There are several aspects to validation:
     - an optional severity
 - [Invoking the validation process](./Invoking_Validation.md)
 - [The results of validation - Validation State](./Handling_ValidationState_Changes.md)
-    - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses.
+    - [`ValidationState object`](./Validation_State.md#validationstate) from the `ValueHostsManager`. Returned by `ValueHostsManager.validate()` and passed into its `onValidationStateChanged` callback, which your UI uses. _Note that validate() returns a Promise<ValidationState>._
     - [`ValueHostValidationState object`](./Validation_State.md#valuehostvalidationstate) from individual `FieldValueHosts`. Passed through `ValueHostsManager`.`onValueHostValidationStateChanged` callback, which field specific UI error displays use.
     - [`IssueFound object`](./Validation_State.md#issuefound) describes a single issue (or error if you like) found. Contained within both `ValidationState` and `ValueHostValidationState`.
 - [Data Type Check Validators](./DataTypeCheck_validators.md) categorizes validators required to confirm the native value matches the [Lookup Key](../Data_Type_Support/Home.md#lookup-keys). It provides a way to automatically have them generated, avoiding setup.
@@ -45,7 +45,7 @@ const vhm = new ValueHostsManager(rules.configure());
 vhm.onValueHostsValidationStateChanged = fieldValidated; // your function
 vhm.onValidationStateChanged = formValidated; // your function
 // user submits the form
-vhm.validate(); // will invoke both callbacks, which is how the UI knows to show Validation State
+await vhm.validate(); // will invoke both callbacks, which is how the UI knows to show Validation State
 
 function fieldValidated(valueHost: IValidatorsValueHost, validationState: ValueHostValidationState): void
 {

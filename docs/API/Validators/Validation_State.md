@@ -6,7 +6,7 @@ Your user interface will receive a `ValidationState object` through its `onValid
 It will receive a `ValueHostValidationState object` through its `onValueHostValidationStateChanged` callback. Its data is specific to a single `FieldValueHost`, and identifies if there are validation issues. Use those issues, found in `IssueFound objects`, to display error messages. See [Setup onValueHostValidationState](./Handling_ValidationState_Changes.md#setup-onvaluehostvalidationstatechanged).
 
 ## ValidationState
-The `ValidationState object` is associated with `ValueHostsManager.validate()`, covering the validation results across the form. You will receive it within the `onValidationStateChanged` callback and as the function result of `validate()`.
+The `ValidationState object` is associated with `ValueHostsManager.validate()`, covering the validation results across the form. You will receive it within the `onValidationStateChanged` callback and as the Promise result of `validate()`.
 It is also available from `ValueHostsManager.currentValidationState(options)`.
 
 ```ts
@@ -37,7 +37,7 @@ interface ValidationState {
 let vhm = new ValueHostsManager(rules.configure()); // assume fully setup with validators
 vhm.onValidationStateChanged = formValidated;
 ...
-let valState = vhm.validate();
+let valState = await vhm.validate();
 if (!valState.doNotSave)
     // save your data
 

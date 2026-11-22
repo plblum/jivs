@@ -4,9 +4,10 @@
 
 Implementation guide for [AsyncValueHostsManagerValidate_Design.md](./AsyncValueHostsManagerValidate_Design.md).
 Configuration, `AsyncValidator` pending policies and timeout, and the
-ValueHost policy handoff and run-specific host completions are implemented.
-The manager's async orchestration remains to be built. AsyncValidator failures,
-including timeouts, already produce validator-owned issues.
+ValueHost policy handoff, run-specific host completions, and manager async
+orchestration are implemented. Migration of other consumers and their tests
+remains in progress. AsyncValidator failures, including timeouts, already
+produce validator-owned issues.
 Snippets below are illustrative and may include **proposed** APIs; named
 helper calls in orchestration snippets specify work to implement.
 The design still has decisions listed in
@@ -23,7 +24,7 @@ coordination, then manager orchestration. Do not change synchronous
 | [AsyncValidator interfaces](../packages/jivs-engine/src/Interfaces/AsyncValidator.ts) | Handler signal and configuration exist; introduce `IAsyncValidator` and `PendingContext`. |
 | [AsyncValidator](../packages/jivs-engine/src/Validation/AsyncValidator.ts) | Own the context, select pending work, and wrap the handler for timeout and cancellation. |
 | [ValidatorsValueHostBase](../packages/jivs-engine/src/ValueHosts/ValidatorsValueHostBase.ts) | `hasAsyncValidators` exists; collect contexts and process results for the current host run. |
-| [Validation interfaces](../packages/jivs-engine/src/Interfaces/Validation.ts) | Model-level option, pending contexts and per-host-run completions; manager still returns `ValidationState`. |
+| [Validation interfaces](../packages/jivs-engine/src/Interfaces/Validation.ts) | Model-level option, pending contexts and per-host-run completions. |
 | [ValueHostsManager](../packages/jivs-engine/src/Validation/ValueHostsManager.ts), [manager interface](../packages/jivs-engine/src/Interfaces/ValueHostsManager.ts) | Await host processing, protect against obsolete runs, return and notify the final state. |
 | [ValidatorBuilder](../packages/jivs-builder/src/Builder/ValidatorBuilder.ts), [builder interface](../packages/jivs-builder/src/Interfaces/ChildBuilders.ts) | The options-object form exists; it replaces the previous dependency-array argument. |
 
@@ -214,12 +215,12 @@ and counter are restored; wire invalidation to that lifecycle path.
 
 `CalcValueHost.getValue()` updates its counter when the calculation changes.
 An initial handler read can therefore advance a calculation counter after
-the snapshot. Resolve this explicitly: initialize relevant calculated inputs
-before capturing, or distinguish that initial calculation from a later input
-change. Do not simply recapture all counters after invoking the handler:
-reentrant value changes during handler startup must not be hidden. Declared
-underlying fields, including nested calculation inputs, remain necessary.
-Undeclared inputs and external application state cannot be checked.
+the snapshot. The manager does not eagerly calculate inputs or recapture
+counters after invoking the handler: either could add side effects or hide
+reentrant changes. Instead, it conservatively returns a blocking result when
+that first read changes the counter. Declared underlying fields, including
+nested calculation inputs, remain necessary. Undeclared inputs and external
+application state cannot be checked.
 
 ### Context creation and cancellation
 
@@ -623,9 +624,8 @@ Promise unobserved.
 
 ## 5. Manager orchestration
 
-**Problem:** The existing manager returns a synchronous snapshot even while
-host processing is pending. A later change or another validation can make
-that snapshot obsolete.
+**Problem:** A synchronous manager snapshot can be taken while host processing
+is pending. A later change or another validation can make it obsolete.
 
 **Solution:** The public manager contract returns a Promise exclusively.
 Field-host `validate()` stays synchronous.
@@ -646,8 +646,8 @@ if (state.doNotSave)
 // Submit the values validated by this call.
 ```
 
-The following shows the control flow, not a drop-in method. The helper
-contracts immediately below are required parts of the implementation.
+The following illustrates the control flow, not the current method verbatim.
+See the manager implementation for the actual tracking and error paths.
 
 ```ts
 async validate(options?: ValidateOptions): Promise<ValidationState> {
@@ -696,21 +696,30 @@ async validate(options?: ValidateOptions): Promise<ValidationState> {
 Required behavior of the proposed helpers:
 
 - `beginValidationRun`: retain participating host identities and input
-  versions, including declared async dependencies; initialize calculations
-  consistently with section 2. Track run/generation identity so a newer
+  versions, including declared async dependencies. Do not eagerly calculate
+  dependencies: if a handler's first read advances a calculation's counter,
+  this call conservatively blocks and the application can retry. Track
+  run/generation identity so a newer
   validation, clear, discard, restore, disposal or reentrant validation can
   invalidate this call. No manager-wide active-operation count is needed.
 - `recordHostRun`: capture the *generation actually used by that host run*,
   not merely its generation after a reentrant callback. Verify already-visited
-  hosts when later synchronous callbacks can change them.
+  hosts when later synchronous callbacks can change them. Built-in
+  `ValidatorsValueHostBase` hosts expose a generation for this purpose.
+  Custom validatable hosts remain responsible for their own protection against
+  independent revalidation or clearing while their completions are pending.
 - Copy `result.completions` from each host immediately after `validate()`
   returns. These belong to that particular host run and include custom
   Promise-returning validators; do not await `context.promise` instead.
 - `finishValidationRun`: after all host completions, check identities, counters
   and generations again. If this call was made obsolete, return a **blocking**
   state rather than treating an old skipped Promise as success. Do not
-  automatically retry indefinitely. Preserve the caller's group unchanged,
-  including undefined, and the existing group filtering.
+  automatically retry indefinitely. Do not send an obsolete call's final
+  manager notification. Preserve the caller's group unchanged, including
+  undefined, and the existing group filtering.
+- A manager `clearValidation()` invalidates in-progress manager calls even if
+  it targets a different group or no host state changes. Independent clearing
+  of a custom host remains that host's responsibility.
 - Convert unexpected startup, result-processing, snapshot and final-notification
   errors into a logged blocking result. An ordinary exception caught while a
   synchronous condition is evaluated is logged and becomes `Undetermined`;
@@ -726,13 +735,11 @@ Required behavior of the proposed helpers:
   state. Do not let a queued intermediate notification overwrite a newer
   snapshot with stale data.
 
-The manager's error boundary must also cover the helpers, awaited completion,
-logging and notification. If normal state creation fails, use a last-resort
-state with `isValid: false` and `doNotSave: true`; do not manufacture a
-successful result. The exact diagnostic representation is unresolved. The
-existing `ValidationState` has no error field; if logging itself can throw,
-the implementation needs an explicit fallback reporting mechanism compatible
-with the always-fulfill contract.
+The manager reports operational errors through the configured logging service,
+which is assumed not to throw. If normal state creation fails, use a
+last-resort state with `isValid: false` and `doNotSave: true`; do not
+manufacture a successful result. Keep the existing `ValidationState` shape:
+diagnostics are logged rather than added to the returned state.
 
 With no completions, do not insert an unnecessary async wait before creating
 the final snapshot. Returning from an `async` method still supplies a
@@ -917,11 +924,12 @@ counter work:
    only for calls with the model-level flag.
 3. Audit custom hosts and callers for the separate context and per-run
    completion collections when implementing manager orchestration.
-4. Finalize obsolete-manager-call diagnostics and tracking for restoration,
-   reentrancy, overlapping calls and calculation initialization. It must block
-   rather than authorize saving stale values.
-5. Define expected abort errors across supported runtimes and a reporting
-   fallback if the logging service throws. The manager Promise must fulfill.
+4. Obsolete manager calls log and return a blocking state without sending their
+   final notification. Custom hosts own protection of their independent runs.
+   A calculation's first read may conservatively block the call; no eager
+   calculation is performed.
+5. Define expected abort errors across supported runtimes. The logging service
+   is assumed not to throw, and the manager Promise fulfills.
 6. Resolve the `isChanged` mismatch: the design specifies
    `changeCounter > baseChangeCounter`, while `ValueHostBase` currently
    compares `changeCounter - baseChangeCounter > baseChangeCounter`.

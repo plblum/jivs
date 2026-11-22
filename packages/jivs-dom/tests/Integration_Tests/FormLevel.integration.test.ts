@@ -249,7 +249,7 @@ describe('A form with two fields, a summary and a submit', () =>
         }
     });
 
-    test('validate() lists the messages of both fields, and each valid edit removes that field\'s messages', () =>
+    test('validate() lists the messages of both fields, and each valid edit removes that field\'s messages', async () =>
     {
         let t = installFormLevel('summaryAndSubmit');
         let summary = t.element('summary');
@@ -260,7 +260,7 @@ describe('A form with two fields, a summary and a submit', () =>
         // Load the model's values without validating, as a site does before validating the whole form.
         t.vhm.getFieldValueHost(nameField)!.setTextValue('', { reset: true });
         t.vhm.getFieldValueHost(codeField)!.setTextValue('abc', { reset: true });
-        t.vhm.validate();
+        await t.vhm.validate();
 
         expect(summary.classList.contains('jivs-has-issues')).toBe(true);
         expect(summary.textContent).toContain('REQ-MSG');
@@ -282,14 +282,14 @@ describe('A form with two fields, a summary and a submit', () =>
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('clearValidation() empties the summary and re-enables the submit', () =>
+    test('clearValidation() empties the summary and re-enables the submit', async () =>
     {
         let t = installFormLevel('summaryAndSubmit');
         let summary = t.element('summary');
         let submit = t.element('submit');
         t.vhm.getFieldValueHost(nameField)!.setTextValue('', { reset: true });
         t.vhm.getFieldValueHost(codeField)!.setTextValue('abc', { reset: true });
-        t.vhm.validate();
+        await t.vhm.validate();
         expect(summary.classList.contains('jivs-has-issues')).toBe(true);
         expect(submit.hasAttribute('disabled')).toBe(true);
 
@@ -301,7 +301,7 @@ describe('A form with two fields, a summary and a submit', () =>
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('validate() updates form feedback immediately while the default delay is enabled', () =>
+    test('validate() updates form feedback immediately while the default delay is enabled', async () =>
     {
         jest.useFakeTimers();
         try
@@ -318,13 +318,14 @@ describe('A form with two fields, a summary and a submit', () =>
             expect(t.vhm.notifyValidationStateChangedDelay).toBe(DefaultNotifyValidationStateChangedDelay);
             t.vhm.getFieldValueHost(nameField)!.setTextValue('', { reset: true });
             t.vhm.getFieldValueHost(codeField)!.setTextValue('abc', { reset: true });
-            t.vhm.validate();
+            let completion = t.vhm.validate();
 
             expect(summary.classList.contains('jivs-has-issues')).toBe(true);
             expect(summary.textContent).toContain('REQ-MSG');
             expect(summary.textContent).toContain('CODE-UPPER-MSG');
             expect(submit.hasAttribute('disabled')).toBe(true);
 
+            await completion;
             jest.advanceTimersByTime(DefaultNotifyValidationStateChangedDelay);
             expect(summary.textContent).toContain('REQ-MSG');
             expect(summary.textContent).toContain('CODE-UPPER-MSG');
@@ -355,11 +356,11 @@ describe('Two summaries and submits, one per validation group', () =>
         return t;
     }
 
-    test('validate({group}) updates only the summary and submit of that group', () =>
+    test('validate({group}) updates only the summary and submit of that group', async () =>
     {
         let t = installTwoGroups();
 
-        t.vhm.validate({ group: 'GroupA' });
+        await t.vhm.validate({ group: 'GroupA' });
 
         expect(groupElement('summary', 'GroupA').textContent).toContain('REQ-MSG');
         expect(groupElement('summary', 'GroupA').textContent).not.toContain('CODE-UPPER-MSG');
@@ -369,7 +370,7 @@ describe('Two summaries and submits, one per validation group', () =>
         expect(groupElement('summary', 'GroupB').classList.contains('jivs-has-issues')).toBe(false);
         expect(groupElement('submit', 'GroupB').hasAttribute('disabled')).toBe(false);
 
-        t.vhm.validate({ group: 'GroupB' });
+        await t.vhm.validate({ group: 'GroupB' });
 
         expect(groupElement('summary', 'GroupB').textContent).toContain('CODE-UPPER-MSG');
         expect(groupElement('summary', 'GroupB').textContent).not.toContain('REQ-MSG');
@@ -421,11 +422,11 @@ describe('Wildcard validation with group-bound and ungrouped elements', () =>
         return t;
     }
 
-    test('By default validate() updates the ungrouped summary and leaves the GroupA elements alone', () =>
+    test('By default validate() updates the ungrouped summary and leaves the GroupA elements alone', async () =>
     {
         let t = installAllAndGroupA(false);
 
-        t.vhm.validate();
+        await t.vhm.validate();
 
         expect(ungroupedSummary().classList.contains('jivs-has-issues')).toBe(true);
         expect(ungroupedSummary().textContent).toContain('REQ-MSG');
@@ -436,11 +437,11 @@ describe('Wildcard validation with group-bound and ungrouped elements', () =>
         expect(t.services.loggingService.entryCount).toBe(0);
     });
 
-    test('With respondToWildcardGroup, validate() also updates the GroupA elements with only the GroupA issues', () =>
+    test('With respondToWildcardGroup, validate() also updates the GroupA elements with only the GroupA issues', async () =>
     {
         let t = installAllAndGroupA(true);
 
-        t.vhm.validate();
+        await t.vhm.validate();
 
         expect(ungroupedSummary().textContent).toContain('REQ-MSG');
         expect(ungroupedSummary().textContent).toContain('CODE-UPPER-MSG');

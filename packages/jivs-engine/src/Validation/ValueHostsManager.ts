@@ -5,15 +5,16 @@
  * @module jivs-engine/ValueHostsManager/ConcreteClasses
  */
 import { ValueHostName } from '../DataTypes/BasicTypes';
+import { AsyncValidatorConfig, isAsyncValidatorConfig } from '../Interfaces/AsyncValidator';
 import { ICalcValueHost } from '../Interfaces/CalcValueHost';
 import { FieldValueHostSetValueOptions, IFieldValueHost, TextValueChangedHandler } from '../Interfaces/FieldValueHost';
 import { toIDisposable } from '../Interfaces/General_Purpose';
 import { IJivsServices } from '../Interfaces/JivsServices';
 import { LoggingLevel } from '../Interfaces/LoggingService';
 import { IStaticValueHost } from '../Interfaces/StaticValueHost';
-import type { IValidatableValueHost, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
+import type { IValidatableValueHost, ValidatableValueHostBaseConfig, ValueHostValidationStateChangedHandler } from '../Interfaces/ValidatableValueHostBase';
 import { type IssueFound, type ValidateOptions, ValidationState, ValidationStatus } from '../Interfaces/Validation';
-import { IValidatorsValueHost, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
+import { IValidatorsValueHost, ValidatorsValueHostBaseConfig, toIValidatorsValueHost } from '../Interfaces/ValidatorsValueHostBase';
 import { IValueHost, ValueChangedHandler, ValueHostConfig, ValueHostInstanceState } from '../Interfaces/ValueHost';
 import { IValueHostAccessor } from '../Interfaces/ValueHostAccessor';
 import
@@ -29,16 +30,31 @@ import
         ValueHostsManagerConfigChangedHandler
     } from '../Interfaces/ValueHostsManager';
 import { Debouncer } from '../Utilities/Debounce';
-import { assertNotNull, CodingError } from '../Utilities/ErrorHandling';
+import { assertNotNull, CodingError, ensureError } from '../Utilities/ErrorHandling';
 import { LoggingFacade } from '../Utilities/LoggingFacade';
-import { deepClone, deepEquals, preserveReferenceOnClone } from '../Utilities/Utilities';
+import { deepClone, deepEquals, groupsMatch, preserveReferenceOnClone } from '../Utilities/Utilities';
 import { toICalcValueHost } from '../ValueHosts/CalcValueHost';
 import { toIFieldValueHost } from '../ValueHosts/FieldValueHost';
 import { ModelValidatorsValueHostName, ModelValidatorsValueHostType } from '../ValueHosts/ModelValidatorsValueHost';
 import { toIStaticValueHost } from '../ValueHosts/StaticValueHost';
 import { ValidatableValueHostBase } from '../ValueHosts/ValidatableValueHostBase';
+import { ValidatorsValueHostBase } from '../ValueHosts/ValidatorsValueHostBase';
 import { ValueHostAccessor } from '../ValueHosts/ValueHostAccessor';
 
+/** Captures the identity and value version of an input used by a manager run. */
+interface ManagerValidationInput {
+    name: ValueHostName;
+    host: IValueHost;
+    changeCounter: number;
+}
+
+/** Records the manager run and the inputs and built-in host runs it must still own. */
+interface ManagerValidationRun {
+    generation: number;
+    inputs: ManagerValidationInput[];
+    participatingHosts: Set<IValidatableValueHost>;
+    hosts: Array<{ host: { readonly validationGeneration: number }; generation: number }>;
+}
 
 /**
  * ValueHostsManager is the central object for using this system.
@@ -164,6 +180,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * clean up active resources (like timers)
      */
     public dispose(): void {
+        this._validationGeneration++;
+        // Keep the logger available to validation calls that finish after disposal.
+        this.logger;
+        this._disposed = true;
         this.valueHosts.forEach((vh) => { vh.dispose(); });
         this.valueHosts.clear();
         (this._valueHosts as any) = undefined;
@@ -180,7 +200,6 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
 
         this._vh?.dispose();
         this._vh = undefined;
-        (this._logger as any) = undefined!;
         if (this._debounceVHValidated)
             this._debounceVHValidated.dispose();
         this._debounceVHValidated = null;
@@ -201,6 +220,10 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
         return this._logger;
     }
     private _logger: LoggingFacade | null = null;
+    private _disposed = false;
+    // New manager runs, configuration changes, clearValidation, and disposal
+    // invalidate earlier manager runs without waiting for their async work.
+    private _validationGeneration = 0;
 
     protected get config(): ValueHostsManagerConfig {
         return this._config;
@@ -416,6 +439,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     public discardValueHost(valueHostName: ValueHostName): void {
         assertNotNull(valueHostName, 'valueHostName');
         if (this.valueHostConfigs.has(valueHostName)) {
+            this._validationGeneration++;
             this.valueHosts.get(valueHostName)!.dispose();  // this also calls valueHostConfigs.dispose if setup
             this.valueHosts.delete(valueHostName);
 
@@ -440,6 +464,7 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
      * @returns 
      */
     protected applyConfig(config: ValueHostConfig, initialState: ValueHostInstanceState | null): IValueHost {
+        this._validationGeneration++;
         config = deepClone(config); // our own private copy
         const factory = this.services.valueHostFactory; // functions in here throw exceptions if config is unsupported
         let state: ValueHostInstanceState | undefined = undefined;
@@ -698,35 +723,199 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     /**
      * Runs validation against all validatable ValueHosts, except those that do not
      * match the validation group supplied in options.
-     * Updates this ValueHost's InstanceState and notifies parent if changes were made.
+     * Each host updates its own state and may notify the UI as validation progresses.
+     * The Promise fulfills after all collected host completions have been processed,
+     * followed by a final manager notification unless callbacks are skipped.
+     * When no completions are collected, that notification occurs synchronously,
+     * before the caller observes the Promise result.
+     * Unexpected errors and obsolete calls return a blocking state; an obsolete call
+     * detected before notification does not send its final manager notification.
+     * A callback can itself make the run obsolete, in which case the already-delivered
+     * notification cannot be withdrawn and the Promise resolves with a blocking state.
+     * Custom validatable hosts must protect their own results from independent
+     * revalidation or clearing while pending.
      * @param options - Provides guidance on which validators to include.
-     * @returns The ValidationState object, which packages several key
-     * pieces of information: isValid, doNotSave, and issues found.
-     * The same object is provided through the OnValidated function
+     * @returns A Promise of the final ValidationState, including isValid, doNotSave,
+     * and issues found. A current run also supplies its snapshot to onValidationStateChanged.
      */
-    public validate(options?: ValidateOptions): ValidationState {
-        options = { ...options, isModelLevel: true };
+    public async validate(options?: ValidateOptions): Promise<ValidationState> {
+        // Do not change the caller's options; validators need to know this is a model-level run.
+        const hostOptions: ValidateOptions = { ...options, isModelLevel: true };
+        const logger = this.logger;
+        const generation = ++this._validationGeneration;
+        const completions: Promise<void>[] = [];
+        let run: ManagerValidationRun | undefined;
+        let failed = false;
+        let obsolete = false;
 
-        for (const vh of this.validatableValueHost())
-        {
-            // preliminary is looking for value hosts that have yet to be validated
-            // Within FieldValueHost, it will also ignore the required validators.
-            if (options.preliminary &&
-                vh.validationStatus !== ValidationStatus.NotAttempted && vh.validationStatus !== ValidationStatus.NeedsValidation)
-                continue;
-            vh.validate(options);   // the result is also registered in the vh and retrieved when building ValidationState
+        try {
+            if (this._disposed)
+                throw new Error('ValueHostsManager has been disposed');
+            run = this.beginValidationRun(generation, hostOptions);
+            for (const vh of this.validatableValueHost()) {
+                // A host or callback may have changed an input or started a newer run.
+                if (!this.isValidationRunCurrent(run))
+                    break;
+                // Preliminary validation leaves previously attempted hosts alone.
+                if (hostOptions.preliminary &&
+                    vh.validationStatus !== ValidationStatus.NotAttempted &&
+                    vh.validationStatus !== ValidationStatus.NeedsValidation)
+                    continue;
+
+                // Built-in validator hosts expose a generation that detects independent
+                // revalidation and clearing even when the input value did not change.
+                const validatorHost = run.participatingHosts.has(vh) && vh instanceof ValidatorsValueHostBase ? vh : null;
+                const previousGeneration = validatorHost?.validationGeneration;
+                const result = vh.validate(hostOptions);
+                if (result?.completions)
+                    completions.push(...result.completions);
+                if (validatorHost && previousGeneration !== undefined) {
+                    const currentGeneration = validatorHost.validationGeneration;
+                    // This call can advance the host at most once; a greater change
+                    // means a callback or validator started a newer run.
+                    if (currentGeneration > previousGeneration + 1) {
+                        obsolete = true;
+                        break;
+                    }
+                    run.hosts.push({ host: validatorHost, generation: currentGeneration });
+                }
+            }
         }
-        const snapshot = this.createValidationState(options);
-        options = { ...options, disableValidationStateChangedDelay: true };
-        this.notifyValidationStateChanged(snapshot, options);
-        return snapshot;
+        catch (error) {
+            failed = true;
+            logger.error(ensureError(error));
+        }
+
+        // Completions include the host's processing of each result, not just the
+        // validator Promise. Wait for all collected work even after a failure.
+        // Avoid awaiting an empty list to preserve synchronous notification timing.
+        if (completions.length) {
+            const settled = await Promise.allSettled(completions);
+            if (settled.some(item => item.status === 'rejected'))
+                failed = true; // Built-in host processing logs its own failures.
+        }
+
+        try {
+            // An obsolete run must not publish its snapshot as the final result.
+            if (obsolete || this._disposed || generation !== this._validationGeneration ||
+                (run && !this.isValidationRunCurrent(run))) {
+                logger.message(LoggingLevel.Info, () => 'Validation did not complete for the current inputs');
+                return this.blockingValidationState(hostOptions);
+            }
+            let snapshot: ValidationState;
+            try {
+                snapshot = failed ? this.blockingValidationState(hostOptions) : this.createValidationState(hostOptions);
+            }
+            catch (error) {
+                logger.error(ensureError(error));
+                snapshot = this.blockingValidationState(hostOptions);
+            }
+            // Building the snapshot can invoke application code and start a newer run.
+            // Discard the cached snapshot if it no longer belongs to this run.
+            if (this._disposed || generation !== this._validationGeneration ||
+                (run && !this.isValidationRunCurrent(run))) {
+                if (!this._disposed)
+                    this.invalidateValidationStateCache();
+                logger.message(LoggingLevel.Info, () => 'Validation became obsolete while creating its snapshot');
+                return this.blockingValidationState(hostOptions);
+            }
+            // Deliver the final notification immediately, replacing any queued debounce.
+            this.notifyValidationStateChanged(snapshot, { ...hostOptions, disableValidationStateChangedDelay: true });
+            // The notification callback can also change the inputs or start another run.
+            if (this._disposed || generation !== this._validationGeneration ||
+                (run && !this.isValidationRunCurrent(run))) {
+                logger.message(LoggingLevel.Info, () => 'Validation became obsolete during notification');
+                return this.blockingValidationState(hostOptions);
+            }
+            return snapshot;
+        }
+        catch (error) {
+            logger.error(ensureError(error));
+            return this.blockingValidationState(hostOptions);
+        }
+    }
+
+    /**
+     * Captures group-matching hosts and declared async dependencies before validation
+     * starts. Dependency hosts are tracked by identity and change counter, including
+     * dependencies outside the requested group. Values are not read here: eagerly
+     * calculating them could itself change the application state.
+     */
+    private beginValidationRun(generation: number, options: ValidateOptions): ManagerValidationRun {
+        const inputs = new Map<ValueHostName, ManagerValidationInput>();
+        const participatingHosts = new Set<IValidatableValueHost>();
+        const addInput = (host: IValueHost): void => {
+            const name = host.getName();
+            if (!inputs.has(name))
+                inputs.set(name, { name, host, changeCounter: host.changeCounter });
+        };
+        for (const host of this.validatableValueHost()) {
+            const config = this.valueHostConfigs.get(host.getName()) as ValidatableValueHostBaseConfig | undefined;
+            if (!groupsMatch(options.group, config?.group ?? '.'))
+                continue;
+            addInput(host);
+            participatingHosts.add(host);
+            // Async validators do not participate in preliminary or during-edit runs.
+            if (options.preliminary || options.duringEdit)
+                continue;
+            const validatorConfigs = (config as ValidatorsValueHostBaseConfig | undefined)?.validatorConfigs;
+            for (const validatorConfig of validatorConfigs ?? []) {
+                if (!isAsyncValidatorConfig(validatorConfig))
+                    continue;
+                const asyncConfig = validatorConfig as AsyncValidatorConfig;
+                if (options.isModelLevel && asyncConfig.skipOnModelLevelValidation)
+                    continue;
+                for (const name of asyncConfig.dependencyValueHostNames ?? []) {
+                    const dependency = this.getValueHost(name);
+                    // The validator reports missing dependencies if it actually runs.
+                    if (!dependency)
+                        continue;
+                    addInput(dependency);
+                }
+            }
+        }
+        return { generation, inputs: [...inputs.values()], participatingHosts, hosts: [] };
+    }
+
+    /**
+     * Checks manager ownership, input identity/value versions, and the generations
+     * of built-in validator hosts already visited. Custom hosts must guard their
+     * own independent revalidation or clearing while their completions are pending.
+     */
+    private isValidationRunCurrent(run: ManagerValidationRun): boolean {
+        if (this._disposed || run.generation !== this._validationGeneration)
+            return false;
+        return run.inputs.every(input => {
+            const current = this.getValueHost(input.name);
+            return current === input.host && current.changeCounter === input.changeCounter;
+        }) && run.hosts.every(record => record.host.validationGeneration === record.generation);
+    }
+
+    /**
+     * Returns a non-cacheable, save-blocking result for a failed or obsolete run.
+     * Preserve the current issues and processing state when possible; after disposal
+     * or a snapshot error, use a minimal result that still prevents saving.
+     */
+    private blockingValidationState(options?: ValidateOptions): ValidationState {
+        if (!this._disposed) {
+            try {
+                return { ...this.buildValidationState(options), isValid: false, doNotSave: true };
+            }
+            catch (error) {
+                this.logger.error(ensureError(error));
+            }
+        }
+        return { isValid: false, doNotSave: true, issuesFound: null, asyncProcessing: false, group: options?.group };
     }
 
     /**
      * Changes the validation state to itself initial: Undetermined
      * with no error messages.
+     * Any in-progress manager validation becomes obsolete, even when a group
+     * is specified or no host state changes.
      */
     public clearValidation(options?: ValidateOptions): boolean {
+        this._validationGeneration++;
         let changed = false;
         for (const vh of this.validatableValueHost()) {
             if (vh.clearValidation(options))
@@ -770,15 +959,20 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     protected createValidationState(options?: ValidateOptions): ValidationState
     {
         // Always refreshes the cache as this is the time we insist on recalculating the validation state.
-        this._cachedCurrentValidationState = {
+        this._cachedCurrentValidationState = this.buildValidationState(options);
+        this._cachedDuringEdit = options?.duringEdit;
+        return this._cachedCurrentValidationState;
+    }
+
+    /** Builds a snapshot without caching it, so blocking results do not replace the current state. */
+    private buildValidationState(options?: ValidateOptions): ValidationState {
+        return {
             isValid: this.calculateIsValid(options),
             doNotSave: this.calculateDoNotSave(options),
             issuesFound: this.getIssuesFound(options ? options.group : undefined),
             asyncProcessing: this.calculateAsyncProcessing(options),
             group: options ? options.group : undefined
         };
-        this._cachedDuringEdit = options?.duringEdit;
-        return this._cachedCurrentValidationState;
     }
 
     /**

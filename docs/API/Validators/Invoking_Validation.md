@@ -77,10 +77,16 @@ These properties are all related to validation:
 
 ### ValueHostsManager.validate()
 Prior to submitting or any time you want to validate the entire form, use `validate()` on `ValueHostsManager`.
-
-The following immediate submission check applies when validation is synchronous. If async validators are configured, `validate()` returns before they finish; see [Waiting for validation](./Async_Validators.md#waiting-for-validation).
 ```ts
-let status = vhm.validate(); // it will notify elements in your UI of validation changes
+async validate(options?: ValidateOptions): Promise<ValidationState>;
+```
+Expect to use promise-chaining or async/await on the result as validation supports asynchronous validators. See [AsyncValidator](./Async_Validators.md).
+
+While running, any validation state changes are sent through the `onValidationStateChanged` and `onValueHostValidationStateChanged` callbacks, which will notify your UI.
+> Be aware that by default, `onValidationStateChanged` debounces requests due to the volume.
+
+```ts
+let status = await vhm.validate(); // it will notify elements in your UI of validation changes
 if (status.doNotSave)
     // Prevent saving. User has to fix things
 else
@@ -93,6 +99,7 @@ interface ValidateOptions {
     preliminary?: boolean;
     duringEdit?: boolean;
     skipCallback?: boolean;
+    onModelLevel?: boolean;
 }
 ```
 These properties are all related to `ValueHostsManager` validation:
@@ -111,6 +118,7 @@ These properties are all related to `ValueHostsManager` validation:
     - If the `Require` validator passes, the remaining validators run normally and their errors are reported.
     - Only `ValueHosts` that have not yet been validated are included. Those already validated keep their existing results.
 - `skipCallback` - Set to true if you have a reason to skip the `onValidationStateChanged callback` normally invoked by `validate()`.
+- `onModelLevel` - Normally you leave this alone. It is set to true when calling `ValueHostsManager.validate()` to inform internal processes and the `AsyncValidator` of the context of the call.
 
 ## API Reference
 - [FieldValueHost class](http://jivs.peterblum.com/TypeDoc/classes/jivs-engine_ValueHosts_ConcreteClasses_FieldValueHost.FieldValueHost.html)

@@ -124,7 +124,7 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/submit', (req, res) => {
+app.post('/submit', async (req, res) => {
     const formValues = req.body;
 
     const reader = new FormReader(vhm, formValues,{
@@ -132,7 +132,7 @@ app.post('/submit', (req, res) => {
     });
     reader.read();
 
-    const validationState = vhm.validate();
+    const validationState = await vhm.validate();
 
     // Continue processing the validation result...
 });
@@ -154,7 +154,7 @@ Use `setValue()` for Native Values and `setTextValue()` for Text Values.
 Once the request values have been supplied, validate the complete `ValueHostsManager`:
 
 ```ts
-const validationState = vhm.validate();
+const validationState = await vhm.validate();
 
 if (validationState.doNotSave) {
     return prepareValidationResponse(
@@ -382,7 +382,7 @@ async function processPersonRequest(
     const reader = new ModelReader(vhm, requestData);
     reader.read();
 
-    const validationState = vhm.validate();
+    const validationState = await vhm.validate();
 
     if (validationState.doNotSave) {
         return prepareValidationResponse(

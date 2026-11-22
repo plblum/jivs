@@ -488,7 +488,7 @@ export abstract class JivsClientSubmitBase<TModel extends object, TError>
      */
     public async submit(): Promise<void>
     {
-        const validationState = this.valueHostsManager.validate();
+        const validationState = await this.valueHostsManager.validate();
 
         if (validationState.doNotSave)
         {

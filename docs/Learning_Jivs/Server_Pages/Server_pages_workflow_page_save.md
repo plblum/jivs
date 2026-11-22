@@ -34,7 +34,7 @@ This process begins with the client-side validation described in [Submitting the
 Call `ValueHostsManager.validate()` and stop when the resulting `ValidationState` prevents saving:
 
 ```ts
-const validationState = vhm.validate();
+const validationState = await vhm.validate();
 
 if (validationState.doNotSave) {
     return;

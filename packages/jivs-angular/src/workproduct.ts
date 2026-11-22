@@ -4,7 +4,7 @@
 import { Directive, Input, ElementRef, Renderer2, OnInit, OnDestroy, Optional, SkipSelf, InjectionToken, Inject } from '@angular/core';
 import { Subscription, fromEvent, debounceTime, BehaviorSubject, filter } from 'rxjs';
 import { ValueHostsManagerConfig, IValueHostsManager } from '@plblum/jivs-engine/build/Interfaces/ValueHostsManager';
-import { ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
+import { ValidateOptions, ValidationState, ValidationStatus, IssueFound, ValidationSeverity } from '@plblum/jivs-engine/build/Interfaces/Validation';
 import { SetValueOptions, IValueHost } from '@plblum/jivs-engine/build/Interfaces/ValueHost';
 import { FieldValueHostSetValueOptions } from '@plblum/jivs-engine/build/Interfaces/FieldValueHost';
 import { ValueHostValidationState } from '@plblum/jivs-engine/build/Interfaces/ValidatableValueHostBase';
@@ -2485,7 +2485,7 @@ export class ValueHostNameDirective {
 export interface IJivsForm {
     readonly valueHostsManager: IValueHostsManager;
     readonly services: IJivsServices;
-    validate(options?: any): ValidationState;
+    validate(options?: ValidateOptions): Promise<ValidationState>;
     setValue(valueHostName: string, value: any, options?: SetValueOptions): void;
     setTextValue(valueHostName: string, textValue: string, options?: FieldValueHostSetValueOptions): void;
 
@@ -2565,7 +2565,7 @@ export class JivsForm implements IJivsForm {
      * @param options 
      * @returns 
      */
-    public validate(options?: any): ValidationState {
+    public validate(options?: ValidateOptions): Promise<ValidationState> {
         return this.valueHostsManager.validate(options);
     }
 

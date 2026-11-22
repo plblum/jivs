@@ -26,7 +26,7 @@ class RecordingValueHostsManager extends ValueHostsManager
     public displayValueDuringValidate: any;
     public validateOptions: ValidateOptions | undefined;
 
-    public override validate(options?: ValidateOptions): ValidationState
+    public override validate(options?: ValidateOptions): Promise<ValidationState>
     {
         this.events.push('validate');
         this.validateOptions = options;

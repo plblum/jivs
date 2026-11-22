@@ -39,7 +39,7 @@ The sections below walk through that pipeline.
 Start by validating the entire `ValueHostsManager`.
 
 ```ts
-const validationState = vhm.validate();
+const validationState = await vhm.validate();
 
 if (validationState.doNotSave) {
     return;
@@ -189,7 +189,7 @@ Here is the complete client-side submission process. Application-specific busine
 
 ```ts
 async function submitPerson(vhm: ValueHostsManager): Promise<void> {
-    const validationState = vhm.validate();
+    const validationState = await vhm.validate();
 
     if (validationState.doNotSave) {
         return;

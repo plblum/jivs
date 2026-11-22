@@ -31,21 +31,14 @@ function setupManager(handler: AsyncValidatorEvaluateHandler): {
 }
 
 /**
- * Starts validation and waits for the async value host to publish its settled state.
+ * Starts validation and captures the pending state before awaiting the manager result.
  */
 function startValidation(manager: ValueHostsManager): {
     initialState: ValidationState,
     completion: Promise<ValidationState>
 } {
-    let resolveCompletion!: (state: ValidationState) => void;
-    let completion = new Promise<ValidationState>(resolve => { resolveCompletion = resolve; });
-    manager.onValueHostValidationStateChanged = (_valueHost, state) => {
-        if (!state.asyncProcessing) {
-            manager.onValueHostValidationStateChanged = null;
-            resolveCompletion(manager.currentValidationState());
-        }
-    };
-    let initialState = manager.validate();
+    let completion = manager.validate();
+    let initialState = manager.currentValidationState();
     return { initialState, completion };
 }
 
@@ -155,7 +148,12 @@ describe('ValidatorBuilder asyncValidator integration', () => {
         expect(finalState).toEqual({
             isValid: false,
             doNotSave: true,
-            issuesFound: null,
+            issuesFound: [expect.objectContaining({
+                valueHostName: 'Field1',
+                asyncIdentity: 'RemoteCheck',
+                errorCode: 'AsyncValidationFailed',
+                doNotSave: true
+            })],
             asyncProcessing: false,
             group: undefined
         });

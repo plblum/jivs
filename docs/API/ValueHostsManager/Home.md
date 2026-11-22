@@ -27,7 +27,7 @@ class ValueHostsManager {
     enumerateValueHosts(filter ?: (valueHost: IValueHost) => boolean): Generator<IValueHost>;
 
 // validation activities
-    validate(options?): ValidationState;
+    validate(options?): Promise<ValidationState>;
     clearValidation(options?): boolean;
         
 // current validation state        
@@ -108,7 +108,24 @@ See [Naming ValueHosts](../ValueHosts/Naming_ValueHosts.md) to understand the pa
     ```
 ## Validation Activities
 See [Validators](../Validators/Home.md) for details.
-- `validate(options)` - Runs validation against the `ValueHosts`. See [Invoking Validation](../Validators/Invoking_Validation.md). It returns the [`ValidationState object`](../Validators/Validation_State.md).
+- `validate(options)` - Runs validation against the `ValueHosts`. See [Invoking Validation](../Validators/Invoking_Validation.md). It returns a Promise with the [`ValidationState object`](../Validators/Validation_State.md). Expect that promise to always be resolved, even if there was an internal error.
+
+    **async / await syntax**
+
+    ```ts
+    let status = await vhm.validate(options);
+    if (status.doNotSave)
+        // do not attempt to save 
+    ```
+
+    **promise-chaining syntax**
+
+    ```ts
+    vhm.validate(options).then((status)=>{
+        if (status.doNotSave)
+            // do not attempt to save
+    });
+    ```
 - `clearValidation(options)` - Resets the `FieldValueHosts` to their `NotAttempted` status, as if the 
     user has not yet interacted with the form.
 
@@ -229,7 +246,7 @@ vhm.onCallbackName = your_function;
         // Do not check against oldValue when oldValue = undefined.
     }
     ```
-- `onValidationStateChanged` notifies you after the `ValueHostsManager.validate()` function completes, supplying the function with the new [`ValidationState`](../Validators/Validation_State.md#validationstate).
+- `onValidationStateChanged` notifies you after the `ValueHostsManager.validate()` function completes (when debounced which is the default), supplying the function with the new [`ValidationState`](../Validators/Validation_State.md#validationstate).
     ```ts
     type ValidationStateChangedHandler = 
         (valueHostsManager: IValueHostsManager, validationState: ValidationState) => void;
@@ -260,7 +277,7 @@ vhm.onCallbackName = your_function;
 
     `onValidationStateChanged` runs after each `valueHost.validate()` call, even though `onValueHostValidationStateChanged` also runs.
     A call by `ValueHostsManager.validate()` will invoke validation on multiple FieldValueHosts
-    resulting in numerous calls to onValidationStateChanged.
+    resulting in numerous calls to `onValidationStateChanged`.
     This debounces them so `ValueHostsManager.validate()` generally results in one call.
     ```ts
     vhm.notifyValidationStateChangedDelay = 500;

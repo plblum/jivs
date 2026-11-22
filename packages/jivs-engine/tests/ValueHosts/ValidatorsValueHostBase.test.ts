@@ -4157,7 +4157,7 @@ describe('corrected property', () => {
         setup.valueHost.setValue('A');
         expect(setup.valueHost.corrected).toBe(false);
     });
-    test('onValueHostValidationStateChanged setup. corrected reported as true after Invalid->Valid and omitted any other time', () => {
+    test('onValueHostValidationStateChanged setup. corrected reported as true after Invalid->Valid and omitted any other time', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -4200,7 +4200,7 @@ describe('corrected property', () => {
             doNotSave: true
         };
 
-        let snapshot = vhm.validate(); // ensure we have an invalid state without business logic
+        let snapshot = await vhm.validate(); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -4219,7 +4219,7 @@ describe('corrected property', () => {
         vh.getValidator(NeverMatchesConditionType)?.setEnabled(false);
         vh.getValidator(AlwaysMatchesConditionType)?.setEnabled(true);
 
-        snapshot = vhm.validate();
+        snapshot = await vhm.validate();
         expect(snapshot).toEqual(<ValidationState>{
             isValid: true,
             doNotSave: false,
@@ -4566,7 +4566,7 @@ describe('clearValidation', () => {
             value: undefined
         });
     });
-    test('onValueHostValidationStateChanged called', () => {
+    test('onValueHostValidationStateChanged called', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -4601,7 +4601,7 @@ describe('clearValidation', () => {
             doNotSave: true
         };
 
-        let snapshot = vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = await vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -4622,7 +4622,7 @@ describe('clearValidation', () => {
         });
     });        
 
-    test('onValueHostValidationStateChanged not called when options.skipCallback = true', () => {
+    test('onValueHostValidationStateChanged not called when options.skipCallback = true', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -4657,7 +4657,7 @@ describe('clearValidation', () => {
             doNotSave: true
         };
 
-        let snapshot = vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
+        let snapshot = await vhm.validate({ skipCallback: true }); // ensure we have an invalid state without business logic
         expect(snapshot).toEqual(<ValidationState>{
             isValid: false,
             doNotSave: true,
@@ -4833,7 +4833,7 @@ describe('currentValidationState', () =>
 
 describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
     
-    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously valid, add an issueFound and not a externalIssueFound', () => {
+    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously valid, add an issueFound and not a externalIssueFound', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -4887,7 +4887,7 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             doNotSave: true
         };        
 
-        vhm.validate(); 
+        await vhm.validate();
         expect(vh.getIssuesFound()).toEqual([neverMatchIssueFound]);        
 
         let result = vh.addExternalIssueFound({
@@ -4907,7 +4907,7 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
         });
 
     });    
-    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously invalid, replace that validators IssueFound and do not add the externalIssueFound', () => {
+    test('With existing validator using the same errorcode as externalIssueFound and the validator was previously invalid, replace that validators IssueFound and do not add the externalIssueFound', async () => {
         let onValidateResult: ValueHostValidationState | null = null;
 
         let vmConfig: ValueHostsManagerConfig = {
@@ -4961,7 +4961,7 @@ describe('ValidatorsValueHostBase.clearExternalIssuesFound', () => {
             severity: ValidationSeverity.Error,
             doNotSave: true
         };        
-        vhm.validate(); 
+        await vhm.validate();
         expect(vh.getIssuesFound()).toEqual([strLenIssueFound, neverMatchIssueFound]);        
 
         let result = vh.addExternalIssueFound({
