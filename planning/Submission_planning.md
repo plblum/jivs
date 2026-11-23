@@ -6,6 +6,11 @@ This document records the initial understanding of the client-side submission wo
 
 The goal is to describe the purpose of each action and its stop conditions clearly enough to compare a future implementation against the intended workflow. This is an initial planning document, not a coding guide; the questions at the end remain open for Peter's review.
 
+## Developer's decision to use this
+Existing apps already have a workflow for page submission. We are providing another one, wrapped in our own class. Ours exists because submission workflow always contains validation -> submit -> report errors back into the validation UI, which places Jivs front and center.
+
+We don't want the user to think our class is required, but want to entice them to use it, especially if creating a new app. Our developer docs must still preserve education on developing with Jivs inside of the existing workflow.
+
 ## Workflow overview
 
 The submission class orchestrates the sequence and decides when processing must stop. Application-specific behavior remains supplied by subclasses or other application code: model creation, business validation, communication, failure presentation, server-error mapping, and success behavior.
@@ -33,7 +38,7 @@ The following sequence describes the starter helper's API-oriented path. The pla
 5. **Send the model.** Delegate serialization and communication to the application's `saveModel()` implementation.
 
     This is the point where Server Pages break from the workflow. They use an HTTP Post and return a fresh page with javascript embedded to tackle the remaining steps, which are likely different than those shown here.
-6. **Handle request and HTTP failures.** If `saveModel()` throws, call the application's connection-failure handler and stop. If it returns a response that the HTTP-failure handler classifies as an operational failure, handle it and stop. These failures are distinct from validation errors and should not be added to the validation manager.
+6. **Handle request and HTTP failures.** If `saveModel()` throws, call the application's connection-failure handler and stop. If it returns a response that the HTTP-failure handler classifies as an operational failure, handle it, log it, and stop. These failures are distinct from validation errors and may not be added to the validation manager. However, the Validation Summary widget may be an ideal landing place for notifying the user. Thus expect calls to `ValueHostsManager.addExternalIssueFound()` to place them there. In this case, we may have localizable replacement messages defined for the IssueFound while the actual error is just logged.
 7. **Handle server validation.** If the response contains validation issues, put them into the client's Jivs state and stop:
    - With a Jivs server, restore the returned validation payload through through `ValueHostsManager.fromValidationPayload()`
    - With another validation system, convert its errors to `IssueFound` objects and add them as externally determined issues through `ValueHostsManager.addExternalIssuesFound()`
@@ -113,6 +118,18 @@ Request encoding (JSON or form data), client page lifecycle (existing or replace
 
 The existing server-side documentation provides a starting point for Node.js and non-Node.js users alike. It should remain useful for applications that cannot use the new server package, and should be reviewed and updated where the design exposes flaws.
 
+## Topics still to decide
+
+Use T numbers for discussion topics and Q numbers for individual questions.
+Existing questions Q01-Q05 retain their numbers; the next new question is Q06.
+
+- **T01 — Model requirement and workflow boundaries.** Decide whether every workflow requires a Model or only those that need one for business validation or an API request. Consider differences between Model values and the controls sent by a native form post.
+- **T02 — Business validation and warnings.** Consider asynchronous business validation (Q02), conversion of application errors to Jivs issues, and how non-blocking warnings affect submission.
+- **T03 — Submission lifecycle and concurrency.** Decide how to handle duplicate submissions, errors outside the existing handlers, and input changes during asynchronous business validation or a request. Consider whether a pre-existing async validation should affect starting submission.
+- **T04 — Response handling and success criteria.** Consider validation returned with a non-success HTTP status (Q03) and how to reject unexpected or ambiguous responses rather than treating them as success (Q05).
+- **T05 — Payloads and presentation.** Determine safe handling of messages displayed as HTML (Q04), including the encoding of Jivs payloads and transport in server-generated pages. Consider empty or ambiguous validation payloads.
+- **T06 — Server-page and server workflows.** Define the boundaries between an existing client page calling an API, a native form post that replaces the page, the returned page's restoration process, and server-side validation and response preparation. Include guidance for non-Node.js servers.
+
 ## Discussion: requiring a Model
 
 Peter is considering requiring a Model to encourage separation between application business logic and Jivs, and to make it possible to share that business logic between the client and a Node.js server. Creating a Model and filling it with `ModelWriter` is relatively light work. This is a direction for discussion, not yet a decision.
@@ -135,7 +152,7 @@ Should the client abstraction only expose the submission operation, as the start
 
 The documented and starter-helper business-validation hooks are synchronous. Should the design support business checks that need to await other application services?
 
-Peter's current direction: consider making `validateModelBeforeSave()` promise-returning. `saveModel()` is already asynchronous.
+Peter's decision: make `validateModelBeforeSave()` async. `saveModel()` is already asynchronous.
 
 ### Q03 — Validation returned with a non-success HTTP status
 

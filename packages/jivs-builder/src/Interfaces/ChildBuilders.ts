@@ -185,12 +185,12 @@ export interface IValidatorBuilder extends IBuilderConfigHost<object>
      * indicating the outcome of the validation, even catching exceptions and reporting them as failed resolutions.
      * @Example
      * ```ts
-     * asyncValidator('uniqueIdentity', async (valueHost, valueHostsManager) => {
+     * asyncValidator('uniqueIdentity', async (valueHost, valueHostsManager, abortSignal) => {
      *     // Your async validation logic here
      * 
      *     return new Promise<AsyncValidatorEvaluationResult>(async (resolve, reject) => {
      *         try {
-     *              let result = await apiCall();
+     *              let result = await apiCall(abortSignal);
      *              if (!result.isValid) {
      *                  resolve({ 
      *                       conditionEvaluateResult: ConditionEvaluateResult.NoMatch,
