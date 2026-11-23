@@ -43,7 +43,7 @@ class ValueHostsManager {
 // Transfer state between client and server
     toValidationPayload(externalIssues: Array<IssueFound> | null): string;
     fromValidationPayload(payload: string, encode?: null|((text: string)=>string)): boolean; 
-    getCapturedState(): string;
+    captureState(): string;
     broadcastState(): void;
 }
 ```
@@ -157,7 +157,7 @@ Learn about [`IssueFound objects` here](../Validators/Validation_State.md#issuef
 ### Transfer Between Client and Server Members
 - `toValidationPayload(IssueFound[])` - Used on the server side when Jivs is executing on the server to return the value to pass back to the client for use in `fromValidationPayload()`. See [Using Jivs for Server-Side Validation](../../Learning_Jivs/Using_Jivs_for_Server_Side_Validation.md).
 - `fromValidationPayload(payload)` - The client-side handling of the payload supplied by `toValidationPayload()` on the server side. See [Submitting the Client Form](../../Learning_Jivs/Submitting_the_Client_Form.md).
-- `getCapturedState()` - Use together with server generated pages, which may replace the entire content of the page and force instanciating a new `ValueHostsManager`. It returns a string to send to the server. The server is expected to return it back unchanged. When configuring the `ValueHostsManager`, assign the result to the `ValueHostsManagerConfig.capturedState` property. See [Using server generated pages](../../Learning_Jivs/Server_Pages/Home.md).
+- `captureState()` - Use together with server generated pages, which may replace the entire content of the page and force instanciating a new `ValueHostsManager`. It returns a string to send to the server. The server is expected to return it back unchanged. When configuring the `ValueHostsManager`, assign the result to the `ValueHostsManagerConfig.capturedState` property. See [Using server generated pages](../../Learning_Jivs/Server_Pages/Home.md).
     ```ts
     config.capturedState = retrievedfromServer;
     let vhm = new ValueHostsManager(config);

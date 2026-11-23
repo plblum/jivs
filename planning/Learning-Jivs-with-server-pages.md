@@ -206,7 +206,7 @@ flowchart TD
 
 ### Before the Postback
 
-* Call `getCapturedState()`.
+* Call `captureState()`.
 * Retain the opaque string through the round trip.
 * Do not prescribe its transport or storage.
 * Treat the contents as internal Jivs data.
@@ -465,7 +465,7 @@ Contents:
 * Saved-state lifecycle diagram.
 * Before the round trip:
 
-  * call `getCapturedState()`;
+  * call `captureState()`;
   * retain the opaque string through the application’s chosen transport.
 * When the page returns:
 

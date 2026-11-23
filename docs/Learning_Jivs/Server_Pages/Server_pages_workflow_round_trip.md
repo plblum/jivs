@@ -37,10 +37,10 @@ Immediately before submitting the form, place the current Jivs saved state into 
 const capturedStateInput =
     document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
-capturedStateInput.value = vhm.getCapturedState();
+capturedStateInput.value = vhm.captureState();
 ```
 
-`getCapturedState()` returns an opaque string. Application code should submit and return it without inspecting or modifying its contents.
+`captureState()` returns an opaque string. Application code should submit and return it without inspecting or modifying its contents.
 
 The application can then submit the form through its normal server-page mechanism. The request contains:
 

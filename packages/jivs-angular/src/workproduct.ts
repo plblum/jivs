@@ -2731,7 +2731,7 @@ export interface IJivsConfigHost {
  * 
  * ValueHostsManager and its ValueHosts have a state that should be saved and restored across sessions.
  * This service uses an implementation of IJivsStateStore to persist form states across sessions.
- * Each form gets its state from ValueHostsManager.getCapturedState and its retained in the key formId within the state store.
+ * Each form gets its state from ValueHostsManager.captureState() and its retained in the key formId within the state store.
  * 
  * As a result, every form must have a unique formId, used to register the configuration and save the state.
  * 

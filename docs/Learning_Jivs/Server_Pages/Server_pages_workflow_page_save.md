@@ -59,10 +59,10 @@ Populate it immediately before submitting the form:
 const capturedStateInput =
     document.getElementById('_jivsCapturedState') as HTMLInputElement;
 
-capturedStateInput.value = vhm.getCapturedState();
+capturedStateInput.value = vhm.captureState();
 ```
 
-`getCapturedState()` returns an opaque string. Application code should submit and return that string without inspecting or modifying its contents.
+`captureState()` returns an opaque string. Application code should submit and return that string without inspecting or modifying its contents.
 
 > The request contains the form’s application fields along with Jivs transport data. The `_jivs` prefix makes the transport fields easy for server code to recognize and exclude from normal application processing.
 

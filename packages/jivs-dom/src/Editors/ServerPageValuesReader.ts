@@ -13,7 +13,7 @@ import { EditorReader } from './EditorReader';
  * then draws the resulting validation state in the UI.
  *
  * Use it in a Server Page round trip:
- * 1. Before submitting, the app saved vhm.getCapturedState() in a hidden input.
+ * 1. Before submitting, the app saved vhm.captureState() in a hidden input.
  *    The server returned that string unchanged with the regenerated HTML.
  * 2. The browser built a new ValueHostsManager using that string as config.capturedState.
  *    Each FieldValueHost now has the validation state it had before the submit,
