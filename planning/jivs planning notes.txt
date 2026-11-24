@@ -210,3 +210,5 @@ Or
    <input data-jivs-role="editor" data-field="name" data-jivs-presentation="" />
 </div>
 
+
+Consider letting IssueFound keep a dictionary of valuehostnames + changecounters. If supplied, clearing an async or external issuefound could be ignored when the values haven't changed
