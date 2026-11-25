@@ -14,7 +14,10 @@ Here is pseudo-code representation of its interface (omitting some members).
 ```ts
 class ValueHostsManager {
     services: IJivsServices;
+
+    // settings
     behaviors: Behaviors;
+    getContainerIdentifier(): string | undefined;
 
     // getting ValueHosts
     getValueHost(valueHostName: string): null | IValueHost;
@@ -63,6 +66,16 @@ class ValueHostsManager {
     let rules = new MyValueHostsRules(services);
     let vhm = new ValueHostsManager(rules.configure());
     ```
+- `getContainerIdentifier()` - Gets the CSS selector configured for this ValueHostsManager's DOM container. Set it through `ValueHostsManagerConfig.containerIdentifier` or the builder's `containerIdentifier` property. When it is empty or undefined, jivs-dom uses `form` as the selector. If the selector matches zero or multiple elements, jivs-dom throws an error directing you to set `containerIdentifier`.
+    ```ts
+    // this is within your ValueHostsRules subclass...
+    builder.containerIdentifier = '#myForm';
+    // now consume it
+    let rules = new MyValueHostsRules(services);
+    let vhm = new ValueHostsManager(rules.configure());
+    let containerIdentifier = vhm.getContainerIdentifier();
+    ```
+
 ### Getting ValueHosts
 See [Naming ValueHosts](../ValueHosts/Naming_ValueHosts.md) to understand the parameters `valueHostName`, `elementIdentifier`, and `propertyName`.
 - `getValueHost(valueHostName)` - Returns any `ValueHost` type, but weakly typed to the `ValueHostBase` class.

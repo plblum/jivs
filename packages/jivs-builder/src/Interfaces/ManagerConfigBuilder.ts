@@ -49,14 +49,14 @@ export interface IManagerConfigBuilder<T extends ValueHostsManagerConfig>
     behaviors: Behaviors;    
 
     /**
-     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
-     * The containerIdentifier helps distinguish between them.
-     * 
-     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
-     * They may assign a value associated with the form's containing element used to look up that form's element
-     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
-     * 
-     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     * A CSS selector identifying the DOM container for this ValueHostsManager.
+     * Multiple managers on a page can each use a different form or region.
+     *
+     * When using jivs-dom or jivs-simpledom, an empty or omitted identifier defaults
+     * to `form`. The selector must match exactly one element; otherwise an error is thrown.
+     *
+     * Set this property when the page has no form element or has multiple form elements.
+     * For example, use `'#formId'` to select a form by its id.
      */
     containerIdentifier?: string;
     

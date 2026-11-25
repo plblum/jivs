@@ -90,6 +90,8 @@ export class PersonEditFormRules
     adapter: IFormConfigAdapter,
     options?: ValueHostRulesOptions
   ): void {
+    adapter.containerIdentifier = '#myForm'; // query selector to the <form> tag
+    adapter.behaviors.reformatTextValue = true;
     adapter.modify('FirstName', 'First name' )
       .validator(ConditionType.StringLength, 'No more than {maximum} characters. You entered {length}.');
       // same idea but using an object to supply numerous parameters

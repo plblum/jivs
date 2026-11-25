@@ -123,6 +123,9 @@ export class PersonFormRules
         adapter: IFormConfigAdapter,
         options?: ValueHostRulesOptions
     ): void {
+        adapter.containerIdentifier = '#myForm'; // query selector to the <form> tag
+        adapter.behaviors.reformatTextValue = true;
+
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']);
 
         adapter.modify('FirstName', { label: 'First name' })

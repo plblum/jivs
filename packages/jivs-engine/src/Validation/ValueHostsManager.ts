@@ -1360,14 +1360,12 @@ export class ValueHostsManager<TState extends ValueHostsManagerInstanceState = V
     //#endregion IValueHostsManagerCallbacks
 
     /**
-     * A page may contain more than one ValueHostsManager, each responsible for a different form or region of the DOM. 
-     * The containerIdentifier helps distinguish between them.
-     * 
-     * The UI typically uses this with multiple forms, each using its own ValueHostsManager.
-     * They may assign a value associated with the form's containing element used to look up that form's element
-     * prior to searching within for fields (FieldValueHostConfig.elementIdentifier).
-     * 
-     * When using jivs-dom or jivs-simpledom, it uses document.querySelector(containerIdentifier) to locate the container element.
+     * Gets a CSS selector identifying the DOM container for this ValueHostsManager.
+     * It was previously setup through the ValueHostsManagerConfig.containerIdentifier property 
+     * or the builder's containerIdentifier property.
+     * If this returns undefined, jivs-dom will default to using the `form` element as the container.
+     * However, expect an error reminding you to provide a more specific containerIdentifier
+     * if the query finds more than one or zero matches.
      */
     public getContainerIdentifier(): string | undefined
     {

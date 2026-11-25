@@ -39,7 +39,7 @@ describe('SimpleDomElementCollector with generated forms', () =>
     test('editor options pass presentation name and explicit adapter key to the editor record', () =>
     {
         const t = createTestForm({
-            build: page => page.field('Text_Required', 'editorOnly',
+            build: page => page.form('test-form').field('Text_Required', 'editorOnly',
                 { presentationName: 'inputEditor', adapterKey: 'input:text' }),
             install: false,
             verbose: verbose
@@ -99,9 +99,10 @@ describe('SimpleDomElementCollector with generated forms', () =>
             verbose: verbose,
             build: page =>
             {
-                page.field('Text_Required');
+                const form = page.form('test-form');
+                form.field('Text_Required');
                 // Built by hand, so context.fieldNames does not include it and the manager has no host for it.
-                page.label('NotInManager', 'Orphan');
+                form.label('NotInManager', 'Orphan');
             },
             install: false
         });
@@ -254,7 +255,7 @@ describe('SimpleDomElementCollector registry details', () =>
     test('editor options default to a null presentation and no adapter key, and extra attributes reach the element', () =>
     {
         const t = createTestForm({
-            build: page => page.field('Text_Required', 'editorOnly', { additionalAttributes: "class='wide' placeholder='Name'" }),
+            build: page => page.form('test-form').field('Text_Required', 'editorOnly', { additionalAttributes: "class='wide' placeholder='Name'" }),
             install: false, verbose: verbose
         });
         collect(t);
@@ -285,11 +286,12 @@ describe('SimpleDomElementCollector registry details', () =>
         const t = createTestForm({
             build: page =>
             {
-                page.field('Text_Required', 'editorOnly');
-                page.label('Text_Required', 'Name', 'Label');
-                page.errorDisplay('Text_Required', 'InlineErrorBeside');
-                page.requiredIndicator('Text_Required', '*');
-                page.fieldContainer('Text_Required', 'FieldContainer');
+                const form = page.form('test-form');
+                form.field('Text_Required', 'editorOnly');
+                form.label('Text_Required', 'Name', 'Label');
+                form.errorDisplay('Text_Required', 'InlineErrorBeside');
+                form.requiredIndicator('Text_Required', '*');
+                form.fieldContainer('Text_Required', 'FieldContainer');
             },
             install: false, verbose: verbose
         });
@@ -352,10 +354,11 @@ describe('SimpleDomElementCollector registry details', () =>
         const t = createTestForm({
             build: page =>
             {
-                page.field('Text_Required', 'editorOnly');
-                page.raw("<label id='raw-label' DATA-JIVS-ROLE='LABEL' data-field='Text_Required'>x</label>");
-                page.raw("<div id='raw-aria' data-jivs-role='Aria-Error' data-field='Text_Required'></div>");
-                page.raw("<button id='raw-submit' data-jivs-role='SUBMIT'>Go</button>");
+                const form = page.form('test-form');
+                form.field('Text_Required', 'editorOnly');
+                form.raw("<label id='raw-label' DATA-JIVS-ROLE='LABEL' data-field='Text_Required'>x</label>");
+                form.raw("<div id='raw-aria' data-jivs-role='Aria-Error' data-field='Text_Required'></div>");
+                form.raw("<button id='raw-submit' data-jivs-role='SUBMIT'>Go</button>");
             },
             install: false, verbose: verbose
         });
@@ -384,7 +387,11 @@ describe('SimpleDomElementCollector registry details', () =>
     test('an editor for a field the manager does not have is registered without a FieldValueHost or jivsElement', () =>
     {
         const t = createTestForm({
-            build: page => { page.field('Text_Required'); page.inputEditor('NoSuchField'); },
+            build: page => {
+                const form = page.form('test-form');
+                form.field('Text_Required');
+                form.inputEditor('NoSuchField');
+            },
             install: false, verbose: verbose
         });
         collect(t);
@@ -398,7 +405,11 @@ describe('SimpleDomElementCollector registry details', () =>
     test('a field identifier matches the manager without regard to case and keeps its authored spelling', () =>
     {
         const t = createTestForm({
-            build: page => { page.field('Text_Required', 'editorOnly'); page.label('text_required', 'Lower'); },
+            build: page => {
+                const form = page.form('test-form');
+                form.field('Text_Required', 'editorOnly');
+                form.label('text_required', 'Lower');
+            },
             install: false, verbose: verbose
         });
         collect(t);

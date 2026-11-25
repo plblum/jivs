@@ -168,7 +168,7 @@ but the UI wants to use tools around "Email". `modify(valueHostName).refineDataT
     + enabling
     + error code
     ```ts
-    modify('Field1').validator(ConditionType.RegExp, {
+    adapter.modify('Field1').validator(ConditionType.RegExp, {
         errorMessage: 'error message',
         summaryMessage: 'summary',
         severity: ValidationSeverity.Severe,
@@ -179,7 +179,7 @@ but the UI wants to use tools around "Email". `modify(valueHostName).refineDataT
     + `modify(valueHostName).validator(validator name).and(your condition)`
     + `modify(valueHostName).validator(validator name).or(your condition)`
     ```ts
-    modify('Field1').validator(ConditionType.RegExp).and(
+    adapter.modify('Field1').validator(ConditionType.RegExp).and(
         (childBuilder=> childBuilder.fieldValue('AnotherField').equalTo(true)));
     ```
 - Disable an existing validator. While frowned upon, this provides high visibility to the action.
@@ -187,9 +187,14 @@ but the UI wants to use tools around "Email". `modify(valueHostName).refineDataT
 - Add another validator to an existing ValueHost
     + `modify(valueHostName).addValidator().[specify the validator]`.
     ```ts
-    modify('Field1').addValidator().equalTo(true, 'error message');
+    adapter.modify('Field1').addValidator().equalTo(true, 'error message');
     ```
+- Establish settings on ValueHostsManager like `containerIdentifier` and those in `behaviors`.
+    ```ts
+    adapter.containerIdentifier = '#myForm'; // query selector to the <form> tag
+    adapter.behaviors.reformatTextValue = true;
 
+    ```
 See [Form Configuration Adapter](#the-form-configuration-adapter) for details.
 
 In this example, the form developer subclasses `PersonModelRules` and adds labels and error messages for the UI.
@@ -203,6 +208,9 @@ class PersonEditFormRules
         adapter: IFormConfigAdapter,
         options?: ValueHostRulesOptions
     ): void {
+        adapter.containerIdentifier = '#myForm'; // query selector to the <form> tag
+        adapter.behaviors.reformatTextValue = true;
+
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // any other field (birthdate, prefix, suffix) will be disabled
         // let's change some text on the model's FirstName and LastName ValueHosts
         adapter.modify('FirstName', { label: 'First name' })
@@ -303,6 +311,7 @@ class ValueHostsManagerConfigBuilder {
         callback: (builder: IStartConditionWithOneChildBuilder) => void): IManagerConfigBuilder; 
     
     behaviors: Behaviors;   // adjust the behaviors of this instance
+    containerIdentifier: string | undefined; // query selector to the form's container
     capturedState?: string; // preserve stateful data during a round trip to the server
 }
 ```
@@ -386,8 +395,9 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
+    public adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
     {
+        adapter.containerIdentifier = '#myForm'; // CSS selector for this form's container
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // all others are disabled
     }
     ```
@@ -403,8 +413,9 @@ Let’s go through these types.
         builder.field('BirthDate');
         builder.field('Suffix');
     }
-    protected adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
+    public adaptToForm(adapter: IFormConfigAdapter, options?: ValueHostRulesOptions): void
     {
+        adapter.containerIdentifier = '#myForm'; // CSS selector for this form's container
         adapter.disableTheseModelFields(['BirthDate', 'Suffix']); // all others remain enabled
     }
     ```  

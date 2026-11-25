@@ -81,6 +81,47 @@ describe('createTestForm element', () =>
         expect(() => a.element('editor', 'Checkbox')).toThrow(/No element matches/);
         expect(b.element('editor').closest('#two')).not.toBeNull();
     });
+
+    test('The default form container excludes role elements elsewhere in the document', () =>
+    {
+        const t = createTestForm({ fields: ['Text_Required'], verbose: verbose });
+        const outside = document.createElement('span');
+        outside.setAttribute('data-jivs-role', 'summary');
+        document.body.appendChild(outside);
+
+        expect(() => t.element('summary')).toThrow(/No element matches/);
+        expect(t.element('editor', 'Text_Required').closest('form')).not.toBeNull();
+    });
+
+    test('An invalid or ambiguous container does not fall back to searching the document', () =>
+    {
+        const t = createTestForm({ fields: ['Text_Required'], install: false, verbose: verbose });
+        expect(() => t.element('editor')).toThrow(/No container element found/);
+        t.page.assign();
+        document.body.appendChild(document.createElement('form'));
+        expect(() => t.element('editor')).toThrow(/Multiple container elements found/);
+    });
+
+    test('A custom build can use a non-id selector for a non-form container', () =>
+    {
+        const t = createTestForm({
+            build: page => { page.children('div', "class='customer'").field('Text_Required'); },
+            containerIdentifier: '.customer', verbose: verbose
+        });
+        expect(t.element('editor', 'Text_Required').closest('div.customer')).not.toBeNull();
+        t.runner.assertFormInstallation(document, t.vhm);
+        expect(t.services.loggingService.entryCount).toBe(0);
+    });
+
+    test('Element lookup uses a container selector changed by configure', () =>
+    {
+        const t = createTestForm({
+            fields: ['Text_Required'], install: false, verbose: verbose,
+            configure: config => { config.containerIdentifier = '#other'; }
+        });
+        t.page.assign();
+        expect(() => t.element('editor')).toThrow(/No container element found for identifier: #other/);
+    });
 });
 
 /**
@@ -205,7 +246,7 @@ describe('createTestForm default logger level', () =>
     test('Warnings are captured by default', () =>
     {
         const t = createTestForm({
-            build: page => { page.inputEditor('NotInManager'); }, verbose: verbose
+            build: page => { page.form('test-form').inputEditor('NotInManager'); }, verbose: verbose
         });
         expect(t.services.loggingService.entryCount).toBe(1);
     });
@@ -213,7 +254,7 @@ describe('createTestForm default logger level', () =>
     test('servicesConfigOptions.loggerLevel overrides the default', () =>
     {
         const t = createTestForm({
-            build: page => { page.inputEditor('NotInManager'); },
+            build: page => { page.form('test-form').inputEditor('NotInManager'); },
             servicesConfigOptions: { loggerLevel: LoggingLevel.Error }, verbose: verbose
         });
         expect(t.services.loggingService.entryCount).toBe(0);

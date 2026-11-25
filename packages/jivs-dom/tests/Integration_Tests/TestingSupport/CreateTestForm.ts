@@ -31,7 +31,7 @@ export interface TestFormOptions
      * fields: names of Field Identities. Generates one form holding each in order.
      */
     fields?: string[];
-    /** Your own recipe that builds the page. */
+    /** Your own recipe that builds the page, including its container element. */
     build?: (page: TestHtmlBuilder) => void;
     /** The name of a registered form template. */
     formTemplate?: string;
@@ -95,7 +95,7 @@ export interface TestForm
     collect(): void;
     /**
      * The first element with data-jivs-role equal to role, and data-field equal to fieldName when supplied.
-     * Searches only the manager's container when it has one. Throws when none exists.
+     * Searches only the manager's resolved container. Throws if the container or element cannot be found.
      */
     element(role: string, fieldName?: string): IJivsElement;
     /** The registry record for an element, or null if it is not registered. */
@@ -171,7 +171,7 @@ export function createTestForm(options: TestFormOptions): TestForm
         context.idPrefix = `${ container.replace(/[^A-Za-z0-9_-]/g, '') }-`.toLowerCase();
     }
     let formId = options.formId;
-    if (!formId && container)
+    if (options.fields && !formId && container)
     {
         if (!container.startsWith('#'))
             throw new Error(`containerIdentifier '${ container }' is not an '#id' selector, so formId is required with the fields source.`);
@@ -221,8 +221,7 @@ export function createTestForm(options: TestFormOptions): TestForm
     const collector = new SimpleDomElementCollector();
     const install = () => { new FormInstaller(vhm, collector).install(); };
     const registry = () => services.domServices.getElementRegistry(vhm);
-    const scope = (): ParentNode =>
-        (container ? document.querySelector(container) : null) ?? document;
+    const scope = (): HTMLElement => services.domServices.resolveContainerElement(vhm);
     const testForm: TestForm = {
         services, config, vhm, context, runner, page, collector, install,
         get registry() { return registry(); },

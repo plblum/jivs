@@ -93,7 +93,7 @@ class FactoryTrackingJivsDomServices extends JivsDomServices
 /**
  * Creates a manager fake with metadata storage and an optional container selector.
  */
-function createManager(containerIdentifier: string | null = null): IValueHostsManager
+function createManager(containerIdentifier?: string | null): IValueHostsManager
 {
     let metadata = new Map<string, unknown>();
     return {
@@ -227,37 +227,44 @@ describe('JivsDomServices lazy service properties', () => {
 
 // The logging facade is created lazily and resolves the current engine logging service for each log.
 describe('JivsDomServices.loggingFacade', () => {
-    test('Caches one facade and logs missing-container details at warning level', () => {
+    test('Caches one facade and logs missing-container details at error level', () => {
         let testItem = new JivsDomServices();
         let logger = new RecordingLoggingService();
         testItem.services = { loggingService: logger } as unknown as IJivsServices;
         let manager = createManager('#missing-container');
+        let message = 'No container element found for identifier: #missing-container' +
+            ' Set containerIdentifier property on the builder or directly on the ValueHostsManagerConfig.';
 
         let facade = testItem.loggingFacade;
-        let result = testItem.resolveContainerElement(manager);
+        expect(() => testItem.resolveContainerElement(manager)).toThrow(message);
 
         expect(testItem.loggingFacade).toBe(facade);
-        expect(result).toBe(document.body);
         expect(logger.calls).toHaveLength(1);
-        expect(logger.calls[0].level).toBe(LoggingLevel.Warn);
-        expect(logger.calls[0].details).toMatchObject({
-            message: 'Container element not found for identifier: #missing-container',
+        expect(logger.calls[0].level).toBe(LoggingLevel.Error);
+        expect(logger.calls[0].details).toEqual({
+            message,
             feature: 'Dom',
             type: testItem,
-            identity: '#missing-container'
+            identity: '#missing-container',
+            data: {}
         });
     });
 
-    test('Does not fail when a missing-container warning has no configured logging service', () => {
+    test('Still throws the missing-container error when no logging service is configured', () => {
         let testItem = new JivsDomServices();
         testItem.services = {} as IJivsServices;
 
-        expect(testItem.resolveContainerElement(createManager('#missing-container'))).toBe(document.body);
+        expect(() => testItem.resolveContainerElement(createManager('#missing-container')))
+            .toThrow('No container element found for identifier: #missing-container');
     });
 });
 
 // Container and field resolution should use the manager configuration and registry without owning either behavior.
 describe('JivsDomServices DOM resolution', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
     test('Uses the configured container element when the selector matches an HTMLElement', () => {
         let testItem = new JivsDomServices();
         let container = document.createElement('form');
@@ -268,10 +275,44 @@ describe('JivsDomServices DOM resolution', () => {
         container.remove();
     });
 
-    test('Falls back to document.body without logging when no container selector is configured', () => {
+    test('Uses a configured non-form container even when multiple forms are present', () => {
         let testItem = new JivsDomServices();
+        let logger = new RecordingLoggingService();
+        testItem.services = { loggingService: logger } as unknown as IJivsServices;
+        document.body.innerHTML = '<form></form><form></form><div id="region"></div>';
+        let container = document.getElementById('region');
 
-        expect(testItem.resolveContainerElement(createManager())).toBe(document.body);
+        expect(testItem.resolveContainerElement(createManager('#region'))).toBe(container);
+        expect(logger.calls).toEqual([]);
+    });
+
+    test.each([undefined, null, ''])('Uses the single form when the container selector is %s', (identifier) => {
+        let testItem = new JivsDomServices();
+        let form = document.createElement('form');
+        document.body.appendChild(form);
+
+        expect(testItem.resolveContainerElement(createManager(identifier))).toBe(form);
+    });
+
+    test.each([
+        [undefined, '', 'form', 'No container element found'],
+        ['', '<form></form><form></form>', 'form', 'Multiple container elements found'],
+        ['.container', '<div class="container"></div><div class="container"></div>', '.container', 'Multiple container elements found'],
+        ['#icon', '<svg id="icon"></svg>', '#icon', 'Container element is not an HTMLElement']
+    ])('Throws and logs when selector %s cannot identify one HTML container', (identifier, markup, selector, problem) => {
+        let testItem = new JivsDomServices();
+        let logger = new RecordingLoggingService();
+        testItem.services = { loggingService: logger } as unknown as IJivsServices;
+        // Elements must be attached to document for document.querySelectorAll to find them.
+        document.body.innerHTML = markup;
+        let message = `${ problem } for identifier: ${ selector }` +
+            ' Set containerIdentifier property on the builder or directly on the ValueHostsManagerConfig.';
+
+        expect(() => testItem.resolveContainerElement(createManager(identifier))).toThrow(message);
+        expect(logger.calls).toEqual([{
+            level: LoggingLevel.Error,
+            details: { message, feature: 'Dom', type: testItem, identity: selector, data: {} }
+        }]);
     });
 
     test('Rejects a null manager or field value host', () => {

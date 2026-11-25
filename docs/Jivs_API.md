@@ -347,7 +347,7 @@ export class PersonModelRules extends ValueHostRulesBase {
 ```
 When consumed by the user interface, we want to leave the business rules untouched,
 and provide form-specific modifications such as to text. So the form should subclass
-the model's rules class and implement `IAdaptModelRulesToForm` with at minimum an empty
+the model's rules class and implement `IAdaptModelRulesToForm` with an
 `adaptToForm()` method.
 
 ```ts
@@ -362,6 +362,7 @@ class PersonEditFormRules
     // make changes to labels, error messages, severity, parsers, formatters and more
     // add new validation rules or combine UI logic with business logic rules
     // add new ValueHosts
+    // Assign containerIdentifier and behaviors when needed
     }
 }
 ```
@@ -371,7 +372,8 @@ a builder, with a few new methods designed around the adaption process.
 public adaptToForm(
     adapter: IFormConfigAdapter,
     options?: ValueHostRulesOptions): void {
-    adapter.useOnlyTheseModelFields('FirstName', 'LastName'); // your form will not be editing any other fields on the model
+    adapter.containerIdentifier = '#myForm'; // CSS selector for this form's container
+    adapter.useOnlyTheseModelFields(['FirstName', 'LastName']); // your form will not be editing any other fields on the model
     adapter.modify('FirstName', { label: 'First name' });
     adapter.modify('LastName', { label: 'Last name' })
     // adding the notEqualTo validator to LastName...
@@ -1273,6 +1275,7 @@ class PersonEditFormRules
         adapter: IFormConfigAdapter,
         options?: ValueHostRulesOptions): void 
     {
+        adapter.containerIdentifier = '#myForm'; // CSS selector for this form's container
         adapter.useOnlyTheseModelFields(['FirstName', 'LastName']);
         adapter.modify('FirstName', { label: 'First name' });
         adapter.modify('LastName', { label: 'Last name' });

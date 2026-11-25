@@ -487,13 +487,15 @@ describe('FormInstaller.install static convenience', () => {
         setup.services.setService('domServices', domServices);
         let eventOrder: string[] = [];
         let root = document.createElement('form');
-        let collector = new TestElementCollector(registry => {
+        domServices.resolveContainerElement = () => root;
+        let collector = new TestElementCollector(registry =>
+        {
             eventOrder.push('collect');
             let input = document.createElement('input');
             input.type = 'text';
             registry.addEditor(input as IJivsElement, setup.config.name);
         });
-        domServices.resolveContainerElement = () => root;
+
         let originalAttach = domServices.dispatchers.attach.bind(domServices.dispatchers);
         domServices.dispatchers.attach = (manager, useTextValue, useNativeValue) => {
             eventOrder.push('attach');
@@ -514,6 +516,8 @@ describe('FormInstaller.install static convenience', () => {
         setup.services.loggingService = new TestingLoggingService(LoggingLevel.Debug);
         let domServices = new JivsDomServices();
         setup.services.setService('domServices', domServices);
+        let root = document.createElement('form');
+        domServices.resolveContainerElement = () => root;        
         let attachCalls: boolean[][] = [];
         domServices.dispatchers.attach = (_manager, useTextValue, useNativeValue) => {
             attachCalls.push([useTextValue ?? false, useNativeValue ?? false]);
@@ -530,6 +534,8 @@ describe('FormInstaller.install static convenience', () => {
         setup.services.loggingService = new TestingLoggingService(LoggingLevel.Debug);
         let domServices = new JivsDomServices();
         setup.services.setService('domServices', domServices);
+        let root = document.createElement('form');
+        domServices.resolveContainerElement = () => root;
         let attachCalls = 0;
         domServices.dispatchers.attach = () => { attachCalls++; };
         let collector = new TestElementCollector(registry => {

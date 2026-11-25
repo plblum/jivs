@@ -135,7 +135,7 @@ describe('FormInstaller.install with explicit editor options', () =>
     test('A registered presentation name and an explicit adapter key are used by the editor', () =>
     {
         let t = installForm({
-            build: page => page.field('Text_Required', 'withoutRequired',
+            build: page => page.form('test-form').field('Text_Required', 'withoutRequired',
                 { presentationName: 'inputEditor', adapterKey: 'input:text' })
         });
         t.runner.assertFormInstallation(document, t.vhm);
@@ -180,10 +180,11 @@ describe('FormInstaller.install with elements that have no FieldValueHost', () =
         let t = installForm({
             build: page =>
             {
-                page.field('Text_Required');
+                let form = page.form('test-form');
+                form.field('Text_Required');
                 // Built by hand, so context.fieldNames omits it and the manager has no FieldValueHost for it.
-                page.label('NotInManager', 'Orphan');
-                page.inputEditor('NotInManager');
+                form.label('NotInManager', 'Orphan');
+                form.inputEditor('NotInManager');
             }
         });
         t.runner.assertFormInstallation(document, t.vhm);
@@ -202,7 +203,7 @@ describe('FormInstaller.install with elements that have no FieldValueHost', () =
     test('The unknown editor gets no IJivsElement but its jivsElementRole is still assigned', () =>
     {
         let t = installForm({
-            build: page => { page.inputEditor('NotInManager'); }
+            build: page => { page.form('test-form').inputEditor('NotInManager'); }
         });
         let orphan = t.element('editor');
         expect(orphan.jivsElementRole).toBe('editor');

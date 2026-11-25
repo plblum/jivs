@@ -56,7 +56,7 @@ The intended application customization points are abstract methods, especially f
 
 ```mermaid
 flowchart TD
-    A["Application provides services"] --> B["PageInitializer creates rules and manager"]
+    A["Application provides services"] --> B["PageInitializer creates rules,<br/>sets container identifier, and creates manager"]
     B --> C["DomPageInitializer installs jivs-dom"]
     C --> D["Load initial values"]
     D --> E["Preliminary validation<br/>Page ready for the user"]
@@ -69,8 +69,8 @@ Direct composition without a workflow class:
 ```ts
 const services = createJivsServices('en-US');          // includes configureJivsDom()
 const rules = new PersonFormRules(services);
-const config = rules.configure({ disableCache: true });
-config.containerIdentifier = '#PersonForm'; // this can be assigned within PersonFormRules as builder.containerIdentifier.
+const config = rules.configure();
+config.containerIdentifier = '#PersonForm'; // alternatively, set builder.containerIdentifier in PersonFormRules.
 const vhm = new ValueHostsManager(config);
 
 FormInstaller.install(vhm, new SimpleDomElementCollector());
@@ -78,9 +78,13 @@ FormInstaller.install(vhm, new SimpleDomElementCollector());
 new ModelReader(vhm, getPerson()).read();              // or EditorReader, FormReader, DictionaryReader
 ```
 
-`IValueHostsManagerConfigBuilder` exposes `containerIdentifier`, so a rules class can set a stable selector while building the configuration. The returned `ValueHostsManagerConfig` is also mutable; for a per-manager override, disable rules-config caching as above because the default cached config may be shared by later calls to `configure()`. In either case, set the selector before constructing the manager; Jivs DOM installation resolves the configured container before collecting elements.
+`IValueHostsManagerConfigBuilder` exposes `containerIdentifier`, so a rules class can set the selector while building the configuration. Direct composition can set it on the returned config, as above. Rules configurations are cached; this design assumes the selector remains the same for each cached rules configuration.
 
+> Earlier brainstorming; the resolution following this note supersedes its open alternatives.
+>
 > PETER'S NOTE: I'm not sure the builder is the best place to expect the user to set this up. The direct subclass of ValueHostsBase is often designed for the model, not DOM. The user needs to supply IAdaptModelRulesToForm to focus it into a form. Will they look for builder.containerIdentifier? Doubt it. So I think making containerIdentifier an abstract member of PageInitializer is needed, or its implemented to throw when config.containerIdentifier hasn't been assigned. Yet, we now default it to 'FORM'. So why throw at all? My point is to ensure the user makes a decision about containerIdentifier. Maybe giving it the default of 'FORM' is wrong and there should be no value, ensuring it throws, but right now valuehostsmanager.getContainerIdentifier() falls back to document.body if not supplied. Ugh! Perhaps its an abstract member in PageInitializer that can return null to mean use document.body, but otherwise we force a selector pattern.
+
+**Resolution:** See Q09, “Container identifier source and fallback,” under Decisions recorded.
 
 Workflow-class sketch:
 
@@ -110,7 +114,7 @@ class PersonPageInitializer extends DomPageInitializer<TSource>
     {
         return new PersonFormCollector();   // example overrides SimpleDomElementCollector
     }
-    protected getContainerIdentifier(): string
+    protected override get containerIdentifier(): string | null
     {
         return '#personForm';
     }
@@ -132,7 +136,7 @@ form.data['vhm'] = personVhm;   // syntax needs review
 
 ### Documentation
 
-`PageInitializer` is an abstract workflow base class in jivs-engine. Its constructor receives the configured services. Its public `execute()` creates and returns a `ValueHostsManager`; abstract or overridable steps supply the application rules, a Model when needed, and a submission object when configured. If a submission object is created, initialization attaches it through `vhm.submitter`. `DomPageInitializer` (a sketch for a jivs-dom subclass) adds `FormInstaller` and initial editor reading. The exact division of extension points remains to be designed.
+`PageInitializer` is an abstract workflow base class in jivs-engine. Its constructor receives the configured services. Its public `execute()` creates and returns a `ValueHostsManager`; abstract or overridable steps supply the application rules, a Model when needed, and a submission object when configured. It also requires a `containerIdentifier` getter returning `string | null`. After configuring the rules, it uses that value only if `config.containerIdentifier` is `undefined`, normalizing `null` to `undefined`; a builder-supplied selector takes precedence. If a submission object is created, initialization attaches it through `vhm.submitter`. `DomPageInitializer` (a sketch for a jivs-dom subclass) adds `FormInstaller` and initial editor reading. The exact division of extension points remains to be designed.
 
 The existing direct DOM composition is:
 
@@ -166,6 +170,7 @@ A Reader loads the initial values and runs preliminary validation when it finish
 | --- | --- |
 | Jivs services | Supplies already-configured services, including jivs-dom configuration. |
 | ValueHost rules | Implements the rules creation step. |
+| Container selection | Implements the required `containerIdentifier` getter; a builder-supplied config value takes precedence, and `null` explicitly selects the existing `document.body` fallback. |
 | Model / initial values | Supplies the initial Model or chooses another Reader and value source. |
 | DOM discovery | Supplies an `IElementCollector`; `SimpleDomElementCollector` is the common default. |
 | DOM installation | Uses the direct `FormInstaller.install()` path when it needs lower-level control over installer options. |
@@ -221,7 +226,7 @@ Server-rendered page, here Razor:
 | --- | --- |
 | Services | Required application-supplied Jivs services, already configured for jivs-dom; startup does not create defaults. |
 | Rules | Application implementation creates the form's rules using the configured services. |
-| Container | `IValueHostsManager.containerIdentifier` is proposed to default to `'FORM'`. The application can set it on the rules builder; a per-manager override on the returned `ValueHostsManagerConfig` must disable rules-config caching to avoid mutating shared cached configuration. Resolution must fail if a selector matches more than one element. |
+| Container | `PageInitializer.containerIdentifier` supplies the value only when the rules builder leaves `ValueHostsManagerConfig.containerIdentifier` undefined. Returning `null` leaves it undefined, so the unchanged jivs-dom resolver uses `document.body`; an unresolved selector also falls back to `document.body` with a warning. No `'FORM'` selector is added automatically. |
 | Collector | Application may provide an `IElementCollector`; `SimpleDomElementCollector` is the common default. |
 | Initial values | Reads editor values with `EditorReader`; applications can override the initialization step or use the direct composition in W01. |
 | Manager reference | Application retains the returned manager under a form-specific name, separate from managers for other forms. |
@@ -716,6 +721,21 @@ enum ServerSubmissionStatus
 
 **Peter's decision:** Overload `ValueHostsManager.addExternalIssuesFound()`. One overload accepts `IssueFound[]`; another accepts an array of application errors and a companion `externalIssueConverter: IExternalIssueConverter`. This puts Jivs-defined conversion and behaviors close to Jivs while allowing distinct converters for server errors, client business errors, and special cases. The exact overload signature and how the converter composes with existing locality/options parameters remain open.
 
+### Q09 — Container identifier source and fallback
+
+**Peter's decision:** Leave `JivsDomServices.resolveContainerElement()` unchanged. `PageInitializer` requires a `containerIdentifier` getter returning `string | null`; after rules configuration, the workflow uses it only if `ValueHostsManagerConfig.containerIdentifier` is still `undefined`. A builder-supplied value takes precedence. Normalize `null` to `undefined` so the existing config type remains unchanged and the resolver retains its `document.body` fallback. Do not add a `'FORM'` selector automatically.
+
+The workflow updates the cached config directly; the selector is expected to remain stable for a given rules configuration.
+
+> PETER'S NOTE: Still not happy with this. Its awkward to have this both in builder and PageInitializer. It belongs in builder because so do all other ValueHostsManagerConfig properties. 
+My concern is that the user will overlook setting it and get it wrong. So I think I have a solution:
+1. JivsDomServices.resolveContainerElement will change to use 'FORM' if containerIdentifier is empty, null, or undefined. If there are multiple results, throw with directions to setup containerElement. If there are 0 results, throw with directions to setup containerElement, probably mentioning the current value didn't work.
+2. Now we can depend on the builder.containerIdentifier because the user will get 'FORM' if they forget. That will result in 0, 1, or 2 matches. Each is likely to deliver the right impact. The user knows after the first workflow run that they have problems.
+
+### Q12 — Keep rules-config caching
+
+**Peter's decision:** Do not disable rules-config caching when the workflow supplies the fallback container identifier. The workflow updates the cached config directly, and the selector is expected to remain stable for that rules configuration.
+
 ## Current question
 
 ### Q07 — Supplying per-page inputs to the initialization class
@@ -734,7 +754,7 @@ These are carried into the sketches as working directions. Items called out as c
 - Put `ISubmitter` / `SubmitterBase` in jivs-engine because the manager owns the attached submitter property. Keep page initialization as a standalone workflow class, not an interface-attached object. API/native-post and server-page integrations may specialize it in jivs-dom.
 - Show direct Jivs composition as well as workflow-assisted code so developers understand both how to achieve the goal and what the helper contributes. Include a customization-points table for every workflow.
 - Treat operational and other non-validation failures as application-owned black boxes in workflow diagrams.
-- Default `IValueHostsManager.containerIdentifier` to `'FORM'`. jivs-dom resolution must throw if any selector matches more than one element.
+- Require the application to make a container choice through the rules builder or the `PageInitializer.containerIdentifier` getter. Keep the existing jivs-dom resolution behavior: use the configured selector when it resolves, otherwise fall back to `document.body` (logging a warning for an unresolved selector).
 - Show the application retaining each `ValueHostsManager` under its own form-specific reference; Jivs does not provide a form-to-manager registry.
 - Use enum members for public status and outcome values rather than strings.
 - Consider whether public function names should use a `jivs` / `jivs.` prefix.

@@ -237,28 +237,45 @@ export class JivsDomServices extends ServiceWithAccessorBase
     private _loggingFacade: DomLoggingFacade | undefined = undefined;
 
     /**
-     * Helper to align a ValueHostsManager with a specific form.
      * Returns an HTMLElement representing the container element such as the form
-     * based on ValueHostsManager. ValueHostsManagerConfig.ContainerIdentifier
-     * can be setup to specify a custom container element. If not setup, 
-     * it will return document.body.
+     * associated with the ValueHostsManager. 
+     * It is setup through the ValueHostsManagerConfig.containerIdentifier property
+     * or builder's containerIdentifier property.
+     * If not setup, it will look for a single 'form' element.
+     * Expect an error if no container element is found or if multiple elements match the selector.
      * @param valueHostsManager 
      */
     public resolveContainerElement(valueHostsManager: IValueHostsManager): HTMLElement
     {
         assertNotNull(valueHostsManager, 'valueHostsManager');
-        const containerIdentifier = valueHostsManager.getContainerIdentifier();
-        if (containerIdentifier) {
-            const containerElement = document.querySelector(containerIdentifier);
+        let containerIdentifier = valueHostsManager.getContainerIdentifier();
+        if (!containerIdentifier)
+            containerIdentifier = 'form';
+
+        const elements = document.querySelectorAll(containerIdentifier);
+        if (elements.length === 1) {
+            const containerElement = elements[0];
             if (containerElement instanceof HTMLElement) {
                 return containerElement;
             }
-            this.loggingFacade.log(LoggingLevel.Warn, 
-                facade => facade.prepareLogDetails(
-                    `Container element not found for identifier: ${ containerIdentifier }`,
-                    null, null, this, containerIdentifier));
         }
-        return document.body;
+        let msg = '';
+        if (elements.length === 0) {
+            msg = `No container element found for identifier: ${ containerIdentifier }`;
+        }
+        else if (elements.length === 1) {
+            msg = `Container element is not an HTMLElement for identifier: ${ containerIdentifier }`;
+        }
+        else {
+            msg = `Multiple container elements found for identifier: ${ containerIdentifier }`;
+        }
+        msg += ' Set containerIdentifier property on the builder or directly on the ValueHostsManagerConfig.';
+        this.loggingFacade.log(LoggingLevel.Error, 
+            facade => facade.prepareLogDetails(
+                msg,
+                null, null, this, containerIdentifier));
+        throw new Error(msg);
+
     }
 
     /**
